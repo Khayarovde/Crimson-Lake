@@ -65,8 +65,8 @@ public class CharacterMovement : MonoBehaviour
         }
 
         // Apply vertical velocity (falling/jumping)
-        Vector3 velocity = rb.velocity;
+        Vector3 velocity = rb.linearVelocity;
         velocity.y = verticalVelocity;
-        rb.velocity = velocity;
+        rb.linearVelocity = velocity;
     }
 }
