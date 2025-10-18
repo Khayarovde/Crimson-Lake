@@ -5,10 +5,10 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour
 {
     Rigidbody _rb; //RigidBody
-    Vector3 _input; // вектор для управления
-    public float speed; // скорость движения
-    public float speedTurn; // скорость поворота
-    public bool matrix = false; // Преобразование поворота для изометрии
+    Vector3 _input; // пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+    public float speed; // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+    public float speedTurn; // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+    public bool matrix = false; // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     Vector3 relative;
     void Start()
     {
@@ -29,8 +29,8 @@ public class PlayerController : MonoBehaviour
     }
     void InputGet()
     {
-        _input = new Vector3(Input.GetAxis("Horizontal"), 0, Input.GetAxis("Vertical")); // получаем данные с клавиатуры
-        if (Input.GetKey(KeyCode.LeftShift)) // ускорение при шифте
+        _input = new Vector3(Input.GetAxis("Horizontal"), 0, Input.GetAxis("Vertical")); // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+        if (Input.GetKey(KeyCode.LeftShift)) // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
         {
             speed = 5f;
         }
@@ -42,13 +42,13 @@ public class PlayerController : MonoBehaviour
     }
     void Move()
     {
-        _rb.MovePosition(transform.position + (transform.forward *_input.magnitude)*speed * Time.deltaTime); // сообственно само движение
+        _rb.MovePosition(transform.position + (transform.forward *_input.magnitude)*speed * Time.deltaTime); // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     }
     void Look()
     {
        if(_input != Vector3.zero)
         {
-            if (matrix == false) // требуется ли доп поворот
+            if (matrix == false) // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
             {
                relative = (transform.position + _input) - transform.position;
             }
@@ -58,7 +58,7 @@ public class PlayerController : MonoBehaviour
             }
             var rot = Quaternion.LookRotation(relative, Vector3.up);
             transform.rotation = Quaternion.RotateTowards(transform.rotation,rot,speedTurn*Time.deltaTime);
-            GetComponent<PlayerAnimationCon>().Run(speed,true); // включаем анимации 
+            GetComponent<PlayerAnimationCon>().Run(speed,true); // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ 
         }
         else
         {

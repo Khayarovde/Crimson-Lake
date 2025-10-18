@@ -703,6 +703,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8631547590451437098}
+  - component: {fileID: -3752597834838705115}
+  - component: {fileID: 6700404736758752108}
   m_Layer: 0
   m_Name: Railgun 2
   m_TagString: Untagged
@@ -736,6 +738,41 @@ Transform:
   - {fileID: 2433853737899405185}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &-3752597834838705115
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6119306828412977847}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1, y: 1, z: 1}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &6700404736758752108
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6119306828412977847}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4016d2fd26ccad845a95e755b92819de, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  item: {fileID: 11400000, guid: 2b2e20c5bdad3b9429aca19e1cb53d75, type: 2}
+  interactionDistance: 2
 --- !u!1 &6593646532649924958
 GameObject:
   m_ObjectHideFlags: 0

@@ -1,12 +1,11 @@
-[Licensing::Module] Trying to connect to existing licensing client channel...
-Built from '6000.2/respin/6000.2.6f2-cc51a95c03' branch; Version is '6000.2.6f2 (4a4dcaec6541) revision 4869578'; Using compiler version '194234433'; Build Type 'Release'
-[Licensing::IpcConnector] Successfully connected to: "LicenseClient-denxe" at "2025-10-11T14:56:40.4132518Z"
+Using pre-set license
+Built from '6000.0/respin/6000.0.59f1-063c55f2fd0f' branch; Version is '6000.0.59f2 (ef281c76c3c1) revision 15673372'; Using compiler version '193933523'; Build Type 'Release'
 OS: 'Windows 11  (10.0.26100) 64bit Core' Language: 'ru' Physical Memory: 16087 MB
 BatchMode: 1, IsHumanControllingUs: 0, StartBugReporterOnCrash: 0, Is64bit: 1
-Date: 2025-10-11T14:56:40Z
+Date: 2025-10-18T15:34:13Z
 
 COMMAND LINE ARGUMENTS:
-S:\UnityApp\6000.2.6f2\Editor\Unity.exe
+S:\UnityApp\6000.0.59f2\Editor\Unity.exe
 -adb2
 -batchMode
 -noUpm
@@ -17,9 +16,7 @@ S:/UnityProject/Crimson-Lake
 -logFile
 Logs/AssetImportWorker0.log
 -srvPort
-58811
--licensingIpc
-LicenseClient-denxe
+61430
 -job-worker-count
 7
 -background-job-worker-count
@@ -31,8 +28,6 @@ AssetImport
 Successfully changed project path to: S:/UnityProject/Crimson-Lake
 S:/UnityProject/Crimson-Lake
 [UnityMemory] Configuration Parameters - Can be set up in boot.config
-    "memorysetup-allocator-temp-initial-block-size-main=262144"
-    "memorysetup-allocator-temp-initial-block-size-worker=262144"
     "memorysetup-bucket-allocator-granularity=16"
     "memorysetup-bucket-allocator-bucket-count=8"
     "memorysetup-bucket-allocator-block-size=33554432"
@@ -53,6 +48,8 @@ S:/UnityProject/Crimson-Lake
     "memorysetup-job-temp-allocator-block-size=2097152"
     "memorysetup-job-temp-allocator-block-size-background=1048576"
     "memorysetup-job-temp-allocator-reduction-small-platforms=262144"
+    "memorysetup-allocator-temp-initial-block-size-main=262144"
+    "memorysetup-allocator-temp-initial-block-size-worker=262144"
     "memorysetup-temp-allocator-size-background-worker=32768"
     "memorysetup-temp-allocator-size-job-worker=262144"
     "memorysetup-temp-allocator-size-preload-manager=33554432"
@@ -65,33 +62,22 @@ S:/UnityProject/Crimson-Lake
     "memorysetup-temp-allocator-size-gi-baking-worker=262144"
     "memorysetup-temp-allocator-size-gi-baking-worker=262144"
     "memorysetup-temp-allocator-size-gfx=262144"
-Player connection [2124]  Target information:
+Player connection [25620]  Target information:
 
-Player connection [2124]  * "[IP] 192.168.219.120 [Port] 0 [Flags] 2 [Guid] 1479005444 [EditorId] 1479005444 [Version] 1048832 [Id] WindowsEditor(7,katana-pc) [Debug] 1 [PackageName] WindowsEditor [ProjectName] Editor" 
+Player connection [25620]  * "[IP] 192.168.219.120 [Port] 0 [Flags] 2 [Guid] 2168000113 [EditorId] 2168000113 [Version] 1048832 [Id] WindowsEditor(7,katana-pc) [Debug] 1 [PackageName] WindowsEditor [ProjectName] Editor" 
 
-Player connection [2124]  * "[IP] 192.168.56.1 [Port] 0 [Flags] 2 [Guid] 1479005444 [EditorId] 1479005444 [Version] 1048832 [Id] WindowsEditor(7,katana-pc) [Debug] 1 [PackageName] WindowsEditor [ProjectName] Editor" 
+Player connection [25620]  * "[IP] 192.168.56.1 [Port] 0 [Flags] 2 [Guid] 2168000113 [EditorId] 2168000113 [Version] 1048832 [Id] WindowsEditor(7,katana-pc) [Debug] 1 [PackageName] WindowsEditor [ProjectName] Editor" 
 
-Player connection [2124]  * "[IP] 26.218.57.225 [Port] 0 [Flags] 2 [Guid] 1479005444 [EditorId] 1479005444 [Version] 1048832 [Id] WindowsEditor(7,katana-pc) [Debug] 1 [PackageName] WindowsEditor [ProjectName] Editor" 
+Player connection [25620]  * "[IP] 26.218.57.225 [Port] 0 [Flags] 2 [Guid] 2168000113 [EditorId] 2168000113 [Version] 1048832 [Id] WindowsEditor(7,katana-pc) [Debug] 1 [PackageName] WindowsEditor [ProjectName] Editor" 
 
-Player connection [2124]  * "[IP] 192.168.229.5 [Port] 0 [Flags] 2 [Guid] 1479005444 [EditorId] 1479005444 [Version] 1048832 [Id] WindowsEditor(7,katana-pc) [Debug] 1 [PackageName] WindowsEditor [ProjectName] Editor" 
+Player connection [25620]  * "[IP] 192.168.229.223 [Port] 0 [Flags] 2 [Guid] 2168000113 [EditorId] 2168000113 [Version] 1048832 [Id] WindowsEditor(7,katana-pc) [Debug] 1 [PackageName] WindowsEditor [ProjectName] Editor" 
 
-Player connection [2124] Host joined multi-casting on [225.0.0.222:54997]...
-Player connection [2124] Host joined alternative multi-casting on [225.0.0.222:34997]...
+Player connection [25620] Host joined multi-casting on [225.0.0.222:54997]...
+Player connection [25620] Host joined alternative multi-casting on [225.0.0.222:34997]...
 JobSystem: Creating JobQueue using job-worker-count value 7
 Input System module state changed to: Initialized.
 [Physics::Module] Initialized fallback backend.
 [Physics::Module] Id: 0xdecafbad
-[Licensing::Client] Code 10 while verifying Licensing Client signature (process Id: 16372, path: "S:/Unity/Unity Hub/UnityLicensingClient_V1/Unity.Licensing.Client.exe")
-[Licensing::Module] LicensingClient has failed validation; ignoring
-[Licensing::Client] Handshaking with LicensingClient:
-  Version:                 1.17.3+a4e98f1
-  Session Id:              fd3579bae74c4e72b7ae36c955ad8187
-  Correlation Id:          2d9152291031969ce352f6d7b21bcaab
-  External correlation Id: 7133389002060361969
-  Machine Id:              GteXDOP3FSQA3zHnEeH0Z6N6ngg=
-[Licensing::Module] Successfully connected to LicensingClient on channel: "LicenseClient-denxe" (connect: 0.00s, validation: 0.00s, handshake: 0.03s)
-[Licensing::IpcConnector] Successfully connected to: "LicenseClient-denxe-notifications" at "2025-10-11T14:56:40.449429Z"
-[Licensing::Module] Licensing Background thread has ended after 0.04s
 Library Redirect Path: Library/
 [Physics::Module] Selected backend.
 [Physics::Module] Name: PhysX
@@ -99,10 +85,10 @@ Library Redirect Path: Library/
 [Physics::Module] SDK Version: 4.1.2
 [Physics::Module] Integration Version: 1.0.0
 [Physics::Module] Threading Mode: Multi-Threaded
-Refreshing native plugins compatible for Editor in 0.60 ms, found 2 plugins.
+Refreshing native plugins compatible for Editor in 0.47 ms, found 2 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Initialize engine version: 6000.2.6f2 (4a4dcaec6541)
-[Subsystems] Discovering subsystems at path S:/UnityApp/6000.2.6f2/Editor/Data/Resources/UnitySubsystems
+Initialize engine version: 6000.0.59f2 (ef281c76c3c1)
+[Subsystems] Discovering subsystems at path S:/UnityApp/6000.0.59f2/Editor/Data/Resources/UnitySubsystems
 [Subsystems] Discovering subsystems at path S:/UnityProject/Crimson-Lake/Assets
 GfxDevice: creating device client; kGfxThreadingModeNonThreaded
 Direct3D:
@@ -112,48 +98,46 @@ Direct3D:
     VRAM:     7957 MB
     Driver:   32.0.15.8129
 Initialize mono
-Mono path[0] = 'S:/UnityApp/6000.2.6f2/Editor/Data/Managed'
-Mono path[1] = 'S:/UnityApp/6000.2.6f2/Editor/Data/MonoBleedingEdge/lib/mono/unityjit-win32'
-Mono config path = 'S:/UnityApp/6000.2.6f2/Editor/Data/MonoBleedingEdge/etc'
-Using monoOptions --debugger-agent=transport=dt_socket,embedding=1,server=y,suspend=n,address=127.0.0.1:56316
+Mono path[0] = 'S:/UnityApp/6000.0.59f2/Editor/Data/Managed'
+Mono path[1] = 'S:/UnityApp/6000.0.59f2/Editor/Data/MonoBleedingEdge/lib/mono/unityjit-win32'
+Mono config path = 'S:/UnityApp/6000.0.59f2/Editor/Data/MonoBleedingEdge/etc'
+Using monoOptions --debugger-agent=transport=dt_socket,embedding=1,server=y,suspend=n,address=127.0.0.1:56128
 Begin MonoManager ReloadAssembly
 Registering precompiled unity dll's ...
-Register platform support module: S:/UnityApp/6000.2.6f2/Editor/Data/PlaybackEngines/WebGLSupport/UnityEditor.WebGL.Extensions.dll
-Register platform support module: S:/UnityApp/6000.2.6f2/Editor/Data/PlaybackEngines/WindowsStandaloneSupport/UnityEditor.WindowsStandalone.Extensions.dll
-Registered in 0.000777 seconds.
-- Loaded All Assemblies, in  0.289 seconds
+Register platform support module: S:/UnityApp/6000.0.59f2/Editor/Data/PlaybackEngines/WindowsStandaloneSupport/UnityEditor.WindowsStandalone.Extensions.dll
+Registered in 0.001707 seconds.
+- Loaded All Assemblies, in  0.309 seconds
 Native extension for WindowsStandalone target not found
-Native extension for WebGL target not found
 Mono: successfully reloaded assembly
-- Finished resetting the current domain, in  0.265 seconds
-Domain Reload Profiling: 554ms
-	BeginReloadAssembly (91ms)
+- Finished resetting the current domain, in  0.271 seconds
+Domain Reload Profiling: 580ms
+	BeginReloadAssembly (100ms)
 		ExecutionOrderSort (0ms)
 		DisableScriptedObjects (0ms)
 		BackupInstance (0ms)
 		ReleaseScriptingObjects (0ms)
 		CreateAndSetChildDomain (1ms)
-	RebuildCommonClasses (27ms)
-	RebuildNativeTypeToScriptingClass (10ms)
-	initialDomainReloadingComplete (32ms)
-	LoadAllAssembliesAndSetupDomain (128ms)
-		LoadAssemblies (90ms)
+	RebuildCommonClasses (31ms)
+	RebuildNativeTypeToScriptingClass (9ms)
+	initialDomainReloadingComplete (39ms)
+	LoadAllAssembliesAndSetupDomain (129ms)
+		LoadAssemblies (99ms)
 		RebuildTransferFunctionScriptingTraits (0ms)
-		AnalyzeDomain (126ms)
-			TypeCache.Refresh (124ms)
-				TypeCache.ScanAssembly (112ms)
+		AnalyzeDomain (127ms)
+			TypeCache.Refresh (125ms)
+				TypeCache.ScanAssembly (115ms)
 			BuildScriptInfoCaches (0ms)
 			ResolveRequiredComponents (0ms)
-	FinalizeReload (265ms)
+	FinalizeReload (272ms)
 		ReleaseScriptCaches (0ms)
 		RebuildScriptCaches (0ms)
-		SetupLoadedEditorAssemblies (237ms)
+		SetupLoadedEditorAssemblies (240ms)
 			LogAssemblyErrors (0ms)
-			InitializePlatformSupportModulesInManaged (41ms)
-			SetLoadedEditorAssemblies (3ms)
-			BeforeProcessingInitializeOnLoad (53ms)
-			ProcessInitializeOnLoadAttributes (102ms)
-			ProcessInitializeOnLoadMethodAttributes (38ms)
+			InitializePlatformSupportModulesInManaged (16ms)
+			SetLoadedEditorAssemblies (4ms)
+			BeforeProcessingInitializeOnLoad (51ms)
+			ProcessInitializeOnLoadAttributes (125ms)
+			ProcessInitializeOnLoadMethodAttributes (44ms)
 			AfterProcessingInitializeOnLoad (0ms)
 			EditorAssembliesLoaded (0ms)
 		ExecutionOrderSort2 (0ms)
@@ -162,1315 +146,78 @@ Domain Reload Profiling: 554ms
 Worker process is ready to serve import requests
 Import Worker Mode flag is 0x00
 Begin MonoManager ReloadAssembly
-[Licensing::Client] Successfully resolved entitlement details
-[Licensing::Module] License group:
-  Id: 10170519160107-UnityPersXXXX
-  Product: Unity Personal
-  Type: Assigned
-  Expiration: Unlimited
-- Loaded All Assemblies, in  0.364 seconds
+- Loaded All Assemblies, in  0.383 seconds
 Script 'Camera' has the same name as built-in Unity component.
 AddComponent and GetComponent will not work with this script.
-Refreshing native plugins compatible for Editor in 0.22 ms, found 2 plugins.
+Refreshing native plugins compatible for Editor in 0.32 ms, found 2 plugins.
 Native extension for WindowsStandalone target not found
-Native extension for WebGL target not found
 Package Manager log level set to [2]
 [Package Manager] Failed to launch server process. Reason: Unity was launched with the -noUpm command-line argument
 [Package Manager] Unable to send message (not connected to server process).
 [Package Manager] Cannot connect to Unity Package Manager local server
 Mono: successfully reloaded assembly
-- Finished resetting the current domain, in  0.367 seconds
-Domain Reload Profiling: 731ms
-	BeginReloadAssembly (135ms)
+- Finished resetting the current domain, in  0.382 seconds
+Domain Reload Profiling: 766ms
+	BeginReloadAssembly (136ms)
 		ExecutionOrderSort (0ms)
-		DisableScriptedObjects (5ms)
+		DisableScriptedObjects (6ms)
 		BackupInstance (0ms)
 		ReleaseScriptingObjects (0ms)
-		CreateAndSetChildDomain (22ms)
-	RebuildCommonClasses (31ms)
+		CreateAndSetChildDomain (21ms)
+	RebuildCommonClasses (29ms)
 	RebuildNativeTypeToScriptingClass (9ms)
-	initialDomainReloadingComplete (16ms)
-	LoadAllAssembliesAndSetupDomain (174ms)
-		LoadAssemblies (184ms)
+	initialDomainReloadingComplete (17ms)
+	LoadAllAssembliesAndSetupDomain (192ms)
+		LoadAssemblies (192ms)
 		RebuildTransferFunctionScriptingTraits (0ms)
-		AnalyzeDomain (65ms)
-			TypeCache.Refresh (51ms)
-				TypeCache.ScanAssembly (43ms)
-			BuildScriptInfoCaches (10ms)
-			ResolveRequiredComponents (2ms)
-	FinalizeReload (368ms)
+		AnalyzeDomain (75ms)
+			TypeCache.Refresh (58ms)
+				TypeCache.ScanAssembly (48ms)
+			BuildScriptInfoCaches (13ms)
+			ResolveRequiredComponents (3ms)
+	FinalizeReload (383ms)
 		ReleaseScriptCaches (0ms)
 		RebuildScriptCaches (0ms)
-		SetupLoadedEditorAssemblies (288ms)
+		SetupLoadedEditorAssemblies (300ms)
 			LogAssemblyErrors (0ms)
 			InitializePlatformSupportModulesInManaged (2ms)
 			SetLoadedEditorAssemblies (3ms)
-			BeforeProcessingInitializeOnLoad (60ms)
-			ProcessInitializeOnLoadAttributes (203ms)
-			ProcessInitializeOnLoadMethodAttributes (20ms)
-			AfterProcessingInitializeOnLoad (1ms)
-			EditorAssembliesLoaded (0ms)
-		ExecutionOrderSort2 (0ms)
-		AwakeInstancesAfterBackupRestoration (4ms)
-Launched and connected shader compiler UnityShaderCompiler.exe after 0.01 seconds
-Refreshing native plugins compatible for Editor in 0.23 ms, found 2 plugins.
-Preloading 0 native plugins for Editor in 0.00 ms.
-Unloading 0 Unused Serialized files (Serialized files now loaded: 0)
-Unloading 1790 unused Assets / (0.6 MB). Loaded Objects now: 2287.
-Memory consumption went from 67.7 MB to 67.1 MB.
-Total: 3.603100 ms (FindLiveObjects: 0.123200 ms CreateObjectMapping: 0.058000 ms MarkObjects: 2.952800 ms  DeleteObjects: 0.468100 ms)
-
-========================================================================
-Received Import Request.
-  Time since last request: 90236.103855 seconds.
-  path: Assets/Survival Tools/Scene
-  artifactKey: Guid(b17b078c66787534f89e82e53a701a38) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
-Start importing Assets/Survival Tools/Scene using Guid(b17b078c66787534f89e82e53a701a38) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: '07ea07d67819a543c41d34a428f8b33c') in 0.0039544 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
-
-========================================================================
-Received Import Request.
-  Time since last request: 0.000016 seconds.
-  path: Assets/Survival Tools/ReadMe
-  artifactKey: Guid(36bd3519d530344418ab200f8f170e11) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
-Start importing Assets/Survival Tools/ReadMe using Guid(36bd3519d530344418ab200f8f170e11) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: 'b53378144193c8ac3daeaf0d375bde6e') in 0.0004251 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
-
-========================================================================
-Received Import Request.
-  Time since last request: 1.580926 seconds.
-  path: Assets/Survival Tools/Textures
-  artifactKey: Guid(2b98b995196b3284390ea7e47fa58c72) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
-Start importing Assets/Survival Tools/Textures using Guid(2b98b995196b3284390ea7e47fa58c72) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: '0664ed1f5b39c961053c36499d412ac7') in 0.0004165 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
-
-========================================================================
-Received Import Request.
-  Time since last request: 0.060553 seconds.
-  path: Assets/Survival Tools/Textures/small_hangar_01.png
-  artifactKey: Guid(2052b4a51949db843ab4903962c7e258) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
-Start importing Assets/Survival Tools/Textures/small_hangar_01.png using Guid(2052b4a51949db843ab4903962c7e258) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: 'd30fafb421bbb539241811244abe8660') in 0.1023661 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
-
-========================================================================
-Received Import Request.
-  Time since last request: 0.000036 seconds.
-  path: Assets/Survival Tools/Textures/survivaltools2_FirstAidKit_MetallicSmoothness.png
-  artifactKey: Guid(1744a4533365c1e4384ac1ff5405a398) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
-Start importing Assets/Survival Tools/Textures/survivaltools2_FirstAidKit_MetallicSmoothness.png using Guid(1744a4533365c1e4384ac1ff5405a398) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: 'aec2188cf3f45b334b9fcbf21044acc0') in 0.0210336 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 2
-
-========================================================================
-Received Import Request.
-  Time since last request: 0.000022 seconds.
-  path: Assets/Survival Tools/Textures/survivaltools2_MatchBox_AlbedoTransparency.png
-  artifactKey: Guid(2c6bd7e48fe8b55419d938f546bdadd3) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
-Start importing Assets/Survival Tools/Textures/survivaltools2_MatchBox_AlbedoTransparency.png using Guid(2c6bd7e48fe8b55419d938f546bdadd3) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: 'c0c799a51b7f2ea72eb8b90bb0986f68') in 0.0144899 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 2
-
-========================================================================
-Received Import Request.
-  Time since last request: 0.000015 seconds.
-  path: Assets/Survival Tools/Textures/survivaltools2_FirstAidKit_AlbedoTransparency.png
-  artifactKey: Guid(975e2499647c25d429b8b5a3cea85182) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
-Start importing Assets/Survival Tools/Textures/survivaltools2_FirstAidKit_AlbedoTransparency.png using Guid(975e2499647c25d429b8b5a3cea85182) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: 'dfef626d9322ad9692ba6da3e9084e71') in 0.0117403 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 2
-
-========================================================================
-Received Import Request.
-  Time since last request: 0.000015 seconds.
-  path: Assets/Survival Tools/Textures/survivaltools2_Flashlight_Emission.png
-  artifactKey: Guid(84a82b04c39f4ce49bf898280add1842) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
-Start importing Assets/Survival Tools/Textures/survivaltools2_Flashlight_Emission.png using Guid(84a82b04c39f4ce49bf898280add1842) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: 'ae0bbcb60c99cd4eb58af6f238a12028') in 0.0097287 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 2
-
-========================================================================
-Received Import Request.
-  Time since last request: 0.000019 seconds.
-  path: Assets/Survival Tools/Textures/survivaltools2_Walkie_Normal.png
-  artifactKey: Guid(5c012728f97307542a0063d2b1e83378) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
-Start importing Assets/Survival Tools/Textures/survivaltools2_Walkie_Normal.png using Guid(5c012728f97307542a0063d2b1e83378) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: '4bdd3ee9dc8f49beb1b3c830c135db9a') in 0.0170904 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 2
-
-========================================================================
-Received Import Request.
-  Time since last request: 0.000014 seconds.
-  path: Assets/Survival Tools/Textures/survivaltools2_Tape_AlbedoTransparency.png
-  artifactKey: Guid(0434b7731f6392a4da59d899413e0af5) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
-Start importing Assets/Survival Tools/Textures/survivaltools2_Tape_AlbedoTransparency.png using Guid(0434b7731f6392a4da59d899413e0af5) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: 'e396e57288487f6fdad41fc161a8a910') in 0.0171759 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 2
-
-========================================================================
-Received Import Request.
-  Time since last request: 0.000010 seconds.
-  path: Assets/Survival Tools/Textures/survivaltools2_Battery_Normal.png
-  artifactKey: Guid(7bd1e7b006fadcd41b8b491f495b90b7) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
-Start importing Assets/Survival Tools/Textures/survivaltools2_Battery_Normal.png using Guid(7bd1e7b006fadcd41b8b491f495b90b7) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: '3f1b416a1070c6a5584c8a1b66b40242') in 0.0190869 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 2
-
-========================================================================
-Received Import Request.
-  Time since last request: 0.000014 seconds.
-  path: Assets/Survival Tools/Textures/survivaltools2_CannedFood_Normal.png
-  artifactKey: Guid(9df22ffc0b0e5d34782c15a50998e69a) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
-Start importing Assets/Survival Tools/Textures/survivaltools2_CannedFood_Normal.png using Guid(9df22ffc0b0e5d34782c15a50998e69a) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: '43d18ecb4780c0d37feaa29cf554224d') in 0.0175844 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 2
-
-========================================================================
-Received Import Request.
-  Time since last request: 0.000012 seconds.
-  path: Assets/Survival Tools/Textures/survivaltools2_Water_MetallicSmoothness.png
-  artifactKey: Guid(1624b8b06ece0e74598b53e620f43c29) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
-Start importing Assets/Survival Tools/Textures/survivaltools2_Water_MetallicSmoothness.png using Guid(1624b8b06ece0e74598b53e620f43c29) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: '8f07b7b4ae610e137eac8e4ff0a7916d') in 0.0170971 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 2
-
-========================================================================
-Received Import Request.
-  Time since last request: 0.000013 seconds.
-  path: Assets/Survival Tools/Textures/survivaltools2_Flashlight_AlbedoTransparency.png
-  artifactKey: Guid(28a399bd217c46246b403726c54301c7) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
-Start importing Assets/Survival Tools/Textures/survivaltools2_Flashlight_AlbedoTransparency.png using Guid(28a399bd217c46246b403726c54301c7) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: '5b6a16a3cea01e7663fc64e13f9f8864') in 0.0261532 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 2
-
-========================================================================
-Received Import Request.
-  Time since last request: 0.000017 seconds.
-  path: Assets/Survival Tools/Textures/survivaltools2_Flashlight_Normal.png
-  artifactKey: Guid(07e685123e89d2849b8bbc1e59732c17) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
-Start importing Assets/Survival Tools/Textures/survivaltools2_Flashlight_Normal.png using Guid(07e685123e89d2849b8bbc1e59732c17) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: '9ca8de4c94ade9937a4ae7265c442b85') in 0.015652 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 2
-
-========================================================================
-Received Import Request.
-  Time since last request: 0.000014 seconds.
-  path: Assets/Survival Tools/Textures/survivaltools2_Walkie_AlbedoTransparency.png
-  artifactKey: Guid(8c2c23027f297d84d98c4eae5a41f3b2) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
-Start importing Assets/Survival Tools/Textures/survivaltools2_Walkie_AlbedoTransparency.png using Guid(8c2c23027f297d84d98c4eae5a41f3b2) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: 'ee1a9bf5807799e0e2437409334affa9') in 0.0163494 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 2
-
-========================================================================
-Received Import Request.
-  Time since last request: 0.000023 seconds.
-  path: Assets/Survival Tools/Textures/survivaltools2_Tape_Normal.png
-  artifactKey: Guid(6f9f582392dd78249bf14e5597172bc9) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
-Start importing Assets/Survival Tools/Textures/survivaltools2_Tape_Normal.png using Guid(6f9f582392dd78249bf14e5597172bc9) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: 'dab5632204a38877b5c9976907ed4a74') in 0.0161367 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 2
-
-========================================================================
-Received Import Request.
-  Time since last request: 0.000016 seconds.
-  path: Assets/Survival Tools/Textures/survivaltools2_MatchBox_Normal.png
-  artifactKey: Guid(d9dfe452942df4447bba22a0a25c7d81) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
-Start importing Assets/Survival Tools/Textures/survivaltools2_MatchBox_Normal.png using Guid(d9dfe452942df4447bba22a0a25c7d81) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: '187e6f1548fe356a1043d3c2a2dbbcd6') in 0.0129204 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 2
-
-========================================================================
-Received Import Request.
-  Time since last request: 0.000020 seconds.
-  path: Assets/Survival Tools/Textures/survivaltools2_FirstAidKit_Normal.png
-  artifactKey: Guid(9f65d2e3f58211746983a694824ae80f) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
-Start importing Assets/Survival Tools/Textures/survivaltools2_FirstAidKit_Normal.png using Guid(9f65d2e3f58211746983a694824ae80f) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: '51c0d76a43987dca93d78f02b950e048') in 0.0172345 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 2
-
-========================================================================
-Received Import Request.
-  Time since last request: 8.606659 seconds.
-  path: Assets/Scenes/cameratest.unity
-  artifactKey: Guid(9fc0d4010bbf28b4594072e72b8655ab) Importer(2089858483,192608db42251d675da83286b1cce702)
-Start importing Assets/Scenes/cameratest.unity using Guid(9fc0d4010bbf28b4594072e72b8655ab) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '3beed351bfd312da859d50903efd62d7') in 0.0520296 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
-
-========================================================================
-Received Import Request.
-  Time since last request: 0.000068 seconds.
-  path: Assets/Blink/Art/Animations/Combat/GetHit.fbx
-  artifactKey: Guid(f75e27afa8373234f85607c745d65beb) Importer(2089858483,192608db42251d675da83286b1cce702)
-Start importing Assets/Blink/Art/Animations/Combat/GetHit.fbx using Guid(f75e27afa8373234f85607c745d65beb) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'ef7bbb316b0c0826594844e227e8545d') in 0.072494 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 160
-
-========================================================================
-Received Import Request.
-  Time since last request: 0.000015 seconds.
-  path: Assets/Scripts/PlayerController.cs
-  artifactKey: Guid(c7872b330a13f6c488a3c35335e4870f) Importer(2089858483,192608db42251d675da83286b1cce702)
-Start importing Assets/Scripts/PlayerController.cs using Guid(c7872b330a13f6c488a3c35335e4870f) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '825c2149751ae03bdb3a70419f25b266') in 0.004637 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
-
-========================================================================
-Received Import Request.
-  Time since last request: 0.000118 seconds.
-  path: Assets/Blink/Art/Animations/Combat/CastingLoop.fbx
-  artifactKey: Guid(e487d3680e9eb444ab919d2f9855308f) Importer(2089858483,192608db42251d675da83286b1cce702)
-Start importing Assets/Blink/Art/Animations/Combat/CastingLoop.fbx using Guid(e487d3680e9eb444ab919d2f9855308f) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'e02ff10e78beccdea88eb9128be9aa0d') in 0.015639 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 160
-
-========================================================================
-Received Import Request.
-  Time since last request: 0.000018 seconds.
-  path: Assets/Blink/Art/Animations/Combat/Buff.fbx
-  artifactKey: Guid(8f0e32dcca81a4e4f87c78bfe2b97005) Importer(2089858483,192608db42251d675da83286b1cce702)
-Start importing Assets/Blink/Art/Animations/Combat/Buff.fbx using Guid(8f0e32dcca81a4e4f87c78bfe2b97005) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '2ce08d766feeb7c86f0a807f04b1e8e9') in 0.0175862 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 160
-
-========================================================================
-Received Import Request.
-  Time since last request: 0.000015 seconds.
-  path: Assets/Blink/Art/Animations/Combat/PunchLeft.fbx
-  artifactKey: Guid(39da7618d46a72544b70c24a5e430ecf) Importer(2089858483,192608db42251d675da83286b1cce702)
-Start importing Assets/Blink/Art/Animations/Combat/PunchLeft.fbx using Guid(39da7618d46a72544b70c24a5e430ecf) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '2109e9c12458e35e2e71dd65947faf76') in 0.013922 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 160
-
-========================================================================
-Received Import Request.
-  Time since last request: 0.000012 seconds.
-  path: Assets/Blink/Art/Animations/Combat/MeeleeAttack_OneHanded.fbx
-  artifactKey: Guid(b38fcdbf88f95f2468be0a4ae7aae7f8) Importer(2089858483,192608db42251d675da83286b1cce702)
-Start importing Assets/Blink/Art/Animations/Combat/MeeleeAttack_OneHanded.fbx using Guid(b38fcdbf88f95f2468be0a4ae7aae7f8) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '6adf2ea695122f71f38098b056053ff1') in 0.0145793 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 160
-
-========================================================================
-Received Import Request.
-  Time since last request: 0.309291 seconds.
-  path: Assets/Blink/Art/Animations/Combat/StunnedLoop.fbx
-  artifactKey: Guid(14ac9e875272fc34ab3fa7a3273a83ae) Importer(2089858483,192608db42251d675da83286b1cce702)
-Start importing Assets/Blink/Art/Animations/Combat/StunnedLoop.fbx using Guid(14ac9e875272fc34ab3fa7a3273a83ae) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'c2e13ce2b9a9f304669a5999c5d99820') in 0.0160008 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 160
-
-========================================================================
-Received Import Request.
-  Time since last request: 0.000011 seconds.
-  path: Assets/Blink/Art/Animations/Movement/StrafeLeft.fbx
-  artifactKey: Guid(7cf92d4881982f5488a4170ec7f8866d) Importer(2089858483,192608db42251d675da83286b1cce702)
-Start importing Assets/Blink/Art/Animations/Movement/StrafeLeft.fbx using Guid(7cf92d4881982f5488a4170ec7f8866d) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'dbc1d0cc455e746d49d62ff1f8c3467f') in 0.0157382 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 160
-
-========================================================================
-Received Import Request.
-  Time since last request: 0.000015 seconds.
-  path: Assets/Blink/Art/Animations/Movement/RunLeft.fbx
-  artifactKey: Guid(5c1542a47c9dbfc4fa74c5cbe385b4d1) Importer(2089858483,192608db42251d675da83286b1cce702)
-Start importing Assets/Blink/Art/Animations/Movement/RunLeft.fbx using Guid(5c1542a47c9dbfc4fa74c5cbe385b4d1) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '8e823ec8e67b8e79be26008734bd6597') in 0.017897 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 160
-
-========================================================================
-Received Import Request.
-  Time since last request: 0.000017 seconds.
-  path: Assets/Blink/Art/Animations/Movement/RollRight.fbx
-  artifactKey: Guid(6039ecfe1555ef843829d6a3df0418f1) Importer(2089858483,192608db42251d675da83286b1cce702)
-Start importing Assets/Blink/Art/Animations/Movement/RollRight.fbx using Guid(6039ecfe1555ef843829d6a3df0418f1) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '5d1e59ab367333ab1de64df3c1a8c99d') in 0.0155494 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 160
-
-========================================================================
-Received Import Request.
-  Time since last request: 0.000015 seconds.
-  path: Assets/Blink/Art/Animations/Movement/WalkForwardLeft.fbx
-  artifactKey: Guid(42e1f4636848ea643a491b1f4517bd93) Importer(2089858483,192608db42251d675da83286b1cce702)
-Start importing Assets/Blink/Art/Animations/Movement/WalkForwardLeft.fbx using Guid(42e1f4636848ea643a491b1f4517bd93) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '47a70e632a54960670126853fb10c713') in 0.0151294 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 160
-
-========================================================================
-Received Import Request.
-  Time since last request: 0.000090 seconds.
-  path: Assets/Blink/Art/Animations/Movement/RollBackward.fbx
-  artifactKey: Guid(bbe806054f2ac8943b83bcb37902197d) Importer(2089858483,192608db42251d675da83286b1cce702)
-Start importing Assets/Blink/Art/Animations/Movement/RollBackward.fbx using Guid(bbe806054f2ac8943b83bcb37902197d) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '47fce21c42005ea004066db455caeceb') in 0.0156607 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 160
-
-========================================================================
-Received Import Request.
-  Time since last request: 0.000015 seconds.
-  path: Assets/Blink/Art/Animations/Movement/RunRight.fbx
-  artifactKey: Guid(23a8707d3821acf42b4929bdc13c3200) Importer(2089858483,192608db42251d675da83286b1cce702)
-Start importing Assets/Blink/Art/Animations/Movement/RunRight.fbx using Guid(23a8707d3821acf42b4929bdc13c3200) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '1178b2efc4079a15deb24cc9d73274c9') in 0.0146979 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 160
-
-========================================================================
-Received Import Request.
-  Time since last request: 0.387424 seconds.
-  path: Assets/Blink/Art/Characters/Stylized/Demo_Characters/DEMO_FreeStylizedHumanMale/LightingData.asset
-  artifactKey: Guid(467bb27a48d7e004f848123e623ddea4) Importer(2089858483,192608db42251d675da83286b1cce702)
-Start importing Assets/Blink/Art/Characters/Stylized/Demo_Characters/DEMO_FreeStylizedHumanMale/LightingData.asset using Guid(467bb27a48d7e004f848123e623ddea4) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'b81d38e8735519442fd501068c4010bd') in 0.0089451 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 2
-
-========================================================================
-Received Import Request.
-  Time since last request: 0.000016 seconds.
-  path: Assets/Blink/Art/Characters/Stylized/Humans/Meshes_Humans/HumanMale_Character.fbx
-  artifactKey: Guid(2255221d850daf642981c1a4eedf85a1) Importer(2089858483,192608db42251d675da83286b1cce702)
-Start importing Assets/Blink/Art/Characters/Stylized/Humans/Meshes_Humans/HumanMale_Character.fbx using Guid(2255221d850daf642981c1a4eedf85a1) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '354696f4335d29f9e6ef25b39d8a579a') in 0.036374 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 205
-
-========================================================================
-Received Import Request.
-  Time since last request: 0.000019 seconds.
-  path: Assets/Blink/Art/Characters/Stylized/Humans/Meshes_Humans/StylizedHumanMale_Hair2.fbx
-  artifactKey: Guid(4ae144e9f7cc1024789fec711c9fe589) Importer(2089858483,192608db42251d675da83286b1cce702)
-Start importing Assets/Blink/Art/Characters/Stylized/Humans/Meshes_Humans/StylizedHumanMale_Hair2.fbx using Guid(4ae144e9f7cc1024789fec711c9fe589) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'efe73812b654073563d341bcf779f260') in 0.0099036 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 23
-
-========================================================================
-Received Import Request.
-  Time since last request: 0.000014 seconds.
-  path: Assets/Blink/Art/Characters/Stylized/Humans/Materials_Humans/Body.mat
-  artifactKey: Guid(a61b60ffb43586e40adaba8c9f15351a) Importer(2089858483,192608db42251d675da83286b1cce702)
-Start importing Assets/Blink/Art/Characters/Stylized/Humans/Materials_Humans/Body.mat using Guid(a61b60ffb43586e40adaba8c9f15351a) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'cfc28c602d7f6297607ead9fe9b0491a') in 0.0232608 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 5
-
-========================================================================
-Received Import Request.
-  Time since last request: 0.000020 seconds.
-  path: Assets/Blink/Art/Characters/Stylized/Humans/Materials_Humans/Eyebrows.mat
-  artifactKey: Guid(1b785a40cb9ab8e42bd50b5a2ba605ce) Importer(2089858483,192608db42251d675da83286b1cce702)
-Start importing Assets/Blink/Art/Characters/Stylized/Humans/Materials_Humans/Eyebrows.mat using Guid(1b785a40cb9ab8e42bd50b5a2ba605ce) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '396d68c1e8d1c5a4a64cba0049128099') in 0.0074487 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 5
-
-========================================================================
-Received Import Request.
-  Time since last request: 0.000028 seconds.
-  path: Assets/Blink/Art/Characters/Stylized/Humans/Materials_Humans/Beard3.mat
-  artifactKey: Guid(8a2e206b5d152dd4baa9ca8f0aab825c) Importer(2089858483,192608db42251d675da83286b1cce702)
-Start importing Assets/Blink/Art/Characters/Stylized/Humans/Materials_Humans/Beard3.mat using Guid(8a2e206b5d152dd4baa9ca8f0aab825c) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'f93dcd0957fef1c7943b9e66f51730f8') in 0.0068524 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 5
-
-========================================================================
-Received Import Request.
-  Time since last request: 0.000013 seconds.
-  path: Assets/Blink/Art/Characters/Stylized/Humans/Textures_Humans/HM_Accessories_T_BaseColor2.png
-  artifactKey: Guid(5c09e7f80a68ab24fa9f147e7ef1aaeb) Importer(2089858483,192608db42251d675da83286b1cce702)
-Start importing Assets/Blink/Art/Characters/Stylized/Humans/Textures_Humans/HM_Accessories_T_BaseColor2.png using Guid(5c09e7f80a68ab24fa9f147e7ef1aaeb) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '526ca5671f1638490a2f82d617c0917b') in 0.0338811 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
-
-========================================================================
-Received Import Request.
-  Time since last request: 0.000062 seconds.
-  path: Assets/Blink/Art/Characters/Stylized/Humans/Materials_Humans/Hair1.mat
-  artifactKey: Guid(9cf0ecea53738bf4c9b9b7f4d3c740a7) Importer(2089858483,192608db42251d675da83286b1cce702)
-Start importing Assets/Blink/Art/Characters/Stylized/Humans/Materials_Humans/Hair1.mat using Guid(9cf0ecea53738bf4c9b9b7f4d3c740a7) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '618519a8de262468acb6dfbd0238344a') in 0.0067235 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 5
-
-========================================================================
-Received Import Request.
-  Time since last request: 0.363142 seconds.
-  path: Assets/Blink/Art/Characters/Stylized/Humans/Textures_Humans/HM_Beard_1_Normal.png
-  artifactKey: Guid(16933b4cbd0505b43bc21ccdf8db38f5) Importer(2089858483,192608db42251d675da83286b1cce702)
-Start importing Assets/Blink/Art/Characters/Stylized/Humans/Textures_Humans/HM_Beard_1_Normal.png using Guid(16933b4cbd0505b43bc21ccdf8db38f5) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '982adc9f28bdb5ff4ff6b81197c09585') in 0.0088473 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
-
-========================================================================
-Received Import Request.
-  Time since last request: 0.000052 seconds.
-  path: Assets/Blink/Art/Characters/Stylized/Humans/Textures_Humans/HM_Body_AO.png
-  artifactKey: Guid(d3c3123dba89806428667d5a559ff7e3) Importer(2089858483,192608db42251d675da83286b1cce702)
-Start importing Assets/Blink/Art/Characters/Stylized/Humans/Textures_Humans/HM_Body_AO.png using Guid(d3c3123dba89806428667d5a559ff7e3) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '8a62e7a6000749132ef2cc97b778b17c') in 0.0086798 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
-
-========================================================================
-Received Import Request.
-  Time since last request: 0.000022 seconds.
-  path: Assets/Blink/Art/Characters/Stylized/Humans/Textures_Humans/HM_Eyes_Normal.png
-  artifactKey: Guid(385ad83120284f141ab6bc1d7faee193) Importer(2089858483,192608db42251d675da83286b1cce702)
-Start importing Assets/Blink/Art/Characters/Stylized/Humans/Textures_Humans/HM_Eyes_Normal.png using Guid(385ad83120284f141ab6bc1d7faee193) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '2f8a16bd78bc353110c2c299aef86208') in 0.0088718 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
-
-========================================================================
-Received Import Request.
-  Time since last request: 0.000079 seconds.
-  path: Assets/Blink/Art/Characters/Stylized/Humans/Textures_Humans/HM_Body_BaseColor.png
-  artifactKey: Guid(e9afd4073d6bf2041bb6db2850dcee83) Importer(2089858483,192608db42251d675da83286b1cce702)
-Start importing Assets/Blink/Art/Characters/Stylized/Humans/Textures_Humans/HM_Body_BaseColor.png using Guid(e9afd4073d6bf2041bb6db2850dcee83) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '602d00b7ce40b0726ed5607d062fd611') in 0.0096951 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
-
-========================================================================
-Received Import Request.
-  Time since last request: 0.000027 seconds.
-  path: Assets/Blink/Art/Characters/Stylized/Humans/Textures_Humans/HM_Eyebrows_Roughness.png
-  artifactKey: Guid(b50fddec426788b438cd76c2567394a9) Importer(2089858483,192608db42251d675da83286b1cce702)
-Start importing Assets/Blink/Art/Characters/Stylized/Humans/Textures_Humans/HM_Eyebrows_Roughness.png using Guid(b50fddec426788b438cd76c2567394a9) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'd84b8752e11b0117bf364d00283c3352') in 0.013005 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
-
-========================================================================
-Received Import Request.
-  Time since last request: 0.000029 seconds.
-  path: Assets/Blink/Art/Characters/Stylized/Humans/Textures_Humans/HM_Eyebrows_Normal.png
-  artifactKey: Guid(6c9a630e98e5d534f84a7a4fc8613fd1) Importer(2089858483,192608db42251d675da83286b1cce702)
-Start importing Assets/Blink/Art/Characters/Stylized/Humans/Textures_Humans/HM_Eyebrows_Normal.png using Guid(6c9a630e98e5d534f84a7a4fc8613fd1) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '8e34206298cc69e67be73ad2f04f740e') in 0.0078549 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
-
-========================================================================
-Received Import Request.
-  Time since last request: 0.000128 seconds.
-  path: Assets/Blink/Art/Characters/Stylized/Humans/Textures_Humans/HM_Body_Roughness.png
-  artifactKey: Guid(82d06498fc0688c4e96b3abe23120b54) Importer(2089858483,192608db42251d675da83286b1cce702)
-Start importing Assets/Blink/Art/Characters/Stylized/Humans/Textures_Humans/HM_Body_Roughness.png using Guid(82d06498fc0688c4e96b3abe23120b54) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '0eb9bc9076ff2412eeaffceafdebc04a') in 0.0129642 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
-
-========================================================================
-Received Import Request.
-  Time since last request: 0.429714 seconds.
-  path: Assets/Blink/Art/Characters/Stylized/Humans/Textures_Humans/HM_Hair_1_Normal.png
-  artifactKey: Guid(b5b8b0556071abf46886ebf5c8a1d67a) Importer(2089858483,192608db42251d675da83286b1cce702)
-Start importing Assets/Blink/Art/Characters/Stylized/Humans/Textures_Humans/HM_Hair_1_Normal.png using Guid(b5b8b0556071abf46886ebf5c8a1d67a) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '2b741049cf9f51cb1539670b417cdf90') in 0.0080672 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
-
-========================================================================
-Received Import Request.
-  Time since last request: 0.000012 seconds.
-  path: Assets/Blink/Art/Characters/Stylized/Humans/Armors_Humans/Materials_ArmorsHumans/StarterArmor_1.mat
-  artifactKey: Guid(bd95d05da092ee546bb149f526e4d054) Importer(2089858483,192608db42251d675da83286b1cce702)
-Start importing Assets/Blink/Art/Characters/Stylized/Humans/Armors_Humans/Materials_ArmorsHumans/StarterArmor_1.mat using Guid(bd95d05da092ee546bb149f526e4d054) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '9bbb31255e16ae38ceafc0f4f5bc7b8a') in 0.0179238 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 5
-
-========================================================================
-Received Import Request.
-  Time since last request: 0.000014 seconds.
-  path: Assets/Blink/Art/Characters/Stylized/Humans/Textures_Humans/HM_Hair_2_Roughness.png
-  artifactKey: Guid(db4c55cf1979eff418b360a46fc69ea2) Importer(2089858483,192608db42251d675da83286b1cce702)
-Start importing Assets/Blink/Art/Characters/Stylized/Humans/Textures_Humans/HM_Hair_2_Roughness.png using Guid(db4c55cf1979eff418b360a46fc69ea2) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '88bd5ceaa6cc88e05b070652b3b5bc9e') in 0.0162897 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
-
-========================================================================
-Received Import Request.
-  Time since last request: 0.000218 seconds.
-  path: Assets/Blink/Art/Characters/Stylized/Humans/Armors_Humans/Textures_ArmorsHumans/StarterArmor_Metallic.png
-  artifactKey: Guid(db908c9fe4a953e48b2012ab87881eb4) Importer(2089858483,192608db42251d675da83286b1cce702)
-Start importing Assets/Blink/Art/Characters/Stylized/Humans/Armors_Humans/Textures_ArmorsHumans/StarterArmor_Metallic.png using Guid(db908c9fe4a953e48b2012ab87881eb4) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '73d24b881ee2ae9468f9997e28f118d5') in 0.0159323 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
-
-========================================================================
-Received Import Request.
-  Time since last request: 0.000048 seconds.
-  path: Assets/Blink/Art/Characters/Stylized/Humans/Armors_Humans/Materials_ArmorsHumans/StarterArmor_2.mat
-  artifactKey: Guid(eb672304fc7494d498965b8f2b242de6) Importer(2089858483,192608db42251d675da83286b1cce702)
-Start importing Assets/Blink/Art/Characters/Stylized/Humans/Armors_Humans/Materials_ArmorsHumans/StarterArmor_2.mat using Guid(eb672304fc7494d498965b8f2b242de6) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'cbc278ed143ae98d5f6041b93aa3672e') in 0.0123272 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 5
-
-========================================================================
-Received Import Request.
-  Time since last request: 154.997028 seconds.
-  path: Assets/Sci Fi Gun Light/Textures/ColorVar
-  artifactKey: Guid(fb60a2b18948f9f49bc49d74160e7bee) Importer(2089858483,192608db42251d675da83286b1cce702)
-Start importing Assets/Sci Fi Gun Light/Textures/ColorVar using Guid(fb60a2b18948f9f49bc49d74160e7bee) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '0400793b48b46f45716d3dae5388c984') in 0.0042465 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
-
-========================================================================
-Received Import Request.
-  Time since last request: 0.000046 seconds.
-  path: Assets/Sci Fi Gun Light/Textures/ColorVar/Blue
-  artifactKey: Guid(8b184ddc0f1f98a43b5919988ab319c4) Importer(2089858483,192608db42251d675da83286b1cce702)
-Start importing Assets/Sci Fi Gun Light/Textures/ColorVar/Blue using Guid(8b184ddc0f1f98a43b5919988ab319c4) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '65ee25c0d34fe7122242c904fa4ce740') in 0.0020402 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
-
-========================================================================
-Received Import Request.
-  Time since last request: 0.000085 seconds.
-  path: Assets/Sci Fi Gun Light/Prefabs/SciFiGunLight/SciFiGunLight_Blue.prefab
-  artifactKey: Guid(371711cf542f6d84bafd6596c502935b) Importer(2089858483,192608db42251d675da83286b1cce702)
-Start importing Assets/Sci Fi Gun Light/Prefabs/SciFiGunLight/SciFiGunLight_Blue.prefab using Guid(371711cf542f6d84bafd6596c502935b) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '1f57c5afd235df137cdeb1f0fb1ec050') in 0.0163066 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 8
-
-========================================================================
-Received Import Request.
-  Time since last request: 0.000015 seconds.
-  path: Assets/Sci Fi Gun Light/Textures/ColorVar/Rad/SciFiGunLight_AlbedoTransparency.png
-  artifactKey: Guid(96c535fa8847b2843a9c401fe65830fa) Importer(2089858483,192608db42251d675da83286b1cce702)
-Start importing Assets/Sci Fi Gun Light/Textures/ColorVar/Rad/SciFiGunLight_AlbedoTransparency.png using Guid(96c535fa8847b2843a9c401fe65830fa) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '16a639847c4d9d496ab1e7f91ba223e9') in 0.0117458 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
-
-========================================================================
-Received Import Request.
-  Time since last request: 0.000047 seconds.
-  path: Assets/Sci Fi Gun Light/Materials/SciFiGunLight/SciFiGunLight_White.mat
-  artifactKey: Guid(f59d38d7fdabd3048a6eec44cfa5365f) Importer(2089858483,192608db42251d675da83286b1cce702)
-Start importing Assets/Sci Fi Gun Light/Materials/SciFiGunLight/SciFiGunLight_White.mat using Guid(f59d38d7fdabd3048a6eec44cfa5365f) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'aab62cda68867d56391cf8f8c9bd4b32') in 0.0356517 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 5
-
-========================================================================
-Received Import Request.
-  Time since last request: 0.000019 seconds.
-  path: Assets/Sci Fi Gun Light/Textures/ColorVar/Black/SciFiGunLight_SpecularSmoothness.png
-  artifactKey: Guid(76c37d6e53904d04cb88024352ca5de1) Importer(2089858483,192608db42251d675da83286b1cce702)
-Start importing Assets/Sci Fi Gun Light/Textures/ColorVar/Black/SciFiGunLight_SpecularSmoothness.png using Guid(76c37d6e53904d04cb88024352ca5de1) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'ed9245fbf45d1ab03c402d346248e803') in 0.0101047 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
-
-========================================================================
-Received Import Request.
-  Time since last request: 0.000076 seconds.
-  path: Assets/Sci Fi Gun Light/Textures/ColorVar/White/SciFiGunLight_SpecularSmoothness.png
-  artifactKey: Guid(18d6381b8c60f1e4face1868a1751af3) Importer(2089858483,192608db42251d675da83286b1cce702)
-Start importing Assets/Sci Fi Gun Light/Textures/ColorVar/White/SciFiGunLight_SpecularSmoothness.png using Guid(18d6381b8c60f1e4face1868a1751af3) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '3df0b172f45a21debaf28bd8940814f6') in 0.009185 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
-
-========================================================================
-Received Import Request.
-  Time since last request: 0.000040 seconds.
-  path: Assets/Sci Fi Gun Light/Textures/ColorVar/Yellow/v_AlbedoTransparency.png
-  artifactKey: Guid(88684fcb868b0cb4e86f8a405dcbd44e) Importer(2089858483,192608db42251d675da83286b1cce702)
-Start importing Assets/Sci Fi Gun Light/Textures/ColorVar/Yellow/v_AlbedoTransparency.png using Guid(88684fcb868b0cb4e86f8a405dcbd44e) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'bd37d5b98ac7e35dd4ccbb16a629a403') in 0.0126256 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
-
-========================================================================
-Received Import Request.
-  Time since last request: 0.000074 seconds.
-  path: Assets/Sci Fi Gun Light/Textures
-  artifactKey: Guid(bdcc5e75277bf8c4aa5ced51627cfa85) Importer(2089858483,192608db42251d675da83286b1cce702)
-Start importing Assets/Sci Fi Gun Light/Textures using Guid(bdcc5e75277bf8c4aa5ced51627cfa85) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'c25fc8d3468e5b1d8bb46a1c7ab6d641') in 0.0033823 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
-
-========================================================================
-Received Import Request.
-  Time since last request: 0.000016 seconds.
-  path: Assets/Sci Fi Gun Light
-  artifactKey: Guid(7f2552ce5c0102c4797360cc4f760e74) Importer(2089858483,192608db42251d675da83286b1cce702)
-Start importing Assets/Sci Fi Gun Light using Guid(7f2552ce5c0102c4797360cc4f760e74) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '471042d9558554341d3ef0ec70f630ce') in 0.0028234 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
-
-========================================================================
-Received Import Request.
-  Time since last request: 0.000046 seconds.
-  path: Assets/Sci Fi Gun Light/Scenes
-  artifactKey: Guid(be247ee8a7532484ba356f8bf405901c) Importer(2089858483,192608db42251d675da83286b1cce702)
-Start importing Assets/Sci Fi Gun Light/Scenes using Guid(be247ee8a7532484ba356f8bf405901c) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'e1aba6b282db13f9942cb03dff27f053') in 0.0025276 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
-
-========================================================================
-Received Import Request.
-  Time since last request: 0.000108 seconds.
-  path: Assets/Sci Fi Gun Light/Models
-  artifactKey: Guid(33f9dadd88dcf4745a5f22e0c5b26f46) Importer(2089858483,192608db42251d675da83286b1cce702)
-Start importing Assets/Sci Fi Gun Light/Models using Guid(33f9dadd88dcf4745a5f22e0c5b26f46) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'fa847bd018a8faafbe86043ecbce42a3') in 0.0031101 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
-
-========================================================================
-Received Import Request.
-  Time since last request: 0.000069 seconds.
-  path: Assets/Sci Fi Gun Light/Textures/ColorVar/Yellow/SciFiGunLight_SpecularSmoothness.png
-  artifactKey: Guid(0b8ce592b1bd0494da54b661f841ae71) Importer(2089858483,192608db42251d675da83286b1cce702)
-Start importing Assets/Sci Fi Gun Light/Textures/ColorVar/Yellow/SciFiGunLight_SpecularSmoothness.png using Guid(0b8ce592b1bd0494da54b661f841ae71) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '617b71e05fec5c1558781e0653739b74') in 0.0104283 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
-
-========================================================================
-Received Import Request.
-  Time since last request: 0.000075 seconds.
-  path: Assets/Sci Fi Gun Light/Materials
-  artifactKey: Guid(a284953c5d79bdf4c8b4ee52f2cef5ae) Importer(2089858483,192608db42251d675da83286b1cce702)
-Start importing Assets/Sci Fi Gun Light/Materials using Guid(a284953c5d79bdf4c8b4ee52f2cef5ae) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '2adf92191f0880539a9538838ed23940') in 0.0020162 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
-
-========================================================================
-Received Import Request.
-  Time since last request: 0.000068 seconds.
-  path: Assets/Sci Fi Gun Light/Textures/ColorVar/SciFiGunLight_Emission2.png
-  artifactKey: Guid(64860141afa10c84780f3416e43c23e4) Importer(2089858483,192608db42251d675da83286b1cce702)
-Start importing Assets/Sci Fi Gun Light/Textures/ColorVar/SciFiGunLight_Emission2.png using Guid(64860141afa10c84780f3416e43c23e4) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '2ea102b9bf4b67f24310e89254ad81c2') in 0.0095985 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
-
-========================================================================
-Received Import Request.
-  Time since last request: 0.000092 seconds.
-  path: Assets/Sci Fi Gun Light/Prefabs/SciFiGunLight/SciFiGunLight_Yellow.prefab
-  artifactKey: Guid(caf80fbf99570df45a028c3a3c6ff238) Importer(2089858483,192608db42251d675da83286b1cce702)
-Start importing Assets/Sci Fi Gun Light/Prefabs/SciFiGunLight/SciFiGunLight_Yellow.prefab using Guid(caf80fbf99570df45a028c3a3c6ff238) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '9457856f8207291ed9caf6267f801932') in 0.006094 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 8
-
-========================================================================
-Received Import Request.
-  Time since last request: 0.000014 seconds.
-  path: Assets/Sci Fi Gun Light/Materials/CubeMap.exr
-  artifactKey: Guid(bc5d7914c594d274b9bb50cb9f34081d) Importer(2089858483,192608db42251d675da83286b1cce702)
-Start importing Assets/Sci Fi Gun Light/Materials/CubeMap.exr using Guid(bc5d7914c594d274b9bb50cb9f34081d) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'a614a9a770233e5ee98b726a5066c583') in 0.0676617 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
-
-========================================================================
-Received Import Request.
-  Time since last request: 0.000060 seconds.
-  path: Assets/Sci Fi Gun Light/Models/SciFiGunLight.FBX
-  artifactKey: Guid(584761fab006d6d42b4d0d8c56a51241) Importer(2089858483,192608db42251d675da83286b1cce702)
-Start importing Assets/Sci Fi Gun Light/Models/SciFiGunLight.FBX using Guid(584761fab006d6d42b4d0d8c56a51241) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'e9ccdafff5e0f6a649b68006051616ad') in 0.0074225 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 7
-
-========================================================================
-Received Import Request.
-  Time since last request: 0.000015 seconds.
-  path: Assets/Sci Fi Gun Light/Textures/ColorVar/SciFiGunLight_Emission1.png
-  artifactKey: Guid(b199bdf781c163b469823a86f9204ac9) Importer(2089858483,192608db42251d675da83286b1cce702)
-Start importing Assets/Sci Fi Gun Light/Textures/ColorVar/SciFiGunLight_Emission1.png using Guid(b199bdf781c163b469823a86f9204ac9) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'd5ecde897cf5a42480817301f69f82ce') in 0.0093054 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
-
-========================================================================
-Received Prepare
-Begin MonoManager ReloadAssembly
-[Licensing::Client] Successfully resolved entitlement details
-- Loaded All Assemblies, in  0.346 seconds
-Script 'Camera' has the same name as built-in Unity component.
-AddComponent and GetComponent will not work with this script.
-Refreshing native plugins compatible for Editor in 0.21 ms, found 2 plugins.
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Assertion failed on expression: 'pred(*previous, *i)'
-Native extension for WindowsStandalone target not found
-Native extension for WebGL target not found
-[Package Manager] Failed to launch server process. Reason: Unity was launched with the -noUpm command-line argument
-[Package Manager] Unable to send message (not connected to server process).
-[Package Manager] Cannot connect to Unity Package Manager local server
-Mono: successfully reloaded assembly
-- Finished resetting the current domain, in  0.422 seconds
-Domain Reload Profiling: 769ms
-	BeginReloadAssembly (147ms)
-		ExecutionOrderSort (0ms)
-		DisableScriptedObjects (5ms)
-		BackupInstance (0ms)
-		ReleaseScriptingObjects (0ms)
-		CreateAndSetChildDomain (31ms)
-	RebuildCommonClasses (26ms)
-	RebuildNativeTypeToScriptingClass (8ms)
-	initialDomainReloadingComplete (16ms)
-	LoadAllAssembliesAndSetupDomain (149ms)
-		LoadAssemblies (173ms)
-		RebuildTransferFunctionScriptingTraits (0ms)
-		AnalyzeDomain (49ms)
-			TypeCache.Refresh (4ms)
-				TypeCache.ScanAssembly (0ms)
-			BuildScriptInfoCaches (41ms)
-			ResolveRequiredComponents (1ms)
-	FinalizeReload (423ms)
-		ReleaseScriptCaches (0ms)
-		RebuildScriptCaches (0ms)
-		SetupLoadedEditorAssemblies (324ms)
-			LogAssemblyErrors (0ms)
-			InitializePlatformSupportModulesInManaged (2ms)
-			SetLoadedEditorAssemblies (4ms)
-			BeforeProcessingInitializeOnLoad (81ms)
-			ProcessInitializeOnLoadAttributes (216ms)
-			ProcessInitializeOnLoadMethodAttributes (18ms)
+			BeforeProcessingInitializeOnLoad (61ms)
+			ProcessInitializeOnLoadAttributes (209ms)
+			ProcessInitializeOnLoadMethodAttributes (23ms)
 			AfterProcessingInitializeOnLoad (2ms)
 			EditorAssembliesLoaded (0ms)
 		ExecutionOrderSort2 (0ms)
 		AwakeInstancesAfterBackupRestoration (5ms)
-Refreshing native plugins compatible for Editor in 0.22 ms, found 2 plugins.
+Launched and connected shader compiler UnityShaderCompiler.exe after 0.02 seconds
+Refreshing native plugins compatible for Editor in 0.48 ms, found 2 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
 Unloading 0 Unused Serialized files (Serialized files now loaded: 0)
-Unloading 1789 unused Assets / (454.3 KB). Loaded Objects now: 2325.
-Memory consumption went from 74.0 MB to 73.6 MB.
-Total: 3.113400 ms (FindLiveObjects: 0.122300 ms CreateObjectMapping: 0.056000 ms MarkObjects: 2.591400 ms  DeleteObjects: 0.317100 ms)
+Unloading 1834 unused Assets / (0.6 MB). Loaded Objects now: 2356.
+Memory consumption went from 78.3 MB to 77.8 MB.
+Total: 3.761000 ms (FindLiveObjects: 0.186900 ms CreateObjectMapping: 0.079700 ms MarkObjects: 2.908100 ms  DeleteObjects: 0.585300 ms)
 
-Prepare: number of updated asset objects reloaded= 0
-Editor requested this worker to shutdown with reason: Scaling down because of idle timeout
-AssetImportWorker is now disconnected from the server
-Process exiting
-Exiting without the bug reporter. Application will terminate with return code 0
+========================================================================
+Received Import Request.
+  Time since last request: 37692.134653 seconds.
+  path: Assets/Prefabs/InventoryUI.prefab
+  artifactKey: Guid(6aa64ff9f7ddaaf4fa20c025637ef2d4) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/Prefabs/InventoryUI.prefab using Guid(6aa64ff9f7ddaaf4fa20c025637ef2d4) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: 'ab6e39193fd557c86d6791c114c37c40') in 0.0754689 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 102
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.782077 seconds.
+  path: Assets/Prefabs/Gun_ALL.prefab
+  artifactKey: Guid(51786c324f2c6d2408d256df130ae200) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/Prefabs/Gun_ALL.prefab using Guid(51786c324f2c6d2408d256df130ae200) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: 'fe469f0f7d32fc642c369e0ca819a9ce') in 0.1026862 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 338
+
+========================================================================
+Received Import Request.
+  Time since last request: 27.667815 seconds.
+  path: Assets/Prefabs/HumanMale_Character_Free Variant.prefab
+  artifactKey: Guid(cd046dfe634b6d8408cdf97ca4066f07) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/Prefabs/HumanMale_Character_Free Variant.prefab using Guid(cd046dfe634b6d8408cdf97ca4066f07) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: '2ff7b22fc0f3ce444d6f473bdcf61c67') in 0.4332439 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 766
+
