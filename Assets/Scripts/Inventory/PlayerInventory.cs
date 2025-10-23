@@ -1,34 +1,30 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 public class PlayerInventory : MonoBehaviour
 {
-    public InventoryData inventoryData; // Ссылка на ScriptableObject инвентаря
-    public InventoryUI inventoryUI; // Ссылка на UI инвентаря
-    public Transform dropPoint; // Точка спавна предметов
-    public int activeItemIndex = -1; // Индекс активного предмета (-1 значит ничего не выбрано)
+    public InventoryData inventoryData;
+    public InventoryUI inventoryUI;
+    public int activeItemIndex = -1;
 
     [System.Serializable]
     public struct ItemPrefabMapping
     {
-        public InventoryItem item; // ScriptableObject предмета
-        public GameObject prefab; // Префаб для предмета в мире
+        public InventoryItem item;
+        public GameObject prefab;
     }
-    public ItemPrefabMapping[] itemPrefabs; // Массив соответствий предметов и их префабов
+    public ItemPrefabMapping[] itemPrefabs;
+
+    private Chest nearbyChest;
+    private List<Chest> nearbyChests = new List<Chest>();
 
     private void Start()
     {
         if (inventoryData == null) Debug.LogError("[PlayerInventory] InventoryData не назначен!");
         if (inventoryUI == null) Debug.LogError("[PlayerInventory] InventoryUI не назначен!");
-        if (dropPoint == null) Debug.LogError("[PlayerInventory] DropPoint не назначен!");
+        
         if (itemPrefabs == null || itemPrefabs.Length == 0)
             Debug.LogError("[PlayerInventory] Массив itemPrefabs пуст!");
-        else
-        {
-            foreach (var mapping in itemPrefabs)
-            {
-                Debug.Log($"[PlayerInventory] Item: {mapping.item?.itemName}, Prefab: {mapping.prefab?.name}");
-            }
-        }
     }
 
     private void Update()
@@ -37,6 +33,79 @@ public class PlayerInventory : MonoBehaviour
         {
             inventoryUI.ToggleInventory();
         }
+        
+        if (IsNearChest() && Input.GetKeyDown(KeyCode.E) && !inventoryUI.IsChestUIOpen())
+        {
+            OpenChest();
+        }
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        Chest chest = other.GetComponent<Chest>();
+        if (chest != null && !nearbyChests.Contains(chest))
+        {
+            nearbyChests.Add(chest);
+            UpdateNearbyChest();
+            Debug.Log($"[PlayerInventory] Игрок рядом с сундуком {chest.gameObject.name}");
+        }
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        Chest chest = other.GetComponent<Chest>();
+        if (chest != null)
+        {
+            nearbyChests.Remove(chest);
+            UpdateNearbyChest();
+            Debug.Log($"[PlayerInventory] Игрок покинул сундук {chest.gameObject.name}");
+        }
+    }
+
+    private void UpdateNearbyChest()
+    {
+        // Удаляем уничтоженные сундуки из списка
+        nearbyChests.RemoveAll(chest => chest == null);
+
+        if (nearbyChests.Count > 0)
+        {
+            float minDistance = float.MaxValue;
+            Chest closestChest = null;
+            
+            foreach (Chest chest in nearbyChests)
+            {
+                if (chest == null) continue;
+                
+                float distance = Vector3.Distance(transform.position, chest.transform.position);
+                if (distance < minDistance)
+                {
+                    minDistance = distance;
+                    closestChest = chest;
+                }
+            }
+            
+            nearbyChest = closestChest;
+        }
+        else
+        {
+            nearbyChest = null;
+        }
+    }
+
+    // Новый метод для очистки ссылок на сундук
+    public void ClearChestReference(Chest chest)
+    {
+        if (nearbyChests.Contains(chest))
+        {
+            nearbyChests.Remove(chest);
+        }
+        
+        if (nearbyChest == chest)
+        {
+            nearbyChest = null;
+        }
+        
+        UpdateNearbyChest();
     }
 
     public bool AddItemToInventory(InventoryItem item)
@@ -48,66 +117,49 @@ public class PlayerInventory : MonoBehaviour
         {
             Debug.Log($"[PlayerInventory] Предмет {item.itemName} добавлен.");
             inventoryUI.UpdateInventoryUI();
-            AutoSelectActiveItem(); // Обновляем активный после добавления
+            AutoSelectActiveItem();
             return true;
         }
         return false;
     }
 
-    public void DropItem(InventoryItem item, int slotIndex)
+    public void StoreItemInChest(InventoryItem item, int slotIndex)
     {
         if (item == null || item.type == InventoryItem.ItemType.Empty) return;
 
-        // Находим префаб для предмета
-        GameObject prefabToSpawn = null;
-        foreach (var mapping in itemPrefabs)
+        if (nearbyChest != null)
         {
-            if (mapping.item == item)
+            bool addedToChest = nearbyChest.AddItemToChest(item);
+            if (addedToChest)
             {
-                prefabToSpawn = mapping.prefab;
-                break;
+                Debug.Log($"[PlayerInventory] Предмет {item.itemName} перемещен в сундук.");
+                
+                inventoryData.RemoveItem(item);
+                if (activeItemIndex == slotIndex) activeItemIndex = -1;
+                AutoSelectActiveItem();
+                inventoryUI.UpdateInventoryUI();
+            }
+            else
+            {
+                Debug.Log($"[PlayerInventory] Не удалось положить предмет в сундук - сундук полон.");
             }
         }
+    }
 
-        if (prefabToSpawn == null)
-        {
-            Debug.LogError($"[PlayerInventory] Не найден префаб для предмета {item.itemName}!");
-            return;
-        }
+    public void DestroyItem(InventoryItem item, int slotIndex)
+    {
+        if (item == null || item.type == InventoryItem.ItemType.Empty) return;
 
-        // Спавним предмет в мире
-        Vector3 spawnPosition = dropPoint.position + dropPoint.forward * 1f;
-        GameObject spawnedItem = Instantiate(prefabToSpawn, spawnPosition, Quaternion.identity);
-        ItemPickup itemPickup = spawnedItem.GetComponent<ItemPickup>();
-        if (itemPickup != null)
-        {
-            itemPickup.item = item; // Назначаем тот же InventoryItem
-        }
-        else
-        {
-            Debug.LogError($"[PlayerInventory] Сброшенный объект {spawnedItem.name} не имеет компонента ItemPickup!");
-        }
-
-        // Добавляем Rigidbody для физического падения (если отсутствует)
-        Rigidbody rb = spawnedItem.GetComponent<Rigidbody>();
-        if (rb == null)
-        {
-            rb = spawnedItem.AddComponent<Rigidbody>();
-            rb.useGravity = true;
-        }
-
-        // Удаляем предмет из инвентаря
+        Debug.Log($"[PlayerInventory] Предмет {item.itemName} уничтожен.");
         inventoryData.RemoveItem(item);
-        Debug.Log($"[PlayerInventory] Предмет {item.itemName} сброшен из слота {slotIndex}.");
-        if (activeItemIndex == slotIndex) activeItemIndex = -1; // Сбрасываем активный, если дропнули его
-        AutoSelectActiveItem(); // Обновляем активный после дропа
+        if (activeItemIndex == slotIndex) activeItemIndex = -1;
+        AutoSelectActiveItem();
         inventoryUI.UpdateInventoryUI();
     }
 
-    // Автоматический выбор активного предмета (первого оружия или пистолета, если ничего не выбрано)
     public void AutoSelectActiveItem()
     {
-        if (activeItemIndex != -1) return; // Если уже выбран, не меняем
+        if (activeItemIndex != -1) return;
 
         var slots = inventoryData.GetSlots();
         for (int i = 0; i < slots.Count; i++)
@@ -119,30 +171,51 @@ public class PlayerInventory : MonoBehaviour
                 break;
             }
         }
-        inventoryUI.UpdateInventoryUI(); // Обновляем UI после выбора
+        inventoryUI.UpdateInventoryUI();
     }
 
-    // Переключение активного предмета (direction: 1 вправо, -1 влево)
     public void SwitchActiveItem(int direction)
     {
         var slots = inventoryData.GetSlots();
-        int itemCount = slots.Count; // Количество слотов (до maxSlots)
+        int itemCount = slots.Count;
 
-        if (itemCount == 0) return; // Нет предметов
+        if (itemCount == 0) return;
 
-        // Циклическое переключение среди оружия (Gun или Pistol)
         int newIndex = activeItemIndex;
-        int attempts = itemCount; // Ограничиваем попытки, чтобы избежать бесконечного цикла
+        int attempts = itemCount;
         do
         {
             newIndex = (newIndex + direction + itemCount) % itemCount;
             attempts--;
-            if (attempts <= 0) return; // Выходим, если не нашли подходящий предмет
+            if (attempts <= 0) return;
         } while (slots[newIndex] == null || slots[newIndex].type == InventoryItem.ItemType.Empty || 
-                 (slots[newIndex].type != InventoryItem.ItemType.Gun && slots[newIndex].type != InventoryItem.ItemType.Pistol)); // Пропускаем неподходящие предметы
+                 (slots[newIndex].type != InventoryItem.ItemType.Gun && slots[newIndex].type != InventoryItem.ItemType.Pistol));
 
         activeItemIndex = newIndex;
         Debug.Log($"[PlayerInventory] Переключено на: {slots[newIndex].itemName} (индекс {newIndex}, тип {slots[newIndex].type})");
         inventoryUI.UpdateInventoryUI();
+    }
+
+    public bool IsNearChest()
+    {
+        return nearbyChest != null;
+    }
+
+    public Chest GetNearbyChest()
+    {
+        return nearbyChest;
+    }
+
+    public void OpenChest()
+    {
+        if (nearbyChest != null)
+        {
+            inventoryUI.OpenChestUI(nearbyChest);
+        }
+    }
+
+    public void CloseChest()
+    {
+        inventoryUI.CloseChestUI();
     }
 }

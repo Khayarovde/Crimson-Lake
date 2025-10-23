@@ -61,11 +61,16 @@ public class InventoryData : ScriptableObject
         return slots;
     }
 
-    private InventoryItem GetEmptyItem()
+  private InventoryItem GetEmptyItem() {
+    InventoryItem empty = ScriptableObject.CreateInstance<InventoryItem>();
+    empty.itemName = "Empty";
+    empty.type = InventoryItem.ItemType.Empty;
+    return empty;
+  }
+    
+    // Новый метод: Очистка инвентаря
+    public void Clear()
     {
-        InventoryItem empty = ScriptableObject.CreateInstance<InventoryItem>();
-        empty.itemName = "Empty";
-        empty.type = InventoryItem.ItemType.Empty;
-        return empty;
+        items.Clear();
     }
 }
