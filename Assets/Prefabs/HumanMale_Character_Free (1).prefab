@@ -596,7 +596,7 @@ Transform:
   m_GameObject: {fileID: 3048334462618834224}
   serializedVersion: 2
   m_LocalRotation: {x: -0.000000037748947, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.122, y: 0.0168581, z: -0.137}
+  m_LocalPosition: {x: 0.122, y: 0.04, z: -0.137}
   m_LocalScale: {x: 0.15, y: 0.15, z: 0.15}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1589,7 +1589,7 @@ Transform:
   m_GameObject: {fileID: 6201774484146918730}
   serializedVersion: 2
   m_LocalRotation: {x: -0.00000007380975, y: -7.450581e-10, z: 4.4703485e-10, w: 1}
-  m_LocalPosition: {x: 0.032, y: 1.677, z: -0.32}
+  m_LocalPosition: {x: 0.032, y: 1.7, z: -0.32}
   m_LocalScale: {x: 15, y: 15, z: 15}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1618,7 +1618,7 @@ SkinnedMeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 1fc0d25e0cc5a52418b3a7dc59f843df, type: 2}
+  - {fileID: 2100000, guid: 0fc403d7dd023ee4ea208eaf38f357d9, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1714,7 +1714,7 @@ SkinnedMeshRenderer:
   m_RootBone: {fileID: 5005450639772755947}
   m_AABB:
     m_Center: {x: 0.3052609, y: -1.1881993, z: 0.48355144}
-    m_Extent: {x: 3.0385683, y: 6.240467, z: 2.2442389}
+    m_Extent: {x: 3, y: 5.75, z: 3}
   m_DirtyAABB: 0
 --- !u!1 &6260340625028359781
 GameObject:
@@ -2405,7 +2405,6 @@ GameObject:
   - component: {fileID: 7120579146601028711}
   - component: {fileID: 7872762025975533489}
   - component: {fileID: 1743231025745364060}
-  - component: {fileID: 5559221674530194189}
   - component: {fileID: 3190701420042150116}
   m_Layer: 0
   m_Name: HumanMale_Character_Free (1)
@@ -2422,7 +2421,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8517397737856190820}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: 0.99872255, z: -0, w: -0.050530113}
+  m_LocalRotation: {x: 0, y: 0.99872243, z: -0, w: -0.050531853}
   m_LocalPosition: {x: -11.605, y: 6.357, z: -10.39}
   m_LocalScale: {x: 1.6378915, y: 1.6378915, z: 1.6378915}
   m_ConstrainProportionsScale: 0
@@ -2475,7 +2474,7 @@ Rigidbody:
     m_Bits: 0
   m_ImplicitCom: 1
   m_ImplicitTensor: 1
-  m_UseGravity: 0
+  m_UseGravity: 1
   m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 112
@@ -2551,27 +2550,6 @@ MonoBehaviour:
   animator: {fileID: 2461153212804421567}
   moveSpeed: 3
   rotateSpeed: 10000
---- !u!65 &5559221674530194189
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8517397737856190820}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 1, z: 0}
 --- !u!114 &3190701420042150116
 MonoBehaviour:
   m_ObjectHideFlags: 0
