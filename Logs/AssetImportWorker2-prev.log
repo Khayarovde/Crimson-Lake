@@ -1,32 +1,32 @@
 Using pre-set license
 Built from '6000.0/respin/6000.0.59f1-063c55f2fd0f' branch; Version is '6000.0.59f2 (ef281c76c3c1) revision 15673372'; Using compiler version '193933523'; Build Type 'Release'
-OS: 'Windows 11  (10.0.26100) 64bit EnterpriseS' Language: 'ru' Physical Memory: 32694 MB
+OS: 'Windows 11  (10.0.26100) 64bit Core' Language: 'ru' Physical Memory: 16087 MB
 BatchMode: 1, IsHumanControllingUs: 0, StartBugReporterOnCrash: 0, Is64bit: 1
-Date: 2025-10-28T14:08:50Z
+Date: 2025-10-28T16:36:59Z
 
 COMMAND LINE ARGUMENTS:
-E:\Unity\6000.0.59f2\Editor\Unity.exe
+S:\UnityApp\6000.0.59f2\Editor\Unity.exe
 -adb2
 -batchMode
 -noUpm
 -name
 AssetImportWorker2
 -projectPath
-F:/Project/Crimson-Lake33445
+S:/UnityProject/Crimson-Lake
 -logFile
 Logs/AssetImportWorker2.log
 -srvPort
-60577
+59495
 -job-worker-count
-5
+7
 -background-job-worker-count
 8
 -gc-helper-count
 1
 -name
 AssetImport
-Successfully changed project path to: F:/Project/Crimson-Lake33445
-F:/Project/Crimson-Lake33445
+Successfully changed project path to: S:/UnityProject/Crimson-Lake
+S:/UnityProject/Crimson-Lake
 [UnityMemory] Configuration Parameters - Can be set up in boot.config
     "memorysetup-bucket-allocator-granularity=16"
     "memorysetup-bucket-allocator-bucket-count=8"
@@ -62,15 +62,19 @@ F:/Project/Crimson-Lake33445
     "memorysetup-temp-allocator-size-gi-baking-worker=262144"
     "memorysetup-temp-allocator-size-gi-baking-worker=262144"
     "memorysetup-temp-allocator-size-gfx=262144"
-Player connection [24184]  Target information:
+Player connection [32788]  Target information:
 
-Player connection [24184]  * "[IP] 192.168.0.4 [Port] 0 [Flags] 2 [Guid] 842830041 [EditorId] 842830041 [Version] 1048832 [Id] WindowsEditor(7,WIN-D9NEL4LPBM6) [Debug] 1 [PackageName] WindowsEditor [ProjectName] Editor" 
+Player connection [32788]  * "[IP] 192.168.219.120 [Port] 0 [Flags] 2 [Guid] 2426910822 [EditorId] 2426910822 [Version] 1048832 [Id] WindowsEditor(7,katana-pc) [Debug] 1 [PackageName] WindowsEditor [ProjectName] Editor" 
 
-Player connection [24184]  * "[IP] 192.168.56.1 [Port] 0 [Flags] 2 [Guid] 842830041 [EditorId] 842830041 [Version] 1048832 [Id] WindowsEditor(7,WIN-D9NEL4LPBM6) [Debug] 1 [PackageName] WindowsEditor [ProjectName] Editor" 
+Player connection [32788]  * "[IP] 192.168.56.1 [Port] 0 [Flags] 2 [Guid] 2426910822 [EditorId] 2426910822 [Version] 1048832 [Id] WindowsEditor(7,katana-pc) [Debug] 1 [PackageName] WindowsEditor [ProjectName] Editor" 
 
-Player connection [24184] Host joined multi-casting on [225.0.0.222:54997]...
-Player connection [24184] Host joined alternative multi-casting on [225.0.0.222:34997]...
-JobSystem: Creating JobQueue using job-worker-count value 5
+Player connection [32788]  * "[IP] 26.218.57.225 [Port] 0 [Flags] 2 [Guid] 2426910822 [EditorId] 2426910822 [Version] 1048832 [Id] WindowsEditor(7,katana-pc) [Debug] 1 [PackageName] WindowsEditor [ProjectName] Editor" 
+
+Player connection [32788]  * "[IP] 192.168.229.5 [Port] 0 [Flags] 2 [Guid] 2426910822 [EditorId] 2426910822 [Version] 1048832 [Id] WindowsEditor(7,katana-pc) [Debug] 1 [PackageName] WindowsEditor [ProjectName] Editor" 
+
+Player connection [32788] Host joined multi-casting on [225.0.0.222:54997]...
+Player connection [32788] Host joined alternative multi-casting on [225.0.0.222:34997]...
+JobSystem: Creating JobQueue using job-worker-count value 7
 Input System module state changed to: Initialized.
 [Physics::Module] Initialized fallback backend.
 [Physics::Module] Id: 0xdecafbad
@@ -81,59 +85,59 @@ Library Redirect Path: Library/
 [Physics::Module] SDK Version: 4.1.2
 [Physics::Module] Integration Version: 1.0.0
 [Physics::Module] Threading Mode: Multi-Threaded
-Refreshing native plugins compatible for Editor in 0.58 ms, found 2 plugins.
+Refreshing native plugins compatible for Editor in 0.44 ms, found 2 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
 Initialize engine version: 6000.0.59f2 (ef281c76c3c1)
-[Subsystems] Discovering subsystems at path E:/Unity/6000.0.59f2/Editor/Data/Resources/UnitySubsystems
-[Subsystems] Discovering subsystems at path F:/Project/Crimson-Lake33445/Assets
+[Subsystems] Discovering subsystems at path S:/UnityApp/6000.0.59f2/Editor/Data/Resources/UnitySubsystems
+[Subsystems] Discovering subsystems at path S:/UnityProject/Crimson-Lake/Assets
 GfxDevice: creating device client; kGfxThreadingModeNonThreaded
 Direct3D:
     Version:  Direct3D 11.0 [level 11.1]
-    Renderer: AMD Radeon RX 6650 XT (ID=0x73ef)
-    Vendor:   ATI
-    VRAM:     8147 MB
-    Driver:   32.0.21025.10016
+    Renderer: NVIDIA GeForce RTX 4060 Laptop GPU (ID=0x28a0)
+    Vendor:   NVIDIA
+    VRAM:     7957 MB
+    Driver:   32.0.15.8129
 Initialize mono
-Mono path[0] = 'E:/Unity/6000.0.59f2/Editor/Data/Managed'
-Mono path[1] = 'E:/Unity/6000.0.59f2/Editor/Data/MonoBleedingEdge/lib/mono/unityjit-win32'
-Mono config path = 'E:/Unity/6000.0.59f2/Editor/Data/MonoBleedingEdge/etc'
-Using monoOptions --debugger-agent=transport=dt_socket,embedding=1,server=y,suspend=n,address=127.0.0.1:56240
+Mono path[0] = 'S:/UnityApp/6000.0.59f2/Editor/Data/Managed'
+Mono path[1] = 'S:/UnityApp/6000.0.59f2/Editor/Data/MonoBleedingEdge/lib/mono/unityjit-win32'
+Mono config path = 'S:/UnityApp/6000.0.59f2/Editor/Data/MonoBleedingEdge/etc'
+Using monoOptions --debugger-agent=transport=dt_socket,embedding=1,server=y,suspend=n,address=127.0.0.1:56108
 Begin MonoManager ReloadAssembly
 Registering precompiled unity dll's ...
-Register platform support module: E:/Unity/6000.0.59f2/Editor/Data/PlaybackEngines/WindowsStandaloneSupport/UnityEditor.WindowsStandalone.Extensions.dll
-Registered in 0.001404 seconds.
-- Loaded All Assemblies, in  0.323 seconds
+Register platform support module: S:/UnityApp/6000.0.59f2/Editor/Data/PlaybackEngines/WindowsStandaloneSupport/UnityEditor.WindowsStandalone.Extensions.dll
+Registered in 0.001780 seconds.
+- Loaded All Assemblies, in  0.280 seconds
 Native extension for WindowsStandalone target not found
 Mono: successfully reloaded assembly
-- Finished resetting the current domain, in  0.261 seconds
-Domain Reload Profiling: 584ms
-	BeginReloadAssembly (119ms)
+- Finished resetting the current domain, in  0.234 seconds
+Domain Reload Profiling: 514ms
+	BeginReloadAssembly (97ms)
 		ExecutionOrderSort (0ms)
 		DisableScriptedObjects (0ms)
 		BackupInstance (0ms)
 		ReleaseScriptingObjects (0ms)
 		CreateAndSetChildDomain (1ms)
-	RebuildCommonClasses (33ms)
-	RebuildNativeTypeToScriptingClass (10ms)
-	initialDomainReloadingComplete (36ms)
-	LoadAllAssembliesAndSetupDomain (124ms)
-		LoadAssemblies (118ms)
+	RebuildCommonClasses (26ms)
+	RebuildNativeTypeToScriptingClass (9ms)
+	initialDomainReloadingComplete (32ms)
+	LoadAllAssembliesAndSetupDomain (116ms)
+		LoadAssemblies (96ms)
 		RebuildTransferFunctionScriptingTraits (0ms)
-		AnalyzeDomain (122ms)
-			TypeCache.Refresh (121ms)
-				TypeCache.ScanAssembly (110ms)
+		AnalyzeDomain (114ms)
+			TypeCache.Refresh (112ms)
+				TypeCache.ScanAssembly (102ms)
 			BuildScriptInfoCaches (0ms)
 			ResolveRequiredComponents (0ms)
-	FinalizeReload (262ms)
+	FinalizeReload (235ms)
 		ReleaseScriptCaches (0ms)
 		RebuildScriptCaches (0ms)
-		SetupLoadedEditorAssemblies (229ms)
+		SetupLoadedEditorAssemblies (211ms)
 			LogAssemblyErrors (0ms)
-			InitializePlatformSupportModulesInManaged (15ms)
-			SetLoadedEditorAssemblies (3ms)
-			BeforeProcessingInitializeOnLoad (48ms)
-			ProcessInitializeOnLoadAttributes (118ms)
-			ProcessInitializeOnLoadMethodAttributes (45ms)
+			InitializePlatformSupportModulesInManaged (13ms)
+			SetLoadedEditorAssemblies (4ms)
+			BeforeProcessingInitializeOnLoad (47ms)
+			ProcessInitializeOnLoadAttributes (111ms)
+			ProcessInitializeOnLoadMethodAttributes (37ms)
 			AfterProcessingInitializeOnLoad (0ms)
 			EditorAssembliesLoaded (0ms)
 		ExecutionOrderSort2 (0ms)
@@ -142,62 +146,147 @@ Domain Reload Profiling: 584ms
 Worker process is ready to serve import requests
 Import Worker Mode flag is 0x00
 Begin MonoManager ReloadAssembly
-- Loaded All Assemblies, in  0.504 seconds
+- Loaded All Assemblies, in  0.453 seconds
 Script 'Camera' has the same name as built-in Unity component.
 AddComponent and GetComponent will not work with this script.
-Refreshing native plugins compatible for Editor in 0.37 ms, found 2 plugins.
+Refreshing native plugins compatible for Editor in 0.28 ms, found 2 plugins.
 Native extension for WindowsStandalone target not found
 Package Manager log level set to [2]
 [Package Manager] Failed to launch server process. Reason: Unity was launched with the -noUpm command-line argument
 [Package Manager] Unable to send message (not connected to server process).
 [Package Manager] Cannot connect to Unity Package Manager local server
 Mono: successfully reloaded assembly
-- Finished resetting the current domain, in  0.517 seconds
-Domain Reload Profiling: 1020ms
-	BeginReloadAssembly (140ms)
+- Finished resetting the current domain, in  0.449 seconds
+Domain Reload Profiling: 901ms
+	BeginReloadAssembly (130ms)
 		ExecutionOrderSort (0ms)
-		DisableScriptedObjects (5ms)
+		DisableScriptedObjects (6ms)
 		BackupInstance (0ms)
 		ReleaseScriptingObjects (0ms)
-		CreateAndSetChildDomain (25ms)
-	RebuildCommonClasses (31ms)
-	RebuildNativeTypeToScriptingClass (10ms)
-	initialDomainReloadingComplete (20ms)
-	LoadAllAssembliesAndSetupDomain (303ms)
-		LoadAssemblies (236ms)
+		CreateAndSetChildDomain (22ms)
+	RebuildCommonClasses (26ms)
+	RebuildNativeTypeToScriptingClass (8ms)
+	initialDomainReloadingComplete (17ms)
+	LoadAllAssembliesAndSetupDomain (271ms)
+		LoadAssemblies (213ms)
 		RebuildTransferFunctionScriptingTraits (0ms)
-		AnalyzeDomain (145ms)
-			TypeCache.Refresh (107ms)
-				TypeCache.ScanAssembly (97ms)
-			BuildScriptInfoCaches (26ms)
-			ResolveRequiredComponents (9ms)
-	FinalizeReload (517ms)
+		AnalyzeDomain (130ms)
+			TypeCache.Refresh (96ms)
+				TypeCache.ScanAssembly (87ms)
+			BuildScriptInfoCaches (24ms)
+			ResolveRequiredComponents (8ms)
+	FinalizeReload (449ms)
 		ReleaseScriptCaches (0ms)
 		RebuildScriptCaches (0ms)
-		SetupLoadedEditorAssemblies (377ms)
+		SetupLoadedEditorAssemblies (326ms)
 			LogAssemblyErrors (0ms)
 			InitializePlatformSupportModulesInManaged (2ms)
-			SetLoadedEditorAssemblies (4ms)
-			BeforeProcessingInitializeOnLoad (77ms)
-			ProcessInitializeOnLoadAttributes (245ms)
-			ProcessInitializeOnLoadMethodAttributes (47ms)
-			AfterProcessingInitializeOnLoad (2ms)
+			SetLoadedEditorAssemblies (3ms)
+			BeforeProcessingInitializeOnLoad (62ms)
+			ProcessInitializeOnLoadAttributes (223ms)
+			ProcessInitializeOnLoadMethodAttributes (35ms)
+			AfterProcessingInitializeOnLoad (1ms)
 			EditorAssembliesLoaded (0ms)
 		ExecutionOrderSort2 (0ms)
-		AwakeInstancesAfterBackupRestoration (5ms)
+		AwakeInstancesAfterBackupRestoration (4ms)
 Launched and connected shader compiler UnityShaderCompiler.exe after 0.01 seconds
-Refreshing native plugins compatible for Editor in 0.33 ms, found 2 plugins.
+Refreshing native plugins compatible for Editor in 0.43 ms, found 2 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
 Unloading 13 Unused Serialized files (Serialized files now loaded: 0)
-Unloading 4142 unused Assets / (3.4 MB). Loaded Objects now: 4841.
-Memory consumption went from 120.1 MB to 116.7 MB.
-Total: 5.379500 ms (FindLiveObjects: 0.415400 ms CreateObjectMapping: 0.195700 ms MarkObjects: 3.450000 ms  DeleteObjects: 1.318100 ms)
+Unloading 4144 unused Assets / (3.5 MB). Loaded Objects now: 4850.
+Memory consumption went from 114.3 MB to 110.8 MB.
+Total: 4.662300 ms (FindLiveObjects: 0.469100 ms CreateObjectMapping: 0.179500 ms MarkObjects: 2.978300 ms  DeleteObjects: 1.034400 ms)
 
 ========================================================================
 Received Import Request.
-  Time since last request: 12756.481959 seconds.
-  path: Assets/Scenes/cameratest.unity
-  artifactKey: Guid(9fc0d4010bbf28b4594072e72b8655ab) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
-Start importing Assets/Scenes/cameratest.unity using Guid(9fc0d4010bbf28b4594072e72b8655ab) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: 'c3ea905ed423f34548689e431dc731dd') in 0.0037145 seconds
+  Time since last request: 40789.992114 seconds.
+  path: Assets/Blink
+  artifactKey: Guid(52c2a03984722754188875f0b6f9fd31) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/Blink using Guid(52c2a03984722754188875f0b6f9fd31) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: 'a9491d055d6eae867b9feb64d8d635c4') in 0.0031835 seconds
 Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
 
+========================================================================
+Received Import Request.
+  Time since last request: 4.725774 seconds.
+  path: Assets/Scenes/cameratest
+  artifactKey: Guid(5defef1802b112140ad3adae02b05a93) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/Scenes/cameratest using Guid(5defef1802b112140ad3adae02b05a93) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: 'f276846504c48732b7961ec0ffb0f032') in 0.0005384 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.035848 seconds.
+  path: Assets/Scenes/cameratest/LightingData.asset
+  artifactKey: Guid(dbbdc6692dcbc4945a9fa54e7ce3ac39) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/Scenes/cameratest/LightingData.asset using Guid(dbbdc6692dcbc4945a9fa54e7ce3ac39) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: '916ab6d1418033a3086c28ba0bf6a9b1') in 0.0144348 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 2
+
+========================================================================
+Received Import Request.
+  Time since last request: 234.244364 seconds.
+  path: Assets/TextureProject/Devkit/Materials/Triplanar/Triplanar Gray 5.mat
+  artifactKey: Guid(057117fef3ce26544adb7a42c6e8b58f) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/TextureProject/Devkit/Materials/Triplanar/Triplanar Gray 5.mat using Guid(057117fef3ce26544adb7a42c6e8b58f) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: '448acd7877afb6d4d8b9e630ca1810df') in 0.3545776 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 7
+
+========================================================================
+Received Import Request.
+  Time since last request: 26.636291 seconds.
+  path: Assets/TextMesh Pro
+  artifactKey: Guid(f54d1bd14bd3ca042bd867b519fee8cc) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/TextMesh Pro using Guid(f54d1bd14bd3ca042bd867b519fee8cc) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: '441aa3e92cda27c68af8a1706ee847ab') in 0.0005897 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
+
+========================================================================
+Received Import Request.
+  Time since last request: 2.868544 seconds.
+  path: Assets/TextureProject/Devkit/Materials/Triplanar
+  artifactKey: Guid(ba8a2d32d8d7a294a95dca05e30b9514) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/TextureProject/Devkit/Materials/Triplanar using Guid(ba8a2d32d8d7a294a95dca05e30b9514) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: 'f0a6045f8df9da6f792b8a5bba1d9fee') in 0.0004762 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.051899 seconds.
+  path: Assets/TextureProject/Devkit/Materials/Triplanar/New Material.mat
+  artifactKey: Guid(359b922f879a1d4449303e9a885e1b5e) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/TextureProject/Devkit/Materials/Triplanar/New Material.mat using Guid(359b922f879a1d4449303e9a885e1b5e) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: 'd5a0d423da9bd0464c89cfd2fb9cdbc8') in 0.010859 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 7
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000021 seconds.
+  path: Assets/TextureProject/Devkit/Materials/Triplanar/Triplanar Orange.mat
+  artifactKey: Guid(d5548140902834c4599f88f31fed7e78) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/TextureProject/Devkit/Materials/Triplanar/Triplanar Orange.mat using Guid(d5548140902834c4599f88f31fed7e78) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: 'dfd2f3c84bc917d277f7ae5b48bc56db') in 0.0144565 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 8
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000019 seconds.
+  path: Assets/TextureProject/Devkit/Materials/Triplanar/Triplanar Light Chess 6.mat
+  artifactKey: Guid(47c5a16927202844db527c9da23376dc) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/TextureProject/Devkit/Materials/Triplanar/Triplanar Light Chess 6.mat using Guid(47c5a16927202844db527c9da23376dc) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: 'aa65995524b95fb0d73d7247bf227080') in 0.0150298 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 6
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000022 seconds.
+  path: Assets/TextureProject/Devkit/Materials/Triplanar/Triplanar Cyan.mat
+  artifactKey: Guid(76c46d6a9ac964e46b2d25f137f83230) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/TextureProject/Devkit/Materials/Triplanar/Triplanar Cyan.mat using Guid(76c46d6a9ac964e46b2d25f137f83230) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: '130fb13f8e958f4a1324d1bc682e8aff') in 0.0069907 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 6
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000029 seconds.
+  path: Assets/TextureProject/Devkit/Materials/Triplanar/Triplanar Blue 1.mat
+  artifactKey: Guid(163d928eed12aea468758e3cf19cc2b5) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/TextureProject/Devkit/Materials/Triplanar/Triplanar Blue 1.mat using Guid(163d928eed12aea468758e3cf19cc2b5) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: 'c1494785ca048e7a2e4c5516d1f79ac4') in 0.0071188 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 6
+
+Editor requested this worker to shutdown with reason: Scaling down because of idle timeout
+AssetImportWorkerClient::OnTransportError - code=2 error=End of file
+AssetImportWorker is now disconnected from the server
+Process exiting
+Exiting without the bug reporter. Application will terminate with return code 0

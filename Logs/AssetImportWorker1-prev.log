@@ -1,32 +1,32 @@
 Using pre-set license
 Built from '6000.0/respin/6000.0.59f1-063c55f2fd0f' branch; Version is '6000.0.59f2 (ef281c76c3c1) revision 15673372'; Using compiler version '193933523'; Build Type 'Release'
-OS: 'Windows 11  (10.0.26100) 64bit EnterpriseS' Language: 'ru' Physical Memory: 32694 MB
+OS: 'Windows 11  (10.0.26100) 64bit Core' Language: 'ru' Physical Memory: 16087 MB
 BatchMode: 1, IsHumanControllingUs: 0, StartBugReporterOnCrash: 0, Is64bit: 1
-Date: 2025-10-28T14:08:41Z
+Date: 2025-10-28T16:36:50Z
 
 COMMAND LINE ARGUMENTS:
-E:\Unity\6000.0.59f2\Editor\Unity.exe
+S:\UnityApp\6000.0.59f2\Editor\Unity.exe
 -adb2
 -batchMode
 -noUpm
 -name
 AssetImportWorker1
 -projectPath
-F:/Project/Crimson-Lake33445
+S:/UnityProject/Crimson-Lake
 -logFile
 Logs/AssetImportWorker1.log
 -srvPort
-60577
+59495
 -job-worker-count
-5
+7
 -background-job-worker-count
 8
 -gc-helper-count
 1
 -name
 AssetImport
-Successfully changed project path to: F:/Project/Crimson-Lake33445
-F:/Project/Crimson-Lake33445
+Successfully changed project path to: S:/UnityProject/Crimson-Lake
+S:/UnityProject/Crimson-Lake
 [UnityMemory] Configuration Parameters - Can be set up in boot.config
     "memorysetup-bucket-allocator-granularity=16"
     "memorysetup-bucket-allocator-bucket-count=8"
@@ -62,15 +62,19 @@ F:/Project/Crimson-Lake33445
     "memorysetup-temp-allocator-size-gi-baking-worker=262144"
     "memorysetup-temp-allocator-size-gi-baking-worker=262144"
     "memorysetup-temp-allocator-size-gfx=262144"
-Player connection [21120]  Target information:
+Player connection [25616]  Target information:
 
-Player connection [21120]  * "[IP] 192.168.0.4 [Port] 0 [Flags] 2 [Guid] 2837929821 [EditorId] 2837929821 [Version] 1048832 [Id] WindowsEditor(7,WIN-D9NEL4LPBM6) [Debug] 1 [PackageName] WindowsEditor [ProjectName] Editor" 
+Player connection [25616]  * "[IP] 192.168.219.120 [Port] 0 [Flags] 2 [Guid] 822159852 [EditorId] 822159852 [Version] 1048832 [Id] WindowsEditor(7,katana-pc) [Debug] 1 [PackageName] WindowsEditor [ProjectName] Editor" 
 
-Player connection [21120]  * "[IP] 192.168.56.1 [Port] 0 [Flags] 2 [Guid] 2837929821 [EditorId] 2837929821 [Version] 1048832 [Id] WindowsEditor(7,WIN-D9NEL4LPBM6) [Debug] 1 [PackageName] WindowsEditor [ProjectName] Editor" 
+Player connection [25616]  * "[IP] 192.168.56.1 [Port] 0 [Flags] 2 [Guid] 822159852 [EditorId] 822159852 [Version] 1048832 [Id] WindowsEditor(7,katana-pc) [Debug] 1 [PackageName] WindowsEditor [ProjectName] Editor" 
 
-Player connection [21120] Host joined multi-casting on [225.0.0.222:54997]...
-Player connection [21120] Host joined alternative multi-casting on [225.0.0.222:34997]...
-JobSystem: Creating JobQueue using job-worker-count value 5
+Player connection [25616]  * "[IP] 26.218.57.225 [Port] 0 [Flags] 2 [Guid] 822159852 [EditorId] 822159852 [Version] 1048832 [Id] WindowsEditor(7,katana-pc) [Debug] 1 [PackageName] WindowsEditor [ProjectName] Editor" 
+
+Player connection [25616]  * "[IP] 192.168.229.5 [Port] 0 [Flags] 2 [Guid] 822159852 [EditorId] 822159852 [Version] 1048832 [Id] WindowsEditor(7,katana-pc) [Debug] 1 [PackageName] WindowsEditor [ProjectName] Editor" 
+
+Player connection [25616] Host joined multi-casting on [225.0.0.222:54997]...
+Player connection [25616] Host joined alternative multi-casting on [225.0.0.222:34997]...
+JobSystem: Creating JobQueue using job-worker-count value 7
 Input System module state changed to: Initialized.
 [Physics::Module] Initialized fallback backend.
 [Physics::Module] Id: 0xdecafbad
@@ -81,59 +85,59 @@ Library Redirect Path: Library/
 [Physics::Module] SDK Version: 4.1.2
 [Physics::Module] Integration Version: 1.0.0
 [Physics::Module] Threading Mode: Multi-Threaded
-Refreshing native plugins compatible for Editor in 0.72 ms, found 2 plugins.
+Refreshing native plugins compatible for Editor in 0.48 ms, found 2 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
 Initialize engine version: 6000.0.59f2 (ef281c76c3c1)
-[Subsystems] Discovering subsystems at path E:/Unity/6000.0.59f2/Editor/Data/Resources/UnitySubsystems
-[Subsystems] Discovering subsystems at path F:/Project/Crimson-Lake33445/Assets
+[Subsystems] Discovering subsystems at path S:/UnityApp/6000.0.59f2/Editor/Data/Resources/UnitySubsystems
+[Subsystems] Discovering subsystems at path S:/UnityProject/Crimson-Lake/Assets
 GfxDevice: creating device client; kGfxThreadingModeNonThreaded
 Direct3D:
     Version:  Direct3D 11.0 [level 11.1]
-    Renderer: AMD Radeon RX 6650 XT (ID=0x73ef)
-    Vendor:   ATI
-    VRAM:     8147 MB
-    Driver:   32.0.21025.10016
+    Renderer: NVIDIA GeForce RTX 4060 Laptop GPU (ID=0x28a0)
+    Vendor:   NVIDIA
+    VRAM:     7957 MB
+    Driver:   32.0.15.8129
 Initialize mono
-Mono path[0] = 'E:/Unity/6000.0.59f2/Editor/Data/Managed'
-Mono path[1] = 'E:/Unity/6000.0.59f2/Editor/Data/MonoBleedingEdge/lib/mono/unityjit-win32'
-Mono config path = 'E:/Unity/6000.0.59f2/Editor/Data/MonoBleedingEdge/etc'
-Using monoOptions --debugger-agent=transport=dt_socket,embedding=1,server=y,suspend=n,address=127.0.0.1:56816
+Mono path[0] = 'S:/UnityApp/6000.0.59f2/Editor/Data/Managed'
+Mono path[1] = 'S:/UnityApp/6000.0.59f2/Editor/Data/MonoBleedingEdge/lib/mono/unityjit-win32'
+Mono config path = 'S:/UnityApp/6000.0.59f2/Editor/Data/MonoBleedingEdge/etc'
+Using monoOptions --debugger-agent=transport=dt_socket,embedding=1,server=y,suspend=n,address=127.0.0.1:56068
 Begin MonoManager ReloadAssembly
 Registering precompiled unity dll's ...
-Register platform support module: E:/Unity/6000.0.59f2/Editor/Data/PlaybackEngines/WindowsStandaloneSupport/UnityEditor.WindowsStandalone.Extensions.dll
-Registered in 0.001811 seconds.
-- Loaded All Assemblies, in  0.333 seconds
+Register platform support module: S:/UnityApp/6000.0.59f2/Editor/Data/PlaybackEngines/WindowsStandaloneSupport/UnityEditor.WindowsStandalone.Extensions.dll
+Registered in 0.001880 seconds.
+- Loaded All Assemblies, in  0.297 seconds
 Native extension for WindowsStandalone target not found
 Mono: successfully reloaded assembly
-- Finished resetting the current domain, in  0.299 seconds
-Domain Reload Profiling: 632ms
-	BeginReloadAssembly (115ms)
+- Finished resetting the current domain, in  0.251 seconds
+Domain Reload Profiling: 548ms
+	BeginReloadAssembly (97ms)
 		ExecutionOrderSort (0ms)
 		DisableScriptedObjects (0ms)
 		BackupInstance (0ms)
 		ReleaseScriptingObjects (0ms)
 		CreateAndSetChildDomain (1ms)
-	RebuildCommonClasses (30ms)
-	RebuildNativeTypeToScriptingClass (12ms)
-	initialDomainReloadingComplete (38ms)
-	LoadAllAssembliesAndSetupDomain (138ms)
-		LoadAssemblies (113ms)
+	RebuildCommonClasses (34ms)
+	RebuildNativeTypeToScriptingClass (10ms)
+	initialDomainReloadingComplete (36ms)
+	LoadAllAssembliesAndSetupDomain (120ms)
+		LoadAssemblies (96ms)
 		RebuildTransferFunctionScriptingTraits (0ms)
-		AnalyzeDomain (136ms)
-			TypeCache.Refresh (135ms)
-				TypeCache.ScanAssembly (124ms)
+		AnalyzeDomain (118ms)
+			TypeCache.Refresh (117ms)
+				TypeCache.ScanAssembly (107ms)
 			BuildScriptInfoCaches (0ms)
 			ResolveRequiredComponents (0ms)
-	FinalizeReload (299ms)
+	FinalizeReload (252ms)
 		ReleaseScriptCaches (0ms)
 		RebuildScriptCaches (0ms)
-		SetupLoadedEditorAssemblies (266ms)
+		SetupLoadedEditorAssemblies (227ms)
 			LogAssemblyErrors (0ms)
-			InitializePlatformSupportModulesInManaged (19ms)
-			SetLoadedEditorAssemblies (4ms)
-			BeforeProcessingInitializeOnLoad (53ms)
-			ProcessInitializeOnLoadAttributes (144ms)
-			ProcessInitializeOnLoadMethodAttributes (46ms)
+			InitializePlatformSupportModulesInManaged (17ms)
+			SetLoadedEditorAssemblies (3ms)
+			BeforeProcessingInitializeOnLoad (47ms)
+			ProcessInitializeOnLoadAttributes (117ms)
+			ProcessInitializeOnLoadMethodAttributes (42ms)
 			AfterProcessingInitializeOnLoad (0ms)
 			EditorAssembliesLoaded (0ms)
 		ExecutionOrderSort2 (0ms)
@@ -142,130 +146,112 @@ Domain Reload Profiling: 632ms
 Worker process is ready to serve import requests
 Import Worker Mode flag is 0x00
 Begin MonoManager ReloadAssembly
-- Loaded All Assemblies, in  0.579 seconds
+- Loaded All Assemblies, in  0.501 seconds
 Script 'Camera' has the same name as built-in Unity component.
 AddComponent and GetComponent will not work with this script.
-Refreshing native plugins compatible for Editor in 0.31 ms, found 2 plugins.
+Refreshing native plugins compatible for Editor in 0.26 ms, found 2 plugins.
 Native extension for WindowsStandalone target not found
 Package Manager log level set to [2]
 [Package Manager] Failed to launch server process. Reason: Unity was launched with the -noUpm command-line argument
 [Package Manager] Unable to send message (not connected to server process).
 [Package Manager] Cannot connect to Unity Package Manager local server
 Mono: successfully reloaded assembly
-- Finished resetting the current domain, in  0.631 seconds
-Domain Reload Profiling: 1209ms
-	BeginReloadAssembly (168ms)
+- Finished resetting the current domain, in  0.501 seconds
+Domain Reload Profiling: 1002ms
+	BeginReloadAssembly (143ms)
 		ExecutionOrderSort (0ms)
-		DisableScriptedObjects (8ms)
+		DisableScriptedObjects (7ms)
 		BackupInstance (0ms)
 		ReleaseScriptingObjects (0ms)
-		CreateAndSetChildDomain (27ms)
-	RebuildCommonClasses (30ms)
-	RebuildNativeTypeToScriptingClass (10ms)
-	initialDomainReloadingComplete (25ms)
-	LoadAllAssembliesAndSetupDomain (345ms)
-		LoadAssemblies (267ms)
+		CreateAndSetChildDomain (21ms)
+	RebuildCommonClasses (29ms)
+	RebuildNativeTypeToScriptingClass (8ms)
+	initialDomainReloadingComplete (19ms)
+	LoadAllAssembliesAndSetupDomain (300ms)
+		LoadAssemblies (238ms)
 		RebuildTransferFunctionScriptingTraits (0ms)
-		AnalyzeDomain (171ms)
-			TypeCache.Refresh (131ms)
-				TypeCache.ScanAssembly (119ms)
-			BuildScriptInfoCaches (29ms)
-			ResolveRequiredComponents (8ms)
-	FinalizeReload (632ms)
+		AnalyzeDomain (139ms)
+			TypeCache.Refresh (104ms)
+				TypeCache.ScanAssembly (95ms)
+			BuildScriptInfoCaches (25ms)
+			ResolveRequiredComponents (7ms)
+	FinalizeReload (502ms)
 		ReleaseScriptCaches (0ms)
 		RebuildScriptCaches (0ms)
-		SetupLoadedEditorAssemblies (434ms)
+		SetupLoadedEditorAssemblies (364ms)
 			LogAssemblyErrors (0ms)
 			InitializePlatformSupportModulesInManaged (2ms)
-			SetLoadedEditorAssemblies (5ms)
-			BeforeProcessingInitializeOnLoad (97ms)
-			ProcessInitializeOnLoadAttributes (283ms)
-			ProcessInitializeOnLoadMethodAttributes (44ms)
+			SetLoadedEditorAssemblies (4ms)
+			BeforeProcessingInitializeOnLoad (73ms)
+			ProcessInitializeOnLoadAttributes (249ms)
+			ProcessInitializeOnLoadMethodAttributes (35ms)
 			AfterProcessingInitializeOnLoad (2ms)
 			EditorAssembliesLoaded (0ms)
 		ExecutionOrderSort2 (0ms)
-		AwakeInstancesAfterBackupRestoration (7ms)
+		AwakeInstancesAfterBackupRestoration (5ms)
 Launched and connected shader compiler UnityShaderCompiler.exe after 0.01 seconds
-Refreshing native plugins compatible for Editor in 0.40 ms, found 2 plugins.
+Refreshing native plugins compatible for Editor in 0.31 ms, found 2 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Unloading 46 Unused Serialized files (Serialized files now loaded: 0)
-Unloading 4175 unused Assets / (8.4 MB). Loaded Objects now: 4808.
-Memory consumption went from 127.7 MB to 119.3 MB.
-Total: 8.406300 ms (FindLiveObjects: 0.437900 ms CreateObjectMapping: 0.188200 ms MarkObjects: 4.051000 ms  DeleteObjects: 3.728000 ms)
-
-========================================================================
-Received Prepare
-Refreshing native plugins compatible for Editor in 0.43 ms, found 2 plugins.
-Preloading 0 native plugins for Editor in 0.00 ms.
-Unloading 46 Unused Serialized files (Serialized files now loaded: 0)
-Unloading 46 unused Assets / (4.7 MB). Loaded Objects now: 4808.
-Memory consumption went from 123.3 MB to 118.6 MB.
-Total: 6.973600 ms (FindLiveObjects: 0.279800 ms CreateObjectMapping: 0.186800 ms MarkObjects: 4.910500 ms  DeleteObjects: 1.595900 ms)
-
-Prepare: number of updated asset objects reloaded= 0
-========================================================================
-Received Import Request.
-  Time since last request: 12744.197320 seconds.
-  path: Assets/UniversalRenderPipelineGlobalSettings.asset
-  artifactKey: Guid(46ef53c5ef916594ab49e919caf24e07) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
-Start importing Assets/UniversalRenderPipelineGlobalSettings.asset using Guid(46ef53c5ef916594ab49e919caf24e07) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: 'ba1f00a86b13218296160b6fa24fe29e') in 0.0208481 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
+Unloading 13 Unused Serialized files (Serialized files now loaded: 0)
+Unloading 4144 unused Assets / (3.7 MB). Loaded Objects now: 4850.
+Memory consumption went from 116.1 MB to 112.5 MB.
+Total: 4.916500 ms (FindLiveObjects: 0.302600 ms CreateObjectMapping: 0.233800 ms MarkObjects: 3.227100 ms  DeleteObjects: 1.152000 ms)
 
 ========================================================================
 Received Import Request.
-  Time since last request: 0.000013 seconds.
-  path: Assets/DefaultVolumeProfile.asset
-  artifactKey: Guid(c3010e99e7acf484e9cef0c8828f46ca) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
-Start importing Assets/DefaultVolumeProfile.asset using Guid(c3010e99e7acf484e9cef0c8828f46ca) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: '08c849b4a2941d97b4a79e1e6c1ee6e7') in 0.0008693 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
+  Time since last request: 40781.700714 seconds.
+  path: Assets/SciFi Warehouse Kit/Art/Meshes/Props/Misc Props/Garbage Bin.fbx
+  artifactKey: Guid(86f94647b91659e4d941245a0d85ba93) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/SciFi Warehouse Kit/Art/Meshes/Props/Misc Props/Garbage Bin.fbx using Guid(86f94647b91659e4d941245a0d85ba93) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: '3474f2f5d63d380d9b738c77d5e14a30') in 0.4183625 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 13
 
 ========================================================================
 Received Import Request.
-  Time since last request: 6.181194 seconds.
-  path: Assets/Settings/High_PipelineAsset_ForwardRenderer.asset
-  artifactKey: Guid(03442046b81216a4c91a1cf337694a69) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
-Start importing Assets/Settings/High_PipelineAsset_ForwardRenderer.asset using Guid(03442046b81216a4c91a1cf337694a69) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: 'b2a69bed47929600c09b2216a58f477e') in 0.0009565 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+  Time since last request: 3.749128 seconds.
+  path: Assets/The Developer Train/Sci Fi Guns/Prefabs/Railgun 1.prefab
+  artifactKey: Guid(0dded95cc08e86b4ebe259faeaff4f63) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/The Developer Train/Sci Fi Guns/Prefabs/Railgun 1.prefab using Guid(0dded95cc08e86b4ebe259faeaff4f63) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: '0fc7bf5723aa0bb57d63490b24a90220') in 0.0208421 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 158
 
 ========================================================================
 Received Import Request.
-  Time since last request: 0.000018 seconds.
-  path: Assets/Settings/Low_PipelineAsset_ForwardRenderer.asset
-  artifactKey: Guid(16a5b87ad4599d2429afc26e9a6495db) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
-Start importing Assets/Settings/Low_PipelineAsset_ForwardRenderer.asset using Guid(16a5b87ad4599d2429afc26e9a6495db) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: '8a57b366cf1dfae7a74ca0c97163e9cd') in 0.0013795 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+  Time since last request: 0.000026 seconds.
+  path: Assets/The Developer Train/Sci Fi Guns/Prefabs/Railgun 2.prefab
+  artifactKey: Guid(42c51c2603762ff4185ece8ec20ead30) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/The Developer Train/Sci Fi Guns/Prefabs/Railgun 2.prefab using Guid(42c51c2603762ff4185ece8ec20ead30) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: '140e5cc96241e3a428bae760429dabef') in 0.0108093 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 120
 
 ========================================================================
 Received Import Request.
-  Time since last request: 0.000017 seconds.
-  path: Assets/Settings/Medium_PipelineAsset.asset
-  artifactKey: Guid(c61b14fb5256aba4ba209620ff349b27) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
-Start importing Assets/Settings/Medium_PipelineAsset.asset using Guid(c61b14fb5256aba4ba209620ff349b27) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: '588fb28e7885d59b45aab930bca119d7') in 0.0029986 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 2
+  Time since last request: 0.000022 seconds.
+  path: Assets/The Developer Train/Sci Fi Guns/meshes/Railgun 2.fbx
+  artifactKey: Guid(b95064f5dd1cc95489b81d4f3279c637) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/The Developer Train/Sci Fi Guns/meshes/Railgun 2.fbx using Guid(b95064f5dd1cc95489b81d4f3279c637) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: '9ed9cba11d2eaaef752dc5a9f0766de1') in 0.1506303 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 67
 
 ========================================================================
 Received Import Request.
-  Time since last request: 0.000024 seconds.
-  path: Assets/Settings/Very Low_PipelineAsset.asset
-  artifactKey: Guid(d894e41e5caa0264d902fc36fa43dda8) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
-Start importing Assets/Settings/Very Low_PipelineAsset.asset using Guid(d894e41e5caa0264d902fc36fa43dda8) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: '1394d74f79e758de90f18f534d772dfa') in 0.0031422 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 2
+  Time since last request: 0.324116 seconds.
+  path: Assets/The Developer Train/Sci Fi Guns/Prefabs/Sci Fi SMG.prefab
+  artifactKey: Guid(3f1bb73539491074390d7c31c72d7354) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/The Developer Train/Sci Fi Guns/Prefabs/Sci Fi SMG.prefab using Guid(3f1bb73539491074390d7c31c72d7354) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: '52ed12be8357efa781666396446a9586') in 0.0102227 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 25
 
 ========================================================================
 Received Import Request.
-  Time since last request: 0.000014 seconds.
-  path: Assets/Settings/Very High_PipelineAsset.asset
-  artifactKey: Guid(b28549dae66d51649be7afcc8dd8389a) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
-Start importing Assets/Settings/Very High_PipelineAsset.asset using Guid(b28549dae66d51649be7afcc8dd8389a) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: '659e211792c89226b5d87f036e2d1e53') in 0.0011517 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 2
+  Time since last request: 0.000039 seconds.
+  path: Assets/SciFi Warehouse Kit/Prefabs/Props/Shelves/Shelf Variation 01.prefab
+  artifactKey: Guid(324f2a5232c3ab4488fe817c9ea94b63) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/SciFi Warehouse Kit/Prefabs/Props/Shelves/Shelf Variation 01.prefab using Guid(324f2a5232c3ab4488fe817c9ea94b63) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: '6ff855c12398c75afb7d82ebc9a1b693') in 0.0477596 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 267
 
 ========================================================================
 Received Import Request.
-  Time since last request: 0.000013 seconds.
-  path: Assets/Settings/Ultra_PipelineAsset.asset
-  artifactKey: Guid(5e88b4789c3e02e4caa44e870107889b) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
-Start importing Assets/Settings/Ultra_PipelineAsset.asset using Guid(5e88b4789c3e02e4caa44e870107889b) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: 'fce4ef481ac70ec4a622139d996aa9be') in 0.0007144 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
+  Time since last request: 0.000035 seconds.
+  path: Assets/SciFi Warehouse Kit/Prefabs/Structures/Catwalk/Short Stairs Wide.prefab
+  artifactKey: Guid(7e3f523375a441341abd337ac986d569) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/SciFi Warehouse Kit/Prefabs/Structures/Catwalk/Short Stairs Wide.prefab using Guid(7e3f523375a441341abd337ac986d569) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: '56cbf83ddb1a151f524db0f228d57620') in 0.0174923 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 22
 
 Editor requested this worker to shutdown with reason: Scaling down because of idle timeout
 AssetImportWorker is now disconnected from the server
