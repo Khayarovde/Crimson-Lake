@@ -2,7 +2,7 @@ Using pre-set license
 Built from '6000.0/respin/6000.0.59f1-063c55f2fd0f' branch; Version is '6000.0.59f2 (ef281c76c3c1) revision 15673372'; Using compiler version '193933523'; Build Type 'Release'
 OS: 'Windows 11  (10.0.26100) 64bit EnterpriseS' Language: 'ru' Physical Memory: 32694 MB
 BatchMode: 1, IsHumanControllingUs: 0, StartBugReporterOnCrash: 0, Is64bit: 1
-Date: 2025-10-28T14:08:50Z
+Date: 2025-10-31T17:27:53Z
 
 COMMAND LINE ARGUMENTS:
 E:\Unity\6000.0.59f2\Editor\Unity.exe
@@ -12,11 +12,11 @@ E:\Unity\6000.0.59f2\Editor\Unity.exe
 -name
 AssetImportWorker2
 -projectPath
-F:/Project/Crimson-Lake33445
+F:/Project/Crimson-Lake-patch
 -logFile
 Logs/AssetImportWorker2.log
 -srvPort
-60577
+54133
 -job-worker-count
 5
 -background-job-worker-count
@@ -25,8 +25,8 @@ Logs/AssetImportWorker2.log
 1
 -name
 AssetImport
-Successfully changed project path to: F:/Project/Crimson-Lake33445
-F:/Project/Crimson-Lake33445
+Successfully changed project path to: F:/Project/Crimson-Lake-patch
+F:/Project/Crimson-Lake-patch
 [UnityMemory] Configuration Parameters - Can be set up in boot.config
     "memorysetup-bucket-allocator-granularity=16"
     "memorysetup-bucket-allocator-bucket-count=8"
@@ -62,14 +62,16 @@ F:/Project/Crimson-Lake33445
     "memorysetup-temp-allocator-size-gi-baking-worker=262144"
     "memorysetup-temp-allocator-size-gi-baking-worker=262144"
     "memorysetup-temp-allocator-size-gfx=262144"
-Player connection [24184]  Target information:
+Player connection [15900]  Target information:
 
-Player connection [24184]  * "[IP] 192.168.0.4 [Port] 0 [Flags] 2 [Guid] 842830041 [EditorId] 842830041 [Version] 1048832 [Id] WindowsEditor(7,WIN-D9NEL4LPBM6) [Debug] 1 [PackageName] WindowsEditor [ProjectName] Editor" 
+Player connection [15900]  * "[IP] 192.168.0.4 [Port] 0 [Flags] 2 [Guid] 3420563804 [EditorId] 3420563804 [Version] 1048832 [Id] WindowsEditor(7,WIN-D9NEL4LPBM6) [Debug] 1 [PackageName] WindowsEditor [ProjectName] Editor" 
 
-Player connection [24184]  * "[IP] 192.168.56.1 [Port] 0 [Flags] 2 [Guid] 842830041 [EditorId] 842830041 [Version] 1048832 [Id] WindowsEditor(7,WIN-D9NEL4LPBM6) [Debug] 1 [PackageName] WindowsEditor [ProjectName] Editor" 
+Player connection [15900]  * "[IP] 172.23.192.1 [Port] 0 [Flags] 2 [Guid] 3420563804 [EditorId] 3420563804 [Version] 1048832 [Id] WindowsEditor(7,WIN-D9NEL4LPBM6) [Debug] 1 [PackageName] WindowsEditor [ProjectName] Editor" 
 
-Player connection [24184] Host joined multi-casting on [225.0.0.222:54997]...
-Player connection [24184] Host joined alternative multi-casting on [225.0.0.222:34997]...
+Player connection [15900]  * "[IP] 192.168.56.1 [Port] 0 [Flags] 2 [Guid] 3420563804 [EditorId] 3420563804 [Version] 1048832 [Id] WindowsEditor(7,WIN-D9NEL4LPBM6) [Debug] 1 [PackageName] WindowsEditor [ProjectName] Editor" 
+
+Player connection [15900] Host joined multi-casting on [225.0.0.222:54997]...
+Player connection [15900] Host joined alternative multi-casting on [225.0.0.222:34997]...
 JobSystem: Creating JobQueue using job-worker-count value 5
 Input System module state changed to: Initialized.
 [Physics::Module] Initialized fallback backend.
@@ -81,59 +83,61 @@ Library Redirect Path: Library/
 [Physics::Module] SDK Version: 4.1.2
 [Physics::Module] Integration Version: 1.0.0
 [Physics::Module] Threading Mode: Multi-Threaded
-Refreshing native plugins compatible for Editor in 0.58 ms, found 2 plugins.
+Refreshing native plugins compatible for Editor in 1.32 ms, found 2 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
 Initialize engine version: 6000.0.59f2 (ef281c76c3c1)
 [Subsystems] Discovering subsystems at path E:/Unity/6000.0.59f2/Editor/Data/Resources/UnitySubsystems
-[Subsystems] Discovering subsystems at path F:/Project/Crimson-Lake33445/Assets
+[Subsystems] Discovering subsystems at path F:/Project/Crimson-Lake-patch/Assets
 GfxDevice: creating device client; kGfxThreadingModeNonThreaded
 Direct3D:
     Version:  Direct3D 11.0 [level 11.1]
     Renderer: AMD Radeon RX 6650 XT (ID=0x73ef)
     Vendor:   ATI
     VRAM:     8147 MB
-    Driver:   32.0.21025.10016
+    Driver:   32.0.21033.2001
 Initialize mono
 Mono path[0] = 'E:/Unity/6000.0.59f2/Editor/Data/Managed'
 Mono path[1] = 'E:/Unity/6000.0.59f2/Editor/Data/MonoBleedingEdge/lib/mono/unityjit-win32'
 Mono config path = 'E:/Unity/6000.0.59f2/Editor/Data/MonoBleedingEdge/etc'
-Using monoOptions --debugger-agent=transport=dt_socket,embedding=1,server=y,suspend=n,address=127.0.0.1:56240
+Using monoOptions --debugger-agent=transport=dt_socket,embedding=1,server=y,suspend=n,address=127.0.0.1:56624
 Begin MonoManager ReloadAssembly
 Registering precompiled unity dll's ...
+Register platform support module: E:/Unity/6000.0.59f2/Editor/Data/PlaybackEngines/WebGLSupport/UnityEditor.WebGL.Extensions.dll
 Register platform support module: E:/Unity/6000.0.59f2/Editor/Data/PlaybackEngines/WindowsStandaloneSupport/UnityEditor.WindowsStandalone.Extensions.dll
-Registered in 0.001404 seconds.
-- Loaded All Assemblies, in  0.323 seconds
+Registered in 0.002166 seconds.
+- Loaded All Assemblies, in  0.375 seconds
 Native extension for WindowsStandalone target not found
+Native extension for WebGL target not found
 Mono: successfully reloaded assembly
-- Finished resetting the current domain, in  0.261 seconds
-Domain Reload Profiling: 584ms
-	BeginReloadAssembly (119ms)
+- Finished resetting the current domain, in  0.377 seconds
+Domain Reload Profiling: 751ms
+	BeginReloadAssembly (123ms)
 		ExecutionOrderSort (0ms)
 		DisableScriptedObjects (0ms)
 		BackupInstance (0ms)
 		ReleaseScriptingObjects (0ms)
 		CreateAndSetChildDomain (1ms)
-	RebuildCommonClasses (33ms)
-	RebuildNativeTypeToScriptingClass (10ms)
-	initialDomainReloadingComplete (36ms)
-	LoadAllAssembliesAndSetupDomain (124ms)
-		LoadAssemblies (118ms)
+	RebuildCommonClasses (37ms)
+	RebuildNativeTypeToScriptingClass (11ms)
+	initialDomainReloadingComplete (41ms)
+	LoadAllAssembliesAndSetupDomain (162ms)
+		LoadAssemblies (122ms)
 		RebuildTransferFunctionScriptingTraits (0ms)
-		AnalyzeDomain (122ms)
-			TypeCache.Refresh (121ms)
-				TypeCache.ScanAssembly (110ms)
+		AnalyzeDomain (159ms)
+			TypeCache.Refresh (158ms)
+				TypeCache.ScanAssembly (145ms)
 			BuildScriptInfoCaches (0ms)
 			ResolveRequiredComponents (0ms)
-	FinalizeReload (262ms)
+	FinalizeReload (377ms)
 		ReleaseScriptCaches (0ms)
 		RebuildScriptCaches (0ms)
-		SetupLoadedEditorAssemblies (229ms)
+		SetupLoadedEditorAssemblies (333ms)
 			LogAssemblyErrors (0ms)
-			InitializePlatformSupportModulesInManaged (15ms)
-			SetLoadedEditorAssemblies (3ms)
-			BeforeProcessingInitializeOnLoad (48ms)
-			ProcessInitializeOnLoadAttributes (118ms)
-			ProcessInitializeOnLoadMethodAttributes (45ms)
+			InitializePlatformSupportModulesInManaged (22ms)
+			SetLoadedEditorAssemblies (5ms)
+			BeforeProcessingInitializeOnLoad (80ms)
+			ProcessInitializeOnLoadAttributes (176ms)
+			ProcessInitializeOnLoadMethodAttributes (49ms)
 			AfterProcessingInitializeOnLoad (0ms)
 			EditorAssembliesLoaded (0ms)
 		ExecutionOrderSort2 (0ms)
@@ -142,62 +146,972 @@ Domain Reload Profiling: 584ms
 Worker process is ready to serve import requests
 Import Worker Mode flag is 0x00
 Begin MonoManager ReloadAssembly
-- Loaded All Assemblies, in  0.504 seconds
+- Loaded All Assemblies, in  0.524 seconds
 Script 'Camera' has the same name as built-in Unity component.
 AddComponent and GetComponent will not work with this script.
-Refreshing native plugins compatible for Editor in 0.37 ms, found 2 plugins.
+Refreshing native plugins compatible for Editor in 0.58 ms, found 2 plugins.
 Native extension for WindowsStandalone target not found
+Native extension for WebGL target not found
+[ScriptCompilation] NOT recompiling all scripts because this is an import worker process. Reason to compile was: Define symbols changed
 Package Manager log level set to [2]
 [Package Manager] Failed to launch server process. Reason: Unity was launched with the -noUpm command-line argument
 [Package Manager] Unable to send message (not connected to server process).
 [Package Manager] Cannot connect to Unity Package Manager local server
 Mono: successfully reloaded assembly
-- Finished resetting the current domain, in  0.517 seconds
-Domain Reload Profiling: 1020ms
-	BeginReloadAssembly (140ms)
+- Finished resetting the current domain, in  0.628 seconds
+Domain Reload Profiling: 1151ms
+	BeginReloadAssembly (143ms)
 		ExecutionOrderSort (0ms)
 		DisableScriptedObjects (5ms)
 		BackupInstance (0ms)
 		ReleaseScriptingObjects (0ms)
-		CreateAndSetChildDomain (25ms)
-	RebuildCommonClasses (31ms)
+		CreateAndSetChildDomain (29ms)
+	RebuildCommonClasses (29ms)
 	RebuildNativeTypeToScriptingClass (10ms)
-	initialDomainReloadingComplete (20ms)
-	LoadAllAssembliesAndSetupDomain (303ms)
-		LoadAssemblies (236ms)
+	initialDomainReloadingComplete (30ms)
+	LoadAllAssembliesAndSetupDomain (310ms)
+		LoadAssemblies (226ms)
 		RebuildTransferFunctionScriptingTraits (0ms)
-		AnalyzeDomain (145ms)
-			TypeCache.Refresh (107ms)
-				TypeCache.ScanAssembly (97ms)
-			BuildScriptInfoCaches (26ms)
-			ResolveRequiredComponents (9ms)
-	FinalizeReload (517ms)
+		AnalyzeDomain (160ms)
+			TypeCache.Refresh (115ms)
+				TypeCache.ScanAssembly (104ms)
+			BuildScriptInfoCaches (34ms)
+			ResolveRequiredComponents (8ms)
+	FinalizeReload (629ms)
 		ReleaseScriptCaches (0ms)
 		RebuildScriptCaches (0ms)
-		SetupLoadedEditorAssemblies (377ms)
+		SetupLoadedEditorAssemblies (465ms)
 			LogAssemblyErrors (0ms)
-			InitializePlatformSupportModulesInManaged (2ms)
-			SetLoadedEditorAssemblies (4ms)
-			BeforeProcessingInitializeOnLoad (77ms)
-			ProcessInitializeOnLoadAttributes (245ms)
-			ProcessInitializeOnLoadMethodAttributes (47ms)
+			InitializePlatformSupportModulesInManaged (3ms)
+			SetLoadedEditorAssemblies (3ms)
+			BeforeProcessingInitializeOnLoad (96ms)
+			ProcessInitializeOnLoadAttributes (320ms)
+			ProcessInitializeOnLoadMethodAttributes (41ms)
 			AfterProcessingInitializeOnLoad (2ms)
 			EditorAssembliesLoaded (0ms)
 		ExecutionOrderSort2 (0ms)
 		AwakeInstancesAfterBackupRestoration (5ms)
 Launched and connected shader compiler UnityShaderCompiler.exe after 0.01 seconds
-Refreshing native plugins compatible for Editor in 0.33 ms, found 2 plugins.
+Refreshing native plugins compatible for Editor in 0.55 ms, found 2 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
 Unloading 13 Unused Serialized files (Serialized files now loaded: 0)
-Unloading 4142 unused Assets / (3.4 MB). Loaded Objects now: 4841.
-Memory consumption went from 120.1 MB to 116.7 MB.
-Total: 5.379500 ms (FindLiveObjects: 0.415400 ms CreateObjectMapping: 0.195700 ms MarkObjects: 3.450000 ms  DeleteObjects: 1.318100 ms)
+Unloading 4233 unused Assets / (4.2 MB). Loaded Objects now: 4938.
+Memory consumption went from 112.5 MB to 108.3 MB.
+Total: 6.496000 ms (FindLiveObjects: 0.397000 ms CreateObjectMapping: 0.387000 ms MarkObjects: 3.990200 ms  DeleteObjects: 1.721300 ms)
 
 ========================================================================
 Received Import Request.
-  Time since last request: 12756.481959 seconds.
-  path: Assets/Scenes/cameratest.unity
-  artifactKey: Guid(9fc0d4010bbf28b4594072e72b8655ab) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
-Start importing Assets/Scenes/cameratest.unity using Guid(9fc0d4010bbf28b4594072e72b8655ab) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: 'c3ea905ed423f34548689e431dc731dd') in 0.0037145 seconds
+  Time since last request: 10208.456606 seconds.
+  path: Assets/The Developer Train/Sci Fi Guns/meshes/Railgun 2.fbx
+  artifactKey: Guid(b95064f5dd1cc95489b81d4f3279c637) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/The Developer Train/Sci Fi Guns/meshes/Railgun 2.fbx using Guid(b95064f5dd1cc95489b81d4f3279c637) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: '0fe8cc70afa737d4729a5ca5dfdf1e36') in 0.5412203 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 68
+
+========================================================================
+Received Import Request.
+  Time since last request: 85.921536 seconds.
+  path: Assets/TextMesh Pro/Resources/Fonts & Materials/LiberationSans SDF - Fallback.asset
+  artifactKey: Guid(2e498d1c8094910479dc3e1b768306a4) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/TextMesh Pro/Resources/Fonts & Materials/LiberationSans SDF - Fallback.asset using Guid(2e498d1c8094910479dc3e1b768306a4) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '0ea93df359e2296c0497ffdacaf826d6') in 0.2080913 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 5
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000036 seconds.
+  path: Assets/Blink 1/Art
+  artifactKey: Guid(36bf7ddf0e2332743a2b08ad2e80beaa) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 1/Art using Guid(36bf7ddf0e2332743a2b08ad2e80beaa) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '25fb915b1f79dbfbdad9d86a2c999fec') in 0.0113352 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000036 seconds.
+  path: Assets/Blink 1/Art/Animations/Combat/Buff.fbx
+  artifactKey: Guid(390447337a37ae841af7d1051c4fa696) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 1/Art/Animations/Combat/Buff.fbx using Guid(390447337a37ae841af7d1051c4fa696) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'a5c960cd129485842ee6948c399be9b3') in 0.0810157 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 160
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000024 seconds.
+  path: Assets/Blink 1/Art/Characters/Stylized/Humans/Materials_Humans/Eyes.mat
+  artifactKey: Guid(b826781b8f9355c4d9ed5bd769e84ac7) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 1/Art/Characters/Stylized/Humans/Materials_Humans/Eyes.mat using Guid(b826781b8f9355c4d9ed5bd769e84ac7) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '98a20260e25302b2f502937c69fb1d01') in 0.0209745 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 5
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000026 seconds.
+  path: Assets/Blink 1/Art/Characters/Stylized/Humans/Textures_Humans/HM_Face_1_Roughness.png
+  artifactKey: Guid(b789f98984b1dc148982e1955a35e33c) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 1/Art/Characters/Stylized/Humans/Textures_Humans/HM_Face_1_Roughness.png using Guid(b789f98984b1dc148982e1955a35e33c) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '12d2c02f423cffdf17fc8c00caabd055') in 0.0544121 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000031 seconds.
+  path: Assets/Blink 1/Art/Characters/Stylized/Humans/Prefabs_Humans
+  artifactKey: Guid(537d1d93b9c34c148a5cce6aba87d5d1) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 1/Art/Characters/Stylized/Humans/Prefabs_Humans using Guid(537d1d93b9c34c148a5cce6aba87d5d1) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'd0cb50a8fe64d8d33fa79cc80bf2eecd') in 0.0112968 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000053 seconds.
+  path: Assets/Blink 1/Art/Characters/Stylized/Humans/Materials_Humans/Beard3.mat
+  artifactKey: Guid(3af4bed469267ac44b77fe6f31af03b3) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 1/Art/Characters/Stylized/Humans/Materials_Humans/Beard3.mat using Guid(3af4bed469267ac44b77fe6f31af03b3) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'afc275d6e9163ce984cf45d0b92da444') in 0.0238847 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 5
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000024 seconds.
+  path: Assets/Blink 1/Art/Characters/Stylized/Humans/Textures_Humans/HM_Beard_1_Metallic.png
+  artifactKey: Guid(60712e8cb68f4f84991e501dbb6bb99f) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 1/Art/Characters/Stylized/Humans/Textures_Humans/HM_Beard_1_Metallic.png using Guid(60712e8cb68f4f84991e501dbb6bb99f) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'eec358354e646b83e9c61bff4c088464') in 0.0246165 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000023 seconds.
+  path: Assets/Blink 1/Art/Characters/Stylized/Demo_Characters/DEMO_FreeStylizedHumanMaleSettings.lighting
+  artifactKey: Guid(c91f227311438cc4f9d9c680beefe695) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 1/Art/Characters/Stylized/Demo_Characters/DEMO_FreeStylizedHumanMaleSettings.lighting using Guid(c91f227311438cc4f9d9c680beefe695) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '878b0b237997da1cb8d6947aca14cd2c') in 0.0332217 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000036 seconds.
+  path: Assets/Blink 1/Art/Characters/Stylized/Humans/Armors_Humans/Textures_ArmorsHumans/StarterArmor_Metallic.png
+  artifactKey: Guid(bf924d8c23e68164896e802621322f22) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 1/Art/Characters/Stylized/Humans/Armors_Humans/Textures_ArmorsHumans/StarterArmor_Metallic.png using Guid(bf924d8c23e68164896e802621322f22) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '2a916b6b46be20bf39acc05d2b73cc60') in 0.0223169 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000032 seconds.
+  path: Assets/Blink 1/Art/Characters/Stylized/Humans/Materials_Humans/Accessories.mat
+  artifactKey: Guid(1cff7c09745b78e489f5e01d2ba1c675) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 1/Art/Characters/Stylized/Humans/Materials_Humans/Accessories.mat using Guid(1cff7c09745b78e489f5e01d2ba1c675) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'b53895696cfd7927c78bbe9db483409c') in 0.0322648 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 5
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000020 seconds.
+  path: Assets/Blink 1/Art/Characters/Stylized/Humans/Textures_Humans/HM_Accessories_T_AO.png
+  artifactKey: Guid(82a73290f41d30644a2215fe0c43146c) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 1/Art/Characters/Stylized/Humans/Textures_Humans/HM_Accessories_T_AO.png using Guid(82a73290f41d30644a2215fe0c43146c) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'ecdb124957ac8abf783cc659599a72a3') in 0.0223524 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000018 seconds.
+  path: Assets/Blink 1/Art/Animations/Movement/WalkForwardRight.fbx
+  artifactKey: Guid(71c5ffeee9e229e45a39c325c4da8844) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 1/Art/Animations/Movement/WalkForwardRight.fbx using Guid(71c5ffeee9e229e45a39c325c4da8844) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'c61e8c9a6e8fb02702a40c0202be226a') in 0.031111 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 160
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000019 seconds.
+  path: Assets/Blink 1/Art/Characters/Stylized/Humans/Textures_Humans/HM_Eyebrows_AO.png
+  artifactKey: Guid(4d0d819cd7154d7448b66cd2be1caeaa) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 1/Art/Characters/Stylized/Humans/Textures_Humans/HM_Eyebrows_AO.png using Guid(4d0d819cd7154d7448b66cd2be1caeaa) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '1779ff70f1d53106680d91136763f078') in 0.0180789 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000025 seconds.
+  path: Assets/Blink 1/Art/Characters/Stylized/Humans/Textures_Humans/HM_Hair_1_Roughness.png
+  artifactKey: Guid(6ff518ac4c36c1548802b2c83f939e44) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 1/Art/Characters/Stylized/Humans/Textures_Humans/HM_Hair_1_Roughness.png using Guid(6ff518ac4c36c1548802b2c83f939e44) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'd095fdf52dc735293ba7882669049f93') in 0.0252934 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000024 seconds.
+  path: Assets/Blink 1/Art/Animations/Movement/RunRight.fbx
+  artifactKey: Guid(1f3fa4775524af445b339b161de38631) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 1/Art/Animations/Movement/RunRight.fbx using Guid(1f3fa4775524af445b339b161de38631) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'e8488346f89c65b8c9e214fbac65607b') in 0.0266973 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 160
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000036 seconds.
+  path: Assets/Blink 1/Art/Characters/Stylized/Humans/Textures_Humans/HM_Body_Roughness.png
+  artifactKey: Guid(2c14019af93808641bd2bc49065a447c) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 1/Art/Characters/Stylized/Humans/Textures_Humans/HM_Body_Roughness.png using Guid(2c14019af93808641bd2bc49065a447c) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'f7097d53f10e191c7ed807d46b047786') in 0.0307019 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000020 seconds.
+  path: Assets/Blink 1/Art/Animations/Combat/BlockingLoop.fbx
+  artifactKey: Guid(91734dfc7efdadf4fbee0a869d8947d2) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 1/Art/Animations/Combat/BlockingLoop.fbx using Guid(91734dfc7efdadf4fbee0a869d8947d2) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'a691928ce957f3efc39683cdaa99136e') in 0.0251996 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 160
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000020 seconds.
+  path: Assets/Blink 1/Art/Characters/Stylized/Humans/Armors_Humans/Meshes_ArmorsHumans/StarterArmor_HumanMale.fbx
+  artifactKey: Guid(86920d5f6382fe949a8ca8dbf91613b3) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 1/Art/Characters/Stylized/Humans/Armors_Humans/Meshes_ArmorsHumans/StarterArmor_HumanMale.fbx using Guid(86920d5f6382fe949a8ca8dbf91613b3) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'a0fe95ba7d288a2bd6b46432aac02b71') in 0.0272856 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 209
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000023 seconds.
+  path: Assets/Blink 1/Art/Characters/Stylized
+  artifactKey: Guid(924d8405d7f321440b5840dc27a8b7f3) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 1/Art/Characters/Stylized using Guid(924d8405d7f321440b5840dc27a8b7f3) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'b7aa32f94a8f12331f4adf7173f80e52') in 0.0080363 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000025 seconds.
+  path: Assets/Blink 1/Art/Animations/Combat/MeeleeAttack_TwoHanded.fbx
+  artifactKey: Guid(37aa9a31273002d42a7ee91d23a1c310) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 1/Art/Animations/Combat/MeeleeAttack_TwoHanded.fbx using Guid(37aa9a31273002d42a7ee91d23a1c310) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'a410efd75f1f14daf95dc6b63f58cc87') in 0.0308885 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 160
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000024 seconds.
+  path: Assets/Blink 1/Art/Characters/Stylized/Demo_Characters/DEMO_FreeStylizedHumanMale/LightingData.asset
+  artifactKey: Guid(d532f95711bc1f240938643ecad24f20) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 1/Art/Characters/Stylized/Demo_Characters/DEMO_FreeStylizedHumanMale/LightingData.asset using Guid(d532f95711bc1f240938643ecad24f20) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '7e21f95cff8b568bb7aaf3fd580c9c00') in 0.0203786 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 2
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000019 seconds.
+  path: Assets/Blink 1/Art/Characters/Stylized/Humans/Armors_Humans/Meshes_ArmorsHumans
+  artifactKey: Guid(32f17396720487a4aa14ab77f579cd17) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 1/Art/Characters/Stylized/Humans/Armors_Humans/Meshes_ArmorsHumans using Guid(32f17396720487a4aa14ab77f579cd17) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '68acb6c3d9ccaf9d60052ede54e3d4d6') in 0.0116517 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000028 seconds.
+  path: Assets/Blink 1/Art/Characters/Stylized/Demo_Characters/PPProfile.asset
+  artifactKey: Guid(10913633109cd944bba22eded228d83c) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 1/Art/Characters/Stylized/Demo_Characters/PPProfile.asset using Guid(10913633109cd944bba22eded228d83c) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '8dd1c3b87560f30f37b3dda58ab9ee75') in 0.0129607 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000030 seconds.
+  path: Assets/Blink 1/Art/Characters
+  artifactKey: Guid(b9d7aede3071e66449a67944350b1f42) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 1/Art/Characters using Guid(b9d7aede3071e66449a67944350b1f42) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '4cae2f7e3fe2cdc6b97c3eaed49d605f') in 0.0104081 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000032 seconds.
+  path: Assets/Blink 1/Art/Characters/Stylized/Humans/Textures_Humans/HM_Eyebrows_Roughness.png
+  artifactKey: Guid(8cc6a7b3bd3792c4ebd1c05c6c681215) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 1/Art/Characters/Stylized/Humans/Textures_Humans/HM_Eyebrows_Roughness.png using Guid(8cc6a7b3bd3792c4ebd1c05c6c681215) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '6322a93dbe9a8321b4ca5f7c2beaaec3') in 0.0280541 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000031 seconds.
+  path: Assets/Blink 1/Art/Characters/Stylized/Humans/Textures_Humans/HM_Eyebrows_BaseColor.png
+  artifactKey: Guid(25dd528e48ccb794bbb501480e863f33) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 1/Art/Characters/Stylized/Humans/Textures_Humans/HM_Eyebrows_BaseColor.png using Guid(25dd528e48ccb794bbb501480e863f33) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'ceef0c9e9da8a0ec2348a20a3c1a6bd6') in 0.0174185 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000028 seconds.
+  path: Assets/Blink 1/Art/Characters/Stylized/Demo_Characters/DEMO_FreeStylizedHumanMale.unity
+  artifactKey: Guid(342eba0ef81eba1459c42227db309f16) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 1/Art/Characters/Stylized/Demo_Characters/DEMO_FreeStylizedHumanMale.unity using Guid(342eba0ef81eba1459c42227db309f16) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'eca4e08d8e2bc84115dfba19d0cb8049') in 0.01492 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000024 seconds.
+  path: Assets/Blink 1/Art/Characters/Stylized/Humans
+  artifactKey: Guid(f10c4f8084bd4c44691b2a864974dbe8) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 1/Art/Characters/Stylized/Humans using Guid(f10c4f8084bd4c44691b2a864974dbe8) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '78c4e18f5fb44ac81922f88fb860e67c') in 0.0184001 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000028 seconds.
+  path: Assets/Blink 1/Art/Characters/Stylized/Humans/Armors_Humans/Materials_ArmorsHumans/StarterArmor_2.mat
+  artifactKey: Guid(7574e5272ef28dd44afef860af4dee44) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 1/Art/Characters/Stylized/Humans/Armors_Humans/Materials_ArmorsHumans/StarterArmor_2.mat using Guid(7574e5272ef28dd44afef860af4dee44) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '5ca75406d42697c7ec60215984453de5') in 0.0389198 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 5
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000035 seconds.
+  path: Assets/Blink 1/Art/Characters/Stylized/Humans/Meshes_Humans/StylizedHumanMale_Hair2.fbx
+  artifactKey: Guid(43e5b59e0e098ea43b2bc7937227a3f7) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 1/Art/Characters/Stylized/Humans/Meshes_Humans/StylizedHumanMale_Hair2.fbx using Guid(43e5b59e0e098ea43b2bc7937227a3f7) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '0ba6b62146c5423eb1024f34c6f4638d') in 0.0181171 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 23
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000020 seconds.
+  path: Assets/Blink 2/Art/Animations/Movement/RunBackwardRight.fbx
+  artifactKey: Guid(ac0afec81b73a0c4aabde2463445dced) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 2/Art/Animations/Movement/RunBackwardRight.fbx using Guid(ac0afec81b73a0c4aabde2463445dced) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'b4779f7dfecbe980da882b0bcbf2477e') in 0.0228096 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 160
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000021 seconds.
+  path: Assets/Blink 2/Art/Animations/Combat/MeeleeAttack_TwoHanded.fbx
+  artifactKey: Guid(82aa85cdc81f4194f972d1291ecc156c) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 2/Art/Animations/Combat/MeeleeAttack_TwoHanded.fbx using Guid(82aa85cdc81f4194f972d1291ecc156c) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '4546b960fa65d823e99639908f7f9daf') in 0.0222825 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 160
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000026 seconds.
+  path: Assets/Blink 1/Art/Animations/Movement/WalkBackwardLeft.fbx
+  artifactKey: Guid(c5a09f0d36c3f12409896a36cc89772f) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 1/Art/Animations/Movement/WalkBackwardLeft.fbx using Guid(c5a09f0d36c3f12409896a36cc89772f) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '7aa3a39c0ce1d42e7d3bbdb11148074f') in 0.0290474 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 160
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000023 seconds.
+  path: Assets/Blink 2/Art/Characters/Stylized/Humans/Textures_Humans/HM_Eyebrows_BaseColor.png
+  artifactKey: Guid(eebe6a0010699334da58e3bde2b2c25d) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 2/Art/Characters/Stylized/Humans/Textures_Humans/HM_Eyebrows_BaseColor.png using Guid(eebe6a0010699334da58e3bde2b2c25d) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '3352b7a435f84ac4ef2ebac2a9cbc54c') in 0.0214378 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000027 seconds.
+  path: Assets/Blink 2/Art/Characters/Stylized/Humans/Textures_Humans/HM_Beard_3_BaseColor.png
+  artifactKey: Guid(c4a5f74d2579f6f4f96189242232ee28) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 2/Art/Characters/Stylized/Humans/Textures_Humans/HM_Beard_3_BaseColor.png using Guid(c4a5f74d2579f6f4f96189242232ee28) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '23c6c1a632576af090ec6fc040c76d14') in 0.0210508 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000034 seconds.
+  path: Assets/Blink 1/Art/Characters/Stylized/Humans/Textures_Humans/HM_Hair_2_Normal.png
+  artifactKey: Guid(4119e8fd280cea646bb98cbd9a436196) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 1/Art/Characters/Stylized/Humans/Textures_Humans/HM_Hair_2_Normal.png using Guid(4119e8fd280cea646bb98cbd9a436196) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'd57c757f0dd40f0a1eb871b2f2291132') in 0.0191315 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000024 seconds.
+  path: Assets/Blink 1/Art/Characters/Stylized/Humans/Armors_Humans
+  artifactKey: Guid(6b1dda5b96516524b903a8a3d4105bad) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 1/Art/Characters/Stylized/Humans/Armors_Humans using Guid(6b1dda5b96516524b903a8a3d4105bad) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'a97700197bee90541ed6b743fe3f270b') in 0.0115071 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000028 seconds.
+  path: Assets/Blink 1/Art/Characters/Stylized/Humans/Meshes_Humans/StylizedHumanMale_Eyebrow1.fbx
+  artifactKey: Guid(32c2a9ac970b7ad42a23661ef414ee61) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 1/Art/Characters/Stylized/Humans/Meshes_Humans/StylizedHumanMale_Eyebrow1.fbx using Guid(32c2a9ac970b7ad42a23661ef414ee61) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '68fbeae93d8c059aa7432f43ffe4a23e') in 0.0239578 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 181
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000029 seconds.
+  path: Assets/Blink 1/Art/Animations/Movement/WalkForward.fbx
+  artifactKey: Guid(8842d3a5f9d86a24b9efbb37667b93e2) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 1/Art/Animations/Movement/WalkForward.fbx using Guid(8842d3a5f9d86a24b9efbb37667b93e2) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '458abee0f0a1bd66af4e5b0fa94a5f29') in 0.0310331 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 160
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000033 seconds.
+  path: Assets/Blink 2/Art/Characters/Stylized/Humans/Textures_Humans/HM_Face_1_BaseColor.png
+  artifactKey: Guid(0bdc69c26a42e3e4ab0cfc4b5aafaded) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 2/Art/Characters/Stylized/Humans/Textures_Humans/HM_Face_1_BaseColor.png using Guid(0bdc69c26a42e3e4ab0cfc4b5aafaded) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'fd4edb8aeb58579648f855fc1eca39a2') in 0.0237693 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000021 seconds.
+  path: Assets/Blink 2/Art/Characters/Stylized/Humans/Textures_Humans/HM_Accessories_T_AO.png
+  artifactKey: Guid(c856cfe4701af634ab02b12f880e327a) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 2/Art/Characters/Stylized/Humans/Textures_Humans/HM_Accessories_T_AO.png using Guid(c856cfe4701af634ab02b12f880e327a) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '97b06a14a96e44119b6fabea79ff0273') in 0.0222063 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000022 seconds.
+  path: Assets/Blink 2/Art/Characters/Stylized/Humans/Textures_Humans/HM_Beard_1_Metallic.png
+  artifactKey: Guid(0c92b307b47f4494b8c423195ec8d039) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 2/Art/Characters/Stylized/Humans/Textures_Humans/HM_Beard_1_Metallic.png using Guid(0c92b307b47f4494b8c423195ec8d039) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'caa8e9b4b602ebdb212f8e2b5232b1cf') in 0.0239079 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000021 seconds.
+  path: Assets/Blink 1/Art/Animations/Combat/SpinToWin_TwoHanded.fbx
+  artifactKey: Guid(d26d9d18fc2e56445971f098a6f8d933) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 1/Art/Animations/Combat/SpinToWin_TwoHanded.fbx using Guid(d26d9d18fc2e56445971f098a6f8d933) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '08329fba0d8e994494bd732e3d6ab3d5') in 0.0346331 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 160
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000030 seconds.
+  path: Assets/Blink 1/Art/Animations
+  artifactKey: Guid(f16f2a3892169074ab4ea14a831e588c) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 1/Art/Animations using Guid(f16f2a3892169074ab4ea14a831e588c) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '4a3cdd020fd0aa8ceb27841e6bc76c13') in 0.0126315 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000037 seconds.
+  path: Assets/Blink 1/Art/Characters/Stylized/Humans/Armors_Humans/Textures_ArmorsHumans/StarterArmor_BaseColor2.png
+  artifactKey: Guid(e2e9c384f7eb8264396f4bd147e70f47) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 1/Art/Characters/Stylized/Humans/Armors_Humans/Textures_ArmorsHumans/StarterArmor_BaseColor2.png using Guid(e2e9c384f7eb8264396f4bd147e70f47) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '016482fcfd9224b671602bd0c0af260e') in 0.0215252 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000025 seconds.
+  path: Assets/Blink 1/Art/Animations/Movement/walking (1) 2.fbx
+  artifactKey: Guid(2a3f4a5e63082594398eca623d9186a8) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 1/Art/Animations/Movement/walking (1) 2.fbx using Guid(2a3f4a5e63082594398eca623d9186a8) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '9e73dd00bcbc11716973a04b93bc7982') in 0.0703837 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 177
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000027 seconds.
+  path: Assets/Blink 2/Art/Animations/Combat/SpinAttack_TwoHanded.fbx
+  artifactKey: Guid(3885a52b2d4e18442be09db403881e1e) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 2/Art/Animations/Combat/SpinAttack_TwoHanded.fbx using Guid(3885a52b2d4e18442be09db403881e1e) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'b75e8c66172876fe874dc16d88d5839b') in 0.0324016 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 160
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000033 seconds.
+  path: Assets/Prefabs 1/PrototypeSafe.prefab
+  artifactKey: Guid(d6e62627e41b24b4d879cae3327ded5c) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Prefabs 1/PrototypeSafe.prefab using Guid(d6e62627e41b24b4d879cae3327ded5c) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '1c8a5108cebfef0460aa256b6848f8a9') in 0.0153052 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 90
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000041 seconds.
+  path: Assets/Blink 2/Art/Characters/Stylized/Humans/Textures_Humans/HM_Eyebrows_AO.png
+  artifactKey: Guid(b809f9533bcbe3649a935154a2e3d2a5) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 2/Art/Characters/Stylized/Humans/Textures_Humans/HM_Eyebrows_AO.png using Guid(b809f9533bcbe3649a935154a2e3d2a5) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '4b63e1aa4d2822d360d9ac25a9e094c9') in 0.0153526 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000022 seconds.
+  path: Assets/Prefabs 1/Phylanc
+  artifactKey: Guid(1682543d383986e4cb53cbd0d6527810) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Prefabs 1/Phylanc using Guid(1682543d383986e4cb53cbd0d6527810) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'bebd18ee7d92b30afe63a995ec8d7a29') in 0.0086499 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000023 seconds.
+  path: Assets/Blink 2/Art/Animations/Combat/BlockingLoop.fbx
+  artifactKey: Guid(ea17e6f778a64ac4194bc50c78d6fe19) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 2/Art/Animations/Combat/BlockingLoop.fbx using Guid(ea17e6f778a64ac4194bc50c78d6fe19) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '2bcb2bca1536149515482e66ad6c20c6') in 0.0260956 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 160
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000022 seconds.
+  path: Assets/Blink 2/Art/Characters/Stylized/Humans/Textures_Humans/HM_Beard_1_Normal.png
+  artifactKey: Guid(a8d1d8b375e28be409df9059e8c2bb9e) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 2/Art/Characters/Stylized/Humans/Textures_Humans/HM_Beard_1_Normal.png using Guid(a8d1d8b375e28be409df9059e8c2bb9e) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '4e019778aba1ec00ed28f0e9974ea63f') in 0.0185936 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000025 seconds.
+  path: Assets/Blink 2/Art/Animations/Movement/RollRight.fbx
+  artifactKey: Guid(2f562fbf8fb892f49b2c7d490bacd0f2) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 2/Art/Animations/Movement/RollRight.fbx using Guid(2f562fbf8fb892f49b2c7d490bacd0f2) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'bcf05cbb551ecabde24c38cf6f5323fb') in 0.0235564 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 160
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000041 seconds.
+  path: Assets/Blink 1/Art/Animations/Movement/WalkForwardLeft.fbx
+  artifactKey: Guid(409c4613c607ef44cb6a26294779f8f4) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 1/Art/Animations/Movement/WalkForwardLeft.fbx using Guid(409c4613c607ef44cb6a26294779f8f4) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'bdbcfb0dd4a99400aeca503634dd054d') in 0.0298686 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 160
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000026 seconds.
+  path: Assets/Blink 2/Art/Characters/Stylized/Humans/Materials_Humans/Hair2.mat
+  artifactKey: Guid(e9c5d68827a014c48a758a7c2a5bcdba) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 2/Art/Characters/Stylized/Humans/Materials_Humans/Hair2.mat using Guid(e9c5d68827a014c48a758a7c2a5bcdba) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '513f707d4ff0f8f3790d0f9025fdb684') in 0.0238405 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 5
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000020 seconds.
+  path: Assets/Blink 2/Art/Characters/Stylized/Humans/Armors_Humans/Textures_ArmorsHumans/StarterArmor_Roughness.png
+  artifactKey: Guid(9319f7e48d4165b4cb17a0a80fb9eeae) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 2/Art/Characters/Stylized/Humans/Armors_Humans/Textures_ArmorsHumans/StarterArmor_Roughness.png using Guid(9319f7e48d4165b4cb17a0a80fb9eeae) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'ac345ed14f6c66b209b30b7ec5716a3f') in 0.038057 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000021 seconds.
+  path: Assets/Blink 2/Art/Characters/Stylized/Humans/Textures_Humans/HM_Accessories_T_BaseColor1.png
+  artifactKey: Guid(c4d63c441b122c1438c6c13f3fe0805e) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 2/Art/Characters/Stylized/Humans/Textures_Humans/HM_Accessories_T_BaseColor1.png using Guid(c4d63c441b122c1438c6c13f3fe0805e) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '35f2b7c6f67761bb5f737c5c40bde5da') in 0.0287741 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000027 seconds.
+  path: Assets/Blink 2/Art/Characters/Stylized/Humans/Armors_Humans/Textures_ArmorsHumans/StarterArmor_Normals.png
+  artifactKey: Guid(20da11b84f2b48b438611a293e45a45d) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 2/Art/Characters/Stylized/Humans/Armors_Humans/Textures_ArmorsHumans/StarterArmor_Normals.png using Guid(20da11b84f2b48b438611a293e45a45d) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '727b20fa9b9b9e34b554d08efebea9a9') in 0.0181356 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000018 seconds.
+  path: Assets/Blink 1/Art/Characters/Stylized/Humans/Textures_Humans/HM_Eyebrows_Metallic.png
+  artifactKey: Guid(0d7a00c906f2dc0439ec3ae266041894) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 1/Art/Characters/Stylized/Humans/Textures_Humans/HM_Eyebrows_Metallic.png using Guid(0d7a00c906f2dc0439ec3ae266041894) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '1af13eae35c23a29c788c64e6b0bdea1') in 0.0225904 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000018 seconds.
+  path: Assets/Blink 1/Art/Animations/Combat/SpinAttack_TwoWeapons.fbx
+  artifactKey: Guid(8b3ddfc429e8b254f8bc29bd6ca41593) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 1/Art/Animations/Combat/SpinAttack_TwoWeapons.fbx using Guid(8b3ddfc429e8b254f8bc29bd6ca41593) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '2fdeb0a69df4c394800b4e048c34b93d') in 0.0193901 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 160
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000019 seconds.
+  path: Assets/Blink 1/Art/Characters/Stylized/Demo_Characters
+  artifactKey: Guid(56bab9415dc18ff4caa7b70d0c84a69a) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 1/Art/Characters/Stylized/Demo_Characters using Guid(56bab9415dc18ff4caa7b70d0c84a69a) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '45d07e5aca7a03afa363cd5f46673996') in 0.0125068 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000022 seconds.
+  path: Assets/Blink 2/Art/Characters/Stylized/Humans/Materials_Humans/Beard1.mat
+  artifactKey: Guid(a074b50361fa1d24595f76d5fc806ae7) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 2/Art/Characters/Stylized/Humans/Materials_Humans/Beard1.mat using Guid(a074b50361fa1d24595f76d5fc806ae7) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'b8d9c0c6bee1a493dacdc595fdccae40') in 0.0134532 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 5
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000051 seconds.
+  path: Assets/Blink 1/Art/Characters/Stylized/Humans/Textures_Humans/HM_Accessories_T_BaseColor1.png
+  artifactKey: Guid(68350b052ee6a25419def318944f7c36) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 1/Art/Characters/Stylized/Humans/Textures_Humans/HM_Accessories_T_BaseColor1.png using Guid(68350b052ee6a25419def318944f7c36) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '92478d9251c6f4cdbb5294da5e1ea5ce') in 0.019713 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000019 seconds.
+  path: Assets/Blink 2/Art/Characters/Stylized/Humans/Armors_Humans/Textures_ArmorsHumans/StarterArmor_AO.png
+  artifactKey: Guid(9ad3c427b1488704690e51d6be363cf9) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 2/Art/Characters/Stylized/Humans/Armors_Humans/Textures_ArmorsHumans/StarterArmor_AO.png using Guid(9ad3c427b1488704690e51d6be363cf9) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '2eba06ae4f4b8465b38f8d767f8038ed') in 0.0184087 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000025 seconds.
+  path: Assets/Prefabs 1/Materials/player 2.mat
+  artifactKey: Guid(2724ba8735165414da3deffbbe9680be) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Prefabs 1/Materials/player 2.mat using Guid(2724ba8735165414da3deffbbe9680be) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '62f50ce0c9f3148c54b0031831915565') in 0.0114847 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000026 seconds.
+  path: Assets/Blink 2/Art/Animations/Movement/WalkBackwardLeft.fbx
+  artifactKey: Guid(ec77235c66b8d9544bc1ea2622623248) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 2/Art/Animations/Movement/WalkBackwardLeft.fbx using Guid(ec77235c66b8d9544bc1ea2622623248) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '05e57f821079e1343b1f67c3815f7f85') in 0.0228223 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 160
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000024 seconds.
+  path: Assets/Blink 2/Art/Characters/Stylized/Demo_Characters/DEMO_FreeStylizedHumanMale
+  artifactKey: Guid(d1284f47c21769e4cb79d3383fbf9891) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 2/Art/Characters/Stylized/Demo_Characters/DEMO_FreeStylizedHumanMale using Guid(d1284f47c21769e4cb79d3383fbf9891) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '4aff3d94ad0777dede4f0a5ebbaa66e8') in 0.0098077 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000028 seconds.
+  path: Assets/Blink 1/Art/Characters/Stylized/Humans/Textures_Humans/HM_Eyes_AO.png
+  artifactKey: Guid(57acb0ae25b9c6d44a01a49e050cc017) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 1/Art/Characters/Stylized/Humans/Textures_Humans/HM_Eyes_AO.png using Guid(57acb0ae25b9c6d44a01a49e050cc017) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '627e882c9f7c8aac1373ea5697b2a542') in 0.0132421 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000023 seconds.
+  path: Assets/Blink 1/Art/Characters/Stylized/Humans/Meshes_Humans/StylizedHumanMale_Face1.fbx
+  artifactKey: Guid(aef343306a3c83f49b5ed5e9bad9c6dd) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 1/Art/Characters/Stylized/Humans/Meshes_Humans/StylizedHumanMale_Face1.fbx using Guid(aef343306a3c83f49b5ed5e9bad9c6dd) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '7ca02f0c26750ae800fe2cedc5c6f4b3') in 0.0205361 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 165
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000028 seconds.
+  path: Assets/Blink 1/Art/Characters/Stylized/Humans/Textures_Humans/HM_Hair_1_AO.png
+  artifactKey: Guid(01404135f1ef9c44594aec5189403c54) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 1/Art/Characters/Stylized/Humans/Textures_Humans/HM_Hair_1_AO.png using Guid(01404135f1ef9c44594aec5189403c54) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '8772fa51cc0d445dfb0d715e8250f3a1') in 0.0257381 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000021 seconds.
+  path: Assets/Blink 1/Art/Characters/Stylized/Humans/Textures_Humans/HM_Hair_2_AO.png
+  artifactKey: Guid(bbafdff6ba13c514f9a97b73ebbc5a06) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 1/Art/Characters/Stylized/Humans/Textures_Humans/HM_Hair_2_AO.png using Guid(bbafdff6ba13c514f9a97b73ebbc5a06) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '82fc29eb138576b10e09381e60575ee9') in 0.0135747 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000029 seconds.
+  path: Assets/Blink 2/Art/Characters/Stylized/Humans/Textures_Humans/HM_Eyes_Metallic.png
+  artifactKey: Guid(abc6a54e3dec4ed4198dac2f69a270c8) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 2/Art/Characters/Stylized/Humans/Textures_Humans/HM_Eyes_Metallic.png using Guid(abc6a54e3dec4ed4198dac2f69a270c8) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '0b84299a3401ae15d6a4d25c7bf1b50f') in 0.0190648 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000020 seconds.
+  path: Assets/Prefabs 1/Phylanc/SlotsUI/btn/TakeButton.prefab
+  artifactKey: Guid(743acd146878df04f96a75e0738e90b0) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Prefabs 1/Phylanc/SlotsUI/btn/TakeButton.prefab using Guid(743acd146878df04f96a75e0738e90b0) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '477d771d05b2a4e6d9c4bab5d0c653c8') in 0.0809323 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 19
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000023 seconds.
+  path: Assets/Blink 2/Art/Animations/Movement/RollLeft.fbx
+  artifactKey: Guid(ade6b5c4e883efe45889728dc0e7fecf) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 2/Art/Animations/Movement/RollLeft.fbx using Guid(ade6b5c4e883efe45889728dc0e7fecf) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '67b135e5de4bbec2526b70dc15025b5f') in 0.0295716 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 160
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000023 seconds.
+  path: Assets/Prefabs 1/Catwalk Walk Forward 03 (1).fbx
+  artifactKey: Guid(e3708bcbdf780ca46b098d279511ac4e) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Prefabs 1/Catwalk Walk Forward 03 (1).fbx using Guid(e3708bcbdf780ca46b098d279511ac4e) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '565410351f3ecae8e1057d69e305be77') in 0.0326989 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 153
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000028 seconds.
+  path: Assets/Prefabs 1/Phylanc/SlotsUI
+  artifactKey: Guid(f61998c85766de948b3cf391dfc248fb) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Prefabs 1/Phylanc/SlotsUI using Guid(f61998c85766de948b3cf391dfc248fb) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '2c00a38cfb732e72ea8a55b5c3620106') in 0.0102891 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000036 seconds.
+  path: Assets/Blink 2/Art/Characters/Stylized/Humans/Armors_Humans/Meshes_ArmorsHumans/StarterArmor_HumanMale.fbx
+  artifactKey: Guid(f3fbcfcc0da50024eb5f8973c91e7611) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 2/Art/Characters/Stylized/Humans/Armors_Humans/Meshes_ArmorsHumans/StarterArmor_HumanMale.fbx using Guid(f3fbcfcc0da50024eb5f8973c91e7611) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '493a62f68f70e6870eeddef9566a8454') in 0.0270189 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 209
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000023 seconds.
+  path: Assets/Blink 2/Art/Characters/Stylized/Humans/Textures_Humans/HM_Hair_1_Roughness.png
+  artifactKey: Guid(abd34c4370f961c49a917d1dca9eae41) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 2/Art/Characters/Stylized/Humans/Textures_Humans/HM_Hair_1_Roughness.png using Guid(abd34c4370f961c49a917d1dca9eae41) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'da1ece96edcb1d8a03484cc9b28f268f') in 0.0175266 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000019 seconds.
+  path: Assets/Blink 2/Art/Characters/Stylized/Demo_Characters/DEMO_FreeStylizedHumanMale.unity
+  artifactKey: Guid(f9a41061e4dc9374796239df7f7e1f59) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 2/Art/Characters/Stylized/Demo_Characters/DEMO_FreeStylizedHumanMale.unity using Guid(f9a41061e4dc9374796239df7f7e1f59) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'a5874784551903e739ab33450f705611') in 0.0133752 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000024 seconds.
+  path: Assets/Blink 1/Art/Animations/Combat/GetHit.fbx
+  artifactKey: Guid(8e99f7f7722532c41a91f229b0b31e79) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 1/Art/Animations/Combat/GetHit.fbx using Guid(8e99f7f7722532c41a91f229b0b31e79) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '923621030fbaafe2a3b2d5b0d2a8b228') in 0.0247128 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 160
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000029 seconds.
+  path: Assets/Prefabs 1/floppy.3DS
+  artifactKey: Guid(8b0e529725273a447b29244dac3093c7) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Prefabs 1/floppy.3DS using Guid(8b0e529725273a447b29244dac3093c7) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'e54302cc6f19431d2d3989ef63d62575') in 0.0289017 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 26
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000019 seconds.
+  path: Assets/Blink 2/Art/Animations/Movement/RunRight.fbx
+  artifactKey: Guid(c0f5ca2d4733e1248a306b64a1a27474) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 2/Art/Animations/Movement/RunRight.fbx using Guid(c0f5ca2d4733e1248a306b64a1a27474) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '16069e77ad6bd807a6dcd7737c8c94ec') in 0.0377074 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 160
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000022 seconds.
+  path: Assets/Blink 2/Art/Characters/Stylized/Humans/Materials_Humans/Face1.mat
+  artifactKey: Guid(13c875e7a9aa2d34db5a47b495ae10e7) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 2/Art/Characters/Stylized/Humans/Materials_Humans/Face1.mat using Guid(13c875e7a9aa2d34db5a47b495ae10e7) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '66827acfe871a5545f916a14be8f3650') in 0.0225128 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 5
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000023 seconds.
+  path: Assets/Blink 2/Art/Characters/Stylized/Humans/Meshes_Humans/HumanMale_Character.fbx
+  artifactKey: Guid(05cd7677ab423b6419669bdfdce0fdd9) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 2/Art/Characters/Stylized/Humans/Meshes_Humans/HumanMale_Character.fbx using Guid(05cd7677ab423b6419669bdfdce0fdd9) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'e8f453c3233a58040e92789d722cf3fc') in 0.0342704 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 205
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000031 seconds.
+  path: Assets/Blink 2/Art/Characters/Stylized/Humans/Textures_Humans/HM_Accessories_T_BaseColor3.png
+  artifactKey: Guid(88aebcf6d17c13945a908e5f0fda3bcb) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 2/Art/Characters/Stylized/Humans/Textures_Humans/HM_Accessories_T_BaseColor3.png using Guid(88aebcf6d17c13945a908e5f0fda3bcb) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '569a370c880ec0d46942819c8c3674eb') in 0.0178982 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000034 seconds.
+  path: Assets/Blink 2/Art/Characters/Stylized/Humans/Textures_Humans/HM_Hair_2_AO.png
+  artifactKey: Guid(bd007028b86a38c47a330f558f7fce7b) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 2/Art/Characters/Stylized/Humans/Textures_Humans/HM_Hair_2_AO.png using Guid(bd007028b86a38c47a330f558f7fce7b) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '258893f11714623f5313001d5e5ed7ea') in 0.0182559 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000026 seconds.
+  path: Assets/Blink 2/Art/Characters/Stylized/Humans/Meshes_Humans
+  artifactKey: Guid(af2bc2a5edcc4a54987ef42fcc892158) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 2/Art/Characters/Stylized/Humans/Meshes_Humans using Guid(af2bc2a5edcc4a54987ef42fcc892158) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '95672177bdb18786016be640eed79500') in 0.0122837 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000025 seconds.
+  path: Assets/Blink 2/Art/Characters/Stylized/Humans/Textures_Humans/HM_Eyes_Normal.png
+  artifactKey: Guid(41b7c24c0bee3d840b1933b1d17711fb) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 2/Art/Characters/Stylized/Humans/Textures_Humans/HM_Eyes_Normal.png using Guid(41b7c24c0bee3d840b1933b1d17711fb) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'dd67a0fdb278f331a4218a0ce6c7bf8d') in 0.0203098 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000019 seconds.
+  path: Assets/Blink 2/Art/Animations/Movement/StrafeLeft.fbx
+  artifactKey: Guid(469df3f128926c246ad9f24b88d9d695) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 2/Art/Animations/Movement/StrafeLeft.fbx using Guid(469df3f128926c246ad9f24b88d9d695) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'b08f0f807b8417cccfa75e41eb09a3d6') in 0.0292682 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 160
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000028 seconds.
+  path: Assets/Blink 2/Art/Characters/Stylized/Humans/Textures_Humans/HM_Hair_2_Normal.png
+  artifactKey: Guid(f2d50c1dd8e58fb4a85f5543922beba4) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 2/Art/Characters/Stylized/Humans/Textures_Humans/HM_Hair_2_Normal.png using Guid(f2d50c1dd8e58fb4a85f5543922beba4) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '8645936eeee843c163fdbb6dbed97816') in 0.0225087 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000041 seconds.
+  path: Assets/Blink 2/Art/Characters/Stylized/Humans/Textures_Humans/HM_Eyes_Roughness.png
+  artifactKey: Guid(123782e53db0ed048b28e0a9462eb858) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 2/Art/Characters/Stylized/Humans/Textures_Humans/HM_Eyes_Roughness.png using Guid(123782e53db0ed048b28e0a9462eb858) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '9378b56ece0bc55142a0aa2f8775a48b') in 0.0187426 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000030 seconds.
+  path: Assets/Blink 2/Art/Animations/Combat
+  artifactKey: Guid(16f5e5f6bf02eaf449def39641b79798) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 2/Art/Animations/Combat using Guid(16f5e5f6bf02eaf449def39641b79798) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '735a6abfd11913e7b3f23289621df8b0') in 0.0112902 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000082 seconds.
+  path: Assets/Scripts/Door.cs
+  artifactKey: Guid(34634ad2f7c88464484a0f7b03c4e1f5) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Scripts/Door.cs using Guid(34634ad2f7c88464484a0f7b03c4e1f5) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '612eb234f3ed6c2574f838c39255061c') in 0.0143198 seconds
 Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
 
+========================================================================
+Received Import Request.
+  Time since last request: 0.000019 seconds.
+  path: Assets/PluginYourGames/Editor/ServerInfoYG2.json
+  artifactKey: Guid(2a682cfa9faab4142a744ac3120d9b9b) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/PluginYourGames/Editor/ServerInfoYG2.json using Guid(2a682cfa9faab4142a744ac3120d9b9b) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '38a105c303d6cf1de81c8deac8402c78') in 0.0133999 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000027 seconds.
+  path: Assets/Blink/Art/Characters/Stylized/Demo_Characters/StylizedHumanAnimator.controller
+  artifactKey: Guid(ef6403663453e6a4cb106814a81e72b4) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink/Art/Characters/Stylized/Demo_Characters/StylizedHumanAnimator.controller using Guid(ef6403663453e6a4cb106814a81e72b4) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'd6f5f37fcb7b308b3369b3a10dcc4646') in 0.0112609 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 9
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000026 seconds.
+  path: Assets/Blink 2/Art/Characters/Stylized/Humans/Armors_Humans/Materials_ArmorsHumans/StarterArmor_1.mat
+  artifactKey: Guid(62b32a9edcc38604e8dac56f55ca7134) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 2/Art/Characters/Stylized/Humans/Armors_Humans/Materials_ArmorsHumans/StarterArmor_1.mat using Guid(62b32a9edcc38604e8dac56f55ca7134) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '92f72281a9b7c0c2406579925eeb1b30') in 0.0245325 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 5
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000021 seconds.
+  path: Assets/Blink 2/Art/Characters/Stylized/Humans/Armors_Humans/Textures_ArmorsHumans/StarterArmor_BaseColor2.png
+  artifactKey: Guid(00705468fb1552b49a3c9cee653e07a8) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 2/Art/Characters/Stylized/Humans/Armors_Humans/Textures_ArmorsHumans/StarterArmor_BaseColor2.png using Guid(00705468fb1552b49a3c9cee653e07a8) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'e255fb7c46523e3fc9befab48772c502') in 0.0293284 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000017 seconds.
+  path: Assets/Blink 1/Art/Animations/Movement/RunBackwardRight.fbx
+  artifactKey: Guid(77824383bb8ce1147863850dd79049b1) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 1/Art/Animations/Movement/RunBackwardRight.fbx using Guid(77824383bb8ce1147863850dd79049b1) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'dbc91c74ef37f2273f7d57bebf84bb76') in 0.026351 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 160
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000024 seconds.
+  path: Assets/Blink 1/Art/Characters/Stylized/Humans/Textures_Humans/HM_Body_AO.png
+  artifactKey: Guid(d64e1fe3b2a5ec8458eb9f7b943adb66) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 1/Art/Characters/Stylized/Humans/Textures_Humans/HM_Body_AO.png using Guid(d64e1fe3b2a5ec8458eb9f7b943adb66) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'a7200f3bac7977c9df7671372b278ea7') in 0.0171078 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000023 seconds.
+  path: Assets/Blink 1/Art/Characters/Stylized/Demo_Characters/StylizedHumanAnimator.controller
+  artifactKey: Guid(3d050c3c3aec682448845751497ddd22) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 1/Art/Characters/Stylized/Demo_Characters/StylizedHumanAnimator.controller using Guid(3d050c3c3aec682448845751497ddd22) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '2261605605917cfd96cbed67b7f8d323') in 0.0130977 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 9
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000036 seconds.
+  path: Assets/Blink 1/Art/Animations/Combat/SpinAttack_TwoHanded.fbx
+  artifactKey: Guid(1ebf968b472519341adcc324b5f69e82) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 1/Art/Animations/Combat/SpinAttack_TwoHanded.fbx using Guid(1ebf968b472519341adcc324b5f69e82) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '45042497906eb937363dd56080bd407e') in 0.0260189 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 160
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000023 seconds.
+  path: Assets/Blink 1/Art/Characters/Stylized/Humans/Textures_Humans/HM_Hair_1_BaseColor.png
+  artifactKey: Guid(491f9b8b34eeb374883e08e7ed2e8f02) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 1/Art/Characters/Stylized/Humans/Textures_Humans/HM_Hair_1_BaseColor.png using Guid(491f9b8b34eeb374883e08e7ed2e8f02) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '6a97c5ce8e79bb8440f313fc466a604f') in 0.0207751 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000025 seconds.
+  path: Assets/Blink 1/Art/Animations/Combat/PunchRight.fbx
+  artifactKey: Guid(ce185b96f915efd459e0c33ab27867b3) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 1/Art/Animations/Combat/PunchRight.fbx using Guid(ce185b96f915efd459e0c33ab27867b3) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'c28a4bff7d0edee35efffcea789cc791') in 0.0202475 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 160
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000025 seconds.
+  path: Assets/Blink 2/Art/Characters/Stylized/Humans/Textures_Humans/HM_Face_1_AO.png
+  artifactKey: Guid(44b9370cf23b8b6418d5214183028061) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 2/Art/Characters/Stylized/Humans/Textures_Humans/HM_Face_1_AO.png using Guid(44b9370cf23b8b6418d5214183028061) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'ab2fbf43f18a255e8d8edd3ac9df71b9') in 0.0207301 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000020 seconds.
+  path: Assets/Prefabs 1/Phylanc/SlotsUI/SlotTemplate.prefab
+  artifactKey: Guid(fa20b421edeaa6e489c61954d8e1203a) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Prefabs 1/Phylanc/SlotsUI/SlotTemplate.prefab using Guid(fa20b421edeaa6e489c61954d8e1203a) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '340d26f833205d8402bc5b237218c8e1') in 0.0341067 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 46
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000036 seconds.
+  path: Assets/Prefabs 1/HumanMale_Character_Free (1) 4.prefab
+  artifactKey: Guid(1e294a134edab7b40a7db2c47156378f) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Prefabs 1/HumanMale_Character_Free (1) 4.prefab using Guid(1e294a134edab7b40a7db2c47156378f) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'a81d0f5a8c1693d15b3dea851027cb0d') in 0.0391566 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 271
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000020 seconds.
+  path: Assets/Blink 2/Art/Animations/Gathering/Gathering.fbx
+  artifactKey: Guid(cfb05ddbdc8eb9746b15e5af3a7bff45) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 2/Art/Animations/Gathering/Gathering.fbx using Guid(cfb05ddbdc8eb9746b15e5af3a7bff45) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '91ae491b2ec3c4eed2f9a6b6d0cfe9df') in 0.0241971 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 160
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000017 seconds.
+  path: Assets/Blink 1/Art/Animations/Movement/RollForward.fbx
+  artifactKey: Guid(7b8e59fbb3ebca144b95e58b514baeb7) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 1/Art/Animations/Movement/RollForward.fbx using Guid(7b8e59fbb3ebca144b95e58b514baeb7) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'e8271c7b64cca98f22b6b16e48765cc5') in 0.0259784 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 160
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000027 seconds.
+  path: Assets/Blink 2/Art/Characters/Stylized/Humans/Armors_Humans/Textures_ArmorsHumans/StarterArmor_Metallic.png
+  artifactKey: Guid(6417868e5d217b648bb5a9beec5a31a8) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 2/Art/Characters/Stylized/Humans/Armors_Humans/Textures_ArmorsHumans/StarterArmor_Metallic.png using Guid(6417868e5d217b648bb5a9beec5a31a8) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'a1f186beec865ea2741e0005c4b0e471') in 0.0185809 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000025 seconds.
+  path: Assets/Blink 1/Art/Characters/Stylized/Demo_Characters/DEMO_FreeStylizedHumanMale/ReflectionProbe-0.exr
+  artifactKey: Guid(52c9ba94902a5d644af3084c09ffcffc) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 1/Art/Characters/Stylized/Demo_Characters/DEMO_FreeStylizedHumanMale/ReflectionProbe-0.exr using Guid(52c9ba94902a5d644af3084c09ffcffc) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'f2c2f3c508239695fddd557b310341b0') in 0.0204367 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000037 seconds.
+  path: Assets/Blink 1/Art/Animations/Movement/FallingLoop.fbx
+  artifactKey: Guid(ece2f5a2e2a8a50409a68f3f0229c53c) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 1/Art/Animations/Movement/FallingLoop.fbx using Guid(ece2f5a2e2a8a50409a68f3f0229c53c) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'ae0edcb0c45770649bca63b239b67ac2') in 0.0276596 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 160
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000028 seconds.
+  path: Assets/Blink 2/Art/Characters/Stylized/Humans/Textures_Humans/HM_Hair_2_Roughness.png
+  artifactKey: Guid(2004e2e8c5adaa64daf5c239a96cb7e3) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Blink 2/Art/Characters/Stylized/Humans/Textures_Humans/HM_Hair_2_Roughness.png using Guid(2004e2e8c5adaa64daf5c239a96cb7e3) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '8904f7b95381266c580e36f803f98e7c') in 0.0224577 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+Editor requested this worker to shutdown with reason: Scaling down because of idle timeout
+AssetImportWorker is now disconnected from the server
+Process exiting
+Exiting without the bug reporter. Application will terminate with return code 0

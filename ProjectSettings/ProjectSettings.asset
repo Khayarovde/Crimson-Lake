@@ -133,7 +133,6 @@ PlayerSettings:
   switchNVNMaxPublicSamplerIDCount: 0
   switchMaxWorkerMultiple: 8
   switchNVNGraphicsFirmwareMemory: 32
-  switchGraphicsJobsSyncAfterKick: 1
   vulkanNumSwapchainBuffers: 3
   vulkanEnableSetSRGBWrite: 0
   vulkanEnablePreTransform: 0
@@ -625,7 +624,7 @@ PlayerSettings:
   webGLDebugSymbols: 0
   webGLEmscriptenArgs: 
   webGLModulesDirectory: 
-  webGLTemplate: APPLICATION:Default
+  webGLTemplate: PROJECT:YandexGames
   webGLAnalyzeBuildSize: 0
   webGLUseEmbeddedResources: 0
   webGLCompressionFormat: 1
@@ -639,13 +638,24 @@ PlayerSettings:
   webGLMemoryLinearGrowthStep: 16
   webGLMemoryGeometricGrowthStep: 0.2
   webGLMemoryGeometricGrowthCap: 96
+  webGLEnableWebGPU: 0
   webGLPowerPreference: 2
   webGLWebAssemblyTable: 0
   webGLWebAssemblyBigInt: 0
   webGLCloseOnQuit: 0
   webWasm2023: 0
-  webEnableSubmoduleStrippingCompatibility: 0
-  scriptingDefineSymbols: {}
+  scriptingDefineSymbols:
+    Android: PLUGIN_YG_2;TMP_YG2;RU_YG2;YandexGamesPlatform_yg
+    LinuxHeadlessSimulation: PLUGIN_YG_2;TMP_YG2;RU_YG2;YandexGamesPlatform_yg
+    Nintendo Switch: PLUGIN_YG_2;TMP_YG2;RU_YG2;YandexGamesPlatform_yg
+    PS4: PLUGIN_YG_2;TMP_YG2;RU_YG2;YandexGamesPlatform_yg
+    PS5: PLUGIN_YG_2;TMP_YG2;RU_YG2;YandexGamesPlatform_yg
+    Standalone: PLUGIN_YG_2;TMP_YG2;RU_YG2;YandexGamesPlatform_yg
+    WebGL: PLUGIN_YG_2;TMP_YG2;RU_YG2;YandexGamesPlatform_yg
+    Windows Store Apps: PLUGIN_YG_2;TMP_YG2;RU_YG2;YandexGamesPlatform_yg
+    XboxOne: PLUGIN_YG_2;TMP_YG2;RU_YG2;YandexGamesPlatform_yg
+    iPhone: PLUGIN_YG_2;TMP_YG2;RU_YG2;YandexGamesPlatform_yg
+    tvOS: PLUGIN_YG_2;TMP_YG2;RU_YG2;YandexGamesPlatform_yg
   additionalCompilerArguments: {}
   platformArchitecture: {}
   scriptingBackend:
@@ -775,4 +785,3 @@ PlayerSettings:
   insecureHttpOption: 0
   androidVulkanDenyFilterList: []
   androidVulkanAllowFilterList: []
-  androidVulkanDeviceFilterListAsset: {fileID: 0}
