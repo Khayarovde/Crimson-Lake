@@ -176,7 +176,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7663075006994094138, guid: 133e9b551a7f0784f8c4e8b81024203e, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 6.350001
+      value: 6.42
       objectReference: {fileID: 0}
     - target: {fileID: 7663075006994094138, guid: 133e9b551a7f0784f8c4e8b81024203e, type: 3}
       propertyPath: m_LocalPosition.z
@@ -216,10 +216,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects:
-    - targetCorrespondingSourceObject: {fileID: 7663075006994094138, guid: 133e9b551a7f0784f8c4e8b81024203e, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1989114676}
+    m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 133e9b551a7f0784f8c4e8b81024203e, type: 3}
 --- !u!1 &894766812
@@ -268,81 +265,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 300126713318604795, guid: c5806569f8582b947a09356a97c8ad33, type: 3}
   m_PrefabInstance: {fileID: 2872079359751428184}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &1989114675
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1989114676}
-  - component: {fileID: 1989114678}
-  - component: {fileID: 1989114677}
-  m_Layer: 0
-  m_Name: GameObject
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!224 &1989114676
-RectTransform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1989114675}
-  m_LocalRotation: {x: -0, y: -0.99872255, z: -0, w: -0.050530113}
-  m_LocalPosition: {x: 0, y: 0, z: -0.15131006}
-  m_LocalScale: {x: 0.610541, y: 0.61054105, z: 0.610541}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 852349904}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -0.027599335, y: 1.880466}
-  m_SizeDelta: {x: 100, y: 100}
-  m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &1989114677
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1989114675}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
-  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
-  m_Maskable: 1
-  m_OnCullStateChanged:
-    m_PersistentCalls:
-      m_Calls: []
-  m_Sprite: {fileID: 0}
-  m_Type: 0
-  m_PreserveAspect: 0
-  m_FillCenter: 1
-  m_FillMethod: 4
-  m_FillAmount: 1
-  m_FillClockwise: 1
-  m_FillOrigin: 0
-  m_UseSpriteMesh: 0
-  m_PixelsPerUnitMultiplier: 1
---- !u!222 &1989114678
-CanvasRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1989114675}
-  m_CullTransparentMesh: 1
 --- !u!1001 &91837525975934097
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -402,7 +324,7 @@ PrefabInstance:
     - target: {fileID: 4885829808934031545, guid: ad135de502ea2e84994eeff5c597a2ad, type: 3}
       propertyPath: hudIndicator
       value: 
-      objectReference: {fileID: 1989114677}
+      objectReference: {fileID: 0}
     - target: {fileID: 4885829808934031545, guid: ad135de502ea2e84994eeff5c597a2ad, type: 3}
       propertyPath: darkeningPanel
       value: 
@@ -752,9 +674,17 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 573489055027054658, guid: c5806569f8582b947a09356a97c8ad33, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 3647814735172216044, guid: c5806569f8582b947a09356a97c8ad33, type: 3}
       propertyPath: m_Name
       value: Prototype
+      objectReference: {fileID: 0}
+    - target: {fileID: 8205893631174355073, guid: c5806569f8582b947a09356a97c8ad33, type: 3}
+      propertyPath: m_Enabled
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2752067620731942123, guid: b65c2b44847bd7a4288f5c004769268d, type: 3}
       propertyPath: tankCtrl
@@ -1016,7 +946,7 @@ PrefabInstance:
     - target: {fileID: 8648445252043899266, guid: 66cf2388adb93414d8893a7dcfec1437, type: 3}
       propertyPath: hudIndicator
       value: 
-      objectReference: {fileID: 1989114677}
+      objectReference: {fileID: 0}
     - target: {fileID: 8648445252043899266, guid: 66cf2388adb93414d8893a7dcfec1437, type: 3}
       propertyPath: darkeningPanel
       value: 
