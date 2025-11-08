@@ -22,33 +22,35 @@ public class LightFlicker : MonoBehaviour
 
     void Start()
     {
-        if (lightSource == null)
-            lightSource = GetComponent<Light>();
-
-        // сразу выбираем случайные значения
+        // Убрали автоматическое назначение, чтобы скрипт работал только с явно указанным источником света в инспекторе
         PickRandomTimes();
     }
 
     void Update()
     {
+        // Условие: если источник света не указан в инспекторе, ничего не делать (не мигать всеми источниками)
+        if (lightSource == null)
+            return;
+
         timer -= Time.deltaTime;
 
         if (isFlickering)
         {
-            // Включаем / выключаем свет случайно
             if (timer <= 0)
             {
                 lightSource.enabled = !lightSource.enabled;
-                timer = Random.Range(minFlickerSpeed, maxFlickerSpeed);
-                currentFlickerDuration -= Time.deltaTime;
+                timer = currentFlickerSpeed;  // Используем фиксированную скорость для периода мигания (исправление бага)
+            }
 
-                if (currentFlickerDuration <= 0)
-                {
-                    // Завершили фазу мигания
-                    isFlickering = false;
-                    lightSource.enabled = true;
-                    timer = currentOffTime;
-                }
+            // Уменьшаем длительность периода мигания каждый кадр (исправление бага: раньше уменьшалось только при переключении)
+            currentFlickerDuration -= Time.deltaTime;
+
+            if (currentFlickerDuration <= 0)
+            {
+                // Завершили фазу мигания
+                isFlickering = false;
+                lightSource.enabled = true;
+                timer = currentOffTime;
             }
         }
         else

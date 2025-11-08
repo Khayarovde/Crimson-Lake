@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class PosterLight : MonoBehaviour
 {
-public Light lightSource;
+    public Light lightSource;
 
     [Header("Flicker Settings")]
     public float minFlickerSpeed = 0.05f;     // минимальное время между изменениями интенсивности
@@ -23,16 +23,21 @@ public Light lightSource;
 
     void Start()
     {
-        if (lightSource == null)
-            lightSource = GetComponent<Light>();
-
-        PickRandomTimes();
-        targetIntensity = maxIntensity;
-        lightSource.intensity = maxIntensity;
+        // Убрали автоматическое назначение, чтобы скрипт работал только с явно указанным источником света в инспекторе
+        if (lightSource != null)
+        {
+            PickRandomTimes();
+            targetIntensity = maxIntensity;
+            lightSource.intensity = maxIntensity;
+        }
     }
 
     void Update()
     {
+        // Условие: если источник света не указан в инспекторе, ничего не делать (не мигать всеми источниками)
+        if (lightSource == null)
+            return;
+
         timer -= Time.deltaTime;
 
         if (isFlickering)
@@ -80,4 +85,3 @@ public Light lightSource;
         timer = 0;
     }
 }
-
