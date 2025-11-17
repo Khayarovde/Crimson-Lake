@@ -29,6 +29,16 @@ public class InventoryUI : MonoBehaviour
     public GameObject destroyButtonPrefab;
     public GameObject takeButtonPrefab;
 
+    [Header("Позиции кнопок в слотах")]
+    [Tooltip("Локальная позиция кнопки Store в каждом слоте")]
+    public Vector2 storeButtonPosition = new Vector2(30, -30);
+    
+    [Tooltip("Локальная позиция кнопки Destroy в каждом слоте")]
+    public Vector2 destroyButtonPosition = new Vector2(-30, -30);
+    
+    [Tooltip("Локальная позиция кнопки Take в слотах сундука")]
+    public Vector2 takeButtonPosition = new Vector2(30, 30);
+
     private Image[] slotIcons;
     private Button[] storeButtons;
     private Button[] destroyButtons;
@@ -40,6 +50,9 @@ public class InventoryUI : MonoBehaviour
     private Image[] chestSlotIcons;
     private Button[] chestTakeButtons;
     private Button[] chestDestroyButtons;
+
+    // Флаг для предотвращения одновременного открытия
+    private bool isUIOpen = false;
 
     private void Start()
     {
@@ -133,6 +146,14 @@ public class InventoryUI : MonoBehaviour
             {
                 int slotIndex = i;
                 storeButton.onClick.AddListener(() => OnStoreButtonClicked(slotIndex));
+                
+                // Устанавливаем позицию кнопки Store
+                RectTransform storeRect = storeButton.GetComponent<RectTransform>();
+                if (storeRect != null)
+                {
+                    storeRect.anchoredPosition = storeButtonPosition;
+                }
+                
                 storeButton.gameObject.SetActive(false);
             }
 
@@ -142,6 +163,14 @@ public class InventoryUI : MonoBehaviour
             {
                 int slotIndex = i;
                 destroyButton.onClick.AddListener(() => OnDestroyButtonClicked(slotIndex));
+                
+                // Устанавливаем позицию кнопки Destroy
+                RectTransform destroyRect = destroyButton.GetComponent<RectTransform>();
+                if (destroyRect != null)
+                {
+                    destroyRect.anchoredPosition = destroyButtonPosition;
+                }
+                
                 destroyButton.gameObject.SetActive(false);
             }
 
@@ -201,6 +230,14 @@ public class InventoryUI : MonoBehaviour
             {
                 int slotIndex = i;
                 takeButton.onClick.AddListener(() => OnChestTakeButtonClicked(slotIndex));
+                
+                // Устанавливаем позицию кнопки Take
+                RectTransform takeRect = takeButton.GetComponent<RectTransform>();
+                if (takeRect != null)
+                {
+                    takeRect.anchoredPosition = takeButtonPosition;
+                }
+                
                 takeButton.gameObject.SetActive(false);
             }
 
@@ -210,6 +247,14 @@ public class InventoryUI : MonoBehaviour
             {
                 int slotIndex = i;
                 destroyButton.onClick.AddListener(() => OnChestDestroyButtonClicked(slotIndex));
+                
+                // Устанавливаем позицию кнопки Destroy в сундуке
+                RectTransform destroyRect = destroyButton.GetComponent<RectTransform>();
+                if (destroyRect != null)
+                {
+                    destroyRect.anchoredPosition = destroyButtonPosition;
+                }
+                
                 destroyButton.gameObject.SetActive(false);
             }
         }
@@ -441,6 +486,8 @@ public class InventoryUI : MonoBehaviour
 
     public void ToggleInventory()
     {
+        if (isUIOpen && !IsInventoryOpen()) return; // Если другой UI открыт, не открываем инвентарь
+        
         if (inventoryCanvas != null)
         {
             bool isActive = !inventoryCanvas.activeSelf;
@@ -450,45 +497,59 @@ public class InventoryUI : MonoBehaviour
             {
                 playerInventory.AutoSelectActiveItem();
                 UpdateInventoryUI();
-                Cursor.lockState = CursorLockMode.None;
-                Cursor.visible = true;
+                // Cursor.lockState = CursorLockMode.None;
+                // Cursor.visible = true;
+                isUIOpen = true;
+            }
+            else
+            {
+                if (!IsChestUIOpen()) // Если сундук не открыт, сбрасываем флаг
+                {
+                    isUIOpen = false;
+                    // Cursor.lockState = CursorLockMode.Locked;
+                    // Cursor.visible = false;
+                }
             }
         }
     }
 
     public void OpenChestUI(Chest chest)
     {
-        if (chest == null) 
-        {
-            Debug.LogWarning("[InventoryUI] Попытка открыть сундук, который равен null");
-            return;
-        }
+      if (chest == null) 
+              {
+                  Debug.LogWarning("[InventoryUI] Попытка открыть сундук, который равен null");
+                  return;
+              }
 
-        currentChest = chest;
-        if (chestCanvas != null)
-        {
-            chestCanvas.SetActive(true);
-            UpdateChestUI();
-            Cursor.lockState = CursorLockMode.None;
-            Cursor.visible = true;
-        }
+              if (isUIOpen && !IsChestUIOpen()) return; // Если другой UI открыт, не открываем сундук
+
+              currentChest = chest;
+              if (chestCanvas != null)
+              {
+                  chestCanvas.SetActive(true);
+                  UpdateChestUI();
+                  // Cursor.lockState = CursorLockMode.None;
+                  // Cursor.visible = true;
+                  isUIOpen = true;
+              }
     }
 
     public void OpenChestUIFromInventory()
     {
         if (playerInventory.IsNearChest())
         {
-            OpenChestUI(playerInventory.GetNearbyChest());
+            // Закрываем инвентарь перед открытием сундука
             if (inventoryCanvas != null)
             {
                 inventoryCanvas.SetActive(false);
             }
+            OpenChestUI(playerInventory.GetNearbyChest());
         }
     }
 
     public void CloseChestUI()
     {
-        if (chestCanvas != null)
+      if (chestCanvas != null)
         {
             chestCanvas.SetActive(false);
         }
@@ -498,6 +559,12 @@ public class InventoryUI : MonoBehaviour
         {
             inventoryCanvas.SetActive(true);
             UpdateInventoryUI();
+        }
+        else
+        {
+            isUIOpen = false;
+            // Cursor.lockState = CursorLockMode.Locked;
+            // Cursor.visible = false;
         }
     }
 

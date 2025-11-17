@@ -16,14 +16,32 @@ public class Chest : MonoBehaviour
     [Header("Сохранение")]
     public string chestId = "default_chest";
     
+    [Header("Настройки взаимодействия")]
+    [Tooltip("Можно ли открыть сундук, если инвентарь уже открыт")]
+    public bool canOpenWhenInventoryOpen = false;
+    
     private AudioSource audioSource;
     private string savePath;
     private bool isQuitting = false;
+    private bool isChestOpen = false;
 
     private void Start()
     {
         InitializeChest();
         LoadChestData();
+    }
+
+    private void Update()
+    {
+        // Проверяем, не был ли закрыт UI сундука другим способом
+        if (isChestOpen)
+        {
+            InventoryUI inventoryUI = FindObjectOfType<InventoryUI>();
+            if (inventoryUI != null && !inventoryUI.IsChestUIOpen())
+            {
+                isChestOpen = false;
+            }
+        }
     }
 
     private void InitializeChest()
@@ -72,6 +90,8 @@ public class Chest : MonoBehaviour
         {
             inventoryUI.ClearChestReference(this);
         }
+        
+        isChestOpen = false;
     }
 
     private void SetupCollider()
@@ -224,6 +244,38 @@ public class Chest : MonoBehaviour
         if (storageSound != null && audioSource != null)
         {
             audioSource.PlayOneShot(storageSound);
+        }
+    }
+
+    private void OnTriggerStay(Collider other)
+    {
+        if (other.CompareTag("Player"))
+        {
+            PlayerInventory playerInventory = other.GetComponent<PlayerInventory>();
+            if (playerInventory != null && Input.GetKeyDown(KeyCode.E))
+            {
+                InventoryUI inventoryUI = FindObjectOfType<InventoryUI>();
+                if (inventoryUI != null)
+                {
+                    // Проверяем, можно ли открыть сундук
+                    if (inventoryUI.IsInventoryOpen() && !canOpenWhenInventoryOpen)
+                    {
+                        Debug.Log("[Chest] Инвентарь уже открыт, нельзя открыть сундук");
+                        return;
+                    }
+                    
+                    if (!isChestOpen)
+                    {
+                        inventoryUI.OpenChestUI(this);
+                        isChestOpen = true;
+                    }
+                    else
+                    {
+                        inventoryUI.CloseChestUI();
+                        isChestOpen = false;
+                    }
+                }
+            }
         }
     }
 

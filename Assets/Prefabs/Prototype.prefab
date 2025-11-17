@@ -2678,6 +2678,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 6326158163181419198}
+  - {fileID: 8001161496433702498}
   - {fileID: 2565484764345839020}
   - {fileID: 2359406543394122926}
   - {fileID: 1481849655071485593}
@@ -2714,7 +2715,6 @@ Transform:
   - {fileID: 5818404235394547166}
   - {fileID: 1481401263157782145}
   - {fileID: 2437006226030494802}
-  - {fileID: 8001161496433702498}
   - {fileID: 4104016408256287456}
   - {fileID: 3185246567135488390}
   - {fileID: 40386490784010475}
@@ -2977,6 +2977,7 @@ MonoBehaviour:
   storageEffect: {fileID: 0}
   storageSound: {fileID: 0}
   chestId: default_chest
+  canOpenWhenInventoryOpen: 0
 --- !u!1 &4295972812135069892
 GameObject:
   m_ObjectHideFlags: 0
@@ -6029,6 +6030,38 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 300126713318604795}
     m_Modifications:
+    - target: {fileID: 930014995726761932, guid: 34d8255a673e33e41ab4ca618f13e78d, type: 3}
+      propertyPath: m_Colors.m_NormalColor.b
+      value: 0.32941177
+      objectReference: {fileID: 0}
+    - target: {fileID: 930014995726761932, guid: 34d8255a673e33e41ab4ca618f13e78d, type: 3}
+      propertyPath: m_Colors.m_NormalColor.g
+      value: 0.30588236
+      objectReference: {fileID: 0}
+    - target: {fileID: 930014995726761932, guid: 34d8255a673e33e41ab4ca618f13e78d, type: 3}
+      propertyPath: m_Colors.m_NormalColor.r
+      value: 0.7921569
+      objectReference: {fileID: 0}
+    - target: {fileID: 930014995726761932, guid: 34d8255a673e33e41ab4ca618f13e78d, type: 3}
+      propertyPath: m_Colors.m_HighlightedColor.b
+      value: 0.039215688
+      objectReference: {fileID: 0}
+    - target: {fileID: 930014995726761932, guid: 34d8255a673e33e41ab4ca618f13e78d, type: 3}
+      propertyPath: m_Colors.m_HighlightedColor.g
+      value: 0.03137255
+      objectReference: {fileID: 0}
+    - target: {fileID: 930014995726761932, guid: 34d8255a673e33e41ab4ca618f13e78d, type: 3}
+      propertyPath: m_Colors.m_HighlightedColor.r
+      value: 0.16470589
+      objectReference: {fileID: 0}
+    - target: {fileID: 3685627801046431331, guid: 34d8255a673e33e41ab4ca618f13e78d, type: 3}
+      propertyPath: m_Spacing.y
+      value: 30
+      objectReference: {fileID: 0}
+    - target: {fileID: 4524624336821659346, guid: 34d8255a673e33e41ab4ca618f13e78d, type: 3}
+      propertyPath: m_Color.a
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5102738083326673790, guid: 34d8255a673e33e41ab4ca618f13e78d, type: 3}
       propertyPath: m_Pivot.x
       value: 0
@@ -6112,6 +6145,14 @@ PrefabInstance:
     - target: {fileID: 7133013399869960325, guid: 34d8255a673e33e41ab4ca618f13e78d, type: 3}
       propertyPath: m_Name
       value: ChestUI
+      objectReference: {fileID: 0}
+    - target: {fileID: 7209945180711346749, guid: 34d8255a673e33e41ab4ca618f13e78d, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 273.6429
+      objectReference: {fileID: 0}
+    - target: {fileID: 7209945180711346749, guid: 34d8255a673e33e41ab4ca618f13e78d, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 56.815
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
