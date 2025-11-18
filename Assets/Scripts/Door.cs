@@ -16,7 +16,7 @@ public class Door : MonoBehaviour
 
     private bool isFading = false;
     private bool playerInside = false;     // Внутри ли игрок зоны двери
-    private bool doorUsed = false;         // Была ли дверь открыта хотя бы однажды
+            // Была ли дверь открыта хотя бы однажды
 
     private void OnTriggerEnter(Collider other)
     {
@@ -38,10 +38,9 @@ public class Door : MonoBehaviour
 
     private void Update()
     {
-        if (playerInside && !doorUsed && Input.GetKeyDown(KeyCode.E))
+        if (playerInside && Input.GetKeyDown(KeyCode.E))
         {
             TriggerTransition();
-            doorUsed = true;              // Запоминаем факт использования двери
         }
     }
 
