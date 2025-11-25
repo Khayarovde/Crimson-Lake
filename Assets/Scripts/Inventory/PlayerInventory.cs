@@ -194,6 +194,11 @@ public class PlayerInventory : MonoBehaviour
         activeItemIndex = newIndex;
         Debug.Log($"[PlayerInventory] Переключено на: {slots[newIndex].itemName} (индекс {newIndex}, тип {slots[newIndex].type})");
         inventoryUI.UpdateInventoryUI();
+
+        // После смены активного предмета уведомляем WeaponHandler
+        var handler = GetComponent<WeaponHandler>();
+        if (handler != null)
+            handler.OnActiveItemChanged();
     }
 
     public bool IsNearChest()
@@ -218,4 +223,6 @@ public class PlayerInventory : MonoBehaviour
     {
         inventoryUI.CloseChestUI();
     }
+
+
 }
