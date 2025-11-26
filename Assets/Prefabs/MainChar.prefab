@@ -486,6 +486,7 @@ GameObject:
   - component: {fileID: 1053338595885197890}
   - component: {fileID: 1668346408961526103}
   - component: {fileID: 1397132050974841004}
+  - component: {fileID: 6147183645754983163}
   - component: {fileID: 98689741204860104}
   - component: {fileID: 590621591705011275}
   - component: {fileID: 3424347657580333273}
@@ -624,7 +625,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   minShootDistance: 2
-  meleeDamage: 10
+  pushForce: 40
+  pushDuration: 0.5
   meleeCooldown: 0.5
   meleeSound: {fileID: 8300000, guid: b91418e7e651a5741a14cd31af0f5ba8, type: 3}
 --- !u!114 &1397132050974841004
@@ -658,7 +660,7 @@ MonoBehaviour:
   - {fileID: 8300000, guid: b39ec697f76aec04fb8081c0c4f6dbae, type: 3}
   - {fileID: 8300000, guid: 6c641842185384646b603322cc7e7559, type: 3}
   gunReloadSound: {fileID: 8300000, guid: 1e01a3eff9609af4a91cea332a46838e, type: 3}
-  laserShotPrefab: {fileID: 1714431873262400270, guid: 5d73d4d3627665e439c1e743a1c6227a, type: 3}
+  laserShotPrefab: {fileID: 7054626418378342303, guid: 490e15f1389eb3244ab18c3041b0dea0, type: 3}
   laserDuration: 0.78
   pistolFireRate: 0.3
   pistolDamage: 20
@@ -673,13 +675,34 @@ MonoBehaviour:
   pistolReloadSound: {fileID: 8300000, guid: 2868e580baee45d449931dc35a5ace81, type: 3}
   bulletPrefab: {fileID: 1714431873262400270, guid: 5d73d4d3627665e439c1e743a1c6227a, type: 3}
   bulletSpeed: 15
-  aimBeamPrefab: {fileID: 3902212817874583849, guid: c6a0376a5fe95ba4bb1b60022221d545, type: 3}
   aimWalkSpeed: 0.4
+  aimAssist: {fileID: 6147183645754983163}
   playerAnimator: {fileID: 5866666021909216657, guid: 7e7fb00f85ffd2042a5550a5d955f904, type: 3}
   meleeTrigger: MeleePush
   enemyLayerMask:
     serializedVersion: 2
     m_Bits: 512
+--- !u!114 &6147183645754983163
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1265012668313965716}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b70345da03705ba449f07a146aaa6ceb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  aimAssistRadius: 8
+  aimAssistAngle: 15
+  enemyLayerMask:
+    serializedVersion: 2
+    m_Bits: 512
+  aimBeamPrefab: {fileID: 7054626418378342303, guid: a33ac9ff6f0cab141ba06a67de287db2, type: 3}
+  aimMarkerPrefab: {fileID: 4583945109706351659, guid: c158326414781c640a498ef55e291929, type: 3}
+  maxAimTime: 3
+  maxSpread: 50
 --- !u!114 &98689741204860104
 MonoBehaviour:
   m_ObjectHideFlags: 0

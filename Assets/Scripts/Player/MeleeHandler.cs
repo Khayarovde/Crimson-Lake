@@ -1,10 +1,13 @@
 using UnityEngine;
+using System.Collections;
+using UnityEngine.AI;
 
 public class MeleeHandler : MonoBehaviour
 {
     [Header("Настройки melee")]
     [SerializeField] public float minShootDistance = 2f;
-    [SerializeField] private float meleeDamage = 10f;
+    [SerializeField] private float pushForce = 10f;
+    [SerializeField] private float pushDuration = 0.5f;
     [SerializeField] private float meleeCooldown = 0.5f;
     [SerializeField] private AudioClip meleeSound;
 
@@ -37,10 +40,36 @@ public class MeleeHandler : MonoBehaviour
         if (weaponHandler.audioSource && meleeSound)
             weaponHandler.audioSource.PlayOneShot(meleeSound);
 
-        // Урон
-        Destroy(enemy.gameObject);
+        // Толчок (отталкивание без убийства)
+        var agent = enemy.GetComponent<NavMeshAgent>();
+        var rb = enemy.GetComponent<Rigidbody>();
+        if (agent != null && rb != null)
+        {
+            agent.enabled = false;
+            rb.isKinematic = false;
+
+            Vector3 direction = (enemy.transform.position - transform.position).normalized;
+            rb.AddForce(direction * pushForce, ForceMode.Impulse);
+
+            StartCoroutine(ResetAgentAfterPush(enemy, pushDuration));
+        }
 
         nextMeleeTime = Time.time + meleeCooldown;
         return true;
+    }
+
+    private IEnumerator ResetAgentAfterPush(AdvancedEnemyAI enemy, float duration)
+    {
+        yield return new WaitForSeconds(duration);
+
+        if (enemy == null) yield break;
+
+        var agent = enemy.GetComponent<NavMeshAgent>();
+        var rb = enemy.GetComponent<Rigidbody>();
+        if (agent != null && rb != null)
+        {
+            rb.isKinematic = true;
+            agent.enabled = true;
+        }
     }
 }

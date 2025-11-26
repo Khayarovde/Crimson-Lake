@@ -5,7 +5,7 @@ using System.Collections;
 
 public class AdvancedEnemyAI : MonoBehaviour
 {
-   [SerializeField] private NavMeshAgent navMeshAgent;
+    [SerializeField] private NavMeshAgent navMeshAgent;
     [SerializeField] private Animator m_Animator;
     [SerializeField] private float speedWalk = 6f;
     [SerializeField] private float speedRun = 9f;
@@ -30,6 +30,7 @@ public class AdvancedEnemyAI : MonoBehaviour
 
     private Transform player;
     private GameObject loseScreenCanvas;
+    private Vector3 playerLastPosition = Vector3.zero;
 
     void Start()
     {
@@ -53,6 +54,14 @@ public class AdvancedEnemyAI : MonoBehaviour
             collider.height = 2f;    // Высота
         }
 
+        // ← НОВОЕ: Добавляем Rigidbody для толчка (изначально kinematic)
+        if (GetComponent<Rigidbody>() == null)
+        {
+            var rb = gameObject.AddComponent<Rigidbody>();
+            rb.isKinematic = true;
+            rb.useGravity = true;  // Включаем гравитацию для реализма во время толчка
+        }
+
         // Устанавливаем layer "Enemy" (создай layer в Unity: Edit > Project Settings > Tags and Layers)
         gameObject.layer = LayerMask.NameToLayer("Enemy");
 
@@ -63,7 +72,7 @@ public class AdvancedEnemyAI : MonoBehaviour
     {
         if (caughtPlayer) return;
 
-        if (isPatrolling && navMeshAgent.remainingDistance <= navMeshAgent.stoppingDistance)
+        if (isPatrolling && navMeshAgent.enabled && navMeshAgent.remainingDistance <= navMeshAgent.stoppingDistance && !navMeshAgent.pathPending)
             GoToNextWaypoint();
 
         CheckForPlayer();
@@ -80,8 +89,28 @@ public class AdvancedEnemyAI : MonoBehaviour
         if (player == null) return;
 
         float dist = Vector3.Distance(transform.position, player.position);
-        if (dist <= viewRadius && InSightCone(player.position))
-            StartChasing();
+        bool canSee = dist <= viewRadius && InSightCone(player.position);
+
+        if (canSee)
+        {
+            playerLastPosition = player.position;
+            if (!isChasing)
+            {
+                isPatrolling = false;
+                isChasing = true;
+                navMeshAgent.speed = speedRun;
+            }
+            if (navMeshAgent.enabled)
+                navMeshAgent.SetDestination(player.position);
+        }
+        else if (isChasing)
+        {
+            if (navMeshAgent.enabled && !navMeshAgent.hasPath)
+                navMeshAgent.SetDestination(playerLastPosition);
+
+            if (navMeshAgent.enabled && navMeshAgent.remainingDistance <= navMeshAgent.stoppingDistance && !navMeshAgent.pathPending)
+                StopChasing();
+        }
     }
 
     bool InSightCone(Vector3 targetPos)
@@ -90,18 +119,21 @@ public class AdvancedEnemyAI : MonoBehaviour
         return Vector3.Angle(transform.forward, dir) <= viewAngle / 2f;
     }
 
-    void StartChasing()
+    void StopChasing()
     {
-        isPatrolling = false;
-        isChasing = true;
-        navMeshAgent.speed = speedRun;
+        isChasing = false;
+        isPatrolling = true;
+        navMeshAgent.speed = speedWalk;
+        if (navMeshAgent.enabled)
+            GoToNextWaypoint();
     }
 
     void GoToNextWaypoint()
     {
         if (waypoints.Length == 0) return;
         currentWaypointIndex = (currentWaypointIndex + 1) % waypoints.Length;
-        navMeshAgent.SetDestination(waypoints[currentWaypointIndex].position);
+        if (navMeshAgent.enabled)
+            navMeshAgent.SetDestination(waypoints[currentWaypointIndex].position);
     }
 
     bool IsCloseToPlayer()

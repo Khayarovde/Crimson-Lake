@@ -40,8 +40,10 @@ public class WeaponHandler : MonoBehaviour
     [SerializeField] private float bulletSpeed = 100f;
 
     [Header("Прицел")]
-    [SerializeField] private GameObject aimBeamPrefab;
     [SerializeField] private float aimWalkSpeed = 1.5f;
+
+    [Header("Aim Assist")]
+    [SerializeField] private AimAssist aimAssist;
 
     [Header("Анимация melee (толчок оружием)")]
     [SerializeField] public Animator playerAnimator;
@@ -70,7 +72,6 @@ public class WeaponHandler : MonoBehaviour
     private AudioClip currentReloadSound;
 
     private GameObject currentWeaponModel;
-    private GameObject currentAimBeam;
 
     private float nextFireTime = 0f;
 
@@ -89,12 +90,14 @@ public class WeaponHandler : MonoBehaviour
         // Инициализация стартовых патронов
         if (PlayerAmmoData.gunReserve == 0) PlayerAmmoData.gunReserve = gunStartReserve;
         if (PlayerAmmoData.pistolReserve == 0) PlayerAmmoData.pistolReserve = pistolStartReserve;
+
+        aimAssist = GetComponent<AimAssist>();
+        if (aimAssist == null) aimAssist = gameObject.AddComponent<AimAssist>();
     }
 
     private void Update()
     {
         HandleInput();
-        UpdateAimBeam();
         CheckForCloseEnemy();  // Проверяем каждый кадр
 
         if (Input.GetKeyDown(KeyCode.R))
@@ -142,12 +145,14 @@ public class WeaponHandler : MonoBehaviour
 
             EquipActiveWeapon();
             if (tankController) tankController.moveSpeed = aimWalkSpeed;
+            aimAssist.SetAiming(true, muzzlePoint);
         }
         else if (!aiming && isAiming)
         {
             isAiming = false;
             UnequipWeapon();
             if (tankController) tankController.moveSpeed = originalWalkSpeed;
+            aimAssist.SetAiming(false, null);
         }
 
         if (aiming && Input.GetMouseButton(0) && CanShoot() && firingCoroutine == null)
@@ -186,7 +191,9 @@ public class WeaponHandler : MonoBehaviour
         // Обычная стрельба
         if (currentAmmoInMag > 0)
         {
-            Ray ray = new Ray(muzzlePoint.position, muzzlePoint.forward);
+            Vector3 aimDir = aimAssist.GetAimDirection();
+
+            Ray ray = new Ray(muzzlePoint.position, aimDir);
             if (Physics.Raycast(ray, out RaycastHit hit, 300f, enemyLayerMask))
             {
                 float dist = hit.distance;
@@ -222,29 +229,38 @@ public class WeaponHandler : MonoBehaviour
         }
     }
 
-    private void ShootLaser()
-    {
-        Ray ray = new Ray(muzzlePoint.position, muzzlePoint.forward);
-        bool hit = Physics.Raycast(ray, out RaycastHit hitInfo, 300f);
+    
+      private void ShootLaser()
+      {
+          Vector3 aimDir = aimAssist.GetAimDirection();
+          float spread = aimAssist.GetSpread();
+          aimDir = Quaternion.Euler(Random.Range(-spread, spread), Random.Range(-spread, spread), 0) * aimDir;
 
-        if (hit && hitInfo.collider.TryGetComponent<AdvancedEnemyAI>(out var enemy))
-            Destroy(enemy.gameObject);
+          Ray ray = new Ray(muzzlePoint.position, aimDir);
+          bool hit = Physics.Raycast(ray, out RaycastHit hitInfo, 300f);
 
-        if (laserShotPrefab != null)
-        {
-            float dist = hit ? hitInfo.distance : 300f;
-            var beam = Instantiate(laserShotPrefab, muzzlePoint.position, muzzlePoint.rotation, muzzlePoint);
-            beam.transform.localPosition = Vector3.forward * (dist * 0.5f);
-            beam.transform.localScale = new Vector3(1, 1, dist);
-            Destroy(beam, laserDuration);
-        }
-    }
+          if (hit && hitInfo.collider.TryGetComponent<AdvancedEnemyAI>(out var enemy))
+              Destroy(enemy.gameObject);
+
+          if (laserShotPrefab != null)
+          {
+              float dist = hit ? hitInfo.distance : 300f;
+              var beam = Instantiate(laserShotPrefab, muzzlePoint.position, Quaternion.LookRotation(aimDir), muzzlePoint);
+              beam.transform.localPosition = Vector3.forward * (dist * 0.5f);  
+              beam.transform.localScale = new Vector3(0.2f, 0.2f, dist);
+              Destroy(beam, laserDuration);
+          }
+      }
 
     private void ShootBullet()
     {
-        var bullet = Instantiate(bulletPrefab, muzzlePoint.position, muzzlePoint.rotation);
+        Vector3 aimDir = aimAssist.GetAimDirection();
+        float spread = aimAssist.GetSpread();
+        aimDir = Quaternion.Euler(Random.Range(-spread, spread), Random.Range(-spread, spread), 0) * aimDir;
+
+        var bullet = Instantiate(bulletPrefab, muzzlePoint.position, Quaternion.LookRotation(aimDir));
         if (bullet.TryGetComponent<Rigidbody>(out var rb))
-            rb.linearVelocity = muzzlePoint.forward * bulletSpeed;
+            rb.linearVelocity = aimDir * bulletSpeed;
 
         if (bullet.TryGetComponent<Bullet>(out var b))
             b.damage = currentDamage;
@@ -270,6 +286,8 @@ public class WeaponHandler : MonoBehaviour
 
         var muzzle = currentWeaponModel?.transform.Find("Muzzle");
         if (muzzle) muzzlePoint = muzzle;
+
+        if (isAiming) aimAssist.SetAiming(true, muzzlePoint);
     }
 
     private void SetCurrentWeaponStats()
@@ -368,9 +386,7 @@ public class WeaponHandler : MonoBehaviour
     {
         SaveCurrentAmmo();
         if (currentWeaponModel) Destroy(currentWeaponModel);
-        if (currentAimBeam) Destroy(currentAimBeam);
         currentWeaponModel = null;
-        currentAimBeam = null;
 
         if (firingCoroutine != null)
         {
@@ -438,29 +454,15 @@ public class WeaponHandler : MonoBehaviour
         }
     }
 
-    private void UpdateAimBeam()
-    {
-        if (!isAiming || aimBeamPrefab == null || muzzlePoint == null)
-        {
-            if (currentAimBeam) Destroy(currentAimBeam);
-            currentAimBeam = null;
-            return;
-        }
-
-        if (currentAimBeam == null)
-            currentAimBeam = Instantiate(aimBeamPrefab, muzzlePoint);
-
-        Ray ray = new Ray(muzzlePoint.position, muzzlePoint.forward);
-        float d = Physics.Raycast(ray, out RaycastHit hit, 200f) ? hit.distance : 200f;
-
-        currentAimBeam.transform.position = muzzlePoint.position + muzzlePoint.forward * (d * 0.5f);
-        currentAimBeam.transform.localScale = new Vector3(0.02f, 0.02f, d);
-        currentAimBeam.transform.rotation = muzzlePoint.rotation;
-    }
-
     public void OnActiveItemChanged()
     {
         SetCurrentWeaponStats();
         if (isAiming) CreateWeaponModelIfNeeded();
+        if (isAiming)
+        {
+            var muzzle = currentWeaponModel?.transform.Find("Muzzle");
+            if (muzzle) muzzlePoint = muzzle;
+            aimAssist.SetAiming(true, muzzlePoint);
+        }
     }
 }
