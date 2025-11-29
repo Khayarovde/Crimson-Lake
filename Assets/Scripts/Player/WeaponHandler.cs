@@ -247,7 +247,7 @@ public class WeaponHandler : MonoBehaviour
               float dist = hit ? hitInfo.distance : 300f;
               var beam = Instantiate(laserShotPrefab, muzzlePoint.position, Quaternion.LookRotation(aimDir), muzzlePoint);
               beam.transform.localPosition = Vector3.forward * (dist * 0.5f);  
-              beam.transform.localScale = new Vector3(0.2f, 0.2f, dist);
+              beam.transform.localScale = new Vector3(0.01f, 0.05f, dist);
               Destroy(beam, laserDuration);
           }
       }
