@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+﻿﻿using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.SceneManagement;
 using System.Collections;
@@ -147,9 +147,20 @@ public class AdvancedEnemyAI : MonoBehaviour
         if (caughtPlayer) return;
         caughtPlayer = true;
 
+        // Включение анимации захвата
+        m_Animator.SetBool("IsCaughtPlayer", caughtPlayer);
+
+        // Ждём завершения анимации захвата (таймер 1.5 секунды)
+        StartCoroutine(WaitForAnimationComplete());
+    }
+
+    IEnumerator WaitForAnimationComplete()
+    {
+        yield return new WaitForSeconds(1.5f);
+        
         // Останавливаем врага и время
         navMeshAgent.isStopped = true;
-        Time.timeScale = 0f; // игрок больше не двигается
+        Time.timeScale = 0f;
 
         // Запускаем корутину, которая сначала проиграет звук, а ПОТОМ покажет экран
         StartCoroutine(PlayCatchSoundAndShowLoseScreen());
