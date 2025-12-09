@@ -392,7 +392,6 @@ GameObject:
   - component: {fileID: 4446118427321490031}
   - component: {fileID: 6428926271660531463}
   - component: {fileID: 8564032716929835383}
-  - component: {fileID: 6475674962160512138}
   - component: {fileID: 3632101850224339137}
   - component: {fileID: 3611769481128000576}
   - component: {fileID: 710189188416788375}
@@ -411,7 +410,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1393534560132879237}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: 0.29526263, z: -0, w: -0.9554162}
+  m_LocalRotation: {x: 0, y: 0.29526615, z: -0, w: -0.95541507}
   m_LocalPosition: {x: -66.13, y: 6.3500004, z: -31.2}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -490,33 +489,6 @@ NavMeshAgent:
   m_BaseOffset: 0
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
---- !u!114 &6475674962160512138
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1393534560132879237}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 994d11467786ca64b89479bf0fbb17f2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  navMeshAgent: {fileID: 8564032716929835383}
-  m_Animator: {fileID: 4446118427321490031}
-  speedWalk: 6
-  speedRun: 3
-  waypoints:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  viewRadius: 15
-  viewAngle: 90
-  playerMask:
-    serializedVersion: 2
-    m_Bits: 256
-  catchSound: {fileID: 8300000, guid: 45422976d0c66fd40b82e76c95dad78e, type: 3}
-  audioSource: {fileID: 795722791391542667}
 --- !u!82 &3632101850224339137
 AudioSource:
   m_ObjectHideFlags: 0
@@ -631,7 +603,6 @@ MonoBehaviour:
   speedWalk: 6
   speedRun: 1
   waypoints:
-  - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
   viewRadius: 15

@@ -230,27 +230,27 @@ public class WeaponHandler : MonoBehaviour
     }
 
     
-      private void ShootLaser()
-      {
-          Vector3 aimDir = aimAssist.GetAimDirection();
-          float spread = aimAssist.GetSpread();
-          aimDir = Quaternion.Euler(Random.Range(-spread, spread), Random.Range(-spread, spread), 0) * aimDir;
+    private void ShootLaser()
+    {
+        Vector3 aimDir = aimAssist.GetAimDirection();
+        float spread = aimAssist.GetSpread();
+        aimDir = Quaternion.Euler(Random.Range(-spread, spread), Random.Range(-spread, spread), 0) * aimDir;
 
-          Ray ray = new Ray(muzzlePoint.position, aimDir);
-          bool hit = Physics.Raycast(ray, out RaycastHit hitInfo, 300f);
+        Ray ray = new Ray(muzzlePoint.position, aimDir);
+        bool hit = Physics.Raycast(ray, out RaycastHit hitInfo, 300f);
 
-          if (hit && hitInfo.collider.TryGetComponent<AdvancedEnemyAI>(out var enemy))
-              Destroy(enemy.gameObject);
+        if (hit && hitInfo.collider.TryGetComponent<AdvancedEnemyAI>(out var enemy))
+            Destroy(enemy.gameObject);
 
-          if (laserShotPrefab != null)
-          {
-              float dist = hit ? hitInfo.distance : 300f;
-              var beam = Instantiate(laserShotPrefab, muzzlePoint.position, Quaternion.LookRotation(aimDir), muzzlePoint);
-              beam.transform.localPosition = Vector3.forward * (dist * 0.5f);  
-              beam.transform.localScale = new Vector3(0.01f, 0.05f, dist);
-              Destroy(beam, laserDuration);
-          }
-      }
+        if (laserShotPrefab != null)
+        {
+            float dist = hit ? hitInfo.distance : 300f;
+            var beam = Instantiate(laserShotPrefab, muzzlePoint.position, Quaternion.LookRotation(aimDir), muzzlePoint);
+            beam.transform.localPosition = Vector3.forward * (dist * 0.5f);  
+            beam.transform.localScale = new Vector3(0.01f, 0.05f, dist);
+            Destroy(beam, laserDuration);
+        }
+    }
 
     private void ShootBullet()
     {

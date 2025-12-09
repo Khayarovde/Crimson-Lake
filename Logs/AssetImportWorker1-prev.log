@@ -2,7 +2,7 @@ Using pre-set license
 Built from '6000.0/respin/6000.0.59f1-063c55f2fd0f' branch; Version is '6000.0.59f2 (ef281c76c3c1) revision 15673372'; Using compiler version '193933523'; Build Type 'Release'
 OS: 'Windows 11  (10.0.26100) 64bit EnterpriseS' Language: 'ru' Physical Memory: 32694 MB
 BatchMode: 1, IsHumanControllingUs: 0, StartBugReporterOnCrash: 0, Is64bit: 1
-Date: 2025-11-29T10:06:24Z
+Date: 2025-12-09T15:46:32Z
 
 COMMAND LINE ARGUMENTS:
 E:\Unity\6000.0.59f2\Editor\Unity.exe
@@ -16,7 +16,7 @@ F:/Project/Crimson-Lake
 -logFile
 Logs/AssetImportWorker1.log
 -srvPort
-57968
+61590
 -job-worker-count
 5
 -background-job-worker-count
@@ -62,16 +62,16 @@ F:/Project/Crimson-Lake
     "memorysetup-temp-allocator-size-gi-baking-worker=262144"
     "memorysetup-temp-allocator-size-gi-baking-worker=262144"
     "memorysetup-temp-allocator-size-gfx=262144"
-Player connection [11932]  Target information:
+Player connection [9496]  Target information:
 
-Player connection [11932]  * "[IP] 192.168.0.4 [Port] 0 [Flags] 2 [Guid] 2642760413 [EditorId] 2642760413 [Version] 1048832 [Id] WindowsEditor(7,WIN-D9NEL4LPBM6) [Debug] 1 [PackageName] WindowsEditor [ProjectName] Editor" 
+Player connection [9496]  * "[IP] 192.168.0.4 [Port] 0 [Flags] 2 [Guid] 4259857015 [EditorId] 4259857015 [Version] 1048832 [Id] WindowsEditor(7,WIN-D9NEL4LPBM6) [Debug] 1 [PackageName] WindowsEditor [ProjectName] Editor" 
 
-Player connection [11932]  * "[IP] 172.26.80.1 [Port] 0 [Flags] 2 [Guid] 2642760413 [EditorId] 2642760413 [Version] 1048832 [Id] WindowsEditor(7,WIN-D9NEL4LPBM6) [Debug] 1 [PackageName] WindowsEditor [ProjectName] Editor" 
+Player connection [9496]  * "[IP] 172.28.32.1 [Port] 0 [Flags] 2 [Guid] 4259857015 [EditorId] 4259857015 [Version] 1048832 [Id] WindowsEditor(7,WIN-D9NEL4LPBM6) [Debug] 1 [PackageName] WindowsEditor [ProjectName] Editor" 
 
-Player connection [11932]  * "[IP] 192.168.56.1 [Port] 0 [Flags] 2 [Guid] 2642760413 [EditorId] 2642760413 [Version] 1048832 [Id] WindowsEditor(7,WIN-D9NEL4LPBM6) [Debug] 1 [PackageName] WindowsEditor [ProjectName] Editor" 
+Player connection [9496]  * "[IP] 192.168.56.1 [Port] 0 [Flags] 2 [Guid] 4259857015 [EditorId] 4259857015 [Version] 1048832 [Id] WindowsEditor(7,WIN-D9NEL4LPBM6) [Debug] 1 [PackageName] WindowsEditor [ProjectName] Editor" 
 
-Player connection [11932] Host joined multi-casting on [225.0.0.222:54997]...
-Player connection [11932] Host joined alternative multi-casting on [225.0.0.222:34997]...
+Player connection [9496] Host joined multi-casting on [225.0.0.222:54997]...
+Player connection [9496] Host joined alternative multi-casting on [225.0.0.222:34997]...
 JobSystem: Creating JobQueue using job-worker-count value 5
 Input System module state changed to: Initialized.
 [Physics::Module] Initialized fallback backend.
@@ -83,7 +83,7 @@ Library Redirect Path: Library/
 [Physics::Module] SDK Version: 4.1.2
 [Physics::Module] Integration Version: 1.0.0
 [Physics::Module] Threading Mode: Multi-Threaded
-Refreshing native plugins compatible for Editor in 50.34 ms, found 2 plugins.
+Refreshing native plugins compatible for Editor in 1.06 ms, found 2 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
 Initialize engine version: 6000.0.59f2 (ef281c76c3c1)
 [Subsystems] Discovering subsystems at path E:/Unity/6000.0.59f2/Editor/Data/Resources/UnitySubsystems
@@ -99,45 +99,45 @@ Initialize mono
 Mono path[0] = 'E:/Unity/6000.0.59f2/Editor/Data/Managed'
 Mono path[1] = 'E:/Unity/6000.0.59f2/Editor/Data/MonoBleedingEdge/lib/mono/unityjit-win32'
 Mono config path = 'E:/Unity/6000.0.59f2/Editor/Data/MonoBleedingEdge/etc'
-Using monoOptions --debugger-agent=transport=dt_socket,embedding=1,server=y,suspend=n,address=127.0.0.1:56116
+Using monoOptions --debugger-agent=transport=dt_socket,embedding=1,server=y,suspend=n,address=127.0.0.1:56848
 Begin MonoManager ReloadAssembly
 Registering precompiled unity dll's ...
 Register platform support module: E:/Unity/6000.0.59f2/Editor/Data/PlaybackEngines/WebGLSupport/UnityEditor.WebGL.Extensions.dll
 Register platform support module: E:/Unity/6000.0.59f2/Editor/Data/PlaybackEngines/WindowsStandaloneSupport/UnityEditor.WindowsStandalone.Extensions.dll
-Registered in 0.434925 seconds.
-- Loaded All Assemblies, in 10.002 seconds
+Registered in 0.001990 seconds.
+- Loaded All Assemblies, in  0.326 seconds
 Native extension for WindowsStandalone target not found
 Native extension for WebGL target not found
 Mono: successfully reloaded assembly
-- Finished resetting the current domain, in  0.407 seconds
-Domain Reload Profiling: 10409ms
-	BeginReloadAssembly (7819ms)
+- Finished resetting the current domain, in  0.286 seconds
+Domain Reload Profiling: 611ms
+	BeginReloadAssembly (113ms)
 		ExecutionOrderSort (0ms)
 		DisableScriptedObjects (0ms)
 		BackupInstance (0ms)
 		ReleaseScriptingObjects (0ms)
 		CreateAndSetChildDomain (1ms)
-	RebuildCommonClasses (492ms)
-	RebuildNativeTypeToScriptingClass (13ms)
-	initialDomainReloadingComplete (483ms)
-	LoadAllAssembliesAndSetupDomain (1194ms)
-		LoadAssemblies (7824ms)
+	RebuildCommonClasses (33ms)
+	RebuildNativeTypeToScriptingClass (11ms)
+	initialDomainReloadingComplete (39ms)
+	LoadAllAssembliesAndSetupDomain (129ms)
+		LoadAssemblies (112ms)
 		RebuildTransferFunctionScriptingTraits (0ms)
-		AnalyzeDomain (1185ms)
-			TypeCache.Refresh (1184ms)
-				TypeCache.ScanAssembly (937ms)
+		AnalyzeDomain (126ms)
+			TypeCache.Refresh (125ms)
+				TypeCache.ScanAssembly (114ms)
 			BuildScriptInfoCaches (0ms)
 			ResolveRequiredComponents (0ms)
-	FinalizeReload (408ms)
+	FinalizeReload (286ms)
 		ReleaseScriptCaches (0ms)
 		RebuildScriptCaches (0ms)
-		SetupLoadedEditorAssemblies (362ms)
+		SetupLoadedEditorAssemblies (253ms)
 			LogAssemblyErrors (0ms)
-			InitializePlatformSupportModulesInManaged (26ms)
+			InitializePlatformSupportModulesInManaged (22ms)
 			SetLoadedEditorAssemblies (5ms)
-			BeforeProcessingInitializeOnLoad (76ms)
-			ProcessInitializeOnLoadAttributes (189ms)
-			ProcessInitializeOnLoadMethodAttributes (65ms)
+			BeforeProcessingInitializeOnLoad (55ms)
+			ProcessInitializeOnLoadAttributes (131ms)
+			ProcessInitializeOnLoadMethodAttributes (40ms)
 			AfterProcessingInitializeOnLoad (0ms)
 			EditorAssembliesLoaded (0ms)
 		ExecutionOrderSort2 (0ms)
@@ -146,123 +146,3 @@ Domain Reload Profiling: 10409ms
 Worker process is ready to serve import requests
 Import Worker Mode flag is 0x00
 Begin MonoManager ReloadAssembly
-- Loaded All Assemblies, in  6.530 seconds
-Refreshing native plugins compatible for Editor in 0.79 ms, found 2 plugins.
-Native extension for WindowsStandalone target not found
-Native extension for WebGL target not found
-Package Manager log level set to [2]
-[Package Manager] Failed to launch server process. Reason: Unity was launched with the -noUpm command-line argument
-[Package Manager] Unable to send message (not connected to server process).
-[Package Manager] Cannot connect to Unity Package Manager local server
-<color=white>• You are using a <b>Non-Commercial</b> version of <b>Pixelation</b> developed by <b>NullTale</b></color>.
-When using this version, please remember to specify <b>Author Attribution</b> according to the <b>Licence</b> used.
-------------- - - - -  -  -
-A full use <b>Licence</b> can be acquired on <a href="https://assetstore.unity.com/packages/vfx/shaders/fullscreen-camera-effects/271730">Asset Store</a> or negotiated with the Author in cases of special licensing.
- 
-UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
-UnityEngine.StackTraceUtility:ExtractStackTrace ()
-UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
-UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
-UnityEngine.Logger:Log (UnityEngine.LogType,object)
-UnityEngine.Debug:Log (object)
-VolFx.Editor.PassDrawer:CopyrightInfo () (at ./Library/PackageCache/www.nulltale.pixelation@97667f4bacf4/Editor/PassDrawer.cs:162)
-System.Reflection.RuntimeMethodInfo:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
-System.Reflection.MethodBase:Invoke (object,object[])
-UnityEditor.EditorAssemblies:ProcessInitializeOnLoadMethodAttributes ()
-
-(Filename: ./Library/PackageCache/www.nulltale.pixelation@97667f4bacf4/Editor/PassDrawer.cs Line: 162)
-
-Mono: successfully reloaded assembly
-- Finished resetting the current domain, in  0.819 seconds
-Domain Reload Profiling: 7347ms
-	BeginReloadAssembly (217ms)
-		ExecutionOrderSort (0ms)
-		DisableScriptedObjects (9ms)
-		BackupInstance (0ms)
-		ReleaseScriptingObjects (0ms)
-		CreateAndSetChildDomain (40ms)
-	RebuildCommonClasses (49ms)
-	RebuildNativeTypeToScriptingClass (15ms)
-	initialDomainReloadingComplete (30ms)
-	LoadAllAssembliesAndSetupDomain (6216ms)
-		LoadAssemblies (5876ms)
-		RebuildTransferFunctionScriptingTraits (0ms)
-		AnalyzeDomain (453ms)
-			TypeCache.Refresh (403ms)
-				TypeCache.ScanAssembly (388ms)
-			BuildScriptInfoCaches (38ms)
-			ResolveRequiredComponents (9ms)
-	FinalizeReload (819ms)
-		ReleaseScriptCaches (0ms)
-		RebuildScriptCaches (0ms)
-		SetupLoadedEditorAssemblies (567ms)
-			LogAssemblyErrors (0ms)
-			InitializePlatformSupportModulesInManaged (3ms)
-			SetLoadedEditorAssemblies (5ms)
-			BeforeProcessingInitializeOnLoad (128ms)
-			ProcessInitializeOnLoadAttributes (364ms)
-			ProcessInitializeOnLoadMethodAttributes (64ms)
-			AfterProcessingInitializeOnLoad (2ms)
-			EditorAssembliesLoaded (0ms)
-		ExecutionOrderSort2 (0ms)
-		AwakeInstancesAfterBackupRestoration (5ms)
-Launched and connected shader compiler UnityShaderCompiler.exe after 0.01 seconds
-Refreshing native plugins compatible for Editor in 1.40 ms, found 2 plugins.
-Preloading 0 native plugins for Editor in 0.00 ms.
-Unloading 13 Unused Serialized files (Serialized files now loaded: 0)
-Unloading 4274 unused Assets / (4.0 MB). Loaded Objects now: 4980.
-Memory consumption went from 114.1 MB to 110.1 MB.
-Total: 11.018700 ms (FindLiveObjects: 0.894400 ms CreateObjectMapping: 0.910000 ms MarkObjects: 6.414500 ms  DeleteObjects: 2.798800 ms)
-
-========================================================================
-Received Import Request.
-  Time since last request: 1051.080869 seconds.
-  path: Assets/Animate/zombattack1.fbx
-  artifactKey: Guid(6dc760405a6809f47bc976aafcd90343) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
-Start importing Assets/Animate/zombattack1.fbx using Guid(6dc760405a6809f47bc976aafcd90343) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: '2344d966312a4ab25c09c7dd966efbdf') in 1.492047 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 184
-
-========================================================================
-Received Import Request.
-  Time since last request: 0.000105 seconds.
-  path: Assets/Animate/pistolswalk.fbx
-  artifactKey: Guid(53c51b11f225fa24dae180cf0daeb716) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
-Start importing Assets/Animate/pistolswalk.fbx using Guid(53c51b11f225fa24dae180cf0daeb716) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: 'bdf75a8894abbe7e2f6027afcb267480') in 0.046413 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 175
-
-========================================================================
-Received Import Request.
-  Time since last request: 0.000037 seconds.
-  path: Assets/DefaultVolumeProfile.asset
-  artifactKey: Guid(c3010e99e7acf484e9cef0c8828f46ca) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
-Start importing Assets/DefaultVolumeProfile.asset using Guid(c3010e99e7acf484e9cef0c8828f46ca) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: '816462e522775d823c99a9e4b11124b0') in 0.0009182 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
-
-========================================================================
-Received Import Request.
-  Time since last request: 0.000027 seconds.
-  path: Assets/Animate/mutwalk (1).fbx
-  artifactKey: Guid(b5fcad1f712c8654cb48535a416f87ec) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
-Start importing Assets/Animate/mutwalk (1).fbx using Guid(b5fcad1f712c8654cb48535a416f87ec) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: '8694084be175a8e5651bfeb6981c8423') in 0.0369076 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 178
-
-========================================================================
-Received Import Request.
-  Time since last request: 0.000022 seconds.
-  path: Assets/Animate/dyingback.fbx
-  artifactKey: Guid(06f1674a0f22125458fb0fb8620e0105) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
-Start importing Assets/Animate/dyingback.fbx using Guid(06f1674a0f22125458fb0fb8620e0105) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: '85ccd4f41bb1045beb64ab90a17d5e33') in 0.0401167 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 170
-
-========================================================================
-Received Import Request.
-  Time since last request: 0.000028 seconds.
-  path: Assets/Animate/Dying (1) (1).fbx
-  artifactKey: Guid(8bf50c4537a91fd4497fce1cff91ec64) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
-Start importing Assets/Animate/Dying (1) (1).fbx using Guid(8bf50c4537a91fd4497fce1cff91ec64) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: 'd3b068870262360beab0a88c8ddd2602') in 0.0366341 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 140
-
-Editor requested this worker to shutdown with reason: Scaling down because of idle timeout
-AssetImportWorker is now disconnected from the server
-Process exiting
-Exiting without the bug reporter. Application will terminate with return code 0

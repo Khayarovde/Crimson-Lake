@@ -149,7 +149,7 @@ public class AdvancedEnemyAI : MonoBehaviour
 
         // Включение анимации захвата
         m_Animator.SetBool("IsCaughtPlayer", caughtPlayer);
-
+        navMeshAgent.isStopped = true;
         // Ждём завершения анимации захвата (таймер 1.5 секунды)
         StartCoroutine(WaitForAnimationComplete());
     }
