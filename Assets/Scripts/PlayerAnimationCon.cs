@@ -13,11 +13,6 @@ public class PlayerAnimationCon : MonoBehaviour
         anim = GetComponent<Animator>();
     }
 
-
-    void Update()
-    {
-
-     }
    public void Run(float speed,bool status)
     {
         anim.SetBool("Run", status);

@@ -394,8 +394,6 @@ GameObject:
   - component: {fileID: 8564032716929835383}
   - component: {fileID: 6475674962160512138}
   - component: {fileID: 3632101850224339137}
-  - component: {fileID: 3611769481128000576}
-  - component: {fileID: 710189188416788375}
   m_Layer: 9
   m_Name: Enemy
   m_TagString: MeleePush
@@ -411,7 +409,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1393534560132879237}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: 0.29526263, z: -0, w: -0.9554162}
+  m_LocalRotation: {x: 0, y: 0.29526615, z: -0, w: -0.95541507}
   m_LocalPosition: {x: -66.13, y: 6.3500004, z: -31.2}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -433,7 +431,7 @@ Animator:
   m_GameObject: {fileID: 1393534560132879237}
   m_Enabled: 1
   m_Avatar: {fileID: 9000000, guid: 6dc760405a6809f47bc976aafcd90343, type: 3}
-  m_Controller: {fileID: 9100000, guid: f8718cabdd78d4448be91fa647b96ce5, type: 2}
+  m_Controller: {fileID: 9100000, guid: db84fbcac9497ec4f89397124150fd38, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 1
@@ -504,10 +502,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   navMeshAgent: {fileID: 8564032716929835383}
   m_Animator: {fileID: 4446118427321490031}
-  speedWalk: 6
-  speedRun: 3
+  speedWalk: 0.15
+  speedRun: 0.09
   waypoints:
-  - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
   viewRadius: 15
@@ -518,130 +515,6 @@ MonoBehaviour:
   catchSound: {fileID: 8300000, guid: 45422976d0c66fd40b82e76c95dad78e, type: 3}
   audioSource: {fileID: 795722791391542667}
 --- !u!82 &3632101850224339137
-AudioSource:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1393534560132879237}
-  m_Enabled: 1
-  serializedVersion: 4
-  OutputAudioMixerGroup: {fileID: 0}
-  m_audioClip: {fileID: 0}
-  m_Resource: {fileID: 0}
-  m_PlayOnAwake: 1
-  m_Volume: 0.548
-  m_Pitch: 1
-  Loop: 0
-  Mute: 0
-  Spatialize: 0
-  SpatializePostEffects: 0
-  Priority: 128
-  DopplerLevel: 1
-  MinDistance: 1
-  MaxDistance: 500
-  Pan2D: 0
-  rolloffMode: 0
-  BypassEffects: 0
-  BypassListenerEffects: 0
-  BypassReverbZones: 0
-  rolloffCustomCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 1
-      value: 0
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  panLevelCustomCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  spreadCustomCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  reverbZoneMixCustomCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
---- !u!114 &3611769481128000576
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1393534560132879237}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 994d11467786ca64b89479bf0fbb17f2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  navMeshAgent: {fileID: 8564032716929835383}
-  m_Animator: {fileID: 4446118427321490031}
-  speedWalk: 6
-  speedRun: 1
-  waypoints:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  viewRadius: 15
-  viewAngle: 90
-  playerMask:
-    serializedVersion: 2
-    m_Bits: 256
-  catchSound: {fileID: 8300000, guid: 45422976d0c66fd40b82e76c95dad78e, type: 3}
-  audioSource: {fileID: 810877717443581952}
---- !u!82 &710189188416788375
 AudioSource:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}

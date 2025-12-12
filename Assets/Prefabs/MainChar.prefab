@@ -876,7 +876,6 @@ GameObject:
   - component: {fileID: 3893750404167023849}
   - component: {fileID: 1988559161486194445}
   - component: {fileID: 9134748891124289906}
-  - component: {fileID: 3665495155743600357}
   - component: {fileID: 4304410241410908299}
   - component: {fileID: 5721163794523407143}
   - component: {fileID: 7184354157119061359}
@@ -899,7 +898,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2308958626575937540}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: 0.5678944, z: -0, w: -0.82310146}
+  m_LocalRotation: {x: 0, y: 0.56789404, z: -0, w: -0.82310164}
   m_LocalPosition: {x: -48.05, y: 6.45, z: -3.7400036}
   m_LocalScale: {x: 1.6378915, y: 1.6378915, z: 1.6378915}
   m_ConstrainProportionsScale: 0
@@ -1017,40 +1016,43 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   weaponHoldPoint: {fileID: 3348004520985068418}
-  muzzlePoint: {fileID: 3258925818660538281}
+  defaultMuzzlePoint: {fileID: 3258925818660538281}
   gunPrefab: {fileID: 6119306828412977847, guid: 42c51c2603762ff4185ece8ec20ead30, type: 3}
   gunScale: {x: 0.3, y: 0.3, z: 0.3}
   pistolPrefab: {fileID: 7018287897960650172, guid: 5ee2311ae1bcda243a4809a18e46850e, type: 3}
   pistolScale: {x: 0.5, y: 0.5, z: 0.5}
   audioSource: {fileID: 4290675931133547782}
-  emptyMagSound: {fileID: 0}
+  emptyMagSound: {fileID: 8300000, guid: 8ff708c2ef19b434aa3ee5ab814e5723, type: 3}
   gunFireRate: 2
-  gunDamage: 40
   gunMagazineSize: 7
   gunStartReserve: 35
   gunReloadTime: 2
   gunShootSounds:
   - {fileID: 8300000, guid: ccfb18eb53b37384b9632ae00f725881, type: 3}
   gunReloadSound: {fileID: 8300000, guid: 55a810a67df804d4487e8f990523255b, type: 3}
-  laserShotPrefab: {fileID: 0}
-  laserDuration: 20
   pistolFireRate: 0.09
-  pistolDamage: 20
   pistolMagazineSize: 12
   pistolStartReserve: 120
   pistolReloadTime: 50
   pistolShootSounds:
   - {fileID: 8300000, guid: 3701a5fdf99882f40bc00eb9053eec92, type: 3}
   pistolReloadSound: {fileID: 8300000, guid: ed15a29e723b7214ea43525973cdb6bb, type: 3}
-  bulletPrefab: {fileID: 0}
-  bulletSpeed: 2
+  gunTracerPrefab: {fileID: 7054626418378342303, guid: a33ac9ff6f0cab141ba06a67de287db2, type: 3}
+  gunTracerDuration: 0.12
+  gunTracerThickness: 0.5
+  pistolTracerPrefab: {fileID: 7054626418378342303, guid: a33ac9ff6f0cab141ba06a67de287db2, type: 3}
+  pistolTracerDuration: 0.1
+  pistolTracerThickness: 0.08
+  maxTracerDistance: 300
+  gunHitEffect: {fileID: 3795546933579711327, guid: e7e13463951036e42b31baa71fbee684, type: 3}
+  pistolHitEffect: {fileID: 3795546933579711327, guid: e7e13463951036e42b31baa71fbee684, type: 3}
   aimWalkSpeed: 0.2
   aimAssist: {fileID: 8412696754332258902}
-  playerAnimator: {fileID: 636205799131586819}
-  meleeTrigger: MeleePush
   enemyLayerMask:
     serializedVersion: 2
     m_Bits: 512
+  playerAnimator: {fileID: 636205799131586819}
+  meleeTrigger: MeleePush
 --- !u!114 &9134748891124289906
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1068,59 +1070,6 @@ MonoBehaviour:
   pushDuration: 0.5
   meleeCooldown: 0.5
   meleeSound: {fileID: 8300000, guid: b91418e7e651a5741a14cd31af0f5ba8, type: 3}
---- !u!114 &3665495155743600357
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2308958626575937540}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 750f609a636e5884ea1f64755433c8d0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  weaponHoldPoint: {fileID: 8632989013396318056}
-  muzzlePoint: {fileID: 3258925818660538281}
-  gunPrefab: {fileID: 6119306828412977847, guid: 42c51c2603762ff4185ece8ec20ead30, type: 3}
-  gunScale: {x: 0.3, y: 0.3, z: 0.3}
-  pistolPrefab: {fileID: 7018287897960650172, guid: 5ee2311ae1bcda243a4809a18e46850e, type: 3}
-  pistolScale: {x: 0.5, y: 0.5, z: 0.5}
-  audioSource: {fileID: 450292822744165481}
-  emptyMagSound: {fileID: 8300000, guid: 889a0f3e3390d9146a73ebf6e5f78dc5, type: 3}
-  gunFireRate: 2
-  gunDamage: 40
-  gunMagazineSize: 7
-  gunStartReserve: 35
-  gunReloadTime: 2
-  gunShootSounds:
-  - {fileID: 8300000, guid: 7b889162724f05c4f95da46adbd50ef7, type: 3}
-  - {fileID: 8300000, guid: b9bcff787e03ea4448419527c126e177, type: 3}
-  - {fileID: 8300000, guid: b39ec697f76aec04fb8081c0c4f6dbae, type: 3}
-  - {fileID: 8300000, guid: 6c641842185384646b603322cc7e7559, type: 3}
-  gunReloadSound: {fileID: 8300000, guid: 1e01a3eff9609af4a91cea332a46838e, type: 3}
-  laserShotPrefab: {fileID: 0}
-  laserDuration: 2
-  pistolFireRate: 0.3
-  pistolDamage: 20
-  pistolMagazineSize: 12
-  pistolStartReserve: 120
-  pistolReloadTime: 1.5
-  pistolShootSounds:
-  - {fileID: 8300000, guid: 92d35fe1c59bbd14eaee9e3d3b54cea7, type: 3}
-  - {fileID: 8300000, guid: 5207b2a445fcb144281ab5395fe95c1d, type: 3}
-  - {fileID: 8300000, guid: 1e940d15337ad1e43b0cc1b2430d7c06, type: 3}
-  - {fileID: 8300000, guid: 70c97e425596b8142b7b9163256c0868, type: 3}
-  pistolReloadSound: {fileID: 8300000, guid: 2868e580baee45d449931dc35a5ace81, type: 3}
-  bulletPrefab: {fileID: 8022568643572862970, guid: 6778160373b582d4fb9d61c652badfe9, type: 3}
-  bulletSpeed: 15
-  aimWalkSpeed: 0.4
-  aimAssist: {fileID: 8412696754332258902}
-  playerAnimator: {fileID: 5866666021909216657, guid: 7e7fb00f85ffd2042a5550a5d955f904, type: 3}
-  meleeTrigger: MeleePush
-  enemyLayerMask:
-    serializedVersion: 2
-    m_Bits: 512
 --- !u!114 &4304410241410908299
 MonoBehaviour:
   m_ObjectHideFlags: 0

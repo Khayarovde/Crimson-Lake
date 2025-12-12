@@ -2,108 +2,71 @@ using UnityEngine;
 
 public class AimAssist : MonoBehaviour
 {
-    // Переменные AimAssist
     [SerializeField] private float captureRange = 10f;
-    [SerializeField] private float correctionFactor = 0.1f;
-    private Transform muzzlePoint;
-    private Transform targetEnemy;
-    private Vector3 lastKnownTargetPosition;
-    public bool Enabled { get; set; }
+    [SerializeField] private float correctionFactor = 0.15f; // чуть сильнее, если хочешь
 
-    // Слой для распознавания врагов
+    private Transform muzzlePoint;
+    private Transform currentTarget;
+    private Vector3 lastKnownPosition;
+
+    public bool Enabled { get; private set; }
+
     private LayerMask enemyLayerMask;
 
-    // Поле для хранения ссылки на родителя
-    private WeaponHandler parent;
-
-    // Метод для связи с родителем и передачей слоя
-    public void Initialize(WeaponHandler handler, LayerMask layerMask)
+    public void Initialize(LayerMask mask)
     {
-        parent = handler;
-        enemyLayerMask = layerMask;
+        enemyLayerMask = mask;
     }
 
-    // Метод для задания точки мушки
-    public void SetMuzzlePoint(Transform point)
-    {
-        muzzlePoint = point;
-    }
-
-    // Метод для включения/выключения Aim Assist
-    public void SetAiming(bool enabled, Transform muzzlePoint)
+    public void SetAiming(bool enabled, Transform muzzle)
     {
         Enabled = enabled;
-        SetMuzzlePoint(muzzlePoint);
+        muzzlePoint = muzzle;
+        if (!enabled) currentTarget = null;
     }
 
-    // Основной цикл обновления
     private void Update()
     {
         if (!Enabled || muzzlePoint == null) return;
 
-        // Ищем ближайших врагов
-        Collider[] nearByColliders = Physics.OverlapSphere(muzzlePoint.position, captureRange, enemyLayerMask);
-
-        if (nearByColliders.Length > 0)
-        {
-            // Находим ближайшего врага
-            targetEnemy = FindClosestEnemy(nearByColliders);
-
-            if (targetEnemy != null)
-            {
-                // Легонько подтягиваем мушку к врагу
-                CorrectAim(targetEnemy.position);
-            }
-        }
+        FindBestTarget();
     }
 
-    // Находим ближайшего врага
-    private Transform FindClosestEnemy(Collider[] colliders)
+    private void FindBestTarget()
     {
-        Transform closest = null;
-        float minDistance = float.MaxValue;
-
-        foreach (Collider collider in colliders)
+        Collider[] hits = Physics.OverlapSphere(muzzlePoint.position, captureRange, enemyLayerMask);
+        if (hits.Length == 0)
         {
-            float distance = Vector3.Distance(muzzlePoint.position, collider.transform.position);
-            if (distance < minDistance)
+            currentTarget = null;
+            return;
+        }
+
+        Transform best = null;
+        float closestDist = float.MaxValue;
+
+        foreach (var col in hits)
+        {
+            float dist = Vector3.Distance(muzzlePoint.position, col.transform.position);
+            if (dist < closestDist)
             {
-                minDistance = distance;
-                closest = collider.transform;
+                closestDist = dist;
+                best = col.transform;
             }
         }
 
-        return closest;
+        currentTarget = best;
+        if (currentTarget != null)
+            lastKnownPosition = currentTarget.position;
     }
 
-    // Корректировка направления взгляда
-    private void CorrectAim(Vector3 targetPosition)
-    {
-        // Вектор направления взгляда игрока
-        Vector3 currentLookVector = muzzlePoint.forward;
-
-        // Вектор от текущей позиции к цели
-        Vector3 directionToTarget = (targetPosition - muzzlePoint.position).normalized;
-
-        // Интерполируем изменение направления
-        muzzlePoint.rotation = Quaternion.Slerp(muzzlePoint.rotation, Quaternion.LookRotation(directionToTarget), correctionFactor);
-    }
-
-    // Возвращает текущее направление взгляда
     public Vector3 GetAimDirection()
     {
-        return muzzlePoint.forward;
+        if (!Enabled || muzzlePoint == null || currentTarget == null)
+            return muzzlePoint.forward;
+
+        Vector3 toTarget = (lastKnownPosition - muzzlePoint.position).normalized;
+        return Vector3.Lerp(muzzlePoint.forward, toTarget, correctionFactor);
     }
 
-    // Возвращает величину разброса при стрельбе
-    public float GetSpread()
-    {
-        return Random.Range(0.5f, 1.5f); // Генерация случайного разброса
-    }
-
-    // Метод для ручного включения/выключения Aim Assist
-    public void ToggleAimAssist(bool active)
-    {
-        Enabled = active;
-    }
+    public float GetSpread() => Random.Range(0.5f, 1.5f);
 }

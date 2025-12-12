@@ -3,59 +3,67 @@ using System.Collections;
 
 public class WeaponHandler : MonoBehaviour
 {
-    [Header("Точки")]
+    [Header("=== Точки ===")]
     [SerializeField] private Transform weaponHoldPoint;
-    [SerializeField] private Transform muzzlePoint;
+    [SerializeField] private Transform defaultMuzzlePoint; // точка на камере или теле, если оружие не экипировано
 
-    [Header("Модели")]
+    [Header("=== Модели оружия ===")]
     [SerializeField] private GameObject gunPrefab;
     [SerializeField] private Vector3 gunScale = Vector3.one;
     [SerializeField] private GameObject pistolPrefab;
     [SerializeField] private Vector3 pistolScale = Vector3.one;
 
-    [Header("Звуки")]
+    [Header("=== Звуки ===")]
     [SerializeField] public AudioSource audioSource;
-    [SerializeField] private AudioClip emptyMagSound;
+    [SerializeField] public AudioClip emptyMagSound;
 
-    [Header("=== ЛАЗЕРНАЯ ВИНТОВКА (Gun) ===")]
+    [Header("=== ЛАЗЕРНАЯ ВИНТОВКА ===")]
     [SerializeField] private float gunFireRate = 0.15f;
-    [SerializeField] private float gunDamage = 40f;
     [SerializeField] private int gunMagazineSize = 7;
     [SerializeField] private int gunStartReserve = 35;
     [SerializeField] private float gunReloadTime = 2f;
     [SerializeField] private AudioClip[] gunShootSounds;
     [SerializeField] private AudioClip gunReloadSound;
-    [SerializeField] private GameObject laserShotPrefab;
-    [SerializeField] private float laserDuration = 0.12f;
 
-    [Header("=== ПИСТОЛЕТ (Pistol) ===")]
+    [Header("=== ПИСТОЛЕТ ===")]
     [SerializeField] private float pistolFireRate = 0.09f;
-    [SerializeField] private float pistolDamage = 20f;
     [SerializeField] private int pistolMagazineSize = 12;
     [SerializeField] private int pistolStartReserve = 120;
     [SerializeField] private float pistolReloadTime = 1.5f;
     [SerializeField] private AudioClip[] pistolShootSounds;
     [SerializeField] private AudioClip pistolReloadSound;
-    [SerializeField] private GameObject bulletPrefab;
-    [SerializeField] private float bulletSpeed = 100f;
 
-    [Header("Прицел")]
+    [Header("=== ВИЗУАЛЬНЫЕ ЭФФЕКТЫ ===")]
+    [SerializeField] private GameObject gunTracerPrefab;
+    [SerializeField] private float gunTracerDuration = 0.12f;
+    [SerializeField, Tooltip("Толщина лазерного луча (Gun)")] 
+    private float gunTracerThickness = 0.5f;
+    [SerializeField] private GameObject pistolTracerPrefab;
+    [SerializeField] private float pistolTracerDuration = 0.1f;
+
+    [SerializeField, Tooltip("Толщина трассировщика (Pistol)")] 
+    private float pistolTracerThickness = 0.08f;
+
+    [SerializeField, Tooltip("Максимальная длина луча, если не попал во что-то")]
+    private float maxTracerDistance = 300f;
+
+    [SerializeField] private GameObject gunHitEffect;    // Искры / вспышка для лазера
+    [SerializeField] private GameObject pistolHitEffect; // Искры / вспышка для пистолета
+
+    [Header("=== Прицел и Aim Assist ===")]
     [SerializeField] private float aimWalkSpeed = 1.5f;
-
-    [Header("Aim Assist")]
     [SerializeField] private AimAssist aimAssist;
+    [SerializeField] private LayerMask enemyLayerMask;
 
-    [Header("Анимация melee (толчок оружием)")]
+    [Header("=== Анимация и melee ===")]
     [SerializeField] public Animator playerAnimator;
     [SerializeField] public string meleeTrigger = "MeleePush";
 
-    [Header("Layer для врагов")]
-    [SerializeField] private LayerMask enemyLayerMask;
-
-    // Runtime
+    // Runtime переменные
+    private Transform muzzlePoint;
     private PlayerInventory playerInventory;
     private TankController tankController;
-    private float originalWalkSpeed;
+    private float originalWalkSpeed = 5f;
 
     private bool isAiming = false;
     private bool isReloading = false;
@@ -63,7 +71,6 @@ public class WeaponHandler : MonoBehaviour
 
     private InventoryItem.ItemType currentWeaponType = InventoryItem.ItemType.Empty;
     private float currentFireRate;
-    private float currentDamage;
     private int currentMagazineSize;
     private int currentReserveAmmo;
     private int currentAmmoInMag;
@@ -72,36 +79,34 @@ public class WeaponHandler : MonoBehaviour
     private AudioClip currentReloadSound;
 
     private GameObject currentWeaponModel;
-
     private float nextFireTime = 0f;
 
+    private AdvancedEnemyAI closestEnemy;
     private bool isTooCloseToEnemy = false;
-    private Collider closestEnemyCollider;  // ← НОВОЕ: ближайший враг
-
-    private AdvancedEnemyAI closestEnemy = null;  // ← Теперь храним сам скрипт врага
 
     private void Awake()
     {
         playerInventory = GetComponent<PlayerInventory>();
         tankController = GetComponent<TankController>();
         if (tankController) originalWalkSpeed = tankController.moveSpeed;
-        if (muzzlePoint == null) muzzlePoint = weaponHoldPoint;
 
-        // Инициализация стартовых патронов
+        muzzlePoint = defaultMuzzlePoint;
+
+        // Инициализация патронов
         if (PlayerAmmoData.gunReserve == 0) PlayerAmmoData.gunReserve = gunStartReserve;
         if (PlayerAmmoData.pistolReserve == 0) PlayerAmmoData.pistolReserve = pistolStartReserve;
 
-        aimAssist = GetComponent<AimAssist>();
+        // AimAssist
         if (aimAssist == null) aimAssist = gameObject.AddComponent<AimAssist>();
+        aimAssist.Initialize(enemyLayerMask);
     }
 
     private void Update()
     {
+        CheckForCloseEnemy();
         HandleInput();
-        CheckForCloseEnemy();  // Проверяем каждый кадр
 
-        if (Input.GetKeyDown(KeyCode.R))
-            TryManualReload();
+        if (Input.GetKeyDown(KeyCode.R)) TryManualReload();
     }
 
     private void CheckForCloseEnemy()
@@ -136,27 +141,34 @@ public class WeaponHandler : MonoBehaviour
         bool aiming = Input.GetMouseButton(1);
 
         if (aiming && !isAiming)
-        {
-            isAiming = true;
-            int idx = playerInventory.activeItemIndex;
-            var slots = playerInventory.inventoryData?.GetSlots();
-            if (idx < 0 || idx >= slots?.Count || slots[idx] == null || slots[idx].type == InventoryItem.ItemType.Empty)
-                return;
-
-            EquipActiveWeapon();
-            if (tankController) tankController.moveSpeed = aimWalkSpeed;
-            aimAssist.SetAiming(true, muzzlePoint);
-        }
+            StartAiming();
         else if (!aiming && isAiming)
-        {
-            isAiming = false;
-            UnequipWeapon();
-            if (tankController) tankController.moveSpeed = originalWalkSpeed;
-            aimAssist.SetAiming(false, null);
-        }
+            StopAiming();
 
         if (aiming && Input.GetMouseButton(0) && CanShoot() && firingCoroutine == null)
             firingCoroutine = StartCoroutine(ShootingRoutine());
+    }
+
+    private void StartAiming()
+    {
+        isAiming = true;
+        EquipActiveWeapon();
+
+        if (tankController)
+            tankController.moveSpeed = aimWalkSpeed;
+
+        aimAssist.SetAiming(true, muzzlePoint);
+    }
+
+    private void StopAiming()
+    {
+        isAiming = false;
+        UnequipWeapon();
+
+        if (tankController)
+            tankController.moveSpeed = originalWalkSpeed;
+
+        aimAssist.SetAiming(false, null);
     }
 
     private bool CanShoot() => currentWeaponType != InventoryItem.ItemType.Empty && !isReloading;
@@ -176,94 +188,86 @@ public class WeaponHandler : MonoBehaviour
         if (Time.time < nextFireTime) return;
 
         var melee = GetComponent<MeleeHandler>();
-        if (melee == null) return;
 
-        // Если враг слишком близко — толчок (даже если не в прицеле!)
-        if (isTooCloseToEnemy && closestEnemy != null)
+        // Толчок при близком контакте
+        if (isTooCloseToEnemy && closestEnemy != null && melee != null)
         {
-            if (melee.TryMeleeAttack(closestEnemy))  // ← Передаём врага напрямую
+            if (melee.TryMeleeAttack(closestEnemy))
             {
                 nextFireTime = Time.time + currentFireRate;
                 return;
             }
         }
 
-        // Обычная стрельба
-        if (currentAmmoInMag > 0)
-        {
-            Vector3 aimDir = aimAssist.GetAimDirection();
-
-            Ray ray = new Ray(muzzlePoint.position, aimDir);
-            if (Physics.Raycast(ray, out RaycastHit hit, 300f, enemyLayerMask))
-            {
-                float dist = hit.distance;
-                if (dist < melee.minShootDistance)
-                {
-                    var enemy = hit.collider.GetComponent<AdvancedEnemyAI>();
-                    if (enemy && melee.TryMeleeAttack(enemy))
-                    {
-                        nextFireTime = Time.time + currentFireRate;
-                        return;
-                    }
-                }
-            }
-
-            currentAmmoInMag--;
-            PlayShootSound();
-
-            if (currentWeaponType == InventoryItem.ItemType.Gun)
-                ShootLaser();
-            else if (currentWeaponType == InventoryItem.ItemType.Pistol)
-                ShootBullet();
-
-            nextFireTime = Time.time + currentFireRate;
-
-            if (currentAmmoInMag <= 0 && currentReserveAmmo > 0 && isAiming)
-                StartReload();
-        }
-        else
+        // Нет патронов
+        if (currentAmmoInMag <= 0)
         {
             PlayEmptyMagSound();
-            if (currentReserveAmmo > 0 && isAiming)
-                StartReload();
+            if (currentReserveAmmo > 0 && isAiming) StartReload();
+            return;
         }
+
+        // Стрельба
+        currentAmmoInMag--;
+        PlayShootSound();
+        PerformRaycastShot();
+
+        nextFireTime = Time.time + currentFireRate;
+
+        if (currentAmmoInMag <= 0 && currentReserveAmmo > 0 && isAiming)
+            StartReload();
     }
 
-    
-      private void ShootLaser()
-      {
-          Vector3 aimDir = aimAssist.GetAimDirection();
-          float spread = aimAssist.GetSpread();
-          aimDir = Quaternion.Euler(Random.Range(-spread, spread), Random.Range(-spread, spread), 0) * aimDir;
-
-          Ray ray = new Ray(muzzlePoint.position, aimDir);
-          bool hit = Physics.Raycast(ray, out RaycastHit hitInfo, 300f);
-
-          if (hit && hitInfo.collider.TryGetComponent<AdvancedEnemyAI>(out var enemy))
-              Destroy(enemy.gameObject);
-
-          if (laserShotPrefab != null)
-          {
-              float dist = hit ? hitInfo.distance : 300f;
-              var beam = Instantiate(laserShotPrefab, muzzlePoint.position, Quaternion.LookRotation(aimDir), muzzlePoint);
-              beam.transform.localPosition = Vector3.forward * (dist * 0.5f);  
-              beam.transform.localScale = new Vector3(0.01f, 0.05f, dist);
-              Destroy(beam, laserDuration);
-          }
-      }
-
-    private void ShootBullet()
+    private void PerformRaycastShot()
     {
-        Vector3 aimDir = aimAssist.GetAimDirection();
+        Vector3 direction = aimAssist.GetAimDirection();
         float spread = aimAssist.GetSpread();
-        aimDir = Quaternion.Euler(Random.Range(-spread, spread), Random.Range(-spread, spread), 0) * aimDir;
 
-        var bullet = Instantiate(bulletPrefab, muzzlePoint.position, Quaternion.LookRotation(aimDir));
-        if (bullet.TryGetComponent<Rigidbody>(out var rb))
-            rb.linearVelocity = aimDir * bulletSpeed;
+        direction = Quaternion.Euler(
+            Random.Range(-spread, spread),
+            Random.Range(-spread, spread),
+            0
+        ) * direction;
 
-        if (bullet.TryGetComponent<Bullet>(out var b))
-            b.damage = currentDamage;
+        Ray ray = new Ray(muzzlePoint.position, direction);
+
+        bool hitSomething = Physics.Raycast(ray, out RaycastHit hit, maxTracerDistance);
+
+        // Урон врагу
+        if (hitSomething && hit.collider.TryGetComponent<AdvancedEnemyAI>(out var enemy))
+        {
+            Destroy(enemy.gameObject);
+        }
+
+        // Искры
+        GameObject hitFx = currentWeaponType == InventoryItem.ItemType.Gun ? gunHitEffect : pistolHitEffect;
+        if (hitFx != null && hitSomething)
+        {
+            var fx = Instantiate(hitFx, hit.point, Quaternion.LookRotation(hit.normal));
+            Destroy(fx, 2f); // автоудаление искр
+        }
+
+        // Трассировщик
+        float distance = hitSomething ? hit.distance : maxTracerDistance;
+        CreateTracer(direction, distance);
+    }
+
+    private void CreateTracer(Vector3 direction, float distance)
+    {
+        GameObject prefab = currentWeaponType == InventoryItem.ItemType.Gun ? gunTracerPrefab : pistolTracerPrefab;
+        float duration = currentWeaponType == InventoryItem.ItemType.Gun ? gunTracerDuration : pistolTracerDuration;
+        float thickness = currentWeaponType == InventoryItem.ItemType.Gun ? gunTracerThickness : pistolTracerThickness;
+
+        if (prefab == null) return;
+
+        // Ограничиваем дистанцию, чтобы луч не улетал в космос
+        float finalDistance = Mathf.Min(distance, maxTracerDistance);
+
+        var tracer = Instantiate(prefab, muzzlePoint.position, Quaternion.LookRotation(direction), muzzlePoint);
+        tracer.transform.localPosition = Vector3.forward * (finalDistance * 0.5f);
+        tracer.transform.localScale = new Vector3(thickness, thickness, finalDistance);
+
+        Destroy(tracer, duration);
     }
 
     private void PlayShootSound()
@@ -278,16 +282,20 @@ public class WeaponHandler : MonoBehaviour
             audioSource.PlayOneShot(emptyMagSound);
     }
 
-    // ЭКИПИРОВКА
+    // ===================================================================
+    // ЭКИПИРОВКА И ПЕРЕЗАРЯДКА
+    // ===================================================================
+
     private void EquipActiveWeapon()
     {
         SetCurrentWeaponStats();
         CreateWeaponModelIfNeeded();
 
         var muzzle = currentWeaponModel?.transform.Find("Muzzle");
-        if (muzzle) muzzlePoint = muzzle;
+        muzzlePoint = muzzle != null ? muzzle : defaultMuzzlePoint;
 
-        if (isAiming) aimAssist.SetAiming(true, muzzlePoint);
+        if (isAiming)
+            aimAssist.SetAiming(true, muzzlePoint);
     }
 
     private void SetCurrentWeaponStats()
@@ -295,9 +303,10 @@ public class WeaponHandler : MonoBehaviour
         SaveCurrentAmmo();
 
         if (playerInventory == null) return;
+
         int idx = playerInventory.activeItemIndex;
         var slots = playerInventory.inventoryData?.GetSlots();
-        if (idx < 0 || idx >= slots?.Count || slots[idx] == null) 
+        if (idx < 0 || idx >= slots?.Count || slots[idx] == null)
         {
             currentWeaponType = InventoryItem.ItemType.Empty;
             return;
@@ -309,7 +318,6 @@ public class WeaponHandler : MonoBehaviour
         if (item.type == InventoryItem.ItemType.Gun)
         {
             currentFireRate = gunFireRate;
-            currentDamage = gunDamage;
             currentMagazineSize = gunMagazineSize;
             currentReloadTime = gunReloadTime;
             currentShootSounds = gunShootSounds;
@@ -321,7 +329,6 @@ public class WeaponHandler : MonoBehaviour
         else if (item.type == InventoryItem.ItemType.Pistol)
         {
             currentFireRate = pistolFireRate;
-            currentDamage = pistolDamage;
             currentMagazineSize = pistolMagazineSize;
             currentReloadTime = pistolReloadTime;
             currentShootSounds = pistolShootSounds;
@@ -343,29 +350,32 @@ public class WeaponHandler : MonoBehaviour
         if (idx < 0 || idx >= slots?.Count || slots[idx] == null) return;
 
         var item = slots[idx];
-
-        GameObject prefab = null;
-        Vector3 scale = Vector3.one;
-        string name = "";
-
-        if (item.type == InventoryItem.ItemType.Gun)
-        {
-            prefab = gunPrefab;
-            scale = gunScale;
-            name = "Laser Gun";
-        }
-        else if (item.type == InventoryItem.ItemType.Pistol)
-        {
-            prefab = pistolPrefab;
-            scale = pistolScale;
-            name = "Pistol";
-        }
+        GameObject prefab = item.type == InventoryItem.ItemType.Gun ? gunPrefab : pistolPrefab;
+        Vector3 scale = item.type == InventoryItem.ItemType.Gun ? gunScale : pistolScale;
 
         if (currentWeaponModel) Destroy(currentWeaponModel);
-        var go = Instantiate(prefab ?? GameObject.CreatePrimitive(PrimitiveType.Cube), weaponHoldPoint, false);
-        go.transform.localScale = scale;
-        go.name = name;
-        currentWeaponModel = go;
+
+        if (prefab != null)
+        {
+            currentWeaponModel = Instantiate(prefab, weaponHoldPoint, false);
+            currentWeaponModel.transform.localScale = scale;
+        }
+    }
+
+    private void UnequipWeapon()
+    {
+        SaveCurrentAmmo();
+
+        if (currentWeaponModel)
+            Destroy(currentWeaponModel);
+
+        currentWeaponModel = null;
+
+        if (firingCoroutine != null)
+        {
+            StopCoroutine(firingCoroutine);
+            firingCoroutine = null;
+        }
     }
 
     private void SaveCurrentAmmo()
@@ -379,19 +389,6 @@ public class WeaponHandler : MonoBehaviour
         {
             PlayerAmmoData.pistolReserve = currentReserveAmmo;
             PlayerAmmoData.pistolInMag = currentAmmoInMag;
-        }
-    }
-
-    private void UnequipWeapon()
-    {
-        SaveCurrentAmmo();
-        if (currentWeaponModel) Destroy(currentWeaponModel);
-        currentWeaponModel = null;
-
-        if (firingCoroutine != null)
-        {
-            StopCoroutine(firingCoroutine);
-            firingCoroutine = null;
         }
     }
 
@@ -427,13 +424,11 @@ public class WeaponHandler : MonoBehaviour
     private void TryManualReload()
     {
         if (currentWeaponType == InventoryItem.ItemType.Empty || isReloading) return;
-        if (currentAmmoInMag >= currentMagazineSize) return;
-        if (currentReserveAmmo <= 0)
+        if (currentAmmoInMag >= currentMagazineSize || currentReserveAmmo <= 0 || !isAiming) 
         {
             PlayEmptyMagSound();
             return;
         }
-        if (!isAiming) return;
 
         StartReload();
     }
@@ -448,7 +443,6 @@ public class WeaponHandler : MonoBehaviour
         if (currentWeaponType == type)
         {
             currentReserveAmmo = type == InventoryItem.ItemType.Gun ? PlayerAmmoData.gunReserve : PlayerAmmoData.pistolReserve;
-            
             if (currentAmmoInMag <= 0 && currentReserveAmmo > 0 && isAiming)
                 StartReload();
         }
@@ -457,11 +451,11 @@ public class WeaponHandler : MonoBehaviour
     public void OnActiveItemChanged()
     {
         SetCurrentWeaponStats();
-        if (isAiming) CreateWeaponModelIfNeeded();
         if (isAiming)
         {
+            CreateWeaponModelIfNeeded();
             var muzzle = currentWeaponModel?.transform.Find("Muzzle");
-            if (muzzle) muzzlePoint = muzzle;
+            muzzlePoint = muzzle != null ? muzzle : defaultMuzzlePoint;
             aimAssist.SetAiming(true, muzzlePoint);
         }
     }

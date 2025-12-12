@@ -149,7 +149,7 @@ public class AdvancedEnemyAI : MonoBehaviour
 
         // Включение анимации захвата
         m_Animator.SetBool("IsCaughtPlayer", caughtPlayer);
-
+        navMeshAgent.isStopped = true;
         // Ждём завершения анимации захвата (таймер 1.5 секунды)
         StartCoroutine(WaitForAnimationComplete());
     }
@@ -159,7 +159,7 @@ public class AdvancedEnemyAI : MonoBehaviour
         yield return new WaitForSeconds(1.5f);
         
         // Останавливаем врага и время
-        navMeshAgent.isStopped = true;
+        // navMeshAgent.isStopped = true;
         Time.timeScale = 0f;
 
         // Запускаем корутину, которая сначала проиграет звук, а ПОТОМ покажет экран
