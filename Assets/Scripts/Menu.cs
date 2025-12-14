@@ -13,6 +13,10 @@ public class Menu : MonoBehaviour
         SceneManager.LoadScene("cameratest2"); // ←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
     }
 
+    public void Quit() {
+        Application.Quit();
+    }
+
     // Дополнительно: если хочешь по номеру сцены в Build Settings (иногда надёжнее)
     // public void PlayOsnovaByBuildIndex()
     // {
