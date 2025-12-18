@@ -17,11 +17,16 @@ public class AdvancedEnemyAI : MonoBehaviour
     [SerializeField] private float viewRadius = 15f;
     [SerializeField] private float viewAngle = 90f;
 
-    [SerializeField] private LayerMask playerMask;
-
     [Header("Catch Settings")]
     [SerializeField] private AudioClip catchSound;
     [SerializeField] private AudioSource audioSource;
+
+    // Задержка перед появлением Canvas'а после проигрывания звука
+    [SerializeField] private float loseScreenDelayAfterSound = 2f;
+
+    // ← НОВОЕ: Прямое назначение Canvas'а в инспекторе
+    [Header("UI")]
+    [SerializeField] private GameObject loseScreenCanvas;
 
     private int currentWaypointIndex = 0;
     private bool isPatrolling = true;
@@ -29,50 +34,54 @@ public class AdvancedEnemyAI : MonoBehaviour
     private bool caughtPlayer = false;
 
     private Transform player;
-    private GameObject loseScreenCanvas;
     private Vector3 playerLastPosition = Vector3.zero;
+
+    // Чтобы экран поражения показался только один раз (при нескольких врагах)
+    private static bool hasShownLoseScreen = false;
 
     void Start()
     {
+        if (!gameObject.activeInHierarchy) return;
+
         navMeshAgent = GetComponent<NavMeshAgent>();
         m_Animator = GetComponent<Animator>();
         player = GameObject.FindGameObjectWithTag("Player")?.transform;
 
-        loseScreenCanvas = GameObject.Find("LoseScreenCanvas");
-        if (loseScreenCanvas != null)
-            loseScreenCanvas.SetActive(false);
-
         if (audioSource == null)
             audioSource = GetComponent<AudioSource>() ?? gameObject.AddComponent<AudioSource>();
 
-        // ← НОВОЕ: Добавляем Collider для raycast от игрока
+        // Добавляем Collider и Rigidbody, если их нет
         if (GetComponent<Collider>() == null)
         {
             var collider = gameObject.AddComponent<CapsuleCollider>();
-            collider.center = new Vector3(0, 1, 0);  // Центр на уровне тела
-            collider.radius = 0.5f;  // Радиус
-            collider.height = 2f;    // Высота
+            collider.center = new Vector3(0, 1, 0);
+            collider.radius = 0.5f;
+            collider.height = 2f;
         }
 
-        // ← НОВОЕ: Добавляем Rigidbody для толчка (изначально kinematic)
         if (GetComponent<Rigidbody>() == null)
         {
             var rb = gameObject.AddComponent<Rigidbody>();
             rb.isKinematic = true;
-            rb.useGravity = true;  // Включаем гравитацию для реализма во время толчка
+            rb.useGravity = true;
         }
 
-        // Устанавливаем layer "Enemy" (создай layer в Unity: Edit > Project Settings > Tags and Layers)
         gameObject.layer = LayerMask.NameToLayer("Enemy");
+
+        // Убеждаемся, что Canvas изначально скрыт (на всякий случай)
+        if (loseScreenCanvas != null)
+            loseScreenCanvas.SetActive(false);
 
         GoToNextWaypoint();
     }
 
     void Update()
     {
-        if (caughtPlayer) return;
+        if (caughtPlayer || !gameObject.activeInHierarchy) return;
 
-        if (isPatrolling && navMeshAgent.enabled && navMeshAgent.remainingDistance <= navMeshAgent.stoppingDistance && !navMeshAgent.pathPending)
+        if (isPatrolling && navMeshAgent.enabled && 
+            navMeshAgent.remainingDistance <= navMeshAgent.stoppingDistance && 
+            !navMeshAgent.pathPending)
             GoToNextWaypoint();
 
         CheckForPlayer();
@@ -108,7 +117,9 @@ public class AdvancedEnemyAI : MonoBehaviour
             if (navMeshAgent.enabled && !navMeshAgent.hasPath)
                 navMeshAgent.SetDestination(playerLastPosition);
 
-            if (navMeshAgent.enabled && navMeshAgent.remainingDistance <= navMeshAgent.stoppingDistance && !navMeshAgent.pathPending)
+            if (navMeshAgent.enabled && 
+                navMeshAgent.remainingDistance <= navMeshAgent.stoppingDistance && 
+                !navMeshAgent.pathPending)
                 StopChasing();
         }
     }
@@ -144,66 +155,76 @@ public class AdvancedEnemyAI : MonoBehaviour
 
     void CatchPlayer()
     {
-        if (caughtPlayer) return;
-        caughtPlayer = true;
+        if (caughtPlayer || hasShownLoseScreen) return;
 
-        // Включение анимации захвата
-        m_Animator.SetBool("IsCaughtPlayer", caughtPlayer);
+        caughtPlayer = true;
+        hasShownLoseScreen = true;
+
+        m_Animator.SetBool("IsCaughtPlayer", true);
         navMeshAgent.isStopped = true;
-        // Ждём завершения анимации захвата (таймер 1.5 секунды)
-        StartCoroutine(WaitForAnimationComplete());
+
+        StartCoroutine(CatchSequence());
     }
 
-    IEnumerator WaitForAnimationComplete()
+    IEnumerator CatchSequence()
     {
+        // 1. Ждём окончания анимации захвата
         yield return new WaitForSeconds(1.5f);
-        
-        // Останавливаем врага и время
-        // navMeshAgent.isStopped = true;
+
+        // 2. Замораживаем игровое время (физика, движение, AI — всё останавливается)
         Time.timeScale = 0f;
 
-        // Запускаем корутину, которая сначала проиграет звук, а ПОТОМ покажет экран
-        StartCoroutine(PlayCatchSoundAndShowLoseScreen());
-    }
-
-    IEnumerator PlayCatchSoundAndShowLoseScreen()
-    {
-        // Проигрываем звук (если есть)
+        // 3. Проигрываем звук поимки (он будет играть в unscaled time)
         if (catchSound != null && audioSource != null)
         {
             audioSource.PlayOneShot(catchSound);
-
-            // Ждём, пока звук доиграет до конца
-            yield return new WaitForSecondsRealtime(catchSound.length);
+            
+            // Ждём окончания звука в РЕАЛЬНОМ времени (игрок услышит его полностью)
+            float soundLength = catchSound.length;
+            yield return new WaitForSecondsRealtime(soundLength);
         }
         else
         {
-            // Если звука нет — небольшая задержка, чтобы был "эффект"
+            // Небольшая задержка, если звука нет
             yield return new WaitForSecondsRealtime(0.5f);
         }
 
-        // Только теперь показываем экран поражения
+        // 4. Показываем экран поражения
         if (loseScreenCanvas != null)
         {
             loseScreenCanvas.SetActive(true);
+
+            // Делаем UI интерактивным (на всякий случай)
+            CanvasGroup canvasGroup = loseScreenCanvas.GetComponent<CanvasGroup>();
+            if (canvasGroup == null)
+                canvasGroup = loseScreenCanvas.AddComponent<CanvasGroup>();
+
+            canvasGroup.interactable = true;
+            canvasGroup.blocksRaycasts = true;
+            canvasGroup.alpha = 1f;
+            Time.timeScale = 1f;
+        }
+        else
+        {
+            Debug.LogError("LoseScreenCanvas не назначен в инспекторе у врага!");
         }
     }
 
-    // Эту функцию вешаешь на кнопку "Restart" на LoseScreenCanvas
+    // Кнопки на экране поражения
     public void RestartLevel()
     {
         Time.timeScale = 1f;
+        hasShownLoseScreen = false;
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
-    // Опционально — кнопка в меню
     public void QuitToMenu()
     {
         Time.timeScale = 1f;
-        SceneManager.LoadScene("Menu"); // или как у тебя называется сцена меню
+        hasShownLoseScreen = false;
+        SceneManager.LoadScene("Menu");
     }
 
-    // Гизмосы
     void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.red;
@@ -214,5 +235,54 @@ public class AdvancedEnemyAI : MonoBehaviour
 
         Gizmos.DrawRay(transform.position, left);
         Gizmos.DrawRay(transform.position, right);
+    }
+
+        // ← НОВЫЕ МЕТОДЫ ДЛЯ АКТИВАЦИИ ОХОТЫ ИЗВНЕ
+
+    /// <summary>
+    /// Телепортирует врага в указанную позицию (используется при взятии дискеты)
+    /// </summary>
+    public void TeleportToPosition(Vector3 newPosition)
+    {
+        if (navMeshAgent != null && navMeshAgent.enabled)
+        {
+            navMeshAgent.enabled = false; // Отключаем на кадр, чтобы телепорт прошёл без ошибок
+            transform.position = newPosition;
+            navMeshAgent.enabled = true;
+        }
+        else
+        {
+            transform.position = newPosition;
+        }
+    }
+
+    /// <summary>
+    /// Принудительно запускает преследование игрока (активация охоты после взятия дискеты)
+    /// </summary>
+    public void StartChasingAfterDiskette()
+    {
+        if (player == null)
+        {
+            player = GameObject.FindGameObjectWithTag("Player")?.transform;
+            if (player == null)
+            {
+                Debug.LogError("Не найден игрок с тегом 'Player' для запуска преследования!");
+                return;
+            }
+        }
+
+        // Сразу переходим в режим погони
+        isPatrolling = false;
+        isChasing = true;
+        navMeshAgent.speed = speedRun;
+
+        // Устанавливаем цель — игрок
+        if (navMeshAgent.enabled)
+            navMeshAgent.SetDestination(player.position);
+
+        // Обновляем аниматор
+        m_Animator.SetBool("isChasing", true);
+
+        Debug.Log("Враг активирован и начал преследование игрока после взятия дискеты!");
     }
 }
