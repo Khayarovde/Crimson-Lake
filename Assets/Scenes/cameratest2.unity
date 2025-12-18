@@ -563,6 +563,11 @@ Transform:
   - {fileID: 1524601541}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 325.653, z: 0}
+--- !u!108 &243715825 stripped
+Light:
+  m_CorrespondingSourceObject: {fileID: 2588828069114846460, guid: 623b83ad640dea34f80b26702a9274e8, type: 3}
+  m_PrefabInstance: {fileID: 323975518}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &274059744 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 7276039333604018024, guid: 623b83ad640dea34f80b26702a9274e8, type: 3}
@@ -684,18 +689,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Elevator-room
       objectReference: {fileID: 0}
-    - target: {fileID: 1808197827416486153, guid: f4f0c64cb36d59e438ed9159fc73bb63, type: 3}
-      propertyPath: tankCtrl
+    - target: {fileID: 3713280261884245377, guid: f4f0c64cb36d59e438ed9159fc73bb63, type: 3}
+      propertyPath: interactionHint
       value: 
-      objectReference: {fileID: 1834082569}
-    - target: {fileID: 1808197827416486153, guid: f4f0c64cb36d59e438ed9159fc73bb63, type: 3}
-      propertyPath: darkeningPanel
-      value: 
-      objectReference: {fileID: 1745982491}
-    - target: {fileID: 1808197827416486153, guid: f4f0c64cb36d59e438ed9159fc73bb63, type: 3}
-      propertyPath: playerSpawnPoint
-      value: 
-      objectReference: {fileID: 837718066}
+      objectReference: {fileID: 274059744}
     - target: {fileID: 3809845470990052507, guid: f4f0c64cb36d59e438ed9159fc73bb63, type: 3}
       propertyPath: m_LocalPosition.x
       value: -115.4
@@ -740,6 +737,22 @@ PrefabInstance:
       propertyPath: interactionHint
       value: 
       objectReference: {fileID: 274059744}
+    - target: {fileID: 7381907459231409348, guid: f4f0c64cb36d59e438ed9159fc73bb63, type: 3}
+      propertyPath: player
+      value: 
+      objectReference: {fileID: 1479789140}
+    - target: {fileID: 7924037228492402488, guid: f4f0c64cb36d59e438ed9159fc73bb63, type: 3}
+      propertyPath: tankCtrl
+      value: 
+      objectReference: {fileID: 1834082569}
+    - target: {fileID: 7924037228492402488, guid: f4f0c64cb36d59e438ed9159fc73bb63, type: 3}
+      propertyPath: darkeningPanel
+      value: 
+      objectReference: {fileID: 1745982491}
+    - target: {fileID: 7924037228492402488, guid: f4f0c64cb36d59e438ed9159fc73bb63, type: 3}
+      propertyPath: playerSpawnPoint
+      value: 
+      objectReference: {fileID: 837718066}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -1048,6 +1061,11 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 4e48b27f8ebc19140986e3d1783cad70, type: 3}
+--- !u!4 &643319186 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 8238656397264722379, guid: 623b83ad640dea34f80b26702a9274e8, type: 3}
+  m_PrefabInstance: {fileID: 323975518}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &667112816
 GameObject:
   m_ObjectHideFlags: 0
@@ -1085,6 +1103,11 @@ GameObject:
 --- !u!4 &687493122 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 66286193802767123, guid: 623b83ad640dea34f80b26702a9274e8, type: 3}
+  m_PrefabInstance: {fileID: 323975518}
+  m_PrefabAsset: {fileID: 0}
+--- !u!108 &704632219 stripped
+Light:
+  m_CorrespondingSourceObject: {fileID: 5564280057731748118, guid: 623b83ad640dea34f80b26702a9274e8, type: 3}
   m_PrefabInstance: {fileID: 323975518}
   m_PrefabAsset: {fileID: 0}
 --- !u!1 &705507993
@@ -1208,6 +1231,11 @@ MonoBehaviour:
   m_LightCookieSize: {x: 1, y: 1}
   m_LightCookieOffset: {x: 0, y: 0}
   m_SoftShadowQuality: 0
+--- !u!1 &714575100 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5117083453054561557, guid: 623b83ad640dea34f80b26702a9274e8, type: 3}
+  m_PrefabInstance: {fileID: 323975518}
+  m_PrefabAsset: {fileID: 0}
 --- !u!114 &762320649 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 8855635867382283372, guid: 4e48b27f8ebc19140986e3d1783cad70, type: 3}
@@ -1791,6 +1819,16 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1424075634 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 2308958626575937540, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
+  m_PrefabInstance: {fileID: 1911746944}
+  m_PrefabAsset: {fileID: 0}
+--- !u!108 &1445722542 stripped
+Light:
+  m_CorrespondingSourceObject: {fileID: 8657027353310730079, guid: 623b83ad640dea34f80b26702a9274e8, type: 3}
+  m_PrefabInstance: {fileID: 323975518}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1460730626
 GameObject:
   m_ObjectHideFlags: 0
@@ -1944,6 +1982,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 795677633580594832, guid: 89f762edeb54a1544a2920e85589d2fe, type: 3}
+      propertyPath: player
+      value: 
+      objectReference: {fileID: 1424075634}
+    - target: {fileID: 795677633580594832, guid: 89f762edeb54a1544a2920e85589d2fe, type: 3}
+      propertyPath: inventoryUI
+      value: 
+      objectReference: {fileID: 356991328}
     - target: {fileID: 1671114621416791096, guid: 89f762edeb54a1544a2920e85589d2fe, type: 3}
       propertyPath: m_LocalPosition.x
       value: -34.11194
@@ -1988,6 +2034,10 @@ PrefabInstance:
       propertyPath: interactionHint
       value: 
       objectReference: {fileID: 274059744}
+    - target: {fileID: 3299184631144104210, guid: 89f762edeb54a1544a2920e85589d2fe, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 3765980813400002971, guid: 89f762edeb54a1544a2920e85589d2fe, type: 3}
       propertyPath: m_Name
       value: Hole-room
@@ -2004,6 +2054,38 @@ PrefabInstance:
       propertyPath: playerSpawnPoint
       value: 
       objectReference: {fileID: 687493122}
+    - target: {fileID: 7281980540976391876, guid: 89f762edeb54a1544a2920e85589d2fe, type: 3}
+      propertyPath: enemyAI
+      value: 
+      objectReference: {fileID: 938086661}
+    - target: {fileID: 7281980540976391876, guid: 89f762edeb54a1544a2920e85589d2fe, type: 3}
+      propertyPath: interactionUI
+      value: 
+      objectReference: {fileID: 714575100}
+    - target: {fileID: 7281980540976391876, guid: 89f762edeb54a1544a2920e85589d2fe, type: 3}
+      propertyPath: enemySpawnPoint
+      value: 
+      objectReference: {fileID: 643319186}
+    - target: {fileID: 7281980540976391876, guid: 89f762edeb54a1544a2920e85589d2fe, type: 3}
+      propertyPath: 'lightsToChangeColor.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2037416754}
+    - target: {fileID: 7281980540976391876, guid: 89f762edeb54a1544a2920e85589d2fe, type: 3}
+      propertyPath: 'lightsToChangeColor.Array.data[1]'
+      value: 
+      objectReference: {fileID: 704632219}
+    - target: {fileID: 7281980540976391876, guid: 89f762edeb54a1544a2920e85589d2fe, type: 3}
+      propertyPath: 'lightsToChangeColor.Array.data[2]'
+      value: 
+      objectReference: {fileID: 243715825}
+    - target: {fileID: 7281980540976391876, guid: 89f762edeb54a1544a2920e85589d2fe, type: 3}
+      propertyPath: 'lightsToChangeColor.Array.data[3]'
+      value: 
+      objectReference: {fileID: 1445722542}
+    - target: {fileID: 8897979704055641627, guid: 89f762edeb54a1544a2920e85589d2fe, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -2153,7 +2235,7 @@ MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 5721163794523407143, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
   m_PrefabInstance: {fileID: 1911746944}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
+  m_GameObject: {fileID: 1424075634}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c7872b330a13f6c488a3c35335e4870f, type: 3}
@@ -2343,19 +2425,19 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 290632965567463538, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -70.73
+      value: -68.07
       objectReference: {fileID: 0}
     - target: {fileID: 290632965567463538, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 7.4
+      value: 6.5
       objectReference: {fileID: 0}
     - target: {fileID: 290632965567463538, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -16.39
+      value: -23.24
       objectReference: {fileID: 0}
     - target: {fileID: 290632965567463538, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
       propertyPath: m_LocalRotation.w
-      value: -0.82310146
+      value: -0.7419345
       objectReference: {fileID: 0}
     - target: {fileID: 290632965567463538, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
       propertyPath: m_LocalRotation.x
@@ -2363,7 +2445,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 290632965567463538, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
       propertyPath: m_LocalRotation.y
-      value: 0.5678944
+      value: 0.6704725
       objectReference: {fileID: 0}
     - target: {fileID: 290632965567463538, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
       propertyPath: m_LocalRotation.z
@@ -2375,7 +2457,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 290632965567463538, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
-      value: 290.793
+      value: 275.793
       objectReference: {fileID: 0}
     - target: {fileID: 290632965567463538, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
@@ -2555,6 +2637,11 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 6dd5dd275e4f4c54a9ebbce258c7d998, type: 3}
+--- !u!108 &2037416754 stripped
+Light:
+  m_CorrespondingSourceObject: {fileID: 3389341452132461014, guid: 623b83ad640dea34f80b26702a9274e8, type: 3}
+  m_PrefabInstance: {fileID: 323975518}
+  m_PrefabAsset: {fileID: 0}
 --- !u!224 &2065221770 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 353812787975522850, guid: 949f4168ca89141408918a3806947ad3, type: 3}
