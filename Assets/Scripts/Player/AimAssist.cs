@@ -12,7 +12,7 @@ public class AimAssist : MonoBehaviour
     public bool Enabled { get; private set; }
 
     private LayerMask enemyLayerMask;
-
+    
     public void Initialize(LayerMask mask)
     {
         enemyLayerMask = mask;

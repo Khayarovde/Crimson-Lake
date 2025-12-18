@@ -35,6 +35,7 @@ public class AdvancedEnemyAI : MonoBehaviour
 
     private Transform player;
     private Vector3 playerLastPosition = Vector3.zero;
+    private bool isStunned = false;
 
     // Чтобы экран поражения показался только один раз (при нескольких врагах)
     private static bool hasShownLoseScreen = false;
@@ -77,7 +78,7 @@ public class AdvancedEnemyAI : MonoBehaviour
 
     void Update()
     {
-        if (caughtPlayer || !gameObject.activeInHierarchy) return;
+        if (caughtPlayer || !gameObject.activeInHierarchy || isStunned) return;
 
         if (isPatrolling && navMeshAgent.enabled && 
             navMeshAgent.remainingDistance <= navMeshAgent.stoppingDistance && 
@@ -256,6 +257,44 @@ public class AdvancedEnemyAI : MonoBehaviour
         }
     }
 
+    public void ApplyStun(float duration)
+    {
+        isStunned = true;
+        navMeshAgent.isStopped = true;
+        m_Animator.SetBool("IsStunned", true); // Включаем анимацию стана
+
+        // Запускаем анимацию стана через триггер
+        m_Animator.Rebind();
+        // Уменьшаем вес Base Layer до минимума (почти 0)
+        m_Animator.SetLayerWeight(1, 0f); // Оставляем минимальный вес для сохранения целостности модели
+
+        // Активируем Stun Layer
+        m_Animator.SetLayerWeight(2, 1f); // Максимальный вес Stun Layer
+        StartCoroutine(RevertFromStun(duration));
+    }
+
+    IEnumerator RevertFromStun(float duration)
+    {
+        yield return new WaitForSeconds(duration); // Ждём конец стана
+        // Запускаем анимацию стана через триггер
+        m_Animator.Rebind();
+        // Уменьшаем вес Base Layer до минимума (почти 0)
+        m_Animator.SetLayerWeight(1, 0f); // Оставляем минимальный вес для сохранения целостности модели
+
+        // Активируем Stun Layer
+        m_Animator.SetLayerWeight(2, 0f); // Максимальный вес Stun Layer
+
+        m_Animator.SetLayerWeight(3, 1f);
+
+        yield return new WaitForSeconds(2f); 
+        
+        m_Animator.SetBool("IsStunned", false); // Выключаем состояние стана
+        isStunned = false;
+        navMeshAgent.isStopped = false; // Возвращаем подвижность
+        // 3. Возвращаем состояние персонажа в обычное
+        m_Animator.SetLayerWeight(1, 1f); // Возвращаем Base Layer
+        m_Animator.SetLayerWeight(3, 0f);
+    }
     /// <summary>
     /// Принудительно запускает преследование игрока (активация охоты после взятия дискеты)
     /// </summary>

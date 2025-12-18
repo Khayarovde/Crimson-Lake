@@ -77,7 +77,7 @@ public class WeaponHandler : MonoBehaviour
     private float currentReloadTime;
     private AudioClip[] currentShootSounds;
     private AudioClip currentReloadSound;
-
+    [SerializeField] private Animator m_Animator;
     private GameObject currentWeaponModel;
     private float nextFireTime = 0f;
 
@@ -86,6 +86,8 @@ public class WeaponHandler : MonoBehaviour
 
     private void Awake()
     {
+
+        m_Animator = GetComponent<Animator>();
         playerInventory = GetComponent<PlayerInventory>();
         tankController = GetComponent<TankController>();
         if (tankController) originalWalkSpeed = tankController.moveSpeed;
@@ -152,6 +154,9 @@ public class WeaponHandler : MonoBehaviour
     private void StartAiming()
     {
         isAiming = true;
+        m_Animator.SetBool("isAiming", true);
+        
+        m_Animator.SetLayerWeight(1, 1f); 
         EquipActiveWeapon();
 
         if (tankController)
@@ -163,6 +168,8 @@ public class WeaponHandler : MonoBehaviour
     private void StopAiming()
     {
         isAiming = false;
+        m_Animator.SetBool("isAiming", false);// Включаем анимацию стана
+        m_Animator.SetLayerWeight(1, 0f);
         UnequipWeapon();
 
         if (tankController)
@@ -236,7 +243,7 @@ public class WeaponHandler : MonoBehaviour
         // Урон врагу
         if (hitSomething && hit.collider.TryGetComponent<AdvancedEnemyAI>(out var enemy))
         {
-            Destroy(enemy.gameObject);
+            enemy.ApplyStun(5f);
         }
 
         // Искры
