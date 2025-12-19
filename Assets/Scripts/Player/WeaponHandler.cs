@@ -1,11 +1,12 @@
 using UnityEngine;
 using System.Collections;
+using System.Collections.Generic; // ← Добавлено для Dictionary
 
 public class WeaponHandler : MonoBehaviour
 {
     [Header("=== Точки ===")]
     [SerializeField] private Transform weaponHoldPoint;
-    [SerializeField] private Transform defaultMuzzlePoint; // точка на камере или теле, если оружие не экипировано
+    [SerializeField] private Transform defaultMuzzlePoint;
 
     [Header("=== Модели оружия ===")]
     [SerializeField] private GameObject gunPrefab;
@@ -36,19 +37,16 @@ public class WeaponHandler : MonoBehaviour
     [Header("=== ВИЗУАЛЬНЫЕ ЭФФЕКТЫ ===")]
     [SerializeField] private GameObject gunTracerPrefab;
     [SerializeField] private float gunTracerDuration = 0.12f;
-    [SerializeField, Tooltip("Толщина лазерного луча (Gun)")] 
+    [SerializeField, Tooltip("Толщина лазерного луча (Gun)")]
     private float gunTracerThickness = 0.5f;
     [SerializeField] private GameObject pistolTracerPrefab;
     [SerializeField] private float pistolTracerDuration = 0.1f;
-
-    [SerializeField, Tooltip("Толщина трассировщика (Pistol)")] 
+    [SerializeField, Tooltip("Толщина трассировщика (Pistol)")]
     private float pistolTracerThickness = 0.08f;
-
     [SerializeField, Tooltip("Максимальная длина луча, если не попал во что-то")]
     private float maxTracerDistance = 300f;
-
-    [SerializeField] private GameObject gunHitEffect;    // Искры / вспышка для лазера
-    [SerializeField] private GameObject pistolHitEffect; // Искры / вспышка для пистолета
+    [SerializeField] private GameObject gunHitEffect;
+    [SerializeField] private GameObject pistolHitEffect;
 
     [Header("=== Прицел и Aim Assist ===")]
     [SerializeField] private float aimWalkSpeed = 1.5f;
@@ -59,16 +57,21 @@ public class WeaponHandler : MonoBehaviour
     [SerializeField] public Animator playerAnimator;
     [SerializeField] public string meleeTrigger = "MeleePush";
 
+    [Header("=== ОГЛУШЕНИЕ ВРАГОВ ===")]
+    [SerializeField, Tooltip("Сколько попаданий из пистолета нужно для оглушения врага")]
+    private int pistolHitsToStun = 5;
+
+    [SerializeField, Tooltip("Сколько попаданий из лазерной винтовки нужно для оглушения врага")]
+    private int gunHitsToStun = 3;
+
     // Runtime переменные
     private Transform muzzlePoint;
     private PlayerInventory playerInventory;
     private TankController tankController;
     private float originalWalkSpeed = 5f;
-
     private bool isAiming = false;
     private bool isReloading = false;
     private Coroutine firingCoroutine;
-
     private InventoryItem.ItemType currentWeaponType = InventoryItem.ItemType.Empty;
     private float currentFireRate;
     private int currentMagazineSize;
@@ -80,25 +83,23 @@ public class WeaponHandler : MonoBehaviour
     [SerializeField] private Animator m_Animator;
     private GameObject currentWeaponModel;
     private float nextFireTime = 0f;
-
     private AdvancedEnemyAI closestEnemy;
     private bool isTooCloseToEnemy = false;
 
+    // Словарь для отслеживания количества попаданий по каждому врагу
+    private Dictionary<AdvancedEnemyAI, int> enemyHitCount = new Dictionary<AdvancedEnemyAI, int>();
+
     private void Awake()
     {
-
         m_Animator = GetComponent<Animator>();
         playerInventory = GetComponent<PlayerInventory>();
         tankController = GetComponent<TankController>();
         if (tankController) originalWalkSpeed = tankController.moveSpeed;
-
         muzzlePoint = defaultMuzzlePoint;
 
-        // Инициализация патронов
         if (PlayerAmmoData.gunReserve == 0) PlayerAmmoData.gunReserve = gunStartReserve;
         if (PlayerAmmoData.pistolReserve == 0) PlayerAmmoData.pistolReserve = pistolStartReserve;
 
-        // AimAssist
         if (aimAssist == null) aimAssist = gameObject.AddComponent<AimAssist>();
         aimAssist.Initialize(enemyLayerMask);
     }
@@ -107,7 +108,6 @@ public class WeaponHandler : MonoBehaviour
     {
         CheckForCloseEnemy();
         HandleInput();
-
         if (Input.GetKeyDown(KeyCode.R)) TryManualReload();
     }
 
@@ -117,7 +117,6 @@ public class WeaponHandler : MonoBehaviour
         if (melee == null) return;
 
         Collider[] hits = Physics.OverlapSphere(transform.position, melee.minShootDistance, enemyLayerMask);
-
         closestEnemy = null;
         float minDist = float.MaxValue;
 
@@ -134,14 +133,12 @@ public class WeaponHandler : MonoBehaviour
                 }
             }
         }
-
         isTooCloseToEnemy = closestEnemy != null;
     }
 
     private void HandleInput()
     {
         bool aiming = Input.GetMouseButton(1);
-
         if (aiming && !isAiming)
             StartAiming();
         else if (!aiming && isAiming)
@@ -155,26 +152,21 @@ public class WeaponHandler : MonoBehaviour
     {
         isAiming = true;
         m_Animator.SetBool("isAiming", true);
-        
-        m_Animator.SetLayerWeight(1, 1f); 
+        m_Animator.SetLayerWeight(1, 1f);
         EquipActiveWeapon();
-
         if (tankController)
             tankController.moveSpeed = aimWalkSpeed;
-
         aimAssist.SetAiming(true, muzzlePoint);
     }
 
     private void StopAiming()
     {
         isAiming = false;
-        m_Animator.SetBool("isAiming", false);// Включаем анимацию стана
+        m_Animator.SetBool("isAiming", false);
         m_Animator.SetLayerWeight(1, 0f);
         UnequipWeapon();
-
         if (tankController)
             tankController.moveSpeed = originalWalkSpeed;
-
         aimAssist.SetAiming(false, null);
     }
 
@@ -196,7 +188,6 @@ public class WeaponHandler : MonoBehaviour
 
         var melee = GetComponent<MeleeHandler>();
 
-        // Толчок при близком контакте
         if (isTooCloseToEnemy && closestEnemy != null && melee != null)
         {
             if (melee.TryMeleeAttack(closestEnemy))
@@ -206,7 +197,6 @@ public class WeaponHandler : MonoBehaviour
             }
         }
 
-        // Нет патронов
         if (currentAmmoInMag <= 0)
         {
             PlayEmptyMagSound();
@@ -214,11 +204,9 @@ public class WeaponHandler : MonoBehaviour
             return;
         }
 
-        // Стрельба
         currentAmmoInMag--;
         PlayShootSound();
         PerformRaycastShot();
-
         nextFireTime = Time.time + currentFireRate;
 
         if (currentAmmoInMag <= 0 && currentReserveAmmo > 0 && isAiming)
@@ -229,7 +217,6 @@ public class WeaponHandler : MonoBehaviour
     {
         Vector3 direction = aimAssist.GetAimDirection();
         float spread = aimAssist.GetSpread();
-
         direction = Quaternion.Euler(
             Random.Range(-spread, spread),
             Random.Range(-spread, spread),
@@ -237,24 +224,34 @@ public class WeaponHandler : MonoBehaviour
         ) * direction;
 
         Ray ray = new Ray(muzzlePoint.position, direction);
-
         bool hitSomething = Physics.Raycast(ray, out RaycastHit hit, maxTracerDistance);
 
-        // Урон врагу
+        // === СИСТЕМА ОГЛУШЕНИЯ ===
         if (hitSomething && hit.collider.TryGetComponent<AdvancedEnemyAI>(out var enemy))
         {
-            enemy.ApplyStun(5f);
+            int hitsRequired = currentWeaponType == InventoryItem.ItemType.Gun ? gunHitsToStun : pistolHitsToStun;
+
+            if (!enemyHitCount.ContainsKey(enemy))
+                enemyHitCount[enemy] = 0;
+
+            enemyHitCount[enemy]++;
+
+            if (enemyHitCount[enemy] >= hitsRequired)
+            {
+                enemy.ApplyStun(20f); // Длительность стана — как было раньше
+                enemyHitCount[enemy] = 0; // Сбрасываем счётчик после успешного оглушения
+            }
         }
 
-        // Искры
+        // Искры от попадания
         GameObject hitFx = currentWeaponType == InventoryItem.ItemType.Gun ? gunHitEffect : pistolHitEffect;
         if (hitFx != null && hitSomething)
         {
             var fx = Instantiate(hitFx, hit.point, Quaternion.LookRotation(hit.normal));
-            Destroy(fx, 2f); // автоудаление искр
+            Destroy(fx, 2f);
         }
 
-        // Трассировщик
+        // Трассировщик/луч
         float distance = hitSomething ? hit.distance : maxTracerDistance;
         CreateTracer(direction, distance);
     }
@@ -267,13 +264,10 @@ public class WeaponHandler : MonoBehaviour
 
         if (prefab == null) return;
 
-        // Ограничиваем дистанцию, чтобы луч не улетал в космос
         float finalDistance = Mathf.Min(distance, maxTracerDistance);
-
         var tracer = Instantiate(prefab, muzzlePoint.position, Quaternion.LookRotation(direction), muzzlePoint);
         tracer.transform.localPosition = Vector3.forward * (finalDistance * 0.5f);
         tracer.transform.localScale = new Vector3(thickness, thickness, finalDistance);
-
         Destroy(tracer, duration);
     }
 
@@ -297,10 +291,8 @@ public class WeaponHandler : MonoBehaviour
     {
         SetCurrentWeaponStats();
         CreateWeaponModelIfNeeded();
-
         var muzzle = currentWeaponModel?.transform.Find("Muzzle");
         muzzlePoint = muzzle != null ? muzzle : defaultMuzzlePoint;
-
         if (isAiming)
             aimAssist.SetAiming(true, muzzlePoint);
     }
@@ -308,7 +300,6 @@ public class WeaponHandler : MonoBehaviour
     private void SetCurrentWeaponStats()
     {
         SaveCurrentAmmo();
-
         if (playerInventory == null) return;
 
         int idx = playerInventory.activeItemIndex;
@@ -329,7 +320,6 @@ public class WeaponHandler : MonoBehaviour
             currentReloadTime = gunReloadTime;
             currentShootSounds = gunShootSounds;
             currentReloadSound = gunReloadSound;
-
             currentReserveAmmo = PlayerAmmoData.gunReserve;
             currentAmmoInMag = PlayerAmmoData.gunInMag > 0 ? PlayerAmmoData.gunInMag : gunMagazineSize;
         }
@@ -340,7 +330,6 @@ public class WeaponHandler : MonoBehaviour
             currentReloadTime = pistolReloadTime;
             currentShootSounds = pistolShootSounds;
             currentReloadSound = pistolReloadSound;
-
             currentReserveAmmo = PlayerAmmoData.pistolReserve;
             currentAmmoInMag = PlayerAmmoData.pistolInMag > 0 ? PlayerAmmoData.pistolInMag : pistolMagazineSize;
         }
@@ -372,10 +361,8 @@ public class WeaponHandler : MonoBehaviour
     private void UnequipWeapon()
     {
         SaveCurrentAmmo();
-
         if (currentWeaponModel)
             Destroy(currentWeaponModel);
-
         currentWeaponModel = null;
 
         if (firingCoroutine != null)
@@ -431,7 +418,8 @@ public class WeaponHandler : MonoBehaviour
     private void TryManualReload()
     {
         if (currentWeaponType == InventoryItem.ItemType.Empty || isReloading) return;
-        if (currentAmmoInMag >= currentMagazineSize || currentReserveAmmo <= 0 || !isAiming) 
+
+        if (currentAmmoInMag >= currentMagazineSize || currentReserveAmmo <= 0 || !isAiming)
         {
             PlayEmptyMagSound();
             return;
@@ -465,5 +453,10 @@ public class WeaponHandler : MonoBehaviour
             muzzlePoint = muzzle != null ? muzzle : defaultMuzzlePoint;
             aimAssist.SetAiming(true, muzzlePoint);
         }
+    }
+
+    private void OnDestroy()
+    {
+        enemyHitCount.Clear();
     }
 }

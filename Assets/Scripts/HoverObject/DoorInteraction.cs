@@ -116,7 +116,7 @@ public class DoorInteraction : MonoBehaviour
             Gizmos.DrawWireSphere(worldPos, 0.2f);
 
             // Рисуем иконку в Scene View (примерно)
-            UnityEditor.Handles.Label(screenPos + new Vector3(20, 20), "E");
+            // UnityEditor.Handles.Label(screenPos + new Vector3(20, 20), "E");
         }
     }
 }

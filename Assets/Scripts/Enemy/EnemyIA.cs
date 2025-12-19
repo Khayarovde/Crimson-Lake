@@ -161,54 +161,43 @@ public class AdvancedEnemyAI : MonoBehaviour
         caughtPlayer = true;
         hasShownLoseScreen = true;
 
+        // Останавливаем врага
         m_Animator.SetBool("IsCaughtPlayer", true);
         navMeshAgent.isStopped = true;
 
-        StartCoroutine(CatchSequence());
+        // Запускаем последовательность "смерти"
+        StartCoroutine(DeathSequence());
     }
 
-    IEnumerator CatchSequence()
+    IEnumerator DeathSequence()
     {
-        // 1. Ждём окончания анимации захвата
+        // 1. Ждём окончания анимации захвата (если нужно)
         yield return new WaitForSeconds(1.5f);
 
-        // 2. Замораживаем игровое время (физика, движение, AI — всё останавливается)
+        // 2. Ставим игру на паузу
         Time.timeScale = 0f;
 
-        // 3. Проигрываем звук поимки (он будет играть в unscaled time)
+        // 3. Проигрываем звук поимки в реальном времени (игрок услышит его полностью)
         if (catchSound != null && audioSource != null)
         {
             audioSource.PlayOneShot(catchSound);
-            
-            // Ждём окончания звука в РЕАЛЬНОМ времени (игрок услышит его полностью)
+
             float soundLength = catchSound.length;
             yield return new WaitForSecondsRealtime(soundLength);
         }
         else
         {
-            // Небольшая задержка, если звука нет
+            // Если звука нет — просто ждём немного
             yield return new WaitForSecondsRealtime(0.5f);
         }
 
-        // 4. Показываем экран поражения
-        if (loseScreenCanvas != null)
-        {
-            loseScreenCanvas.SetActive(true);
+        // 4. Дополнительная задержка перед переходом в меню (например, 1–2 секунды)
+        yield return new WaitForSecondsRealtime(1.5f); // ← Здесь настрой задержку под себя
 
-            // Делаем UI интерактивным (на всякий случай)
-            CanvasGroup canvasGroup = loseScreenCanvas.GetComponent<CanvasGroup>();
-            if (canvasGroup == null)
-                canvasGroup = loseScreenCanvas.AddComponent<CanvasGroup>();
-
-            canvasGroup.interactable = true;
-            canvasGroup.blocksRaycasts = true;
-            canvasGroup.alpha = 1f;
-            Time.timeScale = 1f;
-        }
-        else
-        {
-            Debug.LogError("LoseScreenCanvas не назначен в инспекторе у врага!");
-        }
+        // 5. Снимаем паузу и переходим в меню
+        Time.timeScale = 1f;
+        hasShownLoseScreen = false; // На всякий случай, если игрок вернётся в уровень
+        SceneManager.LoadScene("Menu");
     }
 
     // Кнопки на экране поражения

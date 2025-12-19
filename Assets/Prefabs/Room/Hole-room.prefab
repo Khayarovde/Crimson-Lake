@@ -3014,7 +3014,7 @@ Transform:
   m_GameObject: {fileID: 2421736077605630575}
   serializedVersion: 2
   m_LocalRotation: {x: 0.05030366, y: -0.38449234, z: 0.072849326, w: 0.9188733}
-  m_LocalPosition: {x: 14.66, y: 8.27, z: -0.18}
+  m_LocalPosition: {x: 16.98, y: 8.11, z: -2.41}
   m_LocalScale: {x: 1.0192101, y: 1, z: 0.95469}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -3032,7 +3032,7 @@ Light:
   m_Type: 2
   m_Color: {r: 0.9339623, g: 0.90098757, b: 0.66522783, a: 1}
   m_Intensity: 40
-  m_Range: 10
+  m_Range: 12.4
   m_SpotAngle: 176.7706
   m_InnerSpotAngle: 78.56611
   m_CookieSize: 10
@@ -4781,7 +4781,7 @@ Light:
   m_Type: 2
   m_Color: {r: 0.9339623, g: 0.90098757, b: 0.66522783, a: 1}
   m_Intensity: 40
-  m_Range: 10
+  m_Range: 9.32
   m_SpotAngle: 176.7706
   m_InnerSpotAngle: 78.56611
   m_CookieSize: 10
@@ -5915,7 +5915,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 359b922f879a1d4449303e9a885e1b5e, type: 2}
+  - {fileID: 2100000, guid: e5a4594bfee8a254c9815e1b311f27d6, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -6787,7 +6787,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &5493532005941073865
 Transform:
   m_ObjectHideFlags: 0
@@ -8030,7 +8030,19 @@ MonoBehaviour:
   randomFailureDrop: 10
   onDisketteInsertedSuccess:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 0}
+        m_TargetAssemblyTypeName: ElevatorController, Assembly-CSharp
+        m_MethodName: OpenElevator
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
   mouseOverButton: 0
 --- !u!1 &9066702980316554177
 GameObject:
@@ -8220,7 +8232,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: b563db48b1cbd8c4b9aa778af9baa136, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
