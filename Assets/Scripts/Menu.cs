@@ -11,10 +11,6 @@ public class Menu : MonoBehaviour
     [SerializeField] private Slider musicSlider; // ← Слайдер музыки
     [SerializeField] private Slider sfxSlider;   // ← Слайдер звуков эффектов
 
-    [Header("Источники звука (опционально, если нужно автоматически найти)")]
-    [SerializeField] private AudioSource musicSource; // ← Перетащите AudioSource с фоновой музыкой (если есть)
-    [SerializeField] private AudioSource[] sfxSources; // ← Все AudioSource с эффектами (можно оставить пустым)
-
     private const string MusicVolKey = "MusicVol";
     private const string SFXVolKey   = "SFXVol";
 
@@ -29,56 +25,48 @@ public class Menu : MonoBehaviour
         float musicVol = PlayerPrefs.GetFloat(MusicVolKey, 0.8f);
         float sfxVol   = PlayerPrefs.GetFloat(SFXVolKey, 0.8f);
 
-        musicSlider.value = musicVol;
-        sfxSlider.value   = sfxVol;
+        if (musicSlider != null) musicSlider.value = musicVol;
+        if (sfxSlider != null) sfxSlider.value = sfxVol;
 
         ApplyVolumes();
     }
 
-    // Применяем громкость ко всем источникам
+    // Универсальное применение громкости ко ВСЕМ AudioSource в сцене
+    // Тегайте GameObject с музыкой тегом "Music" (остальные = SFX)
     private void ApplyVolumes()
     {
-        // Музыка
-        if (musicSource != null)
-        {
-            musicSource.volume = musicSlider.value;
-        }
+        float musicVol = musicSlider != null ? musicSlider.value : 0.8f;
+        float sfxVol   = sfxSlider != null ? sfxSlider.value : 0.8f;
 
-        // Все звуковые эффекты
-        foreach (AudioSource sfx in sfxSources)
+        AudioSource[] allSources = FindObjectsOfType<AudioSource>();
+        foreach (AudioSource source in allSources)
         {
-            if (sfx != null)
+            if (source != null)
             {
-                sfx.volume = sfxSlider.value;
+                if (source.gameObject.CompareTag("Music"))
+                {
+                    source.volume = musicVol;
+                }
+                else
+                {
+                    source.volume = sfxVol;
+                }
             }
         }
-
-        // Дополнительно: если какие-то эффекты создаются во время игры (например, стрельба, взрывы),
-        // можно в их скриптах добавить: audioSource.volume = PlayerPrefs.GetFloat("SFXVol");
     }
 
-    // Вызывается при изменении слайдера музыки
+    // Вызывается при изменении слайдера музыки (привяжите в инспекторе!)
     public void OnMusicChanged(float value)
     {
         PlayerPrefs.SetFloat(MusicVolKey, value);
-        if (musicSource != null)
-        {
-            musicSource.volume = value;
-        }
+        ApplyVolumes();
     }
 
     // Вызывается при изменении слайдера звуков
     public void OnSFXChanged(float value)
     {
         PlayerPrefs.SetFloat(SFXVolKey, value);
-
-        foreach (AudioSource sfx in sfxSources)
-        {
-            if (sfx != null)
-            {
-                sfx.volume = value;
-            }
-        }
+        ApplyVolumes();
     }
 
     // Кнопка Play / Start

@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using UnityEngine.EventSystems;
 
 public class PauseMenu : MonoBehaviour
 {
@@ -12,10 +13,6 @@ public class PauseMenu : MonoBehaviour
     [SerializeField] private Slider musicSlider;         // ← Слайдер музыки
     [SerializeField] private Slider sfxSlider;           // ← Слайдер звуков
     
-    [Header("Источники звука (опционально)")]
-    [SerializeField] private AudioSource musicSource;    // ← Фоновая музыка в этой сцене
-    [SerializeField] private AudioSource[] sfxSources;   // ← Массив SFX в этой сцене
-
     private bool isPaused = false;
     private const string MusicVolKey = "MusicVol";
     private const string SFXVolKey = "SFXVol";
@@ -24,7 +21,7 @@ public class PauseMenu : MonoBehaviour
     {
         LoadSettings(); // Загружаем настройки (сохранённые из меню)
         
-        // Изначально: курсор заблокирован (для FPS/3D)
+        // // Изначально: курсор заблокирован (для FPS/3D)
         // Cursor.lockState = CursorLockMode.Locked;
         // Cursor.visible = false;
     }
@@ -46,8 +43,23 @@ public class PauseMenu : MonoBehaviour
         pausePanel.SetActive(true);
         Time.timeScale = 0f;
         isPaused = true;
-        // Cursor.lockState = CursorLockMode.None;
-        // Cursor.visible = true;
+        
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+        
+        // Надёжный выбор первой кнопки
+        StartCoroutine(SelectFirstButtonDelayed());
+    }
+    
+    private System.Collections.IEnumerator SelectFirstButtonDelayed()
+    {
+        yield return new WaitForEndOfFrame();
+        
+        var firstButton = pausePanel.GetComponentInChildren<Button>(true);
+        if (firstButton != null && EventSystem.current != null)
+        {
+            firstButton.Select();
+        }
     }
 
     // Продолжить: ESC второй раз или кнопка Resume
@@ -57,6 +69,8 @@ public class PauseMenu : MonoBehaviour
         settingsPanel.SetActive(false);
         Time.timeScale = 1f;
         isPaused = false;
+        
+        // // Блокируем курсор обратно
         // Cursor.lockState = CursorLockMode.Locked;
         // Cursor.visible = false;
     }
@@ -98,21 +112,31 @@ public class PauseMenu : MonoBehaviour
         ApplyVolumes();
     }
 
-    // Применить громкость
+    // Универсальное применение громкости ко ВСЕМ AudioSource в сцене
+    // Тегайте GameObject с музыкой тегом "Music" (остальные = SFX)
     private void ApplyVolumes()
     {
         float musicVol = musicSlider != null ? musicSlider.value : PlayerPrefs.GetFloat(MusicVolKey, 0.8f);
         float sfxVol = sfxSlider != null ? sfxSlider.value : PlayerPrefs.GetFloat(SFXVolKey, 0.8f);
 
-        if (musicSource != null) musicSource.volume = musicVol;
-
-        foreach (AudioSource sfx in sfxSources)
+        AudioSource[] allSources = FindObjectsOfType<AudioSource>();
+        foreach (AudioSource source in allSources)
         {
-            if (sfx != null) sfx.volume = sfxVol;
+            if (source != null)
+            {
+                if (source.gameObject.CompareTag("Music"))
+                {
+                    source.volume = musicVol;
+                }
+                else
+                {
+                    source.volume = sfxVol;
+                }
+            }
         }
     }
 
-    // Изменение музыки (OnValueChanged слайдера)
+    // Изменение музыки (OnValueChanged слайдера → в инспекторе привяжите!)
     public void OnMusicChanged(float value)
     {
         PlayerPrefs.SetFloat(MusicVolKey, value);

@@ -210,7 +210,7 @@ GameObject:
   - component: {fileID: 656756712}
   m_Layer: 0
   m_Name: '!Audio'
-  m_TagString: Untagged
+  m_TagString: Music
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -506,8 +506,6 @@ MonoBehaviour:
   settingsPanel: {fileID: 1309928786}
   musicSlider: {fileID: 272354178}
   sfxSlider: {fileID: 1992618557}
-  musicSource: {fileID: 656756712}
-  sfxSources: []
 --- !u!224 &1565816653
 RectTransform:
   m_ObjectHideFlags: 0
@@ -1360,8 +1358,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1565816652}
-        m_TargetAssemblyTypeName: PauseMenu, Assembly-CSharp
-        m_MethodName: ToMainMenu
+        m_TargetAssemblyTypeName: Menu, Assembly-CSharp
+        m_MethodName: Quit
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -1740,7 +1738,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\u0422\u0438\u0442\u0440\u044B"
+  m_text: "\u0412\u044B\u0445\u043E\u0434"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
