@@ -2,151 +2,233 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using UnityEngine.EventSystems;
+using System.Collections;
 
 public class PauseMenu : MonoBehaviour
 {
-    [Header("Панели паузы")]
-    [SerializeField] private GameObject pausePanel;      // ← Основная панель паузы (изначально SetActive(false))
-    [SerializeField] private GameObject settingsPanel;   // ← Подпанель настроек внутри паузы (изначально false)
-    
-    [Header("Слайдеры звука (дублируют главное меню)")]
-    [SerializeField] private Slider musicSlider;         // ← Слайдер музыки
-    [SerializeField] private Slider sfxSlider;           // ← Слайдер звуков
-    
-    private bool isPaused = false;
-    private const string MusicVolKey = "MusicVol";
-    private const string SFXVolKey = "SFXVol";
+    [Header("Панели")]
+    [SerializeField] private GameObject pausePanel;
+    [SerializeField] private GameObject settingsPanel;
 
-    void Start()
+    [Header("Слайдеры звука")]
+    [SerializeField] private Slider musicSlider;
+    [SerializeField] private Slider sfxSlider;
+
+    [Header("=== МУЗЫКА ===")]
+    [SerializeField] private AudioSource[] musicSources;        // Прямые ссылки на AudioSource
+    [SerializeField] private AudioClip[] musicClips;            // Или по клипам
+
+    [Header("=== ЗВУКОВЫЕ ЭФФЕКТЫ (SFX) ===")]
+    [SerializeField] private AudioSource[] sfxSources;          // Прямые ссылки на AudioSource
+    [SerializeField] private AudioClip[] sfxClips;              // Или по клипам (для PlayOneShot и динамики)
+
+    private bool isPaused = false;
+
+    private const string MusicVolKey = "MusicVol";
+    private const string SFXVolKey   = "SFXVol";
+
+    private void Start()
     {
-        LoadSettings(); // Загружаем настройки (сохранённые из меню)
-        
-        // // Изначально: курсор заблокирован (для FPS/3D)
-        // Cursor.lockState = CursorLockMode.Locked;
-        // Cursor.visible = false;
+        if (pausePanel != null) pausePanel.SetActive(false);
+        if (settingsPanel != null) settingsPanel.SetActive(false);
+
+        LoadSettings();
+
+        Debug.Log($"[PauseMenu] Музыка: {musicSources.Length} источников + {musicClips.Length} клипов | " +
+                  $"SFX: {sfxSources.Length} источников + {sfxClips.Length} клипов");
     }
 
-    void Update()
+    private void Update()
     {
         if (Input.GetKeyDown(KeyCode.Escape))
         {
-            if (isPaused)
-                Resume();
-            else
-                Pause();
+            if (isPaused) Resume();
+            else Pause();
         }
     }
 
-    // Пауза: ESC нажали первый раз
     private void Pause()
     {
         pausePanel.SetActive(true);
         Time.timeScale = 0f;
         isPaused = true;
-        
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
-        
-        // Надёжный выбор первой кнопки
+
+        ForcePausePanelToTop();
+        EnableAllButtonsInPause();
         StartCoroutine(SelectFirstButtonDelayed());
     }
-    
-    private System.Collections.IEnumerator SelectFirstButtonDelayed()
-    {
-        yield return new WaitForEndOfFrame();
-        
-        var firstButton = pausePanel.GetComponentInChildren<Button>(true);
-        if (firstButton != null && EventSystem.current != null)
-        {
-            firstButton.Select();
-        }
-    }
 
-    // Продолжить: ESC второй раз или кнопка Resume
     public void Resume()
     {
         pausePanel.SetActive(false);
-        settingsPanel.SetActive(false);
+        if (settingsPanel != null) settingsPanel.SetActive(false);
         Time.timeScale = 1f;
         isPaused = false;
-        
-        // // Блокируем курсор обратно
-        // Cursor.lockState = CursorLockMode.Locked;
-        // Cursor.visible = false;
     }
 
-    // Настройки: переключить подпанель
-    public void ToggleSettings()
+    // === UI фиксы ===
+    private void ForcePausePanelToTop()
     {
-        settingsPanel.SetActive(!settingsPanel.activeSelf);
-    }
+        if (pausePanel == null) return;
 
-    // Закрыть настройки
-    public void CloseSettings()
-    {
-        settingsPanel.SetActive(false);
-    }
-
-    // Вернуться в главное меню
-    public void ToMainMenu()
-    {
-        Time.timeScale = 1f; // Снимаем паузу перед загрузкой
-        SceneManager.LoadScene("Menu"); // ← ИЗМЕНИТЕ на точное имя вашей сцены меню (проверьте в File > Build Settings)
-    }
-
-    // Выход из игры
-    public void QuitGame()
-    {
-        Application.Quit();
-    }
-
-    // Загрузка настроек из PlayerPrefs (по умолчанию 80%)
-    private void LoadSettings()
-    {
-        float musicVol = PlayerPrefs.GetFloat(MusicVolKey, 0.8f);
-        float sfxVol = PlayerPrefs.GetFloat(SFXVolKey, 0.8f);
-
-        if (musicSlider != null) musicSlider.value = musicVol;
-        if (sfxSlider != null) sfxSlider.value = sfxVol;
-
-        ApplyVolumes();
-    }
-
-    // Универсальное применение громкости ко ВСЕМ AudioSource в сцене
-    // Тегайте GameObject с музыкой тегом "Music" (остальные = SFX)
-    private void ApplyVolumes()
-    {
-        float musicVol = musicSlider != null ? musicSlider.value : PlayerPrefs.GetFloat(MusicVolKey, 0.8f);
-        float sfxVol = sfxSlider != null ? sfxSlider.value : PlayerPrefs.GetFloat(SFXVolKey, 0.8f);
-
-        AudioSource[] allSources = FindObjectsOfType<AudioSource>();
-        foreach (AudioSource source in allSources)
+        Canvas canvas = pausePanel.GetComponentInParent<Canvas>();
+        if (canvas != null)
         {
-            if (source != null)
+            canvas.sortingOrder = 1000;
+            canvas.overrideSorting = true;
+        }
+
+        pausePanel.transform.SetAsLastSibling();
+        if (settingsPanel != null && settingsPanel.activeSelf)
+            settingsPanel.transform.SetAsLastSibling();
+    }
+
+    private void EnableAllButtonsInPause()
+    {
+        if (pausePanel == null) return;
+
+        Button[] buttons = pausePanel.GetComponentsInChildren<Button>(true);
+        foreach (Button btn in buttons)
+        {
+            btn.interactable = true;
+            Image img = btn.GetComponent<Image>();
+            if (img != null)
+                img.raycastTarget = true;
+        }
+
+        Slider[] sliders = pausePanel.GetComponentsInChildren<Slider>(true);
+        foreach (Slider slider in sliders)
+        {
+            if (slider.fillRect != null)
             {
-                if (source.gameObject.CompareTag("Music"))
-                {
-                    source.volume = musicVol;
-                }
-                else
-                {
-                    source.volume = sfxVol;
-                }
+                Image fill = slider.fillRect.GetComponent<Image>();
+                if (fill != null)
+                    fill.raycastTarget = true;
+            }
+
+            if (slider.handleRect != null)
+            {
+                Image handle = slider.handleRect.GetComponent<Image>();
+                if (handle != null)
+                    handle.raycastTarget = true;
             }
         }
     }
 
-    // Изменение музыки (OnValueChanged слайдера → в инспекторе привяжите!)
+    private IEnumerator SelectFirstButtonDelayed()
+    {
+        yield return null;
+        yield return new WaitForEndOfFrame();
+
+        if (EventSystem.current == null)
+        {
+            Debug.LogError("Нет EventSystem в сцене!");
+            yield break;
+        }
+
+        var first = pausePanel.GetComponentInChildren<Button>(true);
+        if (first != null)
+        {
+            EventSystem.current.SetSelectedGameObject(null);
+            EventSystem.current.SetSelectedGameObject(first.gameObject);
+        }
+    }
+
+    // === УНИВЕРСАЛЬНОЕ УПРАВЛЕНИЕ ЗВУКОМ ===
+
+    private void LoadSettings()
+    {
+        float musicVol = PlayerPrefs.GetFloat(MusicVolKey, 0.8f);
+        float sfxVol   = PlayerPrefs.GetFloat(SFXVolKey, 0.8f);
+
+        if (musicSlider != null) musicSlider.value = musicVol;
+        if (sfxSlider != null)   sfxSlider.value   = sfxVol;
+
+        ApplyVolumeToAll(musicVol, true);
+        ApplyVolumeToAll(sfxVol, false);
+    }
+
+    private void ApplyVolumeToAll(float volume, bool isMusic)
+    {
+        var sourcesArray = isMusic ? musicSources : sfxSources;
+        var clipsArray   = isMusic ? musicClips   : sfxClips;
+
+        int affected = 0;
+
+        // 1. Сначала прямые AudioSource
+        foreach (var source in sourcesArray)
+        {
+            if (source != null)
+            {
+                source.volume = volume;
+                affected++;
+            }
+        }
+
+        // 2. Потом по клипам (для PlayOneShot и динамических объектов)
+        AudioSource[] allSources = FindObjectsOfType<AudioSource>();
+        foreach (var source in allSources)
+        {
+            if (source == null || source.clip == null) continue;
+
+            bool matchesClip = false;
+            foreach (var clip in clipsArray)
+            {
+                if (clip != null && source.clip == clip)
+                {
+                    matchesClip = true;
+                    break;
+                }
+            }
+
+            if (matchesClip)
+            {
+                source.volume = volume;
+                affected++;
+            }
+        }
+
+        Debug.Log($"[PauseMenu] {(isMusic ? "Музыка" : "SFX")} громкость {volume} применена к {affected} источникам.");
+    }
+
     public void OnMusicChanged(float value)
     {
         PlayerPrefs.SetFloat(MusicVolKey, value);
-        ApplyVolumes();
+        PlayerPrefs.Save();
+        ApplyVolumeToAll(value, true);
     }
 
-    // Изменение SFX
     public void OnSFXChanged(float value)
     {
         PlayerPrefs.SetFloat(SFXVolKey, value);
-        ApplyVolumes();
+        PlayerPrefs.Save();
+        ApplyVolumeToAll(value, false);
+    }
+
+    // === Остальные кнопки ===
+    public void ToggleSettings()
+    {
+        if (settingsPanel != null)
+        {
+            settingsPanel.SetActive(!settingsPanel.activeSelf);
+            if (settingsPanel.activeSelf)
+                settingsPanel.transform.SetAsLastSibling();
+        }
+    }
+
+    public void CloseSettings()
+    {
+        if (settingsPanel != null) settingsPanel.SetActive(false);
+    }
+
+    public void ToMainMenu()
+    {
+        Time.timeScale = 1f;
+        SceneManager.LoadScene("Menu");
+    }
+
+    public void QuitGame()
+    {
+        Application.Quit();
     }
 }

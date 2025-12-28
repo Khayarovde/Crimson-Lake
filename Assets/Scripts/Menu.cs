@@ -5,11 +5,11 @@ using UnityEngine.UI;
 public class Menu : MonoBehaviour
 {
     [Header("Панель настроек")]
-    [SerializeField] private GameObject settingsPanel; // ← Перетащите панель настроек
+    [SerializeField] private GameObject settingsPanel;
 
     [Header("Слайдеры звука")]
-    [SerializeField] private Slider musicSlider; // ← Слайдер музыки
-    [SerializeField] private Slider sfxSlider;   // ← Слайдер звуков эффектов
+    [SerializeField] private Slider musicSlider;
+    [SerializeField] private Slider sfxSlider;
 
     private const string MusicVolKey = "MusicVol";
     private const string SFXVolKey   = "SFXVol";
@@ -19,7 +19,6 @@ public class Menu : MonoBehaviour
         LoadSettings();
     }
 
-    // Загружаем сохранённые значения (по умолчанию 80%)
     private void LoadSettings()
     {
         float musicVol = PlayerPrefs.GetFloat(MusicVolKey, 0.8f);
@@ -31,8 +30,6 @@ public class Menu : MonoBehaviour
         ApplyVolumes();
     }
 
-    // Универсальное применение громкости ко ВСЕМ AudioSource в сцене
-    // Тегайте GameObject с музыкой тегом "Music" (остальные = SFX)
     private void ApplyVolumes()
     {
         float musicVol = musicSlider != null ? musicSlider.value : 0.8f;
@@ -44,32 +41,25 @@ public class Menu : MonoBehaviour
             if (source != null)
             {
                 if (source.gameObject.CompareTag("Music"))
-                {
                     source.volume = musicVol;
-                }
                 else
-                {
                     source.volume = sfxVol;
-                }
             }
         }
     }
 
-    // Вызывается при изменении слайдера музыки (привяжите в инспекторе!)
     public void OnMusicChanged(float value)
     {
         PlayerPrefs.SetFloat(MusicVolKey, value);
         ApplyVolumes();
     }
 
-    // Вызывается при изменении слайдера звуков
     public void OnSFXChanged(float value)
     {
         PlayerPrefs.SetFloat(SFXVolKey, value);
         ApplyVolumes();
     }
 
-    // Кнопка Play / Start
     public void PlayOsnova()
     {
         if (settingsPanel != null)
@@ -79,7 +69,6 @@ public class Menu : MonoBehaviour
         SceneManager.LoadScene("cameratest2");
     }
 
-    // Кнопка Quit
     public void Quit()
     {
         if (settingsPanel != null)
@@ -88,21 +77,15 @@ public class Menu : MonoBehaviour
         Application.Quit();
     }
 
-    // Переключение панели настроек
     public void ToggleSettings()
     {
         if (settingsPanel != null)
-        {
             settingsPanel.SetActive(!settingsPanel.activeSelf);
-        }
     }
 
-    // Кнопка закрытия внутри панели
     public void CloseSettings()
     {
         if (settingsPanel != null)
-        {
             settingsPanel.SetActive(false);
-        }
     }
 }
