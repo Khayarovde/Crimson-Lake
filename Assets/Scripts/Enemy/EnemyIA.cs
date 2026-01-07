@@ -31,7 +31,7 @@ public class AdvancedEnemyAI : MonoBehaviour
     private int currentWaypointIndex = 0;
     private bool isPatrolling = true;
     private bool isChasing = false;
-    private bool caughtPlayer = false;
+    public bool caughtPlayer = false;
 
     private Transform player;
     private Vector3 playerLastPosition = Vector3.zero;

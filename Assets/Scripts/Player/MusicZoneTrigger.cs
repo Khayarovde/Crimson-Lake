@@ -19,7 +19,7 @@ public class MusicZoneTrigger : MonoBehaviour
     public float fadeInTime = 1.5f;          // Время нарастания новой музыки
     public float fadeOutTime = 1.5f;        // Время затухания старой/при выходе
 
-    private AudioSource zoneAudioSource;
+    public AudioSource zoneAudioSource;
 
     private void Awake()
     {
@@ -37,7 +37,7 @@ public class MusicZoneTrigger : MonoBehaviour
         if (!playOnEnter || zoneMusic == null) return;
         if (!other.CompareTag("Player")) return;
 
-        // Останавливаем все другие зоны (опционально можно сделать приоритет, но пока просто останавливаем все)
+        // Останавливаем все другие зоны
         StopAllOtherZoneMusic();
 
         // Запускаем свою музыку с fade in
@@ -48,6 +48,14 @@ public class MusicZoneTrigger : MonoBehaviour
 
         StopAllCoroutines();
         StartCoroutine(FadeIn(zoneVolume, fadeInTime));
+
+        // ← ВАЖНО: Уведомляем все активные скрипты подбора дискеты,
+        // что игрок вошёл в новую зону (это нужно для остановки chase-музыки)
+        DiskettePickupWithInteraction[] disketteScripts = FindObjectsOfType<DiskettePickupWithInteraction>();
+        foreach (var diskette in disketteScripts)
+        {
+            diskette.OnPlayerEnteredNewZone(this);
+        }
     }
 
     private void OnTriggerExit(Collider other)
@@ -68,7 +76,7 @@ public class MusicZoneTrigger : MonoBehaviour
         }
     }
 
-    private IEnumerator FadeIn(float targetVolume, float duration)
+    public IEnumerator FadeIn(float targetVolume, float duration)
     {
         float currentTime = 0f;
         float startVolume = zoneAudioSource.volume;
@@ -82,7 +90,7 @@ public class MusicZoneTrigger : MonoBehaviour
         zoneAudioSource.volume = targetVolume;
     }
 
-    private IEnumerator FadeOut(float duration)
+    public IEnumerator FadeOut(float duration)
     {
         float currentTime = 0f;
         float startVolume = zoneAudioSource.volume;
@@ -94,7 +102,6 @@ public class MusicZoneTrigger : MonoBehaviour
             yield return null;
         }
         zoneAudioSource.volume = 0f;
-        // Не останавливаем воспроизведение — другая зона может запуститься
     }
 
     private IEnumerator FadeOutAndStop()
