@@ -1879,9 +1879,17 @@ PrefabInstance:
       value: Enemy
       objectReference: {fileID: 0}
     - target: {fileID: 6475674962160512138, guid: 215d359dddb471743ae06571fa64a44a, type: 3}
+      propertyPath: caughtPlayer
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6475674962160512138, guid: 215d359dddb471743ae06571fa64a44a, type: 3}
       propertyPath: loseScreenCanvas
       value: 
-      objectReference: {fileID: 2107405589}
+      objectReference: {fileID: 1266368031}
+    - target: {fileID: 6475674962160512138, guid: 215d359dddb471743ae06571fa64a44a, type: 3}
+      propertyPath: attackAnimationSpeed
+      value: 2
+      objectReference: {fileID: 0}
     - target: {fileID: 6475674962160512138, guid: 215d359dddb471743ae06571fa64a44a, type: 3}
       propertyPath: 'waypoints.Array.data[0]'
       value: 
@@ -2472,7 +2480,7 @@ Light:
   m_InnerSpotAngle: 21.80208
   m_CookieSize: 10
   m_Shadows:
-    m_Type: 0
+    m_Type: 1
     m_Resolution: -1
     m_CustomResolution: -1
     m_Strength: 1
@@ -3886,6 +3894,11 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1259924175}
   m_CullTransparentMesh: 1
+--- !u!1 &1266368031 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1279889443026124581, guid: 92677e9a314ba494ea74a3fd226cc647, type: 3}
+  m_PrefabInstance: {fileID: 545145016}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1301331579
 GameObject:
   m_ObjectHideFlags: 0
@@ -4529,6 +4542,27 @@ AudioSource:
   m_CorrespondingSourceObject: {fileID: 8480610302918087437, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
   m_PrefabInstance: {fileID: 1911746944}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1834082584
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1424075634}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8406951c5c90afd40ba077029a80d422, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  hitsToDie: 4
+  overlayCanvas: {fileID: 0}
+  overlayImage: {fileID: 0}
+  loseScreenCanvas: {fileID: 1266368031}
+  firstHitRedAlpha: 0.25
+  firstHitFlashDuration: 0.18
+  deathDelayBeforeFade: 0.75
+  deathFadeDuration: 0.65
+  deathMenuDelay: 1.2
 --- !u!1001 &1846762561
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4810,7 +4844,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 2308958626575937540, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
+      insertIndex: 13
+      addedObject: {fileID: 1834082584}
   m_SourcePrefab: {fileID: 100100000, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
 --- !u!1 &1925289073
 GameObject:
@@ -5127,11 +5164,6 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 9017311053969936967, guid: c4a5bef15dc18d541bac6042da6a7c24, type: 3}
   m_PrefabInstance: {fileID: 323975518}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &2107405589 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 1909563631555438375, guid: 92677e9a314ba494ea74a3fd226cc647, type: 3}
-  m_PrefabInstance: {fileID: 545145016}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -5143,13 +5175,13 @@ SceneRoots:
   - {fileID: 1122600070}
   - {fileID: 1044296306}
   - {fileID: 1911746944}
+  - {fileID: 531994847}
   - {fileID: 1035920927}
   - {fileID: 323975518}
   - {fileID: 1846762561}
   - {fileID: 1979423677}
   - {fileID: 915055397}
   - {fileID: 18293656}
-  - {fileID: 531994847}
   - {fileID: 237898754}
   - {fileID: 1460730632}
   - {fileID: 545145016}

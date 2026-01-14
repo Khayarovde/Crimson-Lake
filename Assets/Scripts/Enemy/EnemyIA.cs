@@ -21,6 +21,30 @@ public class AdvancedEnemyAI : MonoBehaviour
     [SerializeField] private AudioClip catchSound;
     [SerializeField] private AudioSource audioSource;
 
+    [Header("Attack")]
+    [SerializeField] private float attackRange = 1.5f;
+    [SerializeField] private float attackCooldown = 1.1f;
+    [SerializeField, Tooltip("Задержка от старта удара до нанесения урона (реальное время)")]
+    private float attackWindupTime = 0.25f;
+    [SerializeField, Tooltip("Сколько времени враг стоит на месте во время удара (реальное время)")]
+    private float attackLockTime = 0.6f;
+    [SerializeField, Tooltip("Множитель скорости анимации на время удара/захвата")]
+    private float attackAnimationSpeed = 1.6f;
+    [SerializeField, Tooltip("Максимальный угол (в градусах) между forward врага и направлением на игрока для атаки/урона")] 
+    private float maxAttackAngle = 60f;
+    [SerializeField, Tooltip("Автоповорот к игроку перед атакой (только по оси Y)")] 
+    private bool facePlayerOnAttack = true;
+    [SerializeField, Tooltip("Имя Trigger параметра атаки в Animator (если есть)")]
+    private string attackTrigger = "Attack";
+    [SerializeField, Tooltip("Имя анимационного стейта атаки (для принудительного CrossFade)")]
+    private string attackStateName = "Attack";
+    [SerializeField, Tooltip("Слой аниматора, где лежит атака")]
+    private int attackStateLayer = 0;
+    [SerializeField, Tooltip("Радиус хитбокса удара (OverlapSphere)")]
+    private float attackHitRadius = 1.2f;
+    [SerializeField, Tooltip("Смещение хитбокса вперёд вдоль forward")]
+    private float attackHitForwardOffset = 0.6f;
+
     // Задержка перед появлением Canvas'а после проигрывания звука
     [SerializeField] private float loseScreenDelayAfterSound = 2f;
 
@@ -34,8 +58,15 @@ public class AdvancedEnemyAI : MonoBehaviour
     public bool caughtPlayer = false;
 
     private Transform player;
+    private PlayerHealth playerHealth;
     private Vector3 playerLastPosition = Vector3.zero;
     private bool isStunned = false;
+
+    public bool IsStunned => isStunned;
+
+    private float nextAttackTime;
+    private bool isAttacking;
+    private float baseAnimatorSpeed = 1f;
 
     // Чтобы экран поражения показался только один раз (при нескольких врагах)
     private static bool hasShownLoseScreen = false;
@@ -46,7 +77,21 @@ public class AdvancedEnemyAI : MonoBehaviour
 
         navMeshAgent = GetComponent<NavMeshAgent>();
         m_Animator = GetComponent<Animator>();
+        if (m_Animator != null) baseAnimatorSpeed = m_Animator.speed;
+
+        ResolveLoseCanvasIfMissing();
         player = GameObject.FindGameObjectWithTag("Player")?.transform;
+        if (player != null)
+        {
+            playerHealth = player.GetComponent<PlayerHealth>();
+
+            // Если компонент не повесили вручную — добавим сами, иначе враг не сможет "наносить удары".
+            if (playerHealth == null)
+                playerHealth = player.gameObject.AddComponent<PlayerHealth>();
+
+            if (loseScreenCanvas != null)
+                playerHealth.SetLoseCanvas(loseScreenCanvas);
+        }
 
         if (audioSource == null)
             audioSource = GetComponent<AudioSource>() ?? gameObject.AddComponent<AudioSource>();
@@ -70,8 +115,7 @@ public class AdvancedEnemyAI : MonoBehaviour
         gameObject.layer = LayerMask.NameToLayer("Enemy");
 
         // Убеждаемся, что Canvas изначально скрыт (на всякий случай)
-        if (loseScreenCanvas != null)
-            loseScreenCanvas.SetActive(false);
+        if (loseScreenCanvas != null) loseScreenCanvas.SetActive(false);
 
         GoToNextWaypoint();
     }
@@ -79,6 +123,13 @@ public class AdvancedEnemyAI : MonoBehaviour
     void Update()
     {
         if (caughtPlayer || !gameObject.activeInHierarchy || isStunned) return;
+
+        if (playerHealth != null && playerHealth.IsDead)
+        {
+            caughtPlayer = true;
+            if (navMeshAgent != null) navMeshAgent.isStopped = true;
+            return;
+        }
 
         if (isPatrolling && navMeshAgent.enabled && 
             navMeshAgent.remainingDistance <= navMeshAgent.stoppingDistance && 
@@ -91,7 +142,7 @@ public class AdvancedEnemyAI : MonoBehaviour
         m_Animator.SetBool("isChasing", isChasing);
 
         if (IsCloseToPlayer())
-            CatchPlayer();
+            AttackPlayer();
     }
 
     void CheckForPlayer()
@@ -151,53 +202,178 @@ public class AdvancedEnemyAI : MonoBehaviour
     bool IsCloseToPlayer()
     {
         if (player == null) return false;
-        return Vector3.Distance(transform.position, player.position) <= 1.5f;
+        float range = attackRange;
+        if (navMeshAgent != null)
+            range = Mathf.Max(range, navMeshAgent.stoppingDistance + 0.1f);
+        return Vector3.Distance(transform.position, player.position) <= range;
     }
 
-    void CatchPlayer()
+    void AttackPlayer()
     {
-        if (caughtPlayer || hasShownLoseScreen) return;
+        if (isAttacking) return;
+        if (isStunned) return;
+        if (playerHealth == null || playerHealth.IsDead) return;
+        if (Time.time < nextAttackTime) return;
+        if (!IsFacingPlayer()) return; // Атакуем только когда смотрим на игрока
 
-        caughtPlayer = true;
-        hasShownLoseScreen = true;
-
-        // Останавливаем врага
-        m_Animator.SetBool("IsCaughtPlayer", true);
-        navMeshAgent.isStopped = true;
-
-        // Запускаем последовательность "смерти"
-        StartCoroutine(DeathSequence());
+        nextAttackTime = Time.time + attackCooldown;
+        StartCoroutine(AttackSequence());
     }
 
-    IEnumerator DeathSequence()
+    private IEnumerator AttackSequence()
     {
-        // 1. Ждём окончания анимации захвата (если нужно)
-        yield return new WaitForSeconds(1.5f);
+        isAttacking = true;
 
-        // 2. Ставим игру на паузу
-        Time.timeScale = 0f;
-
-        // 3. Проигрываем звук поимки в реальном времени (игрок услышит его полностью)
-        if (catchSound != null && audioSource != null)
+        if (isStunned)
         {
-            audioSource.PlayOneShot(catchSound);
-
-            float soundLength = catchSound.length;
-            yield return new WaitForSecondsRealtime(soundLength);
-        }
-        else
-        {
-            // Если звука нет — просто ждём немного
-            yield return new WaitForSecondsRealtime(0.5f);
+            isAttacking = false;
+            yield break;
         }
 
-        // 4. Дополнительная задержка перед переходом в меню (например, 1–2 секунды)
-        yield return new WaitForSecondsRealtime(1.5f); // ← Здесь настрой задержку под себя
+        if (navMeshAgent != null) navMeshAgent.isStopped = true;
 
-        // 5. Снимаем паузу и переходим в меню
-        Time.timeScale = 1f;
-        hasShownLoseScreen = false; // На всякий случай, если игрок вернётся в уровень
-        SceneManager.LoadScene("Menu");
+        // Повернуться к игроку перед ударом (только по оси Y)
+        if (facePlayerOnAttack)
+            FacePlayerOnY();
+
+        if (m_Animator != null)
+        {
+            PlayAttackAnimation();
+        }
+
+        if (attackWindupTime > 0f)
+            yield return new WaitForSecondsRealtime(attackWindupTime);
+
+        if (!caughtPlayer && !isStunned)
+            TryDealDamage();
+
+        if (playerHealth != null && playerHealth.IsDead)
+        {
+            caughtPlayer = true;
+            hasShownLoseScreen = true;
+            if (m_Animator != null) m_Animator.SetBool("IsCaughtPlayer", true);
+            if (catchSound != null && audioSource != null) audioSource.PlayOneShot(catchSound);
+        }
+
+        float remainingLock = Mathf.Max(0f, attackLockTime - attackWindupTime);
+        if (remainingLock > 0f)
+            yield return new WaitForSecondsRealtime(remainingLock);
+
+        if (m_Animator != null)
+            m_Animator.speed = baseAnimatorSpeed;
+        if (!caughtPlayer && navMeshAgent != null) navMeshAgent.isStopped = false;
+
+        isAttacking = false;
+    }
+
+    private void PlayAttackAnimation()
+    {
+        if (m_Animator == null) return;
+
+        m_Animator.speed = baseAnimatorSpeed * Mathf.Max(0.1f, attackAnimationSpeed);
+
+        if (HasTrigger(m_Animator, attackTrigger))
+            m_Animator.SetTrigger(attackTrigger);
+
+        if (!string.IsNullOrEmpty(attackStateName) && HasState(m_Animator, attackStateLayer, attackStateName))
+        {
+            m_Animator.Play(attackStateName, attackStateLayer, 0f);
+            m_Animator.CrossFadeInFixedTime(attackStateName, 0.05f, attackStateLayer);
+        }
+    }
+
+    private void TryDealDamage()
+    {
+        var ph = GetPlayerHealth();
+        if (ph == null || ph.IsDead) return;
+
+        // Урон только если враг смотрит на игрока
+        if (!IsFacingPlayer()) return;
+
+        Vector3 center = transform.position + transform.forward * attackHitForwardOffset;
+        Collider[] hits = Physics.OverlapSphere(center, attackHitRadius, LayerMask.GetMask("Default", "Player"));
+        foreach (var h in hits)
+        {
+            if (h == null) continue;
+            var target = h.GetComponent<PlayerHealth>();
+            if (target == null) continue;
+            target.TakeEnemyHit(this);
+            break;
+        }
+    }
+
+    private bool IsFacingPlayer()
+    {
+        if (player == null) return false;
+        Vector3 toPlayer = player.position - transform.position;
+        toPlayer.y = 0f;
+        if (toPlayer.sqrMagnitude < 0.0001f) return false;
+        toPlayer.Normalize();
+        float dot = Vector3.Dot(transform.forward, toPlayer);
+        float cosLimit = Mathf.Cos(maxAttackAngle * Mathf.Deg2Rad);
+        return dot >= cosLimit;
+    }
+
+    private void FacePlayerOnY()
+    {
+        if (player == null) return;
+        Vector3 dir = player.position - transform.position;
+        dir.y = 0f;
+        if (dir.sqrMagnitude < 0.0001f) return;
+        transform.rotation = Quaternion.LookRotation(dir.normalized, Vector3.up);
+    }
+
+    private PlayerHealth GetPlayerHealth()
+    {
+        if (playerHealth != null) return playerHealth;
+        if (player == null)
+            player = GameObject.FindGameObjectWithTag("Player")?.transform;
+        if (player != null)
+            playerHealth = player.GetComponent<PlayerHealth>();
+        return playerHealth;
+    }
+
+    private static bool HasTrigger(Animator animator, string param)
+    {
+        if (animator == null || string.IsNullOrWhiteSpace(param)) return false;
+        foreach (var p in animator.parameters)
+            if (p.type == AnimatorControllerParameterType.Trigger && p.name == param)
+                return true;
+        return false;
+    }
+
+    private static bool HasState(Animator animator, int layer, string stateName)
+    {
+        if (animator == null || string.IsNullOrEmpty(stateName)) return false;
+        return animator.HasState(layer, Animator.StringToHash(stateName));
+    }
+
+    private void ResolveLoseCanvasIfMissing()
+    {
+        if (loseScreenCanvas != null) return;
+
+        var byName = GameObject.Find("LoseScreen") ?? GameObject.Find("LoseScreenCanvas") ?? GameObject.Find("Lose Canvas");
+        if (byName != null)
+        {
+            loseScreenCanvas = byName;
+            return;
+        }
+
+        #if UNITY_2023_1_OR_NEWER
+        var canvases = UnityEngine.Object.FindObjectsByType<Canvas>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        #else
+        var canvases = UnityEngine.Object.FindObjectsOfType<Canvas>(true);
+        #endif
+        foreach (var c in canvases)
+        {
+            if (c == null) continue;
+            string n = c.gameObject.name.ToLowerInvariant();
+            if (n.Contains("lose") || n.Contains("gameover") || n.Contains("defeat") || n.Contains("dead"))
+            {
+                loseScreenCanvas = c.gameObject;
+                return;
+            }
+        }
     }
 
     // Кнопки на экране поражения
@@ -274,6 +450,7 @@ public class AdvancedEnemyAI : MonoBehaviour
 
         yield return new WaitForSeconds(2f); 
         isStunned = false;
+        isAttacking = false;
         navMeshAgent.isStopped = false; // Возвращаем подвижность
         m_Animator.SetLayerWeight(3, 0f);
         m_Animator.SetLayerWeight(1, 1f); // Возвращаем Base Layer

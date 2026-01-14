@@ -196,6 +196,12 @@ AnimatorController:
     m_DefaultInt: 0
     m_DefaultBool: 0
     m_Controller: {fileID: 9100000}
+  - m_Name: IsAttacking
+    m_Type: 4
+    m_DefaultFloat: 0
+    m_DefaultInt: 0
+    m_DefaultBool: 0
+    m_Controller: {fileID: 9100000}
   m_AnimatorLayers:
   - serializedVersion: 5
     m_Name: New Layer
@@ -300,8 +306,8 @@ AnimatorState:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Animation 2
-  m_Speed: 1
+  m_Name: Attack
+  m_Speed: 1.35
   m_CycleOffset: 0
   m_Transitions:
   - {fileID: -66512947039325157}
@@ -315,8 +321,8 @@ AnimatorState:
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
   m_Motion: {fileID: -1799482412581303042, guid: 6dc760405a6809f47bc976aafcd90343, type: 3}
-  m_Tag: 
-  m_SpeedParameter: 
+  m_Tag: Attack
+  m_SpeedParameter: IsAttacking
   m_MirrorParameter: 
   m_CycleOffsetParameter: 
   m_TimeParameter: 

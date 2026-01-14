@@ -27,7 +27,7 @@ public class WeaponHandler : MonoBehaviour
     [SerializeField] private AudioClip gunReloadSound;
 
     [Header("=== ПИСТОЛЕТ ===")]
-    [SerializeField] private float pistolFireRate = 0.09f;
+    [SerializeField] private float pistolFireRate = 0.35f;
     [SerializeField] private int pistolMagazineSize = 12;
     [SerializeField] private int pistolStartReserve = 120;
     [SerializeField] private float pistolReloadTime = 1.5f;
@@ -96,6 +96,11 @@ public class WeaponHandler : MonoBehaviour
         tankController = GetComponent<TankController>();
         if (tankController) originalWalkSpeed = tankController.moveSpeed;
         muzzlePoint = defaultMuzzlePoint;
+
+        // Unity сериализует поля: если значение уже задано в инспекторе/префабе,
+        // изменение дефолта в коде не применится. Делаем "адекватно-медленный"
+        // минимум задержки между выстрелами пистолета.
+        pistolFireRate = Mathf.Max(pistolFireRate, 0.35f);
 
         if (PlayerAmmoData.gunReserve == 0) PlayerAmmoData.gunReserve = gunStartReserve;
         if (PlayerAmmoData.pistolReserve == 0) PlayerAmmoData.pistolReserve = pistolStartReserve;
@@ -229,6 +234,9 @@ public class WeaponHandler : MonoBehaviour
         // === СИСТЕМА ОГЛУШЕНИЯ ===
         if (hitSomething && hit.collider.TryGetComponent<AdvancedEnemyAI>(out var enemy))
         {
+            // В стане урон/стан не проходит
+            if (enemy.IsStunned) return;
+
             int hitsRequired = currentWeaponType == InventoryItem.ItemType.Gun ? gunHitsToStun : pistolHitsToStun;
 
             if (!enemyHitCount.ContainsKey(enemy))
