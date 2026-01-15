@@ -45,6 +45,14 @@ public class AdvancedEnemyAI : MonoBehaviour
     [SerializeField, Tooltip("Смещение хитбокса вперёд вдоль forward")]
     private float attackHitForwardOffset = 0.6f;
 
+    [Header("Hitbox")]
+    [SerializeField, Tooltip("Радиус капсулы коллайдера врага (для более лёгкого попадания)")]
+    private float enemyColliderRadius = 0.7f;
+    [SerializeField, Tooltip("Высота капсулы коллайдера врага")]
+    private float enemyColliderHeight = 2.2f;
+    [SerializeField, Tooltip("Центр капсулы коллайдера врага")]
+    private Vector3 enemyColliderCenter = new Vector3(0f, 1.1f, 0f);
+
     // Задержка перед появлением Canvas'а после проигрывания звука
     [SerializeField] private float loseScreenDelayAfterSound = 2f;
 
@@ -97,12 +105,15 @@ public class AdvancedEnemyAI : MonoBehaviour
             audioSource = GetComponent<AudioSource>() ?? gameObject.AddComponent<AudioSource>();
 
         // Добавляем Collider и Rigidbody, если их нет
-        if (GetComponent<Collider>() == null)
+        var capsule = GetComponent<CapsuleCollider>();
+        if (capsule == null && GetComponent<Collider>() == null)
+            capsule = gameObject.AddComponent<CapsuleCollider>();
+
+        if (capsule != null)
         {
-            var collider = gameObject.AddComponent<CapsuleCollider>();
-            collider.center = new Vector3(0, 1, 0);
-            collider.radius = 0.5f;
-            collider.height = 2f;
+            capsule.center = enemyColliderCenter;
+            capsule.radius = enemyColliderRadius;
+            capsule.height = enemyColliderHeight;
         }
 
         if (GetComponent<Rigidbody>() == null)
@@ -278,7 +289,7 @@ public class AdvancedEnemyAI : MonoBehaviour
         if (!string.IsNullOrEmpty(attackStateName) && HasState(m_Animator, attackStateLayer, attackStateName))
         {
             m_Animator.Play(attackStateName, attackStateLayer, 0f);
-            m_Animator.CrossFadeInFixedTime(attackStateName, 0.05f, attackStateLayer);
+            m_Animator.CrossFadeInFixedTime(attackStateName, 0.5f, attackStateLayer);
         }
     }
 

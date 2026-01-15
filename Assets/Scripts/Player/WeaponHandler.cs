@@ -43,13 +43,19 @@ public class WeaponHandler : MonoBehaviour
     [SerializeField] private float pistolTracerDuration = 0.1f;
     [SerializeField, Tooltip("Толщина трассировщика (Pistol)")]
     private float pistolTracerThickness = 0.08f;
+    [SerializeField, Tooltip("Скорость полёта трассера (ед/с)")]
+    private float tracerTravelSpeed = 400f;
+    [SerializeField, Tooltip("Максимальная доля длины трассера от фактической дистанции")]
+    private float tracerLengthFactor = 0.9f;
+    [SerializeField, Tooltip("Сдвиг центра трассера ближе к дулу (м)")]
+    private float tracerMuzzleOffset = 0.08f;
     [SerializeField, Tooltip("Максимальная длина луча, если не попал во что-то")]
     private float maxTracerDistance = 300f;
     [SerializeField] private GameObject gunHitEffect;
     [SerializeField] private GameObject pistolHitEffect;
 
     [Header("=== Прицел и Aim Assist ===")]
-    [SerializeField] private float aimWalkSpeed = 1.5f;
+    [SerializeField] private float aimWalkSpeed = 1.5f; 
     [SerializeField] private AimAssist aimAssist;
     [SerializeField] private LayerMask enemyLayerMask;
 
@@ -59,10 +65,18 @@ public class WeaponHandler : MonoBehaviour
 
     [Header("=== ОГЛУШЕНИЕ ВРАГОВ ===")]
     [SerializeField, Tooltip("Сколько попаданий из пистолета нужно для оглушения врага")]
-    private int pistolHitsToStun = 5;
+    private int pistolHitsToStun = 12;
 
     [SerializeField, Tooltip("Сколько попаданий из лазерной винтовки нужно для оглушения врага")]
-    private int gunHitsToStun = 3;
+    private int gunHitsToStun = 1;
+
+    [Header("=== ТОЧНОСТЬ GUN ===")]
+    [SerializeField, Tooltip("Радиус SphereCast для Gun, чтобы попадания регистрировались стабильнее")]
+    private float gunHitRadius = 0.18f;
+    [SerializeField, Tooltip("Количество дробин у Gun (shotgun)")]
+    private int gunPellets = 7;
+    [SerializeField, Tooltip("Разброс дроби (в градусах)")]
+    private float gunPelletSpread = 6f;
 
     // Runtime переменные
     private Transform muzzlePoint;
@@ -83,9 +97,6 @@ public class WeaponHandler : MonoBehaviour
     [SerializeField] private Animator m_Animator;
     private GameObject currentWeaponModel;
     private float nextFireTime = 0f;
-    private AdvancedEnemyAI closestEnemy;
-    private bool isTooCloseToEnemy = false;
-
     // Словарь для отслеживания количества попаданий по каждому врагу
     private Dictionary<AdvancedEnemyAI, int> enemyHitCount = new Dictionary<AdvancedEnemyAI, int>();
 
@@ -111,34 +122,8 @@ public class WeaponHandler : MonoBehaviour
 
     private void Update()
     {
-        CheckForCloseEnemy();
         HandleInput();
         if (Input.GetKeyDown(KeyCode.R)) TryManualReload();
-    }
-
-    private void CheckForCloseEnemy()
-    {
-        var melee = GetComponent<MeleeHandler>();
-        if (melee == null) return;
-
-        Collider[] hits = Physics.OverlapSphere(transform.position, melee.minShootDistance, enemyLayerMask);
-        closestEnemy = null;
-        float minDist = float.MaxValue;
-
-        foreach (var col in hits)
-        {
-            var enemy = col.GetComponent<AdvancedEnemyAI>();
-            if (enemy != null)
-            {
-                float dist = Vector3.Distance(transform.position, col.transform.position);
-                if (dist < minDist)
-                {
-                    minDist = dist;
-                    closestEnemy = enemy;
-                }
-            }
-        }
-        isTooCloseToEnemy = closestEnemy != null;
     }
 
     private void HandleInput()
@@ -191,17 +176,6 @@ public class WeaponHandler : MonoBehaviour
     {
         if (Time.time < nextFireTime) return;
 
-        var melee = GetComponent<MeleeHandler>();
-
-        if (isTooCloseToEnemy && closestEnemy != null && melee != null)
-        {
-            if (melee.TryMeleeAttack(closestEnemy))
-            {
-                nextFireTime = Time.time + currentFireRate;
-                return;
-            }
-        }
-
         if (currentAmmoInMag <= 0)
         {
             PlayEmptyMagSound();
@@ -220,6 +194,12 @@ public class WeaponHandler : MonoBehaviour
 
     private void PerformRaycastShot()
     {
+        if (currentWeaponType == InventoryItem.ItemType.Gun)
+        {
+            PerformShotgunShot();
+            return;
+        }
+
         Vector3 direction = aimAssist.GetAimDirection();
         float spread = aimAssist.GetSpread();
         direction = Quaternion.Euler(
@@ -229,7 +209,13 @@ public class WeaponHandler : MonoBehaviour
         ) * direction;
 
         Ray ray = new Ray(muzzlePoint.position, direction);
-        bool hitSomething = Physics.Raycast(ray, out RaycastHit hit, maxTracerDistance);
+        bool hitSomething = Physics.Raycast(
+            ray,
+            out RaycastHit hit,
+            maxTracerDistance,
+            Physics.DefaultRaycastLayers,
+            QueryTriggerInteraction.Collide
+        );
 
         // === СИСТЕМА ОГЛУШЕНИЯ ===
         if (hitSomething && hit.collider.TryGetComponent<AdvancedEnemyAI>(out var enemy))
@@ -237,7 +223,7 @@ public class WeaponHandler : MonoBehaviour
             // В стане урон/стан не проходит
             if (enemy.IsStunned) return;
 
-            int hitsRequired = currentWeaponType == InventoryItem.ItemType.Gun ? gunHitsToStun : pistolHitsToStun;
+            int hitsRequired = pistolHitsToStun;
 
             if (!enemyHitCount.ContainsKey(enemy))
                 enemyHitCount[enemy] = 0;
@@ -252,16 +238,82 @@ public class WeaponHandler : MonoBehaviour
         }
 
         // Искры от попадания
-        GameObject hitFx = currentWeaponType == InventoryItem.ItemType.Gun ? gunHitEffect : pistolHitEffect;
-        if (hitFx != null && hitSomething)
+        if (pistolHitEffect != null && hitSomething)
         {
-            var fx = Instantiate(hitFx, hit.point, Quaternion.LookRotation(hit.normal));
+            var fx = Instantiate(pistolHitEffect, hit.point, Quaternion.LookRotation(hit.normal));
             Destroy(fx, 2f);
         }
 
         // Трассировщик/луч
         float distance = hitSomething ? hit.distance : maxTracerDistance;
         CreateTracer(direction, distance);
+    }
+
+    private void PerformShotgunShot()
+    {
+        Vector3 baseDir = aimAssist.GetAimDirection();
+        Vector3 origin = muzzlePoint.position;
+
+        bool hitSomething = false;
+        RaycastHit closestHit = default;
+        float closestDistance = maxTracerDistance;
+
+        AdvancedEnemyAI hitEnemy = null;
+
+        int pellets = Mathf.Max(1, gunPellets);
+        for (int i = 0; i < pellets; i++)
+        {
+            Vector3 dir = Quaternion.Euler(
+                Random.Range(-gunPelletSpread, gunPelletSpread),
+                Random.Range(-gunPelletSpread, gunPelletSpread),
+                0f
+            ) * baseDir;
+
+            if (Physics.SphereCast(
+                origin,
+                gunHitRadius,
+                dir,
+                out RaycastHit hit,
+                maxTracerDistance,
+                Physics.DefaultRaycastLayers,
+                QueryTriggerInteraction.Collide))
+            {
+                hitSomething = true;
+                if (hit.distance < closestDistance)
+                {
+                    closestDistance = hit.distance;
+                    closestHit = hit;
+                }
+
+                if (hitEnemy == null && hit.collider.TryGetComponent<AdvancedEnemyAI>(out var enemy))
+                    hitEnemy = enemy;
+            }
+        }
+
+        if (hitEnemy != null && !hitEnemy.IsStunned)
+        {
+            int hitsRequired = gunHitsToStun;
+
+            if (!enemyHitCount.ContainsKey(hitEnemy))
+                enemyHitCount[hitEnemy] = 0;
+
+            enemyHitCount[hitEnemy]++;
+
+            if (enemyHitCount[hitEnemy] >= hitsRequired)
+            {
+                hitEnemy.ApplyStun(20f);
+                enemyHitCount[hitEnemy] = 0;
+            }
+        }
+
+        if (gunHitEffect != null && hitSomething)
+        {
+            var fx = Instantiate(gunHitEffect, closestHit.point, Quaternion.LookRotation(closestHit.normal));
+            Destroy(fx, 2f);
+        }
+
+        float distance = hitSomething ? closestDistance : maxTracerDistance;
+        CreateTracer(baseDir, distance);
     }
 
     private void CreateTracer(Vector3 direction, float distance)
@@ -273,10 +325,41 @@ public class WeaponHandler : MonoBehaviour
         if (prefab == null) return;
 
         float finalDistance = Mathf.Min(distance, maxTracerDistance);
-        var tracer = Instantiate(prefab, muzzlePoint.position, Quaternion.LookRotation(direction), muzzlePoint);
-        tracer.transform.localPosition = Vector3.forward * (finalDistance * 0.5f);
-        tracer.transform.localScale = new Vector3(thickness, thickness, finalDistance);
-        Destroy(tracer, duration);
+        // Spawn tracer in world space so it always starts at the muzzle and grows toward the hit point
+        var tracer = Instantiate(prefab, muzzlePoint.position, Quaternion.LookRotation(direction));
+        tracer.transform.localScale = new Vector3(thickness, thickness, 0.05f);
+        StartCoroutine(AnimateTracer(tracer, direction, finalDistance, thickness, duration));
+    }
+
+    private IEnumerator AnimateTracer(GameObject tracer, Vector3 direction, float distance, float thickness, float duration)
+    {
+        Vector3 start = muzzlePoint.position;
+        float targetDistance = Mathf.Max(0.05f, distance * tracerLengthFactor);
+        float travelTime = Mathf.Max(0.02f, distance / tracerTravelSpeed);
+        float t = 0f;
+
+        while (t < travelTime && tracer)
+        {
+            float frac = t / travelTime;
+            float len = Mathf.Max(0.05f, targetDistance * frac);
+            float half = len * 0.5f;
+            float backShift = (half > 0.01f) ? Mathf.Min(half - 0.01f, tracerMuzzleOffset) : 0f;
+            tracer.transform.position = start + direction * (half - backShift);
+            tracer.transform.localScale = new Vector3(thickness, thickness, len);
+
+            t += Time.deltaTime;
+            yield return null;
+        }
+
+        if (tracer)
+        {
+            float len = targetDistance;
+            float half = len * 0.5f;
+            float backShift = (half > 0.01f) ? Mathf.Min(half - 0.01f, tracerMuzzleOffset) : 0f;
+            tracer.transform.position = start + direction * (half - backShift);
+            tracer.transform.localScale = new Vector3(thickness, thickness, len);
+            Destroy(tracer, duration);
+        }
     }
 
     private void PlayShootSound()

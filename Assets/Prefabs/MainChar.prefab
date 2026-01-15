@@ -882,6 +882,7 @@ GameObject:
   - component: {fileID: 4713129000737303339}
   - component: {fileID: 2406689343700059058}
   - component: {fileID: 8480610302918087437}
+  - component: {fileID: 5100676309861018992}
   - component: {fileID: 8412696754332258902}
   m_Layer: 8
   m_Name: MainChar
@@ -1017,8 +1018,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   weaponHoldPoint: {fileID: 3348004520985068418}
   defaultMuzzlePoint: {fileID: 3258925818660538281}
-  gunPrefab: {fileID: 6119306828412977847, guid: 42c51c2603762ff4185ece8ec20ead30, type: 3}
-  gunScale: {x: 0.3, y: 0.3, z: 0.3}
+  gunPrefab: {fileID: 919132149155446097, guid: 70535b26246036340aa2ef374ac6351c, type: 3}
+  gunScale: {x: 0.8, y: 0.8, z: 0.8}
   pistolPrefab: {fileID: 7018287897960650172, guid: 5ee2311ae1bcda243a4809a18e46850e, type: 3}
   pistolScale: {x: 0.5, y: 0.5, z: 0.5}
   audioSource: {fileID: 4290675931133547782}
@@ -1043,12 +1044,15 @@ MonoBehaviour:
   - {fileID: 8300000, guid: 1e940d15337ad1e43b0cc1b2430d7c06, type: 3}
   - {fileID: 8300000, guid: 70c97e425596b8142b7b9163256c0868, type: 3}
   pistolReloadSound: {fileID: 8300000, guid: 2868e580baee45d449931dc35a5ace81, type: 3}
-  gunTracerPrefab: {fileID: 0}
-  gunTracerDuration: 0.12
-  gunTracerThickness: 0.5
-  pistolTracerPrefab: {fileID: 0}
-  pistolTracerDuration: 0.1
-  pistolTracerThickness: 0.08
+  gunTracerPrefab: {fileID: 3362828033073246495, guid: 5302ede08a1785844a451f2179d9587b, type: 3}
+  gunTracerDuration: 0.02
+  gunTracerThickness: 0.02
+  pistolTracerPrefab: {fileID: 8652040258662508089, guid: e1460403a04a4e0419ef5b5b89d91ada, type: 3}
+  pistolTracerDuration: 0.02
+  pistolTracerThickness: 0.02
+  tracerTravelSpeed: 100
+  tracerLengthFactor: 0.6
+  tracerMuzzleOffset: 0.02
   maxTracerDistance: 300
   gunHitEffect: {fileID: 3795546933579711327, guid: e7e13463951036e42b31baa71fbee684, type: 3}
   pistolHitEffect: {fileID: 3795546933579711327, guid: e7e13463951036e42b31baa71fbee684, type: 3}
@@ -1059,8 +1063,11 @@ MonoBehaviour:
     m_Bits: 512
   playerAnimator: {fileID: 636205799131586819}
   meleeTrigger: MeleePush
-  pistolHitsToStun: 5
+  pistolHitsToStun: 12
   gunHitsToStun: 3
+  gunHitRadius: 0.18
+  gunPellets: 7
+  gunPelletSpread: 6
   m_Animator: {fileID: 0}
 --- !u!114 &9134748891124289906
 MonoBehaviour:
@@ -1074,11 +1081,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cc72715e6776f2742a7e1989bfe8e699, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  minShootDistance: 2
-  pushForce: 40
-  pushDuration: 0.5
-  meleeCooldown: 0.5
-  meleeSound: {fileID: 8300000, guid: b91418e7e651a5741a14cd31af0f5ba8, type: 3}
 --- !u!114 &4304410241410908299
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1266,6 +1268,27 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &5100676309861018992
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2308958626575937540}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8406951c5c90afd40ba077029a80d422, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  hitsToDie: 4
+  overlayCanvas: {fileID: 0}
+  overlayImage: {fileID: 0}
+  loseScreenCanvas: {fileID: 0}
+  firstHitRedAlpha: 0.25
+  firstHitFlashDuration: 0.18
+  deathDelayBeforeFade: 0.75
+  deathFadeDuration: 0.65
+  deathMenuDelay: 1.2
 --- !u!114 &8412696754332258902
 MonoBehaviour:
   m_ObjectHideFlags: 0

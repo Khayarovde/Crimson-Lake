@@ -511,8 +511,21 @@ MonoBehaviour:
   viewAngle: 90
   catchSound: {fileID: 8300000, guid: 45422976d0c66fd40b82e76c95dad78e, type: 3}
   audioSource: {fileID: 795722791391542667}
+  attackRange: 1.5
+  attackCooldown: 1.1
+  attackWindupTime: 0.25
+  attackLockTime: 0.6
+  attackAnimationSpeed: 2
+  maxAttackAngle: 60
+  facePlayerOnAttack: 1
+  attackTrigger: Attack
+  attackStateName: Attack
+  attackStateLayer: 0
+  attackHitRadius: 1.2
+  attackHitForwardOffset: 0.6
   loseScreenDelayAfterSound: 0.2
   loseScreenCanvas: {fileID: 0}
+  caughtPlayer: 0
 --- !u!82 &3632101850224339137
 AudioSource:
   m_ObjectHideFlags: 0
