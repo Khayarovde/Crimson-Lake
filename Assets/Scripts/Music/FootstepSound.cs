@@ -12,6 +12,11 @@ public class FootstepSound : MonoBehaviour
     [Header("Speed Detection")]
     public float walkSpeedThreshold = 0.1f; // Минимальная скорость для воспроизведения шагов
     public float normalWalkSpeed = 1.4f; // Нормальная скорость ходьбы человека (1.4 м/с = 5 км/ч)
+
+    [Header("Input Gate")]
+    public bool requireMovementInput = true; // Не играть шаги без ввода движения
+    public bool useHorizontalForMovement = false; // Учитывать ли Horizontal как движение (иначе только Vertical)
+    public float movementInputThreshold = 0.1f;
     
     [Header("Sound Variation")]
     public float minPitch = 0.9f;
@@ -108,6 +113,12 @@ public class FootstepSound : MonoBehaviour
             return;
         }
 
+        if (requireMovementInput && !HasMovementInput())
+        {
+            stepTimer = baseStepInterval * 0.5f;
+            return;
+        }
+
         // Проверяем, движется ли персонаж с достаточной скоростью
         bool isMoving = currentSpeed > walkSpeedThreshold;
 
@@ -129,6 +140,16 @@ public class FootstepSound : MonoBehaviour
             // Сбрасываем таймер при остановке
             stepTimer = baseStepInterval * 0.5f;
         }
+    }
+
+    private bool HasMovementInput()
+    {
+        float vertical = Input.GetAxisRaw("Vertical");
+        if (!useHorizontalForMovement)
+            return Mathf.Abs(vertical) > movementInputThreshold;
+
+        float horizontal = Input.GetAxisRaw("Horizontal");
+        return Mathf.Abs(vertical) > movementInputThreshold || Mathf.Abs(horizontal) > movementInputThreshold;
     }
 
     private void PlayFootstepSound()
