@@ -9,6 +9,7 @@ public class VideoTrigger : MonoBehaviour
     [SerializeField] private VideoPlayer videoPlayer;
     [SerializeField] private GameObject videoPanel;
     [SerializeField] private RawImage videoRawImage;
+    [SerializeField] private string videoFileName = "cutscene.mp4"; // Имя файла видео в StreamingAssets для WebGL
 
     [Header("Подсказка (интерактивная)")]
     [SerializeField] private GameObject hintPanel;
@@ -65,12 +66,20 @@ public class VideoTrigger : MonoBehaviour
             videoPlayer.prepareCompleted += OnVideoPrepared;
             videoPlayer.errorReceived += OnVideoError;
         }
+        else
+        {
+            Debug.LogError("[VideoTrigger] VideoPlayer не назначен!", this);
+        }
 
         if (hintText != null) hintText.text = hintMessage;
         if (hintImage != null && hintSprite != null) hintImage.sprite = hintSprite;
 
         if (hintPanel != null) hintPanel.SetActive(false);
         if (videoPanel != null) videoPanel.SetActive(false);
+
+        #if UNITY_WEBGL
+            Debug.LogWarning("[VideoTrigger] WebGL сборка обнаружена. Убедитесь, что видео загружено через WWW или используется StreamingAssets!");
+        #endif
     }
 
     void Update()
@@ -124,6 +133,13 @@ public class VideoTrigger : MonoBehaviour
         {
             videoPlayer.time = 0f;
             videoPlayer.isLooping = false;
+
+            #if UNITY_WEBGL
+            // В WebGL используем путь через StreamingAssets
+            string videoPath = System.IO.Path.Combine(Application.streamingAssetsPath, videoFileName);
+            videoPlayer.url = videoPath;
+            Debug.Log("[VideoTrigger] WebGL: Загрузка видео из: " + videoPath);
+            #endif
 
             if (!videoPlayer.isPrepared)
             {

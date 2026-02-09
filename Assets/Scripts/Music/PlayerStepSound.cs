@@ -12,6 +12,7 @@ public class PlayerStepSound : MonoBehaviour
     public bool useInputFallback = true;
     public float inputThreshold = 0.1f;
 
+
     private void Start()
     {
         audioSource = GetComponent<AudioSource>();
@@ -21,6 +22,7 @@ public class PlayerStepSound : MonoBehaviour
 
     public void Step_sound_play()
     {
+
         if (requireMovement && !IsMoving())
             return;
 

@@ -1,6 +1,5 @@
 ﻿﻿using UnityEngine;
 using UnityEngine.AI;
-using UnityEngine.SceneManagement;
 using System.Collections;
 
 public class AdvancedEnemyAI : MonoBehaviour
@@ -16,6 +15,8 @@ public class AdvancedEnemyAI : MonoBehaviour
     [Header("Detection")]
     [SerializeField] private float viewRadius = 15f;
     [SerializeField] private float viewAngle = 90f;
+    [SerializeField, Tooltip("Дистанция остановки перед игроком, чтобы не толкать")]
+    private float stopBeforePlayerDistance = 1.2f;
 
     [Header("Catch Settings")]
     [SerializeField] private AudioClip catchSound;
@@ -26,6 +27,10 @@ public class AdvancedEnemyAI : MonoBehaviour
     [SerializeField] private float attackCooldown = 1.1f;
     [SerializeField, Tooltip("Задержка от старта удара до нанесения урона (реальное время)")]
     private float attackWindupTime = 0.25f;
+    [SerializeField, Tooltip("Когда именно в анимации удара должен быть урон (сек)")]
+    private float attackHitDelay = 1.06f;
+    [SerializeField, Tooltip("Длительность анимации удара (сек)")]
+    private float attackAnimationDuration = 2.12f;
     [SerializeField, Tooltip("Сколько времени враг стоит на месте во время удара (реальное время)")]
     private float attackLockTime = 0.6f;
     [SerializeField, Tooltip("Множитель скорости анимации на время удара/захвата")]
@@ -44,6 +49,28 @@ public class AdvancedEnemyAI : MonoBehaviour
     private float attackHitRadius = 1.2f;
     [SerializeField, Tooltip("Смещение хитбокса вперёд вдоль forward")]
     private float attackHitForwardOffset = 0.6f;
+    [SerializeField, Tooltip("Множитель скорости NavMeshAgent во время атаки")]
+    private float attackMoveSpeedMultiplier = 0.15f;
+    [SerializeField, Tooltip("Скорость плавного изменения скорости при атаке")]
+    private float attackSpeedLerp = 6f;
+
+    [Header("Animation")]
+    [SerializeField] private string walkingStateName = "walking";
+    [SerializeField] private string stunStateName = "Stun";
+    [SerializeField] private string wakeUpStateName = "wakeUp_stun";
+    [SerializeField] private string deathStateName = "death";
+    [SerializeField] private string deathEndStateName = "death_end";
+    [SerializeField] private float animTransition = 0.15f;
+    [SerializeField] private int baseAnimLayer = 0;
+    [SerializeField] private int stunAnimLayer = 2;
+    [SerializeField] private int wakeUpAnimLayer = 3;
+    [SerializeField] private bool useWalkingAnimation = true;
+    [SerializeField, Tooltip("Длительность анимации вставания после стана (сек)")]
+    private float wakeUpDuration = 1.2f;
+    [SerializeField, Tooltip("Длительность анимации смерти (сек)")]
+    private float deathDuration = 2f;
+    [SerializeField, Tooltip("Длительность анимации death_end (сек)")]
+    private float deathEndDuration = 1f;
 
     [Header("Hitbox")]
     [SerializeField, Tooltip("Радиус капсулы коллайдера врага (для более лёгкого попадания)")]
@@ -52,13 +79,6 @@ public class AdvancedEnemyAI : MonoBehaviour
     private float enemyColliderHeight = 2.2f;
     [SerializeField, Tooltip("Центр капсулы коллайдера врага")]
     private Vector3 enemyColliderCenter = new Vector3(0f, 1.1f, 0f);
-
-    // Задержка перед появлением Canvas'а после проигрывания звука
-    [SerializeField] private float loseScreenDelayAfterSound = 2f;
-
-    // ← НОВОЕ: Прямое назначение Canvas'а в инспекторе
-    [Header("UI")]
-    [SerializeField] private GameObject loseScreenCanvas;
 
     private int currentWaypointIndex = 0;
     private bool isPatrolling = true;
@@ -75,19 +95,22 @@ public class AdvancedEnemyAI : MonoBehaviour
     private float nextAttackTime;
     private bool isAttacking;
     private float baseAnimatorSpeed = 1f;
-
-    // Чтобы экран поражения показался только один раз (при нескольких врагах)
-    private static bool hasShownLoseScreen = false;
+    private string currentAnimState;
+    private Coroutine attackRoutine;
+    private bool isWakingUp;
+    private float baseNavSpeed;
+    private Coroutine attackSpeedRoutine;
+    private bool isDead;
 
     void Start()
     {
         if (!gameObject.activeInHierarchy) return;
 
         navMeshAgent = GetComponent<NavMeshAgent>();
+        if (navMeshAgent != null) baseNavSpeed = navMeshAgent.speed;
         m_Animator = GetComponent<Animator>();
         if (m_Animator != null) baseAnimatorSpeed = m_Animator.speed;
 
-        ResolveLoseCanvasIfMissing();
         player = GameObject.FindGameObjectWithTag("Player")?.transform;
         if (player != null)
         {
@@ -97,8 +120,6 @@ public class AdvancedEnemyAI : MonoBehaviour
             if (playerHealth == null)
                 playerHealth = player.gameObject.AddComponent<PlayerHealth>();
 
-            if (loseScreenCanvas != null)
-                playerHealth.SetLoseCanvas(loseScreenCanvas);
         }
 
         if (audioSource == null)
@@ -125,15 +146,30 @@ public class AdvancedEnemyAI : MonoBehaviour
 
         gameObject.layer = LayerMask.NameToLayer("Enemy");
 
-        // Убеждаемся, что Canvas изначально скрыт (на всякий случай)
-        if (loseScreenCanvas != null) loseScreenCanvas.SetActive(false);
+        if (navMeshAgent != null)
+            navMeshAgent.stoppingDistance = Mathf.Max(navMeshAgent.stoppingDistance, stopBeforePlayerDistance);
 
         GoToNextWaypoint();
     }
 
     void Update()
     {
-        if (caughtPlayer || !gameObject.activeInHierarchy || isStunned) return;
+        if (caughtPlayer || !gameObject.activeInHierarchy || isDead) return;
+
+        if (isStunned)
+        {
+            StopAgentMovement();
+            ForceStunAnimatorState();
+            PlayStateWithFallback(stunStateName, stunAnimLayer);
+            return;
+        }
+
+        if (isWakingUp)
+        {
+            StopAgentMovement();
+            PlayStateWithFallback(wakeUpStateName, wakeUpAnimLayer);
+            return;
+        }
 
         if (playerHealth != null && playerHealth.IsDead)
         {
@@ -151,6 +187,9 @@ public class AdvancedEnemyAI : MonoBehaviour
 
         m_Animator.SetFloat("Speed", navMeshAgent.velocity.magnitude);
         m_Animator.SetBool("isChasing", isChasing);
+
+        if (useWalkingAnimation)
+            UpdateMovementAnimation();
 
         if (IsCloseToPlayer())
             AttackPlayer();
@@ -173,7 +212,19 @@ public class AdvancedEnemyAI : MonoBehaviour
                 navMeshAgent.speed = speedRun;
             }
             if (navMeshAgent.enabled)
-                navMeshAgent.SetDestination(player.position);
+            {
+                if (dist <= stopBeforePlayerDistance)
+                {
+                    StopAgentMovement();
+                    if (facePlayerOnAttack)
+                        FacePlayerOnY();
+                }
+                else
+                {
+                    ResumeAgentMovement();
+                    navMeshAgent.SetDestination(player.position);
+                }
+            }
         }
         else if (isChasing)
         {
@@ -223,12 +274,14 @@ public class AdvancedEnemyAI : MonoBehaviour
     {
         if (isAttacking) return;
         if (isStunned) return;
+        if (isWakingUp) return;
+        if (isDead) return;
         if (playerHealth == null || playerHealth.IsDead) return;
         if (Time.time < nextAttackTime) return;
         if (!IsFacingPlayer()) return; // Атакуем только когда смотрим на игрока
 
         nextAttackTime = Time.time + attackCooldown;
-        StartCoroutine(AttackSequence());
+        attackRoutine = StartCoroutine(AttackSequence());
     }
 
     private IEnumerator AttackSequence()
@@ -241,7 +294,8 @@ public class AdvancedEnemyAI : MonoBehaviour
             yield break;
         }
 
-        if (navMeshAgent != null) navMeshAgent.isStopped = true;
+        BeginAttackSpeedSlowdown();
+        EnsureAgentActiveForAttack();
 
         // Повернуться к игроку перед ударом (только по оси Y)
         if (facePlayerOnAttack)
@@ -252,8 +306,9 @@ public class AdvancedEnemyAI : MonoBehaviour
             PlayAttackAnimation();
         }
 
-        if (attackWindupTime > 0f)
-            yield return new WaitForSecondsRealtime(attackWindupTime);
+        float hitDelay = Mathf.Max(0f, attackHitDelay);
+        if (hitDelay > 0f)
+            yield return new WaitForSecondsRealtime(hitDelay);
 
         if (!caughtPlayer && !isStunned)
             TryDealDamage();
@@ -261,20 +316,26 @@ public class AdvancedEnemyAI : MonoBehaviour
         if (playerHealth != null && playerHealth.IsDead)
         {
             caughtPlayer = true;
-            hasShownLoseScreen = true;
             if (m_Animator != null) m_Animator.SetBool("IsCaughtPlayer", true);
             if (catchSound != null && audioSource != null) audioSource.PlayOneShot(catchSound);
         }
 
-        float remainingLock = Mathf.Max(0f, attackLockTime - attackWindupTime);
+        float totalLock = Mathf.Max(attackLockTime, attackAnimationDuration);
+        float remainingLock = Mathf.Max(0f, totalLock - hitDelay);
         if (remainingLock > 0f)
             yield return new WaitForSecondsRealtime(remainingLock);
 
         if (m_Animator != null)
             m_Animator.speed = baseAnimatorSpeed;
-        if (!caughtPlayer && navMeshAgent != null) navMeshAgent.isStopped = false;
+        if (!caughtPlayer) ResumeAgentMovement();
+
+        EndAttackSpeedSlowdown();
+
+        ResumeAgentMovementAndRepath();
+        currentAnimState = null;
 
         isAttacking = false;
+        attackRoutine = null;
     }
 
     private void PlayAttackAnimation()
@@ -290,7 +351,28 @@ public class AdvancedEnemyAI : MonoBehaviour
         {
             m_Animator.Play(attackStateName, attackStateLayer, 0f);
             m_Animator.CrossFadeInFixedTime(attackStateName, 0.5f, attackStateLayer);
+            currentAnimState = attackStateName;
         }
+    }
+
+    private void UpdateMovementAnimation()
+    {
+        if (m_Animator == null) return;
+        if (isAttacking || isStunned || isWakingUp) return;
+
+        if (navMeshAgent != null && navMeshAgent.velocity.magnitude > 0.1f)
+            PlayState(walkingStateName, baseAnimLayer);
+    }
+
+    private void PlayState(string stateName, int layer)
+    {
+        if (m_Animator == null) return;
+        if (string.IsNullOrEmpty(stateName)) return;
+        if (stateName == currentAnimState) return;
+        if (!HasState(m_Animator, layer, stateName)) return;
+
+        m_Animator.CrossFadeInFixedTime(stateName, animTransition, layer);
+        currentAnimState = stateName;
     }
 
     private void TryDealDamage()
@@ -359,49 +441,6 @@ public class AdvancedEnemyAI : MonoBehaviour
         return animator.HasState(layer, Animator.StringToHash(stateName));
     }
 
-    private void ResolveLoseCanvasIfMissing()
-    {
-        if (loseScreenCanvas != null) return;
-
-        var byName = GameObject.Find("LoseScreen") ?? GameObject.Find("LoseScreenCanvas") ?? GameObject.Find("Lose Canvas");
-        if (byName != null)
-        {
-            loseScreenCanvas = byName;
-            return;
-        }
-
-        #if UNITY_2023_1_OR_NEWER
-        var canvases = UnityEngine.Object.FindObjectsByType<Canvas>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-        #else
-        var canvases = UnityEngine.Object.FindObjectsOfType<Canvas>(true);
-        #endif
-        foreach (var c in canvases)
-        {
-            if (c == null) continue;
-            string n = c.gameObject.name.ToLowerInvariant();
-            if (n.Contains("lose") || n.Contains("gameover") || n.Contains("defeat") || n.Contains("dead"))
-            {
-                loseScreenCanvas = c.gameObject;
-                return;
-            }
-        }
-    }
-
-    // Кнопки на экране поражения
-    public void RestartLevel()
-    {
-        Time.timeScale = 1f;
-        hasShownLoseScreen = false;
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
-    }
-
-    public void QuitToMenu()
-    {
-        Time.timeScale = 1f;
-        hasShownLoseScreen = false;
-        SceneManager.LoadScene("Menu");
-    }
-
     void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.red;
@@ -435,37 +474,182 @@ public class AdvancedEnemyAI : MonoBehaviour
 
     public void ApplyStun(float duration)
     {
+        if (isDead) return;
         isStunned = true;
-        navMeshAgent.isStopped = true;
+        isWakingUp = false;
+        if (attackRoutine != null)
+        {
+            StopCoroutine(attackRoutine);
+            attackRoutine = null;
+        }
+        isAttacking = false;
+        StopAgentMovement();
         m_Animator.SetBool("IsStunned", true); // Включаем анимацию стана
 
-        // Запускаем анимацию стана через триггер
-        m_Animator.Rebind();
+        ForceStunAnimatorState();
+        PlayStateWithFallback(stunStateName, stunAnimLayer);
+
         // Активируем Stun Layer
-        m_Animator.SetLayerWeight(2, 1f); // Максимальный вес Stun Layer
+        m_Animator.SetLayerWeight(stunAnimLayer, 1f); // Максимальный вес Stun Layer
         // Уменьшаем вес Base Layer до минимума (почти 0)
-        m_Animator.SetLayerWeight(1, 0f); // Оставляем минимальный вес для сохранения целостности модели
+        m_Animator.SetLayerWeight(baseAnimLayer, 0f);
         StartCoroutine(RevertFromStun(duration));
     }
 
     IEnumerator RevertFromStun(float duration)
     {
         yield return new WaitForSeconds(duration); // Ждём конец стана
-        // Запускаем анимацию стана через триггер
-        m_Animator.Rebind();
-        // Уменьшаем вес Base Layer до минимума (почти 0)
-        m_Animator.SetLayerWeight(1, 0f); // Оставляем минимальный вес для сохранения целостности модели
-        // Активируем Stun Layer
-        m_Animator.SetLayerWeight(2, 0f); // Максимальный вес Stun Layer
-        m_Animator.SetLayerWeight(3, 1f);
-
-        yield return new WaitForSeconds(2f); 
+        if (isDead) yield break;
         isStunned = false;
+        isWakingUp = true;
+        PlayStateWithFallback(wakeUpStateName, wakeUpAnimLayer);
+        m_Animator.SetLayerWeight(baseAnimLayer, 0f);
+        m_Animator.SetLayerWeight(stunAnimLayer, 0f);
+        m_Animator.SetLayerWeight(wakeUpAnimLayer, 1f);
+
+        yield return new WaitForSeconds(Mathf.Max(0.1f, wakeUpDuration));
+        isWakingUp = false;
         isAttacking = false;
-        navMeshAgent.isStopped = false; // Возвращаем подвижность
-        m_Animator.SetLayerWeight(3, 0f);
-        m_Animator.SetLayerWeight(1, 1f); // Возвращаем Base Layer
+        ResumeAgentMovement();
+        m_Animator.SetLayerWeight(wakeUpAnimLayer, 0f);
+        m_Animator.SetLayerWeight(baseAnimLayer, 1f); // Возвращаем Base Layer
         m_Animator.SetBool("IsStunned", false); // Выключаем состояние стана
+    }
+
+    private void ForceStunAnimatorState()
+    {
+        if (m_Animator == null) return;
+        m_Animator.SetFloat("Speed", 0f);
+        m_Animator.SetBool("isChasing", false);
+    }
+
+    private void StopAgentMovement()
+    {
+        if (navMeshAgent == null) return;
+        navMeshAgent.isStopped = true;
+        navMeshAgent.ResetPath();
+        navMeshAgent.velocity = Vector3.zero;
+    }
+
+    private void ResumeAgentMovement()
+    {
+        if (navMeshAgent == null) return;
+        navMeshAgent.isStopped = false;
+    }
+
+    private void EnsureAgentActiveForAttack()
+    {
+        if (navMeshAgent == null) return;
+        navMeshAgent.isStopped = false;
+    }
+
+    private void BeginAttackSpeedSlowdown()
+    {
+        if (navMeshAgent == null) return;
+        if (attackSpeedRoutine != null) StopCoroutine(attackSpeedRoutine);
+        float target = baseNavSpeed * Mathf.Clamp01(attackMoveSpeedMultiplier);
+        attackSpeedRoutine = StartCoroutine(SmoothAgentSpeed(target));
+    }
+
+    private void EndAttackSpeedSlowdown()
+    {
+        if (navMeshAgent == null) return;
+        if (attackSpeedRoutine != null) StopCoroutine(attackSpeedRoutine);
+        float target = isChasing ? speedRun : speedWalk;
+        attackSpeedRoutine = StartCoroutine(SmoothAgentSpeed(target));
+    }
+
+    private IEnumerator SmoothAgentSpeed(float targetSpeed)
+    {
+        if (navMeshAgent == null) yield break;
+
+        float t = 0f;
+        float start = navMeshAgent.speed;
+        float duration = 1f / Mathf.Max(0.01f, attackSpeedLerp);
+        while (t < duration)
+        {
+            t += Time.deltaTime;
+            navMeshAgent.speed = Mathf.Lerp(start, targetSpeed, t / duration);
+            yield return null;
+        }
+
+        navMeshAgent.speed = targetSpeed;
+    }
+
+    private void ResumeAgentMovementAndRepath()
+    {
+        if (navMeshAgent == null || !navMeshAgent.enabled) return;
+        if (isStunned || caughtPlayer || isDead) return;
+
+        navMeshAgent.isStopped = false;
+
+        if (isChasing && player != null)
+        {
+            navMeshAgent.SetDestination(player.position);
+        }
+        else if (isPatrolling)
+        {
+            GoToNextWaypoint();
+        }
+    }
+
+    private void PlayStateWithFallback(string stateName, int preferredLayer)
+    {
+        if (m_Animator == null || string.IsNullOrEmpty(stateName)) return;
+        if (HasState(m_Animator, preferredLayer, stateName))
+        {
+            PlayState(stateName, preferredLayer);
+            return;
+        }
+
+        if (HasState(m_Animator, baseAnimLayer, stateName))
+            PlayState(stateName, baseAnimLayer);
+    }
+
+    public bool CanBeFinished()
+    {
+        return isStunned && !isDead;
+    }
+
+    public void KillDuringStun()
+    {
+        if (!CanBeFinished()) return;
+
+        isDead = true;
+        isStunned = false;
+        isWakingUp = false;
+        isAttacking = false;
+        caughtPlayer = false;
+
+        if (attackRoutine != null)
+        {
+            StopCoroutine(attackRoutine);
+            attackRoutine = null;
+        }
+
+        StopAllCoroutines();
+        StopAgentMovement();
+
+        if (m_Animator != null)
+        {
+            m_Animator.SetBool("IsStunned", false);
+            PlayStateWithFallback(deathStateName, baseAnimLayer);
+        }
+
+        StartCoroutine(DeathSequence());
+    }
+
+    private IEnumerator DeathSequence()
+    {
+        yield return new WaitForSeconds(Mathf.Max(0.1f, deathDuration));
+
+        if (m_Animator != null)
+            PlayStateWithFallback(deathEndStateName, baseAnimLayer);
+
+        yield return new WaitForSeconds(Mathf.Max(0.1f, deathEndDuration));
+
+        if (m_Animator != null)
+            m_Animator.speed = 0f;
     }
     /// <summary>
     /// Принудительно запускает преследование игрока (активация охоты после взятия дискеты)

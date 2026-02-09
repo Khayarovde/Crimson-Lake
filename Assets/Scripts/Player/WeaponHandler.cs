@@ -62,13 +62,17 @@ public class WeaponHandler : MonoBehaviour
     [Header("=== Анимация и melee ===")]
     [SerializeField] public Animator playerAnimator;
     [SerializeField] public string meleeTrigger = "MeleePush";
+    [SerializeField] private string finisherAnimation = "attack_stun_enemy";
+    [SerializeField] private float finisherRange = 1.4f;
+    [SerializeField, Tooltip("Задержка перед запуском смерти врага (сек)")]
+    private float finisherEnemyDeathDelay = 0.6f;
 
     [Header("=== ОГЛУШЕНИЕ ВРАГОВ ===")]
     [SerializeField, Tooltip("Сколько попаданий из пистолета нужно для оглушения врага")]
     private int pistolHitsToStun = 12;
 
     [SerializeField, Tooltip("Сколько попаданий из лазерной винтовки нужно для оглушения врага")]
-    private int gunHitsToStun = 1;
+    private int gunHitsToStun = 3;
 
     [Header("=== ТОЧНОСТЬ GUN ===")]
     [SerializeField, Tooltip("Радиус SphereCast для Gun, чтобы попадания регистрировались стабильнее")]
@@ -122,6 +126,8 @@ public class WeaponHandler : MonoBehaviour
 
     private void Update()
     {
+        if (TryFinisherAttack())
+            return;
         HandleInput();
         if (Input.GetKeyDown(KeyCode.R)) TryManualReload();
     }
@@ -138,11 +144,77 @@ public class WeaponHandler : MonoBehaviour
             firingCoroutine = StartCoroutine(ShootingRoutine());
     }
 
+    private bool TryFinisherAttack()
+    {
+        if (!Input.GetMouseButtonDown(0)) return false;
+
+        var enemy = FindClosestStunnedEnemy(finisherRange);
+        if (enemy == null) return false;
+
+        FaceEnemy(enemy.transform);
+        PlayFinisherAnimation();
+        StartCoroutine(KillEnemyAfterDelay(enemy, finisherEnemyDeathDelay));
+        return true;
+    }
+
+    private AdvancedEnemyAI FindClosestStunnedEnemy(float range)
+    {
+        float bestDist = float.MaxValue;
+        AdvancedEnemyAI best = null;
+
+        var hits = Physics.OverlapSphere(transform.position, range, enemyLayerMask);
+        foreach (var h in hits)
+        {
+            if (h == null) continue;
+            var enemy = h.GetComponentInParent<AdvancedEnemyAI>();
+            if (enemy == null || !enemy.CanBeFinished()) continue;
+
+            float d = Vector3.Distance(transform.position, enemy.transform.position);
+            if (d < bestDist)
+            {
+                bestDist = d;
+                best = enemy;
+            }
+        }
+
+        return best;
+    }
+
+    private void PlayFinisherAnimation()
+    {
+        Animator anim = GetAnimator();
+        if (anim == null) return;
+        if (string.IsNullOrEmpty(finisherAnimation)) return;
+
+        anim.CrossFadeInFixedTime(finisherAnimation, 0.1f, 0);
+    }
+
+    private IEnumerator KillEnemyAfterDelay(AdvancedEnemyAI enemy, float delay)
+    {
+        if (delay > 0f)
+            yield return new WaitForSeconds(delay);
+        if (enemy != null)
+            enemy.KillDuringStun();
+    }
+
+    private void FaceEnemy(Transform enemyTransform)
+    {
+        if (enemyTransform == null) return;
+        Vector3 dir = enemyTransform.position - transform.position;
+        dir.y = 0f;
+        if (dir.sqrMagnitude < 0.0001f) return;
+        transform.rotation = Quaternion.LookRotation(dir.normalized, Vector3.up);
+    }
+
     private void StartAiming()
     {
         isAiming = true;
-        m_Animator.SetBool("isAiming", true);
-        m_Animator.SetLayerWeight(1, 1f);
+        Animator anim = GetAnimator();
+        if (anim != null)
+        {
+            anim.SetBool("isAiming", true);
+            anim.SetLayerWeight(1, 1f);
+        }
         EquipActiveWeapon();
         if (tankController)
             tankController.moveSpeed = aimWalkSpeed;
@@ -152,12 +224,21 @@ public class WeaponHandler : MonoBehaviour
     private void StopAiming()
     {
         isAiming = false;
-        m_Animator.SetBool("isAiming", false);
-        m_Animator.SetLayerWeight(1, 0f);
+        Animator anim = GetAnimator();
+        if (anim != null)
+        {
+            anim.SetBool("isAiming", false);
+            anim.SetLayerWeight(1, 0f);
+        }
         UnequipWeapon();
         if (tankController)
             tankController.moveSpeed = originalWalkSpeed;
         aimAssist.SetAiming(false, null);
+    }
+
+    private Animator GetAnimator()
+    {
+        return playerAnimator != null ? playerAnimator : m_Animator;
     }
 
     private bool CanShoot() => currentWeaponType != InventoryItem.ItemType.Empty && !isReloading;

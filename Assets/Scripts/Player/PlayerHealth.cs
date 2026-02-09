@@ -18,7 +18,9 @@ public class PlayerHealth : MonoBehaviour
 
     [Header("FX")]
     [SerializeField, Range(0f, 1f)] private float firstHitRedAlpha = 0.25f;
-    [SerializeField] private float firstHitFlashDuration = 0.18f;
+    [SerializeField] private float firstHitFlashDuration = 0.6f;
+    [SerializeField, Tooltip("Задержка перед запуском логики смерти, чтобы проигралась анимация игрока")]
+    private float gameoverAnimationDelay = 1.2f;
     [SerializeField, Tooltip("Задержка (в реальном времени) перед затемнением на смертельном ударе — чтобы анимация врага успела проиграться.")]
     private float deathDelayBeforeFade = 0.75f;
     [SerializeField] private float deathFadeDuration = 0.65f;
@@ -53,6 +55,9 @@ public class PlayerHealth : MonoBehaviour
 
         if (hitsTaken < hitsToDie)
         {
+            var tankController = GetComponent<TankController>();
+            if (tankController != null)
+                tankController.PlayHit();
             StartOverlayRoutine(FlashColor(new Color(1f, 0f, 0f, 1f), firstHitRedAlpha, firstHitFlashDuration));
             return;
         }
@@ -65,12 +70,15 @@ public class PlayerHealth : MonoBehaviour
         if (isDead) return;
         isDead = true;
 
+        var tankController = GetComponent<TankController>();
+        if (tankController != null)
+            tankController.PlayGameOver();
+
         // Отключаем управление/оружие, чтобы игрок "умер".
         var weapon = GetComponent<WeaponHandler>();
         if (weapon != null) weapon.enabled = false;
 
-        var tank = GetComponent<TankController>();
-        if (tank != null) tank.enabled = false;
+        if (tankController != null) tankController.enabled = false;
 
         var movement = GetComponent<CharacterMovement>();
         if (movement != null) movement.enabled = false;
@@ -118,6 +126,9 @@ public class PlayerHealth : MonoBehaviour
 
         // На всякий случай попробуем найти LoseScreen, если его не передали.
         TryResolveLoseCanvasIfMissing();
+
+        if (gameoverAnimationDelay > 0f)
+            yield return new WaitForSecondsRealtime(gameoverAnimationDelay);
 
         // Даем время анимации врага/звуку до затемнения.
         if (deathDelayBeforeFade > 0f)

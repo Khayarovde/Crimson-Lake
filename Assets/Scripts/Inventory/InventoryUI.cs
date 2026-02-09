@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using UIOutline = UnityEngine.UI.Outline;
 using System.Collections.Generic;
 using TMPro;
 
@@ -29,6 +30,9 @@ public class InventoryUI : MonoBehaviour
     public GameObject destroyButtonPrefab;
     public GameObject takeButtonPrefab;
 
+    [Header("Подсветка")]
+    public Color outlineColor = Color.green;
+
     [Header("Позиции кнопок в слотах")]
     [Tooltip("Локальная позиция кнопки Store в каждом слоте")]
     public Vector2 storeButtonPosition = new Vector2(30, -30);
@@ -42,7 +46,7 @@ public class InventoryUI : MonoBehaviour
     private Image[] slotIcons;
     private Button[] storeButtons;
     private Button[] destroyButtons;
-    private Outline[] outlines;
+    private UIOutline[] outlines;
     private PlayerInventory playerInventory;
     private Chest currentChest;
 
@@ -72,8 +76,20 @@ public class InventoryUI : MonoBehaviour
         if (chestCanvas != null) chestCanvas.SetActive(false);
 
         InitializeInventorySlots();
-        InitializeChestSlots();
         InitializeButtons();
+        
+        // В WebGL UI элементы инициализируются асинхронно
+        // Инициализируем слоты сундука со стартовой задержкой
+        if (playerInventory != null)
+        {
+            playerInventory.StartCoroutine(DelayedChestInitialization());
+        }
+    }
+
+    private System.Collections.IEnumerator DelayedChestInitialization()
+    {
+        yield return new WaitForEndOfFrame();
+        InitializeChestSlots();
     }
 
     private void Update()
@@ -126,7 +142,7 @@ public class InventoryUI : MonoBehaviour
         slotIcons = new Image[inventoryData.maxSlots];
         storeButtons = new Button[inventoryData.maxSlots];
         destroyButtons = new Button[inventoryData.maxSlots];
-        outlines = new Outline[inventoryData.maxSlots];
+        outlines = new UIOutline[inventoryData.maxSlots];
 
         for (int i = 0; i < inventoryData.maxSlots; i++)
         {
@@ -174,15 +190,35 @@ public class InventoryUI : MonoBehaviour
                 destroyButton.gameObject.SetActive(false);
             }
 
-            Outline outline = icon?.GetComponent<Outline>();
+            UIOutline outline = icon?.GetComponent<UIOutline>();
             if (outline != null)
             {
                 outlines[i] = outline;
+                outline.effectColor = outlineColor;
                 outline.enabled = false;
             }
         }
 
         UpdateInventoryUI();
+    }
+
+    public void SetOutlineColor(Color color)
+    {
+        outlineColor = color;
+        ApplyOutlineColor();
+    }
+
+    private void ApplyOutlineColor()
+    {
+        if (outlines == null) return;
+
+        for (int i = 0; i < outlines.Length; i++)
+        {
+            if (outlines[i] != null)
+            {
+                outlines[i].effectColor = outlineColor;
+            }
+        }
     }
 
     private void InitializeChestSlots()
