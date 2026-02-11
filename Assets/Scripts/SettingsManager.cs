@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
@@ -5,6 +6,9 @@ using UnityEngine.SceneManagement;
 public class SettingsManager : MonoBehaviour
 {
     public static SettingsManager Instance { get; private set; }
+
+    public static event Action<float> MusicVolumeChanged;
+    public static event Action<float> SfxVolumeChanged;
 
     public static SettingsManager GetOrCreate()
     {
@@ -87,6 +91,7 @@ public class SettingsManager : MonoBehaviour
         PlayerPrefs.Save();
         ApplyVolumes();
         MusicZoneTrigger.RefreshAllZoneVolumes();
+        MusicVolumeChanged?.Invoke(musicVolume);
         UpdateAllSliders();
     }
 
@@ -96,6 +101,7 @@ public class SettingsManager : MonoBehaviour
         PlayerPrefs.SetFloat(SFXKey, value);
         PlayerPrefs.Save();
         ApplyVolumes();
+        SfxVolumeChanged?.Invoke(sfxVolume);
         UpdateAllSliders();
     }
 

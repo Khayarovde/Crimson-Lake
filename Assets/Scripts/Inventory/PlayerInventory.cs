@@ -29,6 +29,9 @@ public class PlayerInventory : MonoBehaviour
 
     private void Update()
     {
+        if (SaveSlotsUI.IsSaveMenuOpen)
+            return;
+
         if (Input.GetKeyDown(KeyCode.Tab))
         {
             inventoryUI.ToggleInventory();

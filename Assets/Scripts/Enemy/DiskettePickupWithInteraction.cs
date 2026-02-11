@@ -44,6 +44,8 @@ public class DiskettePickupWithInteraction : MonoBehaviour
     private AudioSource chaseAudioSource;
     private GameObject chaseAudioObject;
 
+    private float chaseLocalVolume = 0f; // 0..chaseVolume
+
     private MusicZoneTrigger originalChaseZone;
     private bool isChaseMusicActive = false;
 
@@ -77,13 +79,24 @@ public class DiskettePickupWithInteraction : MonoBehaviour
             chaseAudioSource = chaseAudioObject.AddComponent<AudioSource>();
             chaseAudioSource.playOnAwake = false;
             chaseAudioSource.loop = true;
-            chaseAudioSource.volume = 0f;
+            chaseLocalVolume = 0f;
+            ApplyChaseVolume();
             chaseAudioSource.clip = chaseMusicClip;
         }
 
         // Проверка на наличие предмета (если используешь инвентарь)
         if (item == null)
             Debug.LogWarning($"[DiskettePickup] Предмет (InventoryItem) не назначен на {gameObject.name}. Подбор будет без добавления в инвентарь.");
+    }
+
+    private void OnEnable()
+    {
+        SettingsManager.MusicVolumeChanged += HandleMusicVolumeChanged;
+    }
+
+    private void OnDisable()
+    {
+        SettingsManager.MusicVolumeChanged -= HandleMusicVolumeChanged;
     }
 
     private void Update()
@@ -104,6 +117,11 @@ public class DiskettePickupWithInteraction : MonoBehaviour
             {
                 StartCoroutine(EndChaseCompletely());
             }
+        }
+
+        if (isChaseMusicActive && chaseAudioSource != null && chaseAudioSource.isPlaying)
+        {
+            ApplyChaseVolume();
         }
     }
 
@@ -243,32 +261,54 @@ public class DiskettePickupWithInteraction : MonoBehaviour
 
     private IEnumerator FadeInChaseMusic()
     {
-        chaseAudioSource.volume = 0f;
+        chaseLocalVolume = 0f;
+        ApplyChaseVolume();
         chaseAudioSource.Play();
 
         float elapsed = 0f;
         while (elapsed < chaseFadeTime)
         {
             elapsed += Time.unscaledDeltaTime;
-            chaseAudioSource.volume = Mathf.Lerp(0f, chaseVolume, elapsed / chaseFadeTime);
+            chaseLocalVolume = Mathf.Lerp(0f, chaseVolume, elapsed / chaseFadeTime);
+            ApplyChaseVolume();
             yield return null;
         }
-        chaseAudioSource.volume = chaseVolume;
+        chaseLocalVolume = chaseVolume;
+        ApplyChaseVolume();
     }
 
     private IEnumerator FadeOutChaseMusic()
     {
         float elapsed = 0f;
-        float startVolume = chaseAudioSource.volume;
+        float startLocal = chaseLocalVolume;
         while (elapsed < chaseFadeTime)
         {
             elapsed += Time.unscaledDeltaTime;
-            chaseAudioSource.volume = Mathf.Lerp(startVolume, 0f, elapsed / chaseFadeTime);
+            chaseLocalVolume = Mathf.Lerp(startLocal, 0f, elapsed / chaseFadeTime);
+            ApplyChaseVolume();
             yield return null;
         }
         chaseAudioSource.Stop();
-        chaseAudioSource.volume = 0f;
+        chaseLocalVolume = 0f;
+        ApplyChaseVolume();
         isChaseMusicActive = false;
+    }
+
+    private void ApplyChaseVolume()
+    {
+        if (chaseAudioSource == null) return;
+
+        float globalMusicVol = SettingsManager.Instance != null
+            ? SettingsManager.Instance.GetMusicVolume()
+            : PlayerPrefs.GetFloat("MusicVol", 0.8f);
+
+        chaseAudioSource.volume = Mathf.Clamp01(chaseLocalVolume) * Mathf.Clamp01(globalMusicVol);
+    }
+
+    private void HandleMusicVolumeChanged(float newVolume)
+    {
+        if (!isChaseMusicActive || chaseAudioSource == null) return;
+        ApplyChaseVolume();
     }
 
     private IEnumerator EndChaseCompletely()

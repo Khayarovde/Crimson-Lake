@@ -51,7 +51,7 @@ public class Menu : MonoBehaviour
             settingsPanel.SetActive(false);
 
         Time.timeScale = 1f;
-        SceneManager.LoadScene("cameratest2");
+        SaveManager.GetOrCreate().LoadLatestSaveOrDefault("cameratest2");
     }
 
     public void Quit()

@@ -866,6 +866,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Sci Fi Pistol (1)
       objectReference: {fileID: 0}
+    - target: {fileID: 7018287897960650172, guid: 5ee2311ae1bcda243a4809a18e46850e, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -4338,6 +4342,11 @@ AudioSource:
   m_CorrespondingSourceObject: {fileID: 6673799403014827570, guid: ebc4bac64a24a7f42a07cb2499345bc4, type: 3}
   m_PrefabInstance: {fileID: 127583857525048118}
   m_PrefabAsset: {fileID: 0}
+--- !u!95 &1834082573 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 2448681510951377980, guid: ebc4bac64a24a7f42a07cb2499345bc4, type: 3}
+  m_PrefabInstance: {fileID: 127583857525048118}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1846762561
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4386,6 +4395,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2444749522448532875, guid: ef8a1ac8c271a1341abc6a662df67489, type: 3}
+      propertyPath: 'disableWhileOpen.Array.data[0]'
+      value: 
+      objectReference: {fileID: 1834082573}
     - target: {fileID: 3428229864703373828, guid: ef8a1ac8c271a1341abc6a662df67489, type: 3}
       propertyPath: m_Name
       value: PrototypeSafe
@@ -4712,7 +4725,6 @@ GameObject:
   - component: {fileID: 1969148592}
   - component: {fileID: 1969148591}
   - component: {fileID: 1969148590}
-  - component: {fileID: 1969148593}
   m_Layer: 0
   m_Name: EventSystem
   m_TagString: Untagged
@@ -4770,20 +4782,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1969148593
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1969148589}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4016d2fd26ccad845a95e755b92819de, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  item: {fileID: 0}
-  interactionDistance: 2
 --- !u!1001 &1979423677
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4889,15 +4887,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3253778392951045453, guid: ebc4bac64a24a7f42a07cb2499345bc4, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -69.3
+      value: -46.369
       objectReference: {fileID: 0}
     - target: {fileID: 3253778392951045453, guid: ebc4bac64a24a7f42a07cb2499345bc4, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 6.969
+      value: 6.88
       objectReference: {fileID: 0}
     - target: {fileID: 3253778392951045453, guid: ebc4bac64a24a7f42a07cb2499345bc4, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -19.2
+      value: -2.115
       objectReference: {fileID: 0}
     - target: {fileID: 3253778392951045453, guid: ebc4bac64a24a7f42a07cb2499345bc4, type: 3}
       propertyPath: m_LocalRotation.w

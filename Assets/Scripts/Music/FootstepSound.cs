@@ -36,6 +36,18 @@ public class FootstepSound : MonoBehaviour
     private Vector3 lastPosition;
     private float currentSpeed;
     private float baseStepInterval;
+    private float globalSfxVolume = 0.8f;
+
+    private void OnEnable()
+    {
+        SettingsManager.SfxVolumeChanged += HandleSfxVolumeChanged;
+        RefreshGlobalSfxVolume();
+    }
+
+    private void OnDisable()
+    {
+        SettingsManager.SfxVolumeChanged -= HandleSfxVolumeChanged;
+    }
 
     void Start()
     {
@@ -76,7 +88,7 @@ public class FootstepSound : MonoBehaviour
     {
         audioSource.playOnAwake = false;
         audioSource.spatialBlend = 1f; // 3D звук
-        audioSource.volume = 0.7f;
+        audioSource.volume = 0.7f * globalSfxVolume;
         audioSource.maxDistance = 15f;
         audioSource.rolloffMode = AudioRolloffMode.Logarithmic;
     }
@@ -174,7 +186,7 @@ public class FootstepSound : MonoBehaviour
         float volume = Random.Range(minVolume, maxVolume);
         float pitch = Random.Range(minPitch, maxPitch);
         
-        audioSource.volume = volume;
+        audioSource.volume = volume * globalSfxVolume;
         audioSource.pitch = pitch;
 
         audioSource.PlayOneShot(selectedClip);
@@ -207,5 +219,17 @@ public class FootstepSound : MonoBehaviour
     {
         stepsPerMinute = newStepsPerMinute;
         baseStepInterval = 60f / stepsPerMinute;
+    }
+
+    private void RefreshGlobalSfxVolume()
+    {
+        globalSfxVolume = SettingsManager.Instance != null
+            ? SettingsManager.Instance.GetSFXVolume()
+            : PlayerPrefs.GetFloat("SFXVol", 0.8f);
+    }
+
+    private void HandleSfxVolumeChanged(float newVolume)
+    {
+        globalSfxVolume = Mathf.Clamp01(newVolume);
     }
 }

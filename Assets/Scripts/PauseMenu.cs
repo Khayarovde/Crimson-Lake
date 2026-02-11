@@ -49,6 +49,9 @@ public class PauseMenu : MonoBehaviour
 
     private void Update()
     {
+        if (SaveSlotsUI.IsSaveMenuOpen)
+            return;
+
         if (Input.GetKeyDown(KeyCode.Escape))
         {
             if (isPaused) Resume();
