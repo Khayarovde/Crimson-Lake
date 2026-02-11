@@ -502,29 +502,55 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   navMeshAgent: {fileID: 8564032716929835383}
   m_Animator: {fileID: 4446118427321490031}
-  speedWalk: 2
-  speedRun: 2
+  speedWalk: 1.8
+  speedRun: 1.8
   waypoints:
   - {fileID: 0}
   - {fileID: 0}
   viewRadius: 15
   viewAngle: 90
+  stopBeforePlayerDistance: 1.2
   catchSound: {fileID: 8300000, guid: 45422976d0c66fd40b82e76c95dad78e, type: 3}
   audioSource: {fileID: 795722791391542667}
   attackRange: 1.5
-  attackCooldown: 1.1
+  attackCooldown: 1.5
   attackWindupTime: 0.25
+  attackHitDelay: 1.06
+  attackAnimationDuration: 2.12
   attackLockTime: 0.6
-  attackAnimationSpeed: 2
+  attackAnimationSpeed: 1.4
   maxAttackAngle: 60
   facePlayerOnAttack: 1
   attackTrigger: Attack
+  attack2Trigger: Attack2
+  attack3Trigger: Attack3
   attackStateName: Attack
+  attack2StateName: Attack2
+  attack3StateName: Attack3
   attackStateLayer: 0
   attackHitRadius: 1.2
   attackHitForwardOffset: 0.6
-  loseScreenDelayAfterSound: 0.2
-  loseScreenCanvas: {fileID: 0}
+  attackMoveSpeedMultiplier: 0.15
+  attackSpeedLerp: 6
+  attack1Weight: 1
+  attack2Weight: 1
+  attack3Weight: 1
+  walkingStateName: walking
+  stunStateName: Stun
+  wakeUpStateName: wakeUp_stun
+  deathStateName: death
+  deathEndStateName: death_end
+  animTransition: 0.15
+  baseAnimLayer: 0
+  stunAnimLayer: 2
+  wakeUpAnimLayer: 3
+  useWalkingAnimation: 1
+  wakeUpDuration: 1.2
+  deathDuration: 2
+  deathEndDuration: 1
+  enemyColliderRadius: 0.7
+  enemyColliderHeight: 2.2
+  enemyColliderCenter: {x: 0, y: 1.1, z: 0}
   caughtPlayer: 0
 --- !u!82 &3632101850224339137
 AudioSource:

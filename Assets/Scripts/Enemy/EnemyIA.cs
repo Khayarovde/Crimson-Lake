@@ -41,8 +41,16 @@ public class AdvancedEnemyAI : MonoBehaviour
     private bool facePlayerOnAttack = true;
     [SerializeField, Tooltip("Имя Trigger параметра атаки в Animator (если есть)")]
     private string attackTrigger = "Attack";
+    [SerializeField, Tooltip("Имя Trigger параметра атаки 2 в Animator (если есть)")]
+    private string attack2Trigger = "Attack2";
+    [SerializeField, Tooltip("Имя Trigger параметра атаки 3 в Animator (если есть)")]
+    private string attack3Trigger = "Attack3";
     [SerializeField, Tooltip("Имя анимационного стейта атаки (для принудительного CrossFade)")]
     private string attackStateName = "Attack";
+    [SerializeField, Tooltip("Имя анимационного стейта атаки 2 (для принудительного CrossFade)")]
+    private string attack2StateName = "Attack2";
+    [SerializeField, Tooltip("Имя анимационного стейта атаки 3 (для принудительного CrossFade)")]
+    private string attack3StateName = "Attack3";
     [SerializeField, Tooltip("Слой аниматора, где лежит атака")]
     private int attackStateLayer = 0;
     [SerializeField, Tooltip("Радиус хитбокса удара (OverlapSphere)")]
@@ -53,6 +61,11 @@ public class AdvancedEnemyAI : MonoBehaviour
     private float attackMoveSpeedMultiplier = 0.15f;
     [SerializeField, Tooltip("Скорость плавного изменения скорости при атаке")]
     private float attackSpeedLerp = 6f;
+
+    [Header("Attack Variants")]
+    [SerializeField, Range(0f, 5f)] private float attack1Weight = 1f;
+    [SerializeField, Range(0f, 5f)] private float attack2Weight = 1f;
+    [SerializeField, Range(0f, 5f)] private float attack3Weight = 1f;
 
     [Header("Animation")]
     [SerializeField] private string walkingStateName = "walking";
@@ -101,6 +114,7 @@ public class AdvancedEnemyAI : MonoBehaviour
     private float baseNavSpeed;
     private Coroutine attackSpeedRoutine;
     private bool isDead;
+    private int lastAttackIndex = -1;
 
     void Start()
     {
@@ -301,10 +315,9 @@ public class AdvancedEnemyAI : MonoBehaviour
         if (facePlayerOnAttack)
             FacePlayerOnY();
 
+        int attackIndex = PickAttackIndex();
         if (m_Animator != null)
-        {
-            PlayAttackAnimation();
-        }
+            PlayAttackAnimation(attackIndex);
 
         float hitDelay = Mathf.Max(0f, attackHitDelay);
         if (hitDelay > 0f)
@@ -338,20 +351,74 @@ public class AdvancedEnemyAI : MonoBehaviour
         attackRoutine = null;
     }
 
-    private void PlayAttackAnimation()
+    private void PlayAttackAnimation(int attackIndex)
     {
         if (m_Animator == null) return;
 
         m_Animator.speed = baseAnimatorSpeed * Mathf.Max(0.1f, attackAnimationSpeed);
 
-        if (HasTrigger(m_Animator, attackTrigger))
-            m_Animator.SetTrigger(attackTrigger);
+        string trigger = GetAttackTrigger(attackIndex);
+        string stateName = GetAttackStateName(attackIndex);
 
-        if (!string.IsNullOrEmpty(attackStateName) && HasState(m_Animator, attackStateLayer, attackStateName))
+        if (!string.IsNullOrEmpty(trigger) && HasTrigger(m_Animator, trigger))
+            m_Animator.SetTrigger(trigger);
+
+        if (!string.IsNullOrEmpty(stateName) && HasState(m_Animator, attackStateLayer, stateName))
         {
-            m_Animator.Play(attackStateName, attackStateLayer, 0f);
-            m_Animator.CrossFadeInFixedTime(attackStateName, 0.5f, attackStateLayer);
-            currentAnimState = attackStateName;
+            m_Animator.Play(stateName, attackStateLayer, 0f);
+            m_Animator.CrossFadeInFixedTime(stateName, 0.5f, attackStateLayer);
+            currentAnimState = stateName;
+        }
+    }
+
+    private int PickAttackIndex()
+    {
+        float w1 = Mathf.Max(0f, attack1Weight);
+        float w2 = Mathf.Max(0f, attack2Weight);
+        float w3 = Mathf.Max(0f, attack3Weight);
+        float total = w1 + w2 + w3;
+
+        if (total <= 0f)
+            return 0;
+
+        // Avoid repeating the same attack back-to-back when possible.
+        for (int attempt = 0; attempt < 3; attempt++)
+        {
+            float roll = Random.Range(0f, total);
+            int index;
+            if (roll < w1) index = 0;
+            else if (roll < w1 + w2) index = 1;
+            else index = 2;
+
+            if (index != lastAttackIndex || total == (index == 0 ? w1 : index == 1 ? w2 : w3))
+            {
+                lastAttackIndex = index;
+                return index;
+            }
+        }
+
+        // Fallback if we failed to pick a different one.
+        lastAttackIndex = (lastAttackIndex + 1) % 3;
+        return lastAttackIndex;
+    }
+
+    private string GetAttackTrigger(int attackIndex)
+    {
+        switch (attackIndex)
+        {
+            case 1: return attack2Trigger;
+            case 2: return attack3Trigger;
+            default: return attackTrigger;
+        }
+    }
+
+    private string GetAttackStateName(int attackIndex)
+    {
+        switch (attackIndex)
+        {
+            case 1: return attack2StateName;
+            case 2: return attack3StateName;
+            default: return attackStateName;
         }
     }
 

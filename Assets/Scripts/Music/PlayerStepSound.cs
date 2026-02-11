@@ -1,8 +1,26 @@
+using System.Collections;
 using UnityEngine;
 
 public class PlayerStepSound : MonoBehaviour
 {
-    public AudioClip[] stepSounds_AR; // массив звуков текущий
+    [System.Serializable]
+    public struct SurfaceStepSounds
+    {
+        public string surfaceTag;
+        public AudioClip[] clips;
+        [Header("Soft Playback")]
+        public float fadeInDuration;
+        public float baseVolume;
+        public float minPitch;
+        public float maxPitch;
+    }
+
+    [Header("Surface Clips")]
+    public SurfaceStepSounds[] surfaceClips;
+    public LayerMask surfaceMask = ~0;
+    public float surfaceCheckDistance = 1.5f;
+    public float surfaceCheckStartOffset = 0.2f;
+    public bool logSurfaceHit = false;
     private AudioSource audioSource;
     private Rigidbody rb;
 
@@ -11,6 +29,7 @@ public class PlayerStepSound : MonoBehaviour
     public float moveSpeedThreshold = 0.05f;
     public bool useInputFallback = true;
     public float inputThreshold = 0.1f;
+    private Coroutine fadeRoutine;
 
 
     private void Start()
@@ -26,9 +45,21 @@ public class PlayerStepSound : MonoBehaviour
         if (requireMovement && !IsMoving())
             return;
 
-        if (stepSounds_AR.Length > 0 && audioSource != null)
+        SurfaceStepSounds surfaceSettings;
+        AudioClip[] clipsToPlay = GetSurfaceClips(out surfaceSettings);
+
+        if (clipsToPlay.Length > 0 && audioSource != null)
         {
-            audioSource.PlayOneShot(stepSounds_AR[Random.Range(0, stepSounds_AR.Length)]);
+            AudioClip clip = clipsToPlay[Random.Range(0, clipsToPlay.Length)];
+            audioSource.pitch = Random.Range(surfaceSettings.minPitch, surfaceSettings.maxPitch);
+            audioSource.clip = clip;
+            audioSource.volume = 0f;
+            audioSource.Play();
+
+            if (fadeRoutine != null)
+                StopCoroutine(fadeRoutine);
+            fadeRoutine = StartCoroutine(FadeInAudio(surfaceSettings.baseVolume, surfaceSettings.fadeInDuration));
+
             Debug.Log("Событие шага сработало"); // Для отладки: смотрите в консоль Unity
             print("Звук шага"); // Ваш оригинальный print
         }
@@ -56,5 +87,47 @@ public class PlayerStepSound : MonoBehaviour
         }
 
         return false;
+    }
+
+    private AudioClip[] GetSurfaceClips(out SurfaceStepSounds settings)
+    {
+        settings = default;
+        // Raycast вниз, чтобы понять, какая поверхность под ногами
+        Vector3 origin = transform.position + Vector3.up * surfaceCheckStartOffset;
+        if (Physics.Raycast(origin, Vector3.down, out RaycastHit hit, surfaceCheckDistance, surfaceMask, QueryTriggerInteraction.Ignore))
+        {
+            string tag = hit.collider.tag;
+            if (logSurfaceHit)
+                Debug.Log("Surface hit: " + hit.collider.name + " tag=" + tag);
+            for (int i = 0; i < surfaceClips.Length; i++)
+            {
+                if (surfaceClips[i].surfaceTag == tag && surfaceClips[i].clips != null)
+                {
+                    settings = surfaceClips[i];
+                    return surfaceClips[i].clips;
+                }
+            }
+        }
+
+        return new AudioClip[0];
+    }
+
+    private IEnumerator FadeInAudio(float targetVolume, float duration)
+    {
+        if (duration <= 0f)
+        {
+            audioSource.volume = targetVolume;
+            yield break;
+        }
+
+        float t = 0f;
+        while (t < duration)
+        {
+            t += Time.deltaTime;
+            audioSource.volume = Mathf.Lerp(0f, targetVolume, t / duration);
+            yield return null;
+        }
+
+        audioSource.volume = targetVolume;
     }
 }

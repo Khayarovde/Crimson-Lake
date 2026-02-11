@@ -16,6 +16,7 @@ public class Menu : MonoBehaviour
 
     void Start()
     {
+        SettingsManager.GetOrCreate();
         LoadSettings();
     }
 
@@ -27,37 +28,21 @@ public class Menu : MonoBehaviour
         if (musicSlider != null) musicSlider.value = musicVol;
         if (sfxSlider != null) sfxSlider.value = sfxVol;
 
-        ApplyVolumes();
-    }
-
-    private void ApplyVolumes()
-    {
-        float musicVol = musicSlider != null ? musicSlider.value : 0.8f;
-        float sfxVol   = sfxSlider != null ? sfxSlider.value : 0.8f;
-
-        AudioSource[] allSources = FindObjectsOfType<AudioSource>();
-        foreach (AudioSource source in allSources)
+        if (SettingsManager.Instance != null)
         {
-            if (source != null)
-            {
-                if (source.gameObject.CompareTag("Music"))
-                    source.volume = musicVol;
-                else
-                    source.volume = sfxVol;
-            }
+            SettingsManager.Instance.SetMusicVolume(musicVol);
+            SettingsManager.Instance.SetSFXVolume(sfxVol);
         }
     }
 
     public void OnMusicChanged(float value)
     {
-        PlayerPrefs.SetFloat(MusicVolKey, value);
-        ApplyVolumes();
+        SettingsManager.GetOrCreate().SetMusicVolume(value);
     }
 
     public void OnSFXChanged(float value)
     {
-        PlayerPrefs.SetFloat(SFXVolKey, value);
-        ApplyVolumes();
+        SettingsManager.GetOrCreate().SetSFXVolume(value);
     }
 
     public void PlayOsnova()

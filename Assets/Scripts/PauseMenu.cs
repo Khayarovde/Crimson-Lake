@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using UnityEngine.EventSystems;
 using System.Collections;
+using System.Collections.Generic;
 
 public class PauseMenu : MonoBehaviour
 {
@@ -22,6 +23,13 @@ public class PauseMenu : MonoBehaviour
     [SerializeField] private AudioSource[] sfxSources;          // Прямые ссылки на AudioSource
     [SerializeField] private AudioClip[] sfxClips;              // Или по клипам (для PlayOneShot и динамики)
 
+    [Header("Pause Music Effect")]
+    [SerializeField] private float pauseLowPassCutoff = 800f;
+    [SerializeField] private float pauseLowPassFadeTime = 0.15f;
+
+    private readonly List<AudioLowPassFilter> pauseMusicFilters = new List<AudioLowPassFilter>();
+    private readonly Dictionary<AudioLowPassFilter, Coroutine> filterFades = new Dictionary<AudioLowPassFilter, Coroutine>();
+
     private bool isPaused = false;
 
     private const string MusicVolKey = "MusicVol";
@@ -32,6 +40,7 @@ public class PauseMenu : MonoBehaviour
         if (pausePanel != null) pausePanel.SetActive(false);
         if (settingsPanel != null) settingsPanel.SetActive(false);
 
+        SettingsManager.GetOrCreate();
         LoadSettings();
 
         Debug.Log($"[PauseMenu] Музыка: {musicSources.Length} источников + {musicClips.Length} клипов | " +
@@ -56,6 +65,8 @@ public class PauseMenu : MonoBehaviour
         ForcePausePanelToTop();
         EnableAllButtonsInPause();
         StartCoroutine(SelectFirstButtonDelayed());
+
+        ApplyPauseMusicEffect(true);
     }
 
     public void Resume()
@@ -64,6 +75,8 @@ public class PauseMenu : MonoBehaviour
         if (settingsPanel != null) settingsPanel.SetActive(false);
         Time.timeScale = 1f;
         isPaused = false;
+
+        ApplyPauseMusicEffect(false);
     }
 
     // === UI фиксы ===
@@ -144,8 +157,12 @@ public class PauseMenu : MonoBehaviour
         if (musicSlider != null) musicSlider.value = musicVol;
         if (sfxSlider != null)   sfxSlider.value   = sfxVol;
 
-        ApplyVolumeToAll(musicVol, true);
-        ApplyVolumeToAll(sfxVol, false);
+        // Применяем через единый менеджер (и не ломаем zoneVolume в MusicZoneTrigger)
+        if (SettingsManager.Instance != null)
+        {
+            SettingsManager.Instance.SetMusicVolume(musicVol);
+            SettingsManager.Instance.SetSFXVolume(sfxVol);
+        }
     }
 
     private void ApplyVolumeToAll(float volume, bool isMusic)
@@ -193,16 +210,12 @@ public class PauseMenu : MonoBehaviour
 
     public void OnMusicChanged(float value)
     {
-        PlayerPrefs.SetFloat(MusicVolKey, value);
-        PlayerPrefs.Save();
-        ApplyVolumeToAll(value, true);
+        SettingsManager.GetOrCreate().SetMusicVolume(value);
     }
 
     public void OnSFXChanged(float value)
     {
-        PlayerPrefs.SetFloat(SFXVolKey, value);
-        PlayerPrefs.Save();
-        ApplyVolumeToAll(value, false);
+        SettingsManager.GetOrCreate().SetSFXVolume(value);
     }
 
     // === Остальные кнопки ===
@@ -230,5 +243,75 @@ public class PauseMenu : MonoBehaviour
     public void QuitGame()
     {
         Application.Quit();
+    }
+
+    private void ApplyPauseMusicEffect(bool paused)
+    {
+        if (paused)
+        {
+            pauseMusicFilters.Clear();
+
+            AudioSource[] allSources = FindObjectsOfType<AudioSource>();
+            foreach (var source in allSources)
+            {
+                if (source == null || !IsMusicSource(source))
+                    continue;
+
+                var filter = source.GetComponent<AudioLowPassFilter>();
+                if (filter == null)
+                    filter = source.gameObject.AddComponent<AudioLowPassFilter>();
+
+                filter.enabled = true;
+                pauseMusicFilters.Add(filter);
+                StartFilterFade(filter, pauseLowPassCutoff);
+            }
+        }
+        else
+        {
+            foreach (var filter in pauseMusicFilters)
+            {
+                if (filter == null) continue;
+                StartFilterFade(filter, 22000f, disableAtEnd: true);
+            }
+            pauseMusicFilters.Clear();
+        }
+    }
+
+    private bool IsMusicSource(AudioSource source)
+    {
+        if (source.gameObject.CompareTag("Music"))
+            return true;
+
+        return source.GetComponentInParent<MusicZoneTrigger>() != null;
+    }
+
+    private void StartFilterFade(AudioLowPassFilter filter, float targetCutoff, bool disableAtEnd = false)
+    {
+        if (filterFades.TryGetValue(filter, out var running) && running != null)
+            StopCoroutine(running);
+
+        var routine = StartCoroutine(FadeLowPass(filter, targetCutoff, disableAtEnd));
+        filterFades[filter] = routine;
+    }
+
+    private IEnumerator FadeLowPass(AudioLowPassFilter filter, float targetCutoff, bool disableAtEnd)
+    {
+        if (filter == null) yield break;
+
+        float startCutoff = filter.cutoffFrequency;
+        float t = 0f;
+        float duration = Mathf.Max(0.01f, pauseLowPassFadeTime);
+
+        while (t < duration)
+        {
+            t += Time.unscaledDeltaTime;
+            filter.cutoffFrequency = Mathf.Lerp(startCutoff, targetCutoff, t / duration);
+            yield return null;
+        }
+
+        filter.cutoffFrequency = targetCutoff;
+
+        if (disableAtEnd)
+            filter.enabled = false;
     }
 }

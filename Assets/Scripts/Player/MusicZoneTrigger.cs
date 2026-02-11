@@ -21,6 +21,8 @@ public class MusicZoneTrigger : MonoBehaviour
 
     public AudioSource zoneAudioSource;
 
+    private float currentLocalVolume = 0f; // 0..zoneVolume
+
     private void Awake()
     {
         // Создаём отдельный AudioSource для этой зоны
@@ -29,7 +31,8 @@ public class MusicZoneTrigger : MonoBehaviour
         zoneAudioSource = audioObj.AddComponent<AudioSource>();
         zoneAudioSource.playOnAwake = false;
         zoneAudioSource.loop = loopMusic;
-        zoneAudioSource.volume = 0f; // Начинаем с нулевой громкости для fade in
+        currentLocalVolume = 0f;
+        ApplyCurrentVolume();
     }
 
     private void OnTriggerEnter(Collider other)
@@ -42,7 +45,8 @@ public class MusicZoneTrigger : MonoBehaviour
 
         // Запускаем свою музыку с fade in
         zoneAudioSource.clip = zoneMusic;
-        zoneAudioSource.volume = 0f;
+        currentLocalVolume = 0f;
+        ApplyCurrentVolume();
         zoneAudioSource.loop = loopMusic;
         zoneAudioSource.Play();
 
@@ -79,29 +83,33 @@ public class MusicZoneTrigger : MonoBehaviour
     public IEnumerator FadeIn(float targetVolume, float duration)
     {
         float currentTime = 0f;
-        float startVolume = zoneAudioSource.volume;
+        float startLocal = currentLocalVolume;
 
         while (currentTime < duration)
         {
             currentTime += Time.unscaledDeltaTime;
-            zoneAudioSource.volume = Mathf.Lerp(startVolume, targetVolume, currentTime / duration);
+            currentLocalVolume = Mathf.Lerp(startLocal, targetVolume, currentTime / duration);
+            ApplyCurrentVolume();
             yield return null;
         }
-        zoneAudioSource.volume = targetVolume;
+        currentLocalVolume = targetVolume;
+        ApplyCurrentVolume();
     }
 
     public IEnumerator FadeOut(float duration)
     {
         float currentTime = 0f;
-        float startVolume = zoneAudioSource.volume;
+        float startLocal = currentLocalVolume;
 
         while (currentTime < duration)
         {
             currentTime += Time.unscaledDeltaTime;
-            zoneAudioSource.volume = Mathf.Lerp(startVolume, 0f, currentTime / duration);
+            currentLocalVolume = Mathf.Lerp(startLocal, 0f, currentTime / duration);
+            ApplyCurrentVolume();
             yield return null;
         }
-        zoneAudioSource.volume = 0f;
+        currentLocalVolume = 0f;
+        ApplyCurrentVolume();
     }
 
     private IEnumerator FadeOutAndStop()
@@ -109,6 +117,24 @@ public class MusicZoneTrigger : MonoBehaviour
         yield return StartCoroutine(FadeOut(fadeOutTime));
         zoneAudioSource.Stop();
         zoneAudioSource.clip = null;
+    }
+
+    private void ApplyCurrentVolume()
+    {
+        if (zoneAudioSource == null) return;
+
+        float globalMusicVol = SettingsManager.Instance != null
+            ? SettingsManager.Instance.GetMusicVolume()
+            : PlayerPrefs.GetFloat("MusicVol", 0.8f);
+
+        zoneAudioSource.volume = Mathf.Clamp01(currentLocalVolume) * Mathf.Clamp01(globalMusicVol);
+    }
+
+    public static void RefreshAllZoneVolumes()
+    {
+        var zones = FindObjectsOfType<MusicZoneTrigger>();
+        foreach (var z in zones)
+            z.ApplyCurrentVolume();
     }
 
     // Останавливаем музыку во всех других зонах

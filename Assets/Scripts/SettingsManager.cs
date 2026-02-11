@@ -6,6 +6,18 @@ public class SettingsManager : MonoBehaviour
 {
     public static SettingsManager Instance { get; private set; }
 
+    public static SettingsManager GetOrCreate()
+    {
+        if (Instance != null) return Instance;
+
+        var existing = FindObjectOfType<SettingsManager>();
+        if (existing != null)
+            return existing;
+
+        var go = new GameObject(nameof(SettingsManager));
+        return go.AddComponent<SettingsManager>();
+    }
+
     private const string MusicKey = "MusicVol";
     private const string SFXKey   = "SFXVol";
 
@@ -74,6 +86,7 @@ public class SettingsManager : MonoBehaviour
         PlayerPrefs.SetFloat(MusicKey, value);
         PlayerPrefs.Save();
         ApplyVolumes();
+        MusicZoneTrigger.RefreshAllZoneVolumes();
         UpdateAllSliders();
     }
 
@@ -97,6 +110,12 @@ public class SettingsManager : MonoBehaviour
         AudioSource[] sources = FindObjectsOfType<AudioSource>();
         foreach (var source in sources)
         {
+            if (source == null) continue;
+
+            // Музыка из MusicZoneTrigger управляется отдельно (там есть zoneVolume и fade)
+            if (source.GetComponentInParent<MusicZoneTrigger>() != null)
+                continue;
+
             if (source.gameObject.CompareTag("Music"))
                 source.volume = musicVolume;
             else
@@ -107,6 +126,7 @@ public class SettingsManager : MonoBehaviour
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
         ApplyVolumes(); // Важно: переприменяем звук в новой сцене
+        MusicZoneTrigger.RefreshAllZoneVolumes();
     }
 
     // Для получения текущих значений (если нужно)
