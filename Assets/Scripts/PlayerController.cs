@@ -9,10 +9,10 @@ public class TankController : MonoBehaviour
     [SerializeField] private Animator animator; // Animator component
     [SerializeField] private RuntimeAnimatorController animatorController;
     [SerializeField] private float animationTransition = 0.1f;
-    [SerializeField] private string moveUpAnimation = "Walk_Up";
+    [SerializeField] private string moveUpAnimation = "walking_w";
     [SerializeField] private string moveDownAnimation = "Walk_Down";
-    [SerializeField] private string moveRightAnimation = "Walk_Right";
-    [SerializeField] private string moveLeftAnimation = "Walk_Left";
+    [SerializeField] private string moveRightAnimation = "walking_d";
+    [SerializeField] private string moveLeftAnimation = "walking_a";
     [SerializeField] private string aimUpAnimation = "Aim_Walk_Up";
     [SerializeField] private string aimDownAnimation = "Aim_Walk_Down";
     [SerializeField] private string aimIdleAnimation = "Aim_Idle";
@@ -31,7 +31,8 @@ public class TankController : MonoBehaviour
     [SerializeField] private string hitAnimation = "Hit";
     [SerializeField] private string gameoverAnimation = "gameover_player";
     public float moveSpeed = 3f; // Forward-backward speed
-    public float rotateSpeed = 10f; // Rotation speed
+    public float rotateSpeed = 10f; // Rotation damping
+    [SerializeField] private float rotationSmoothTime = 0.12f;
     private Rigidbody rb;
     [SerializeField] private PlayerInventory playerInventory;
     private float inputHorizontal;
@@ -44,6 +45,16 @@ public class TankController : MonoBehaviour
     private bool idleActive;
     private bool idleSwitchScheduled;
     private bool wasMoving;
+    private float rotationVelocity;
+    private Vector2 lastMoveDirection;
+    private float moveUpResumeTime;
+    private bool hasMoveUpResumeTime;
+    private float moveDownResumeTime;
+    private bool hasMoveDownResumeTime;
+    private float moveRightResumeTime;
+    private bool hasMoveRightResumeTime;
+    private float moveLeftResumeTime;
+    private bool hasMoveLeftResumeTime;
 
     private const string DefaultAnimatorControllerPath = "Assets/Blink/Art/Characters/Stylized/Demo_Characters/StylizedHumanAnimator.controller";
 
@@ -64,7 +75,13 @@ public class TankController : MonoBehaviour
         bool hasActiveWeapon = HasActiveWeaponSelected();
         isAiming = hasActiveWeapon && Input.GetMouseButton(1);
         ProcessMovement();
-        RotateByMouse();
+        bool isMoving = Mathf.Abs(inputHorizontal) > 0.1f || Mathf.Abs(inputVertical) > 0.1f;
+        if (isAiming)
+            RotateByMouse();
+        else if (isMoving)
+            RotateByMovement(lastMoveDirection);
+        else
+            RotateByMouse();
         wasAiming = isAiming;
     }
 
@@ -86,6 +103,7 @@ public class TankController : MonoBehaviour
             lastMoveTime = Time.time;
             idleActive = false;
             idleSwitchScheduled = false;
+            lastMoveDirection = new Vector2(inputHorizontal, inputVertical);
         }
         else if (wasMoving)
         {
@@ -109,32 +127,52 @@ public class TankController : MonoBehaviour
 
     void ApplyMovement()
     {
-        // Ось Vertical определяет направление движения (вперёд/назад)
-        float vertical = inputVertical;
+        Vector3 movement = new Vector3(inputHorizontal, 0f, inputVertical);
+        if (movement.sqrMagnitude > 1f)
+            movement.Normalize();
 
-        // Строго двигаемся по направлению вперёд или назад
-        Vector3 movement = transform.forward * vertical;
-
-        // Двигаем тело персонажа
         rb.MovePosition(rb.position + movement * moveSpeed * Time.fixedDeltaTime);
+    }
+
+    void RotateByMovement(Vector2 movement)
+    {
+        if (movement.sqrMagnitude < 0.001f) return;
+        float targetAngle = Mathf.Atan2(movement.x, movement.y) * Mathf.Rad2Deg;
+        float smoothAngle = Mathf.SmoothDampAngle(
+            transform.eulerAngles.y,
+            targetAngle,
+            ref rotationVelocity,
+            rotationSmoothTime,
+            Mathf.Max(1f, rotateSpeed)
+        );
+
+        transform.rotation = Quaternion.Euler(0f, smoothAngle, 0f);
     }
 
     void RotateByMouse()
     {
-        // Получаем позицию мыши на экране
-        Vector3 screenPosition = Input.mousePosition;
+        Camera cameraMain = Camera.main;
+        if (cameraMain == null) return;
 
-        // Пересчитываем позицию мыши в локальные координаты
-        Vector3 localMousePosition = new Vector3(screenPosition.x - Screen.width / 2f, 0, screenPosition.y - Screen.height / 2f);
+        Ray mouseRay = cameraMain.ScreenPointToRay(Input.mousePosition);
+        Plane groundPlane = new Plane(Vector3.up, new Vector3(0f, transform.position.y, 0f));
+        if (!groundPlane.Raycast(mouseRay, out float hitDistance)) return;
 
-        // Получаем направление из центрального положения в сторону мыши
-        Vector3 direction = localMousePosition.normalized;
+        Vector3 targetPoint = mouseRay.GetPoint(hitDistance);
+        Vector3 direction = targetPoint - transform.position;
+        direction.y = 0f;
+        if (direction.sqrMagnitude < 0.001f) return;
 
-        // Формируем целевое вращение
-        Quaternion targetRotation = Quaternion.LookRotation(direction, Vector3.up);
+        float targetAngle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg;
+        float smoothAngle = Mathf.SmoothDampAngle(
+            transform.eulerAngles.y,
+            targetAngle,
+            ref rotationVelocity,
+            rotationSmoothTime,
+            Mathf.Max(1f, rotateSpeed)
+        );
 
-        // Поворачиваем игрока плавно
-        transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, rotateSpeed * Time.deltaTime);
+        transform.rotation = Quaternion.Euler(0f, smoothAngle, 0f);
     }
 
     private void CheckAnimation(Vector2 movement, bool aiming)
@@ -142,18 +180,38 @@ public class TankController : MonoBehaviour
         if (animator == null) return;
         bool hasActiveWeapon = HasActiveWeaponSelected();
 
-        if (movement.y > 0.1f)
-            ChangeAnimation(hasActiveWeapon && aiming ? aimUpAnimation : moveUpAnimation);
-        else if (movement.y < -0.1f)
-            ChangeAnimation(hasActiveWeapon && aiming ? aimDownAnimation : moveDownAnimation);
-        else if (movement.x > 0.1f)
-            ChangeAnimation(moveRightAnimation);
-        else if (movement.x < -0.1f)
-            ChangeAnimation(moveLeftAnimation);
-        else if (aiming)
+        if (movement.sqrMagnitude > 0.01f)
+        {
+            Vector2 direction = GetStableDirection(movement);
+            if (hasActiveWeapon && aiming)
+            {
+                if (Mathf.Abs(direction.y) >= 0.1f)
+                    ChangeAnimation(direction.y > 0f ? aimUpAnimation : aimDownAnimation);
+                else
+                    ChangeAnimation(aimIdleAnimation);
+            }
+            else if (Mathf.Abs(direction.y) >= Mathf.Abs(direction.x))
+                ChangeAnimation(direction.y > 0f ? moveUpAnimation : moveDownAnimation, direction.y > 0f);
+            else
+                ChangeAnimation(direction.x > 0f ? moveRightAnimation : moveLeftAnimation);
+            return;
+        }
+
+        if (aiming)
             ChangeAnimation(aimIdleAnimation);
         else if (Time.time - lastMoveTime >= Mathf.Max(0f, idleStartDelay))
             CheckIdle();
+    }
+
+
+    private Vector2 GetStableDirection(Vector2 movement)
+    {
+        Vector2 direction = movement.normalized;
+        float absX = Mathf.Abs(direction.x);
+        float absY = Mathf.Abs(direction.y);
+        if (Mathf.Abs(absX - absY) < 0.1f && lastMoveDirection.sqrMagnitude > 0.01f)
+            direction = lastMoveDirection.normalized;
+        return direction;
     }
 
     private bool HasActiveWeaponSelected()
@@ -252,14 +310,75 @@ public class TankController : MonoBehaviour
                stateName == idleAnimation4;
     }
 
-    private void ChangeAnimation(string stateName)
+    private void ChangeAnimation(string stateName, bool resumeMoveUp = false)
     {
         if (string.IsNullOrEmpty(stateName)) return;
         if (stateName == currentState) return;
         if (!HasState(stateName)) return;
 
-        animator.CrossFadeInFixedTime(stateName, animationTransition, 0);
+        CacheMoveTimeIfNeeded();
+
+        if (TryGetResumeTime(stateName, resumeMoveUp, out float resumeTime))
+            animator.CrossFadeInFixedTime(stateName, animationTransition, 0, resumeTime);
+        else
+            animator.CrossFadeInFixedTime(stateName, animationTransition, 0);
+
         currentState = stateName;
+    }
+
+    private void CacheMoveTimeIfNeeded()
+    {
+        if (animator == null) return;
+        var info = animator.GetCurrentAnimatorStateInfo(0);
+        float normalizedTime = Mathf.Repeat(info.normalizedTime, 1f);
+
+        if (currentState == moveUpAnimation)
+        {
+            moveUpResumeTime = normalizedTime;
+            hasMoveUpResumeTime = true;
+        }
+        else if (currentState == moveDownAnimation)
+        {
+            moveDownResumeTime = normalizedTime;
+            hasMoveDownResumeTime = true;
+        }
+        else if (currentState == moveRightAnimation)
+        {
+            moveRightResumeTime = normalizedTime;
+            hasMoveRightResumeTime = true;
+        }
+        else if (currentState == moveLeftAnimation)
+        {
+            moveLeftResumeTime = normalizedTime;
+            hasMoveLeftResumeTime = true;
+        }
+    }
+
+    private bool TryGetResumeTime(string stateName, bool resumeMoveUp, out float resumeTime)
+    {
+        resumeTime = 0f;
+        if (stateName == moveUpAnimation && resumeMoveUp && hasMoveUpResumeTime)
+        {
+            resumeTime = moveUpResumeTime;
+            return true;
+        }
+        if (stateName == moveDownAnimation && hasMoveDownResumeTime)
+        {
+            resumeTime = moveDownResumeTime;
+            return true;
+        }
+        if (stateName == moveRightAnimation && hasMoveRightResumeTime)
+        {
+            resumeTime = moveRightResumeTime;
+            return true;
+        }
+        if (stateName == moveLeftAnimation && hasMoveLeftResumeTime)
+        {
+            resumeTime = moveLeftResumeTime;
+            return true;
+        }
+
+        return false;
     }
 
     private bool HasState(string stateName)
