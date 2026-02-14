@@ -247,36 +247,9 @@ public class Chest : MonoBehaviour
         }
     }
 
-    private void OnTriggerStay(Collider other)
+    public void SetOpenState(bool open)
     {
-        if (other.CompareTag("Player"))
-        {
-            PlayerInventory playerInventory = other.GetComponent<PlayerInventory>();
-            if (playerInventory != null && Input.GetKeyDown(KeyCode.E))
-            {
-                InventoryUI inventoryUI = FindObjectOfType<InventoryUI>();
-                if (inventoryUI != null)
-                {
-                    // Проверяем, можно ли открыть сундук
-                    if (inventoryUI.IsInventoryOpen() && !canOpenWhenInventoryOpen)
-                    {
-                        Debug.Log("[Chest] Инвентарь уже открыт, нельзя открыть сундук");
-                        return;
-                    }
-                    
-                    if (!isChestOpen)
-                    {
-                        inventoryUI.OpenChestUI(this);
-                        isChestOpen = true;
-                    }
-                    else
-                    {
-                        inventoryUI.CloseChestUI();
-                        isChestOpen = false;
-                    }
-                }
-            }
-        }
+        isChestOpen = open;
     }
 
     public bool IsFull { get { return chestData != null && chestData.items.Count >= chestData.maxSlots; } }

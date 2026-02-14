@@ -7,26 +7,67 @@ public class InventoryData : ScriptableObject
     public List<InventoryItem> items = new List<InventoryItem>();
     public int maxSlots = 8;
 
+    private void EnsureInitialized()
+    {
+        if (items == null)
+            items = new List<InventoryItem>();
+
+        if (items.Count > maxSlots)
+            items.RemoveRange(maxSlots, items.Count - maxSlots);
+
+        while (items.Count < maxSlots)
+            items.Add(GetEmptyItem());
+
+        for (int i = 0; i < items.Count; i++)
+        {
+            if (items[i] == null)
+                items[i] = GetEmptyItem();
+        }
+    }
+
     public bool AddItem(InventoryItem item)
     {
-          if (items.Count < maxSlots)
-          {
-          items.Add(item);
-          Debug.Log($"Added item: {item.itemName}, Total items: {items.Count}");
-          return true;
-          }
-      Debug.Log("Inventory full!");
-      return false;
+        if (item == null)
+            return false;
+
+        EnsureInitialized();
+
+        for (int i = 0; i < items.Count; i++)
+        {
+            if (items[i] == null || items[i].type == InventoryItem.ItemType.Empty)
+            {
+                items[i] = item;
+                Debug.Log($"Added item: {item.itemName}, Slot: {i}");
+                return true;
+            }
+        }
+
+        Debug.Log("Inventory full!");
+        return false;
     }
 
     public void RemoveItem(InventoryItem item)
     {
-        items.Remove(item);
+        if (item == null)
+            return;
+
+        EnsureInitialized();
+
+        for (int i = 0; i < items.Count; i++)
+        {
+            if (items[i] == item)
+            {
+                items[i] = GetEmptyItem();
+                return;
+            }
+        }
     }
 
     // Новый метод: Своп предметов (indexA и indexB; -1 значит "пустой")
     public void SwapItems(int indexA, int indexB)
     {
+        EnsureInitialized();
+
         if (indexA < 0 && indexB >= 0)
         {
             // Удалить из indexB
@@ -46,19 +87,12 @@ public class InventoryData : ScriptableObject
             items[indexA] = items[indexB];
             items[indexB] = temp;
         }
-
-        // Удаляем null, если нужно (для чистоты)
-        items.RemoveAll(i => i == null);
     }
 
     public List<InventoryItem> GetSlots()
     {
-        List<InventoryItem> slots = new List<InventoryItem>(items);
-        while (slots.Count < maxSlots)
-        {
-            slots.Add(GetEmptyItem());
-        }
-        return slots;
+        EnsureInitialized();
+        return new List<InventoryItem>(items);
     }
 
   private InventoryItem GetEmptyItem() {
@@ -72,5 +106,6 @@ public class InventoryData : ScriptableObject
     public void Clear()
     {
         items.Clear();
+        EnsureInitialized();
     }
 }

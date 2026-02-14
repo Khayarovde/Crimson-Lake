@@ -33,6 +33,7 @@ public class TankController : MonoBehaviour
     public float moveSpeed = 3f; // Forward-backward speed
     public float rotateSpeed = 10f; // Rotation speed
     private Rigidbody rb;
+    [SerializeField] private PlayerInventory playerInventory;
     private float inputHorizontal;
     private float inputVertical;
     private string currentState;
@@ -51,6 +52,8 @@ public class TankController : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         if (animator == null)
             animator = GetComponent<Animator>();
+        if (playerInventory == null)
+            playerInventory = GetComponent<PlayerInventory>();
 
         lastMoveTime = Time.time;
         ApplyAnimatorController();
@@ -58,7 +61,8 @@ public class TankController : MonoBehaviour
 
     void Update()
     {
-        isAiming = Input.GetMouseButton(1);
+        bool hasActiveWeapon = HasActiveWeaponSelected();
+        isAiming = hasActiveWeapon && Input.GetMouseButton(1);
         ProcessMovement();
         RotateByMouse();
         wasAiming = isAiming;
@@ -136,11 +140,12 @@ public class TankController : MonoBehaviour
     private void CheckAnimation(Vector2 movement, bool aiming)
     {
         if (animator == null) return;
+        bool hasActiveWeapon = HasActiveWeaponSelected();
 
         if (movement.y > 0.1f)
-            ChangeAnimation(aiming ? aimUpAnimation : moveUpAnimation);
+            ChangeAnimation(hasActiveWeapon && aiming ? aimUpAnimation : moveUpAnimation);
         else if (movement.y < -0.1f)
-            ChangeAnimation(aiming ? aimDownAnimation : moveDownAnimation);
+            ChangeAnimation(hasActiveWeapon && aiming ? aimDownAnimation : moveDownAnimation);
         else if (movement.x > 0.1f)
             ChangeAnimation(moveRightAnimation);
         else if (movement.x < -0.1f)
@@ -149,6 +154,21 @@ public class TankController : MonoBehaviour
             ChangeAnimation(aimIdleAnimation);
         else if (Time.time - lastMoveTime >= Mathf.Max(0f, idleStartDelay))
             CheckIdle();
+    }
+
+    private bool HasActiveWeaponSelected()
+    {
+        if (playerInventory == null || playerInventory.inventoryData == null) return false;
+        int index = playerInventory.activeItemIndex;
+        if (index < 0) return false;
+
+        var slots = playerInventory.inventoryData.GetSlots();
+        if (index >= slots.Count) return false;
+
+        var item = slots[index];
+        if (item == null) return false;
+
+        return item.type == InventoryItem.ItemType.Gun || item.type == InventoryItem.ItemType.Pistol;
     }
 
     private void CheckIdle()

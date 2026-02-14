@@ -49,6 +49,7 @@ public class InventoryUI : MonoBehaviour
     private UIOutline[] outlines;
     private PlayerInventory playerInventory;
     private Chest currentChest;
+    private bool wasInventoryOpenBeforeChest;
 
     // UI элементы сундука
     private Image[] chestSlotIcons;
@@ -66,6 +67,12 @@ public class InventoryUI : MonoBehaviour
             Debug.LogError("[InventoryUI] PlayerInventory не найден!");
             return;
         }
+
+        // Fallback: bind buttons by name if not assigned in inspector.
+        if (toChestButton == null)
+            toChestButton = FindButtonByName("BtnNextChest");
+        if (backFromChestButton == null)
+            backFromChestButton = FindButtonByName("BtnNextInventory");
 
         if (activeItemInfoText == null)
         {
@@ -353,14 +360,33 @@ public class InventoryUI : MonoBehaviour
 
         if (toChestButton != null)
         {
-            toChestButton.onClick.AddListener(OpenChestUIFromInventory);
+            toChestButton.onClick.AddListener(GoToChestFromButton);
             toChestButton.gameObject.SetActive(false);
         }
 
         if (backFromChestButton != null)
         {
-            backFromChestButton.onClick.AddListener(CloseChestUI);
+            backFromChestButton.onClick.AddListener(GoToInventoryFromButton);
         }
+    }
+
+    private Button FindButtonByName(string buttonName)
+    {
+        GameObject obj = GameObject.Find(buttonName);
+        if (obj == null)
+        {
+            Debug.LogWarning($"[InventoryUI] Кнопка {buttonName} не найдена в сцене");
+            return null;
+        }
+
+        Button button = obj.GetComponent<Button>();
+        if (button == null)
+        {
+            Debug.LogWarning($"[InventoryUI] Объект {buttonName} найден, но Button компонента нет");
+            return null;
+        }
+
+        return button;
     }
 
     public void UpdateInventoryUI()
@@ -522,7 +548,11 @@ public class InventoryUI : MonoBehaviour
 
     public void ToggleInventory()
     {
-        if (isUIOpen && !IsInventoryOpen()) return; // Если другой UI открыт, не открываем инвентарь
+        if (IsChestUIOpen())
+        {
+            CloseChestUI();
+            return;
+        }
         
         if (inventoryCanvas != null)
         {
@@ -551,57 +581,113 @@ public class InventoryUI : MonoBehaviour
 
     public void OpenChestUI(Chest chest)
     {
-      if (chest == null) 
-              {
-                  Debug.LogWarning("[InventoryUI] Попытка открыть сундук, который равен null");
-                  return;
-              }
+        if (chest == null)
+        {
+            Debug.LogWarning("[InventoryUI] Попытка открыть сундук, который равен null");
+            return;
+        }
 
-              if (isUIOpen && !IsChestUIOpen()) return; // Если другой UI открыт, не открываем сундук
+        if (IsChestUIOpen())
+        {
+            CloseChestUI();
+        }
 
-              currentChest = chest;
-              if (chestCanvas != null)
-              {
-                  chestCanvas.SetActive(true);
-                  UpdateChestUI();
-                  // Cursor.lockState = CursorLockMode.None;
-                  // Cursor.visible = true;
-                  isUIOpen = true;
-              }
+        wasInventoryOpenBeforeChest = IsInventoryOpen();
+        if (inventoryCanvas != null && wasInventoryOpenBeforeChest)
+        {
+            inventoryCanvas.SetActive(false);
+        }
+
+        currentChest = chest;
+        currentChest.SetOpenState(true);
+        if (chestCanvas != null)
+        {
+            chestCanvas.SetActive(true);
+            UpdateChestUI();
+            // Cursor.lockState = CursorLockMode.None;
+            // Cursor.visible = true;
+            isUIOpen = true;
+        }
     }
 
     public void OpenChestUIFromInventory()
     {
         if (playerInventory.IsNearChest())
         {
-            // Закрываем инвентарь перед открытием сундука
-            if (inventoryCanvas != null)
-            {
-                inventoryCanvas.SetActive(false);
-            }
-            OpenChestUI(playerInventory.GetNearbyChest());
+            Chest chest = playerInventory.GetNearbyChest();
+            OpenChestUI(chest);
         }
     }
 
-    public void CloseChestUI()
+    public void GoToChestFromButton()
     {
-      if (chestCanvas != null)
+        if (!playerInventory.IsNearChest())
+            return;
+
+        OpenChestUI(playerInventory.GetNearbyChest());
+    }
+
+    public void GoToInventoryFromButton()
+    {
+        SwitchToInventoryUI();
+    }
+
+    private void SwitchToInventoryUI()
+    {
+        if (chestCanvas != null)
         {
             chestCanvas.SetActive(false);
         }
+
+        if (currentChest != null)
+        {
+            currentChest.SetOpenState(false);
+        }
+
         currentChest = null;
-        
+
         if (inventoryCanvas != null)
         {
             inventoryCanvas.SetActive(true);
             UpdateInventoryUI();
         }
+
+        isUIOpen = true;
+        wasInventoryOpenBeforeChest = false;
+    }
+
+    public void CloseChestUI()
+    {
+        if (chestCanvas != null)
+        {
+            chestCanvas.SetActive(false);
+        }
+
+        if (currentChest != null)
+        {
+            currentChest.SetOpenState(false);
+        }
+
+        currentChest = null;
+
+        if (inventoryCanvas != null && wasInventoryOpenBeforeChest)
+        {
+            inventoryCanvas.SetActive(true);
+            UpdateInventoryUI();
+            isUIOpen = true;
+        }
         else
         {
+            if (inventoryCanvas != null)
+            {
+                inventoryCanvas.SetActive(false);
+            }
             isUIOpen = false;
             // Cursor.lockState = CursorLockMode.Locked;
             // Cursor.visible = false;
         }
+
+        wasInventoryOpenBeforeChest = false;
     }
 
     public bool IsInventoryOpen()

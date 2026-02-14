@@ -37,9 +37,22 @@ public class PlayerInventory : MonoBehaviour
             inventoryUI.ToggleInventory();
         }
         
-        if (IsNearChest() && Input.GetKeyDown(KeyCode.E) && !inventoryUI.IsChestUIOpen())
+        if (IsNearChest() && Input.GetKeyDown(KeyCode.E))
         {
-            OpenChest();
+            if (inventoryUI.IsChestUIOpen())
+            {
+                CloseChest();
+            }
+            else
+            {
+                if (inventoryUI.IsInventoryOpen() && nearbyChest != null && !nearbyChest.canOpenWhenInventoryOpen)
+                {
+                    Debug.Log("[PlayerInventory] Инвентарь уже открыт, нельзя открыть сундук");
+                    return;
+                }
+
+                OpenChest();
+            }
         }
     }
 
