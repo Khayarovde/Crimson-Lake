@@ -112,9 +112,9 @@ public class WeaponHandler : MonoBehaviour
         if (tankController) originalWalkSpeed = tankController.moveSpeed;
         muzzlePoint = defaultMuzzlePoint;
 
-        // Unity сериализует поля: если значение уже задано в инспекторе/префабе,
-        // изменение дефолта в коде не применится. Делаем "адекватно-медленный"
-        // минимум задержки между выстрелами пистолета.
+        // Unity сериализует поля: если значение уже задано в инспекторе/префабе
+        // изменение дефолта в коде не применится
+        // минимум задержки между выстрелами пистолета
         pistolFireRate = Mathf.Max(pistolFireRate, 0.35f);
 
         if (PlayerAmmoData.gunReserve == 0) PlayerAmmoData.gunReserve = gunStartReserve;
@@ -134,7 +134,8 @@ public class WeaponHandler : MonoBehaviour
 
     private void HandleInput()
     {
-        bool aiming = Input.GetMouseButton(1);
+        bool hasActiveWeapon = HasActiveWeaponSelected();
+        bool aiming = hasActiveWeapon && Input.GetMouseButton(1);
         if (aiming && !isAiming)
             StartAiming();
         else if (!aiming && isAiming)
@@ -142,6 +143,21 @@ public class WeaponHandler : MonoBehaviour
 
         if (aiming && Input.GetMouseButton(0) && CanShoot() && firingCoroutine == null)
             firingCoroutine = StartCoroutine(ShootingRoutine());
+    }
+
+    private bool HasActiveWeaponSelected()
+    {
+        if (playerInventory == null || playerInventory.inventoryData == null) return false;
+        int index = playerInventory.activeItemIndex;
+        if (index < 0) return false;
+
+        var slots = playerInventory.inventoryData.GetSlots();
+        if (index >= slots.Count) return false;
+
+        var item = slots[index];
+        if (item == null) return false;
+
+        return item.type == InventoryItem.ItemType.Gun || item.type == InventoryItem.ItemType.Pistol;
     }
 
     private bool TryFinisherAttack()

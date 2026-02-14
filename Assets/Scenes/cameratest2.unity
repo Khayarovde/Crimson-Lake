@@ -192,6 +192,17 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 2cf3d8721078b4a4db4a4f7941a94633, type: 3}
+--- !u!114 &30744041 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2680018960030206672, guid: c4a5bef15dc18d541bac6042da6a7c24, type: 3}
+  m_PrefabInstance: {fileID: 323975518}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &38627139
 GameObject:
   m_ObjectHideFlags: 0
@@ -1524,6 +1535,34 @@ PrefabInstance:
       propertyPath: playerSpawnPoint
       value: 
       objectReference: {fileID: 1765178968}
+    - target: {fileID: 2680018960030206672, guid: c4a5bef15dc18d541bac6042da6a7c24, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.size
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2680018960030206672, guid: c4a5bef15dc18d541bac6042da6a7c24, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2680018960030206672, guid: c4a5bef15dc18d541bac6042da6a7c24, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 356991328}
+    - target: {fileID: 2680018960030206672, guid: c4a5bef15dc18d541bac6042da6a7c24, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_CallState
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 2680018960030206672, guid: c4a5bef15dc18d541bac6042da6a7c24, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: GoToInventoryFromButton
+      objectReference: {fileID: 0}
+    - target: {fileID: 2680018960030206672, guid: c4a5bef15dc18d541bac6042da6a7c24, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
+      value: InventoryUI, Assembly-CSharp
+      objectReference: {fileID: 0}
+    - target: {fileID: 2680018960030206672, guid: c4a5bef15dc18d541bac6042da6a7c24, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
+      value: UnityEngine.Object, UnityEngine
+      objectReference: {fileID: 0}
     - target: {fileID: 3647814735172216044, guid: c4a5bef15dc18d541bac6042da6a7c24, type: 3}
       propertyPath: m_Name
       value: Prototype
@@ -3254,6 +3293,10 @@ PrefabInstance:
       propertyPath: chestGridTransform
       value: 
       objectReference: {fileID: 1445520733}
+    - target: {fileID: 2789692487501450852, guid: 6aa64ff9f7ddaaf4fa20c025637ef2d4, type: 3}
+      propertyPath: backFromChestButton
+      value: 
+      objectReference: {fileID: 30744041}
     - target: {fileID: 6609885726478005353, guid: 6aa64ff9f7ddaaf4fa20c025637ef2d4, type: 3}
       propertyPath: m_Pivot.x
       value: 0
