@@ -34,6 +34,7 @@ public class TankController : MonoBehaviour
     [SerializeField] private string hitAnimation = "Hit";
     [SerializeField] private string gameoverAnimation = "gameover_player";
     public float moveSpeed = 3f; // Forward-backward speed
+    [SerializeField] private float aimMoveSpeed = 1.5f;
     public float rotateSpeed = 10f; // Rotation damping
     [SerializeField] private float rotationSmoothTime = 0.12f;
     private Rigidbody rb;
@@ -142,7 +143,8 @@ public class TankController : MonoBehaviour
             movement.y = 0f;
         }
 
-        rb.MovePosition(rb.position + movement * moveSpeed * Time.fixedDeltaTime);
+        float currentSpeed = isAiming ? aimMoveSpeed : moveSpeed;
+        rb.MovePosition(rb.position + movement * currentSpeed * Time.fixedDeltaTime);
     }
 
     void RotateByMovement(Vector2 movement)
