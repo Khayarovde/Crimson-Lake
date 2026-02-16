@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -8,6 +9,8 @@ public class TankController : MonoBehaviour
     [Header("Animation")]
     [SerializeField] private Animator animator; // Animator component
     [SerializeField] private RuntimeAnimatorController animatorController;
+    [SerializeField] private RuntimeAnimatorController gameAnimatorController;
+    [SerializeField] private RuntimeAnimatorController menuAnimatorController;
     [SerializeField] private float animationTransition = 0.1f;
     [SerializeField] private string moveUpAnimation = "walking_w";
     [SerializeField] private string moveDownAnimation = "Walk_Down";
@@ -56,7 +59,8 @@ public class TankController : MonoBehaviour
     private float moveLeftResumeTime;
     private bool hasMoveLeftResumeTime;
 
-    private const string DefaultAnimatorControllerPath = "Assets/Blink/Art/Characters/Stylized/Demo_Characters/StylizedHumanAnimator.controller";
+    private const string GameAnimatorControllerPath = "Assets/Animate/Phylanc/Player_GameScene";
+    private const string MenuAnimatorControllerPath = "Assets/Animate/Phylanc/Player_Menu";
 
     void Start()
     {
@@ -67,7 +71,7 @@ public class TankController : MonoBehaviour
             playerInventory = GetComponent<PlayerInventory>();
 
         lastMoveTime = Time.time;
-        ApplyAnimatorController();
+        ApplyAnimatorControllerForScene();
     }
 
     void Update()
@@ -127,9 +131,16 @@ public class TankController : MonoBehaviour
 
     void ApplyMovement()
     {
-        Vector3 movement = new Vector3(inputHorizontal, 0f, inputVertical);
-        if (movement.sqrMagnitude > 1f)
-            movement.Normalize();
+        Vector3 input = new Vector3(inputHorizontal, 0f, inputVertical);
+        if (input.sqrMagnitude > 1f)
+            input.Normalize();
+
+        Vector3 movement = input;
+        if (isAiming)
+        {
+            movement = transform.TransformDirection(input);
+            movement.y = 0f;
+        }
 
         rb.MovePosition(rb.position + movement * moveSpeed * Time.fixedDeltaTime);
     }
@@ -387,13 +398,25 @@ public class TankController : MonoBehaviour
         return animator.HasState(0, Animator.StringToHash(stateName));
     }
 
-    private void ApplyAnimatorController()
+    private void ApplyAnimatorControllerForScene()
+    {
+        int sceneIndex = SceneManager.GetActiveScene().buildIndex;
+        RuntimeAnimatorController targetController = animatorController;
+        if (sceneIndex == 0 && menuAnimatorController != null)
+            targetController = menuAnimatorController;
+        else if (sceneIndex == 1 && gameAnimatorController != null)
+            targetController = gameAnimatorController;
+
+        ApplyAnimatorController(targetController);
+    }
+
+    private void ApplyAnimatorController(RuntimeAnimatorController controller)
     {
         if (animator == null) return;
-        if (animatorController == null) return;
-        if (animator.runtimeAnimatorController == animatorController) return;
+        if (controller == null) return;
+        if (animator.runtimeAnimatorController == controller) return;
 
-        animator.runtimeAnimatorController = animatorController;
+        animator.runtimeAnimatorController = controller;
     }
 
     public void PlayHit()
@@ -413,12 +436,15 @@ public class TankController : MonoBehaviour
 #if UNITY_EDITOR
     private void OnValidate()
     {
-        if (animatorController == null)
-        {
-            animatorController = AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>(DefaultAnimatorControllerPath);
-        }
+        if (gameAnimatorController == null)
+            gameAnimatorController = AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>(GameAnimatorControllerPath);
+        if (menuAnimatorController == null)
+            menuAnimatorController = AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>(MenuAnimatorControllerPath);
 
-        ApplyAnimatorController();
+        if (animatorController == null)
+            animatorController = gameAnimatorController;
+
+        ApplyAnimatorControllerForScene();
     }
 #endif
 }

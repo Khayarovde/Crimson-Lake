@@ -586,8 +586,8 @@ public class AdvancedEnemyAI : MonoBehaviour
     private void ForceStunAnimatorState()
     {
         if (m_Animator == null) return;
-        m_Animator.SetFloat("Speed", 0f);
-        m_Animator.SetBool("isChasing", false);
+        // m_Animator.SetFloat("Speed", 0f);
+        // m_Animator.SetBool("isChasing", false);
     }
 
     private void StopAgentMovement()
