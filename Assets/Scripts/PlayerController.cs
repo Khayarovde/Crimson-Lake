@@ -9,16 +9,12 @@ public class TankController : MonoBehaviour
     [Header("Animation")]
     [SerializeField] private Animator animator; // Animator component
     [SerializeField] private RuntimeAnimatorController animatorController;
-    [SerializeField] private RuntimeAnimatorController gameAnimatorController;
-    [SerializeField] private RuntimeAnimatorController menuAnimatorController;
-    [SerializeField] private float animationTransition = 0.1f;
-    [SerializeField] private string moveUpAnimation = "walking_w";
-    [SerializeField] private string moveDownAnimation = "Walk_Down";
-    [SerializeField] private string moveRightAnimation = "walking_d";
-    [SerializeField] private string moveLeftAnimation = "walking_a";
-    [SerializeField] private string aimUpAnimation = "Aim_Walk_Up";
-    [SerializeField] private string aimDownAnimation = "Aim_Walk_Down";
-    [SerializeField] private string aimIdleAnimation = "Aim_Idle";
+    [SerializeField] private float animationTransition = 0.18f;
+    [SerializeField] private float blendParameterDampTime = 0.12f;
+    [SerializeField] private string blendTreeWalkState = "Blend Tree_WALK"; // Blend Tree для движения
+    [SerializeField] private string blendTreeAimWalkState = "Blend Tree_AIM_WALK";
+    [SerializeField] private string blendTreeXParam = "v";
+    [SerializeField] private string blendTreeYParam = "h";
     [SerializeField] private string baseIdleAnimation = "Idle";
     [SerializeField] private string idleAnimation0 = "Idle_0";
     [SerializeField] private string idleAnimation1 = "Idle_1";
@@ -51,17 +47,9 @@ public class TankController : MonoBehaviour
     private bool wasMoving;
     private float rotationVelocity;
     private Vector2 lastMoveDirection;
-    private float moveUpResumeTime;
-    private bool hasMoveUpResumeTime;
-    private float moveDownResumeTime;
-    private bool hasMoveDownResumeTime;
-    private float moveRightResumeTime;
-    private bool hasMoveRightResumeTime;
-    private float moveLeftResumeTime;
-    private bool hasMoveLeftResumeTime;
+    private Vector3 aimForward = Vector3.forward;
 
     private const string GameAnimatorControllerPath = "Assets/Animate/Phylanc/Player_GameScene";
-    private const string MenuAnimatorControllerPath = "Assets/Animate/Phylanc/Player_Menu";
 
     void Start()
     {
@@ -139,7 +127,8 @@ public class TankController : MonoBehaviour
         Vector3 movement = input;
         if (isAiming)
         {
-            movement = transform.TransformDirection(input);
+            Vector3 aimRight = Vector3.Cross(Vector3.up, aimForward).normalized;
+            movement = aimRight * inputHorizontal + aimForward * inputVertical;
             movement.y = 0f;
         }
 
@@ -176,6 +165,8 @@ public class TankController : MonoBehaviour
         direction.y = 0f;
         if (direction.sqrMagnitude < 0.001f) return;
 
+        aimForward = direction.normalized;
+
         float targetAngle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg;
         float smoothAngle = Mathf.SmoothDampAngle(
             transform.eulerAngles.y,
@@ -192,28 +183,64 @@ public class TankController : MonoBehaviour
     {
         if (animator == null) return;
         bool hasActiveWeapon = HasActiveWeaponSelected();
+        bool isAimMode = hasActiveWeapon && aiming;
 
         if (movement.sqrMagnitude > 0.01f)
         {
-            Vector2 direction = GetStableDirection(movement);
-            if (hasActiveWeapon && aiming)
+            if (isAimMode)
             {
-                if (Mathf.Abs(direction.y) >= 0.1f)
-                    ChangeAnimation(direction.y > 0f ? aimUpAnimation : aimDownAnimation);
-                else
-                    ChangeAnimation(aimIdleAnimation);
+                Vector2 direction = GetAimDirection(movement);
+                ChangeMovementAnimation(true);
+                SetBlendVelocity(direction);
             }
-            else if (Mathf.Abs(direction.y) >= Mathf.Abs(direction.x))
-                ChangeAnimation(direction.y > 0f ? moveUpAnimation : moveDownAnimation, direction.y > 0f);
             else
-                ChangeAnimation(direction.x > 0f ? moveRightAnimation : moveLeftAnimation);
+            {
+                Vector2 direction = GetStableDirection(movement);
+                ChangeMovementAnimation(false);
+                SetBlendVelocity(direction);
+            }
             return;
         }
 
-        if (aiming)
-            ChangeAnimation(aimIdleAnimation);
-        else if (Time.time - lastMoveTime >= Mathf.Max(0f, idleStartDelay))
-            CheckIdle();
+        if (isAimMode)
+        {
+            ChangeMovementAnimation(true);
+            SetBlendVelocity(Vector2.zero);
+        }
+        else
+        {
+            SetBlendVelocity(Vector2.zero);
+        }
+
+        if (!isAimMode)
+        {
+            if (aiming)
+                ChangeAnimation(baseIdleAnimation);
+            else if (Time.time - lastMoveTime >= Mathf.Max(0f, idleStartDelay))
+                CheckIdle();
+        }
+    }
+
+    private Vector2 GetAimDirection(Vector2 movement)
+    {
+        float horizontal = Mathf.Abs(movement.x) > 0.1f ? Mathf.Sign(movement.x) : 0f;
+        float vertical = Mathf.Abs(movement.y) > 0.1f ? Mathf.Sign(movement.y) : 0f;
+
+        Vector2 direction = new Vector2(horizontal, vertical);
+
+        return direction;
+    }
+
+    private void SetBlendVelocity(Vector2 direction)
+    {
+        if (animator == null) return;
+        animator.SetFloat(blendTreeXParam, direction.x, Mathf.Max(0f, blendParameterDampTime), Time.deltaTime);
+        animator.SetFloat(blendTreeYParam, direction.y, Mathf.Max(0f, blendParameterDampTime), Time.deltaTime);
+    }
+
+    private void ChangeMovementAnimation(bool isAimMode)
+    {
+        ChangeAnimation(isAimMode ? blendTreeAimWalkState : blendTreeWalkState);
     }
 
 
@@ -323,76 +350,23 @@ public class TankController : MonoBehaviour
                stateName == idleAnimation4;
     }
 
-    private void ChangeAnimation(string stateName, bool resumeMoveUp = false)
+    private void ChangeAnimation(string stateName)
     {
-        if (string.IsNullOrEmpty(stateName)) return;
-        if (stateName == currentState) return;
-        if (!HasState(stateName)) return;
+        TryChangeAnimation(stateName);
+    }
 
-        CacheMoveTimeIfNeeded();
+    private bool TryChangeAnimation(string stateName)
+    {
+        if (string.IsNullOrEmpty(stateName)) return false;
+        if (stateName == currentState) return true;
+        if (!HasState(stateName)) return false;
 
-        if (TryGetResumeTime(stateName, resumeMoveUp, out float resumeTime))
-            animator.CrossFadeInFixedTime(stateName, animationTransition, 0, resumeTime);
-        else
-            animator.CrossFadeInFixedTime(stateName, animationTransition, 0);
-
+        animator.CrossFadeInFixedTime(stateName, animationTransition, 0);
         currentState = stateName;
+        return true;
     }
 
-    private void CacheMoveTimeIfNeeded()
-    {
-        if (animator == null) return;
-        var info = animator.GetCurrentAnimatorStateInfo(0);
-        float normalizedTime = Mathf.Repeat(info.normalizedTime, 1f);
 
-        if (currentState == moveUpAnimation)
-        {
-            moveUpResumeTime = normalizedTime;
-            hasMoveUpResumeTime = true;
-        }
-        else if (currentState == moveDownAnimation)
-        {
-            moveDownResumeTime = normalizedTime;
-            hasMoveDownResumeTime = true;
-        }
-        else if (currentState == moveRightAnimation)
-        {
-            moveRightResumeTime = normalizedTime;
-            hasMoveRightResumeTime = true;
-        }
-        else if (currentState == moveLeftAnimation)
-        {
-            moveLeftResumeTime = normalizedTime;
-            hasMoveLeftResumeTime = true;
-        }
-    }
-
-    private bool TryGetResumeTime(string stateName, bool resumeMoveUp, out float resumeTime)
-    {
-        resumeTime = 0f;
-        if (stateName == moveUpAnimation && resumeMoveUp && hasMoveUpResumeTime)
-        {
-            resumeTime = moveUpResumeTime;
-            return true;
-        }
-        if (stateName == moveDownAnimation && hasMoveDownResumeTime)
-        {
-            resumeTime = moveDownResumeTime;
-            return true;
-        }
-        if (stateName == moveRightAnimation && hasMoveRightResumeTime)
-        {
-            resumeTime = moveRightResumeTime;
-            return true;
-        }
-        if (stateName == moveLeftAnimation && hasMoveLeftResumeTime)
-        {
-            resumeTime = moveLeftResumeTime;
-            return true;
-        }
-
-        return false;
-    }
 
     private bool HasState(string stateName)
     {
@@ -403,13 +377,10 @@ public class TankController : MonoBehaviour
     private void ApplyAnimatorControllerForScene()
     {
         int sceneIndex = SceneManager.GetActiveScene().buildIndex;
-        RuntimeAnimatorController targetController = animatorController;
-        if (sceneIndex == 0 && menuAnimatorController != null)
-            targetController = menuAnimatorController;
-        else if (sceneIndex == 1 && gameAnimatorController != null)
-            targetController = gameAnimatorController;
+        if (sceneIndex == 0)
+            return;
 
-        ApplyAnimatorController(targetController);
+        ApplyAnimatorController(animatorController);
     }
 
     private void ApplyAnimatorController(RuntimeAnimatorController controller)
@@ -438,13 +409,8 @@ public class TankController : MonoBehaviour
 #if UNITY_EDITOR
     private void OnValidate()
     {
-        if (gameAnimatorController == null)
-            gameAnimatorController = AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>(GameAnimatorControllerPath);
-        if (menuAnimatorController == null)
-            menuAnimatorController = AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>(MenuAnimatorControllerPath);
-
         if (animatorController == null)
-            animatorController = gameAnimatorController;
+            animatorController = AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>(GameAnimatorControllerPath);
 
         ApplyAnimatorControllerForScene();
     }

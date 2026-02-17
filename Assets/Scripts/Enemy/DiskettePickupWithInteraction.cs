@@ -12,7 +12,6 @@ public class DiskettePickupWithInteraction : MonoBehaviour
     [SerializeField] private GameObject pickupEffect;
     [SerializeField] private AudioClip pickupSound;
     [SerializeField] private AudioSource audioSource;
-    [SerializeField] private float interactionDistance = 3f; // Максимальное расстояние для подбора
 
     [Header("UI подсказка (опционально)")]
     [SerializeField] private GameObject interactionUI;
@@ -154,13 +153,6 @@ public class DiskettePickupWithInteraction : MonoBehaviour
     private void TryPickup()
     {
         if (player == null) return;
-
-        float distance = Vector3.Distance(transform.position, player.position);
-        if (distance > interactionDistance)
-        {
-            Debug.LogWarning($"[DiskettePickup] Игрок слишком далеко от дискеты ({distance:F1}m > {interactionDistance}m)");
-            return;
-        }
 
         Debug.Log($"[DiskettePickup] Дискета успешно подобрана! ({gameObject.name})");
 
@@ -340,9 +332,6 @@ public class DiskettePickupWithInteraction : MonoBehaviour
 
     private void OnDrawGizmosSelected()
     {
-        Gizmos.color = Color.yellow;
-        Gizmos.DrawWireSphere(transform.position, interactionDistance);
-
         if (enemySpawnPoint != null)
         {
             Gizmos.color = Color.green;

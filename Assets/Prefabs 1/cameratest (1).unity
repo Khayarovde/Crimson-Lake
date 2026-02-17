@@ -228,11 +228,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 29481865}
   m_Mesh: {fileID: 10209, guid: 0000000000000000e000000000000000, type: 0}
---- !u!1 &143819873 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 791918908115275512, guid: 6aa64ff9f7ddaaf4fa20c025637ef2d4, type: 3}
-  m_PrefabInstance: {fileID: 10184678497916296}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &323975518
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -414,10 +409,7 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 300126713318604795, guid: c4a5bef15dc18d541bac6042da6a7c24, type: 3}
       insertIndex: 35
       addedObject: {fileID: 948287046}
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 3960919352464306604, guid: c4a5bef15dc18d541bac6042da6a7c24, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 565740872}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: c4a5bef15dc18d541bac6042da6a7c24, type: 3}
 --- !u!1 &329879211
 GameObject:
@@ -746,28 +738,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 520561293}
   m_Mesh: {fileID: 10209, guid: 0000000000000000e000000000000000, type: 0}
---- !u!1 &565740867 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 3960919352464306604, guid: c4a5bef15dc18d541bac6042da6a7c24, type: 3}
-  m_PrefabInstance: {fileID: 323975518}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &565740872
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 565740867}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 88be44a2c1bc3424097263920db08a60, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  chestData: {fileID: 11400000, guid: 39d8fbab0bf30994da90e04f1a82ba0b, type: 2}
-  maxSlots: 8
-  storageEffect: {fileID: 0}
-  storageSound: {fileID: 0}
-  chestId: 
 --- !u!1 &705507993
 GameObject:
   m_ObjectHideFlags: 0
@@ -1024,7 +994,9 @@ MonoBehaviour:
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_fontSharedMaterials: []
+  m_fontSharedMaterials:
+  - {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  - {fileID: 0}
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
   m_fontColor32:
@@ -1152,6 +1124,7 @@ MonoBehaviour:
   storageEffect: {fileID: 0}
   storageSound: {fileID: 0}
   chestId: default_chest
+  canOpenWhenInventoryOpen: 0
 --- !u!65 &948287048
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1750,17 +1723,6 @@ MonoBehaviour:
   offsetPos: {x: 0, y: 0, z: 0}
   moveSpeed: 5
   smooth: 0.2
---- !u!114 &1171694749 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 4567044368146300792, guid: 6aa64ff9f7ddaaf4fa20c025637ef2d4, type: 3}
-  m_PrefabInstance: {fileID: 10184678497916296}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d97b0c949aadeeb4b824bbeedf991f28, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1001 &1315708430
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1855,7 +1817,7 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 870734643}
-  m_Father: {fileID: 1745843721}
+  m_Father: {fileID: 10184678497916297}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
@@ -2177,11 +2139,6 @@ Animator:
   m_CorrespondingSourceObject: {fileID: 4949155744534144651, guid: cd046dfe634b6d8408cdf97ca4066f07, type: 3}
   m_PrefabInstance: {fileID: 5132938160962541628}
   m_PrefabAsset: {fileID: 0}
---- !u!224 &1745843721 stripped
-RectTransform:
-  m_CorrespondingSourceObject: {fileID: 1802218121181904444, guid: 6aa64ff9f7ddaaf4fa20c025637ef2d4, type: 3}
-  m_PrefabInstance: {fileID: 10184678497916296}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1950453606 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 4949155744534144648, guid: cd046dfe634b6d8408cdf97ca4066f07, type: 3}
@@ -2403,7 +2360,7 @@ PrefabInstance:
     - target: {fileID: 4567044368146300792, guid: 6aa64ff9f7ddaaf4fa20c025637ef2d4, type: 3}
       propertyPath: inventoryCanvas
       value: 
-      objectReference: {fileID: 143819873}
+      objectReference: {fileID: 0}
     - target: {fileID: 4567044368146300792, guid: 6aa64ff9f7ddaaf4fa20c025637ef2d4, type: 3}
       propertyPath: dropButtonPrefab
       value: 
@@ -2431,11 +2388,16 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects:
-    - targetCorrespondingSourceObject: {fileID: 1802218121181904444, guid: 6aa64ff9f7ddaaf4fa20c025637ef2d4, type: 3}
+    - targetCorrespondingSourceObject: {fileID: 6609885726478005353, guid: 6aa64ff9f7ddaaf4fa20c025637ef2d4, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1467297579}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 6aa64ff9f7ddaaf4fa20c025637ef2d4, type: 3}
+--- !u!224 &10184678497916297 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 6609885726478005353, guid: 6aa64ff9f7ddaaf4fa20c025637ef2d4, type: 3}
+  m_PrefabInstance: {fileID: 10184678497916296}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &4758320688262723747
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2471,7 +2433,7 @@ PrefabInstance:
     - target: {fileID: 3190701420042150116, guid: caa4bc1f8e8d8a7459db3cc8d1751efb, type: 3}
       propertyPath: inventoryUI
       value: 
-      objectReference: {fileID: 1171694749}
+      objectReference: {fileID: 0}
     - target: {fileID: 5997655800091042910, guid: caa4bc1f8e8d8a7459db3cc8d1751efb, type: 3}
       propertyPath: m_LocalPosition.y
       value: 1.7
@@ -2637,7 +2599,7 @@ PrefabInstance:
     - target: {fileID: 2594863858362682804, guid: cd046dfe634b6d8408cdf97ca4066f07, type: 3}
       propertyPath: inventoryUI
       value: 
-      objectReference: {fileID: 1171694749}
+      objectReference: {fileID: 0}
     - target: {fileID: 4442377212510418502, guid: cd046dfe634b6d8408cdf97ca4066f07, type: 3}
       propertyPath: animator
       value: 

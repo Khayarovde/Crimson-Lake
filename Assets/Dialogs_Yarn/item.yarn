@@ -1,0 +1,15 @@
+﻿title: item
+---
+Player: Подобрать предмет?
+-> Да
+    <<pickup_current_item>>
+    <<if $pickup_success>>
+        Player: Забираю.
+    <<else>>
+        Player: Инвентарь полон.
+    <<endif>>
+    <<stop>>
+-> Нет
+    Player: Пока оставлю.
+    <<stop>>
+===
