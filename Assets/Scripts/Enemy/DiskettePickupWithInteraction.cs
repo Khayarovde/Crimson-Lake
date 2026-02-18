@@ -20,6 +20,11 @@ public class DiskettePickupWithInteraction : MonoBehaviour
     [Header("Враг")]
     [SerializeField] private AdvancedEnemyAI enemyAI;
     [SerializeField] private Transform enemySpawnPoint;
+    [SerializeField] private bool spawnEnemyOnlyAfterPickup = true;
+
+    [Header("Yarn Interaction")]
+    [SerializeField] private bool useYarnPickupFlow = true;
+    [SerializeField] private Interact yarnInteractSource;
 
     [Header("Освещение")]
     [SerializeField] private Light[] lightsToChangeColor;
@@ -39,6 +44,8 @@ public class DiskettePickupWithInteraction : MonoBehaviour
     private bool isPlayerNearby = false;
     private Transform player;
     private bool alreadyPickedUp = false;
+    private PlayerInventory cachedPlayerInventory;
+    private bool hadCassetteInInventoryPreviousFrame;
 
     private AudioSource chaseAudioSource;
     private GameObject chaseAudioObject;
@@ -47,6 +54,11 @@ public class DiskettePickupWithInteraction : MonoBehaviour
 
     private MusicZoneTrigger originalChaseZone;
     private bool isChaseMusicActive = false;
+
+    private void Awake()
+    {
+        PrepareEnemyForDiskettePickup();
+    }
 
     private void Start()
     {
@@ -86,24 +98,61 @@ public class DiskettePickupWithInteraction : MonoBehaviour
         // Проверка на наличие предмета (если используешь инвентарь)
         if (item == null)
             Debug.LogWarning($"[DiskettePickup] Предмет (InventoryItem) не назначен на {gameObject.name}. Подбор будет без добавления в инвентарь.");
+
+        cachedPlayerInventory = FindObjectOfType<PlayerInventory>();
+        hadCassetteInInventoryPreviousFrame = IsCassetteInPlayerInventory(cachedPlayerInventory);
+
+    }
+
+    private void PrepareEnemyForDiskettePickup()
+    {
+        if (!spawnEnemyOnlyAfterPickup || enemyAI == null || alreadyPickedUp)
+            return;
+
+        enemyAI.gameObject.SetActive(false);
     }
 
     private void OnEnable()
     {
         SettingsManager.MusicVolumeChanged += HandleMusicVolumeChanged;
+        Interact.ItemPickedUp += HandleInteractItemPickedUp;
     }
 
     private void OnDisable()
     {
         SettingsManager.MusicVolumeChanged -= HandleMusicVolumeChanged;
+        Interact.ItemPickedUp -= HandleInteractItemPickedUp;
     }
 
     private void Update()
     {
+        if (spawnEnemyOnlyAfterPickup && !alreadyPickedUp && enemyAI != null && enemyAI.gameObject.activeSelf)
+        {
+            enemyAI.gameObject.SetActive(false);
+        }
+
+        if (!alreadyPickedUp)
+        {
+            if (cachedPlayerInventory == null)
+                cachedPlayerInventory = FindObjectOfType<PlayerInventory>();
+
+            if (!useYarnPickupFlow)
+            {
+                bool hasCassetteNow = IsCassetteInPlayerInventory(cachedPlayerInventory);
+                if (!hadCassetteInInventoryPreviousFrame && hasCassetteNow)
+                {
+                    CompletePickupAndStartChase();
+                    return;
+                }
+
+                hadCassetteInInventoryPreviousFrame = hasCassetteNow;
+            }
+        }
+
         if (alreadyPickedUp || player == null) return;
 
         // Подбор по клавише E, только если игрок рядом
-        if (isPlayerNearby && Input.GetKeyDown(KeyCode.E))
+        if (!useYarnPickupFlow && isPlayerNearby && Input.GetKeyDown(KeyCode.E))
         {
             TryPickup();
         }
@@ -154,39 +203,108 @@ public class DiskettePickupWithInteraction : MonoBehaviour
     {
         if (player == null) return;
 
-        Debug.Log($"[DiskettePickup] Дискета успешно подобрана! ({gameObject.name})");
+        if (item == null)
+        {
+            Debug.LogWarning("[DiskettePickup] Кассета не назначена, запуск погони отменён.");
+            return;
+        }
+
+        PlayerInventory playerInventory = player.GetComponent<PlayerInventory>();
+        if (playerInventory == null)
+        {
+            Debug.LogError("[DiskettePickup] PlayerInventory не найден на игроке!");
+            return;
+        }
+
+        bool added = playerInventory.AddItemToInventory(item);
+        if (!added)
+        {
+            Debug.LogWarning("[DiskettePickup] Не удалось добавить дискету в инвентарь (возможно, полон).");
+            return;
+        }
+
+        if (!IsCassetteInPlayerInventory(playerInventory))
+        {
+            Debug.LogWarning("[DiskettePickup] После подбора кассета не найдена в инвентаре, запуск погони отменён.");
+            return;
+        }
+
+        cachedPlayerInventory = playerInventory;
+        hadCassetteInInventoryPreviousFrame = true;
+        CompletePickupAndStartChase();
+    }
+
+    private void HandleInteractItemPickedUp(InventoryItem pickedItem, PlayerInventory playerInventory, Interact source)
+    {
+        if (!useYarnPickupFlow || alreadyPickedUp)
+            return;
+
+        if (source == null)
+            return;
+
+        if (yarnInteractSource != null && source != yarnInteractSource)
+            return;
+
+        if (item != null)
+        {
+            if (pickedItem != item)
+                return;
+        }
+        else
+        {
+            if (pickedItem == null || pickedItem.type != InventoryItem.ItemType.Cassette)
+                return;
+        }
+
+        cachedPlayerInventory = playerInventory;
+        hadCassetteInInventoryPreviousFrame = true;
+        CompletePickupAndStartChase();
+    }
+
+    private bool IsCassetteInPlayerInventory(PlayerInventory playerInventory)
+    {
+        if (playerInventory == null || playerInventory.inventoryData == null)
+            return false;
+
+        var slots = playerInventory.inventoryData.GetSlots();
+        foreach (var slot in slots)
+        {
+            if (slot == null || slot.type == InventoryItem.ItemType.Empty)
+                continue;
+
+            if (item != null)
+            {
+                if (slot == item)
+                    return true;
+            }
+            else if (slot.type == InventoryItem.ItemType.Cassette)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private void CompletePickupAndStartChase()
+    {
+        if (alreadyPickedUp)
+            return;
+
+        Debug.Log($"[DiskettePickup] Кассета подтверждена в инвентаре. Запускаем погоню ({gameObject.name})");
 
         alreadyPickedUp = true;
 
-        // Эффект и звук
         if (pickupEffect != null)
             Instantiate(pickupEffect, transform.position, Quaternion.identity);
 
         if (pickupSound != null && audioSource != null)
             audioSource.PlayOneShot(pickupSound);
 
-        // Скрываем подсказку и визуал
         ShowInteractionPrompt(false);
         if (visualObject != null) visualObject.SetActive(false);
         if (triggerCollider != null) triggerCollider.enabled = false;
 
-        // Добавляем в инвентарь (опционально)
-        if (item != null)
-        {
-            PlayerInventory playerInventory = player.GetComponent<PlayerInventory>();
-            if (playerInventory != null)
-            {
-                bool added = playerInventory.AddItemToInventory(item);
-                if (!added)
-                    Debug.LogWarning("[DiskettePickup] Не удалось добавить дискету в инвентарь (возможно, полон)");
-            }
-            else
-            {
-                Debug.LogError("[DiskettePickup] PlayerInventory не найден на игроке!");
-            }
-        }
-
-        // Запускаем погоню
         ActivateEnemyChase();
     }
 
@@ -196,6 +314,11 @@ public class DiskettePickupWithInteraction : MonoBehaviour
         {
             Debug.LogError("Enemy AI не назначен!");
             return;
+        }
+
+        if (spawnEnemyOnlyAfterPickup && !enemyAI.gameObject.activeSelf)
+        {
+            enemyAI.gameObject.SetActive(true);
         }
 
         // Телепорт врага (если нужно)

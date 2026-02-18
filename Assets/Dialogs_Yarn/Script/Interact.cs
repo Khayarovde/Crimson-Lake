@@ -1,8 +1,11 @@
 using UnityEngine;
 using Yarn.Unity;
 using DG.Tweening;
+using System;
 
 public class Interact : MonoBehaviour {
+    public static event Action<InventoryItem, PlayerInventory, Interact> ItemPickedUp;
+
     [SerializeField] public string startNode = "item"; // Имя ноды в .yarn
     [Header("Pickup")]
     [SerializeField] private InventoryItem itemToPickup;
@@ -164,7 +167,7 @@ public class Interact : MonoBehaviour {
             return false;
         }
 
-        PlayerInventory playerInventory = Object.FindObjectOfType<PlayerInventory>();
+        PlayerInventory playerInventory = UnityEngine.Object.FindObjectOfType<PlayerInventory>();
         if (playerInventory == null) {
             Debug.LogError("[Interact] PlayerInventory не найден в сцене.");
             return false;
@@ -176,10 +179,13 @@ public class Interact : MonoBehaviour {
             return false;
         }
 
+        ItemPickedUp?.Invoke(itemToPickup, playerInventory, this);
+
         isCollected = true;
         SetInteractionHintVisible(false);
 
-        if (destroyObjectAfterPickup) {
+        bool hasDiskettePickupFlow = GetComponent<DiskettePickupWithInteraction>() != null;
+        if (destroyObjectAfterPickup && !hasDiskettePickupFlow) {
             Destroy(gameObject);
         }
 
@@ -198,7 +204,7 @@ public class Interact : MonoBehaviour {
 
     private static DialogueRunner GetDialogueRunner() {
         if (cachedRunner == null) {
-            cachedRunner = Object.FindObjectOfType<DialogueRunner>();
+            cachedRunner = UnityEngine.Object.FindObjectOfType<DialogueRunner>();
         }
 
         return cachedRunner;
