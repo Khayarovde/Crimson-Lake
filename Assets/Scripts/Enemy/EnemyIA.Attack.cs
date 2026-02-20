@@ -87,9 +87,6 @@ public partial class AdvancedEnemyAI
             m_Animator.speed = baseAnimatorSpeed;
         if (!caughtPlayer) ResumeAgentMovement();
 
-        if (postAttackSideStepEnabled && !caughtPlayer)
-            yield return StartCoroutine(PostAttackSideStep());
-
         CleanupAttack(interrupted: false);
     }
 

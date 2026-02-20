@@ -124,18 +124,20 @@ public partial class AdvancedEnemyAI
 
     private void BeginAttackSpeedSlowdown()
     {
-        if (navMeshAgent == null) return;
-        if (attackSpeedRoutine != null) StopCoroutine(attackSpeedRoutine);
-        float target = baseNavSpeed * Mathf.Clamp01(attackMoveSpeedMultiplier);
-        attackSpeedRoutine = StartCoroutine(SmoothAgentSpeed(target));
+        if (attackSpeedRoutine != null)
+        {
+            StopCoroutine(attackSpeedRoutine);
+            attackSpeedRoutine = null;
+        }
     }
 
     private void EndAttackSpeedSlowdown()
     {
-        if (navMeshAgent == null) return;
-        if (attackSpeedRoutine != null) StopCoroutine(attackSpeedRoutine);
-        float target = isChasing ? speedRun : speedWalk;
-        attackSpeedRoutine = StartCoroutine(SmoothAgentSpeed(target));
+        if (attackSpeedRoutine != null)
+        {
+            StopCoroutine(attackSpeedRoutine);
+            attackSpeedRoutine = null;
+        }
     }
 
     private IEnumerator SmoothAgentSpeed(float targetSpeed)
@@ -205,7 +207,7 @@ public partial class AdvancedEnemyAI
 
         isPatrolling = false;
         isChasing = true;
-        navMeshAgent.speed = chaseSpeed;
+        navMeshAgent.speed = Mathf.Max(0.1f, approachSpeed);
 
         if (navMeshAgent.enabled)
             navMeshAgent.SetDestination(player.position);

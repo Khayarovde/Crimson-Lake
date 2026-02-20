@@ -104,19 +104,7 @@ public partial class AdvancedEnemyAI
     private void UpdateChaseSpeed(float distance)
     {
         if (navMeshAgent == null) return;
-
-        float minSpeed = Mathf.Max(0.1f, patrolSpeed * Mathf.Clamp01(chaseCloseSpeedMultiplier));
-        float targetApproach = Mathf.Max(minSpeed, approachSpeed);
-        float targetRun = Mathf.Max(targetApproach, chaseSpeed);
-
-        float accelDistance = Mathf.Max(0f, approachDistance);
-        float t = accelDistance > 0f
-            ? Mathf.InverseLerp(attackRange, accelDistance, distance)
-            : 0f;
-        t = Mathf.Clamp01(t);
-        t = Mathf.Pow(t, Mathf.Max(0.01f, chaseSpeedFalloffPower));
-
-        navMeshAgent.speed = Mathf.Lerp(targetApproach, targetRun, t);
+        navMeshAgent.speed = Mathf.Max(0.1f, approachSpeed);
     }
 
     private void OnDrawGizmosSelected()

@@ -64,6 +64,8 @@ public class WeaponHandler : MonoBehaviour
     [SerializeField] public string meleeTrigger = "MeleePush";
     [SerializeField] private string finisherAnimation = "attack_stun_enemy";
     [SerializeField] private float finisherRange = 1.4f;
+    [SerializeField] private bool requireFrontForFinisher = true;
+    [SerializeField, Range(1f, 179f)] private float finisherFrontMaxAngle = 85f;
     [SerializeField, Tooltip("Задержка перед запуском смерти врага (сек)")]
     private float finisherEnemyDeathDelay = 0.6f;
 
@@ -184,6 +186,7 @@ public class WeaponHandler : MonoBehaviour
             if (h == null) continue;
             var enemy = h.GetComponentInParent<AdvancedEnemyAI>();
             if (enemy == null || !enemy.CanBeFinished()) continue;
+            if (requireFrontForFinisher && !IsPlayerInEnemyFront(enemy.transform)) continue;
 
             float d = Vector3.Distance(transform.position, enemy.transform.position);
             if (d < bestDist)
@@ -194,6 +197,18 @@ public class WeaponHandler : MonoBehaviour
         }
 
         return best;
+    }
+
+    private bool IsPlayerInEnemyFront(Transform enemyTransform)
+    {
+        if (enemyTransform == null) return false;
+
+        Vector3 toPlayer = transform.position - enemyTransform.position;
+        toPlayer.y = 0f;
+        if (toPlayer.sqrMagnitude < 0.0001f) return true;
+
+        float angle = Vector3.Angle(enemyTransform.forward, toPlayer.normalized);
+        return angle <= Mathf.Clamp(finisherFrontMaxAngle, 1f, 179f);
     }
 
     private void PlayFinisherAnimation()
