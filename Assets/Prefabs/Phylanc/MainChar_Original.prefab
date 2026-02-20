@@ -534,13 +534,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1434236485493418129}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.151, y: 1.424, z: 0.443}
+  m_LocalRotation: {x: 0.20172064, y: -0.23299174, z: 0.0494708, w: 0.95004016}
+  m_LocalPosition: {x: -0.115, y: 1.505, z: 0.4}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 290632965567463538}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 23.975, y: -27.559, z: 0}
 --- !u!82 &4290675931133547782
 AudioSource:
   m_ObjectHideFlags: 0
@@ -878,12 +878,12 @@ GameObject:
   - component: {fileID: 9134748891124289906}
   - component: {fileID: 4304410241410908299}
   - component: {fileID: 5721163794523407143}
-  - component: {fileID: 7184354157119061359}
   - component: {fileID: 4713129000737303339}
   - component: {fileID: 2406689343700059058}
   - component: {fileID: 8480610302918087437}
   - component: {fileID: 5100676309861018992}
   - component: {fileID: 8412696754332258902}
+  - component: {fileID: 1059375786991201131}
   m_Layer: 8
   m_Name: MainChar_Original
   m_TagString: Player
@@ -978,8 +978,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.63, y: 1, z: 0.63}
-  m_Center: {x: 0, y: 1, z: 0}
+  m_Size: {x: 0.45, y: 1, z: 0.45}
+  m_Center: {x: 0, y: 1, z: -0.08}
 --- !u!136 &3893750404167023849
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -1110,13 +1110,11 @@ MonoBehaviour:
   animator: {fileID: 636205799131586819}
   animatorController: {fileID: 9100000, guid: ef6403663453e6a4cb106814a81e72b4, type: 2}
   animationTransition: 0.1
-  moveUpAnimation: walking_w
-  moveDownAnimation: walking_s
-  moveRightAnimation: Walk_Right
-  moveLeftAnimation: Walk_Left
-  aimUpAnimation: Aim_Walk_W
-  aimDownAnimation: Aim_Walk_S
-  aimIdleAnimation: Aim_Idle
+  blendParameterDampTime: 0.12
+  blendTreeWalkState: Blend Tree_WALK
+  blendTreeAimWalkState: Blend Tree_AIM_WALK
+  blendTreeXParam: v
+  blendTreeYParam: h
   baseIdleAnimation: Idle
   idleAnimation0: Idle
   idleAnimation1: Idle 1
@@ -1125,35 +1123,17 @@ MonoBehaviour:
   idleAnimation4: Idle 5
   currentIdle: 0
   idleSwitchInterval: 20
-  cycleIdles: 1
+  cycleIdles: 0
   randomizeIdles: 1
   idleStartDelay: 10
   idleSwitchDelayAfterComplete: 10
   hitAnimation: hit
   gameoverAnimation: gameover_player
   moveSpeed: 3
+  aimMoveSpeed: 1.5
   rotateSpeed: 10000
---- !u!65 &7184354157119061359
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2308958626575937540}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 1, z: 0}
+  rotationSmoothTime: 0.2
+  playerInventory: {fileID: 4713129000737303339}
 --- !u!114 &4713129000737303339
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1170,7 +1150,7 @@ MonoBehaviour:
   inventoryUI: {fileID: 0}
   activeItemIndex: -1
   itemPrefabs:
-  - item: {fileID: 11400000, guid: 2b2e20c5bdad3b9429aca19e1cb53d75, type: 2}
+  - item: {fileID: 0}
     prefab: {fileID: 919132149155446097, guid: 6a029e7674ddfa64dbe41e611c598329, type: 3}
   - item: {fileID: 11400000, guid: 598e130c9394aa94c8694abb00da8e09, type: 2}
     prefab: {fileID: 7018287897960650172, guid: 5ee2311ae1bcda243a4809a18e46850e, type: 3}
@@ -1191,30 +1171,45 @@ MonoBehaviour:
   surfaceClips:
   - surfaceTag: holeRoom
     clips:
-    - {fileID: 8300000, guid: ab66dccbdeb63b5449db73ad92f21711, type: 3}
-    - {fileID: 8300000, guid: 65507879ee055e648b1de3581c284cca, type: 3}
-    fadeInDuration: 0.08
-    baseVolume: 3
-    minPitch: 0.5
-    maxPitch: 0.7
+    - {fileID: 8300000, guid: 5e265270fb85126479eef52d8fce3b08, type: 3}
+    - {fileID: 8300000, guid: 3701a5fdf99882f40bc00eb9053eec92, type: 3}
+    fadeInDuration: 0.4
+    baseVolume: 1
+    minPitch: 0.4
+    maxPitch: 0.65
   - surfaceTag: osnovaRoom
-    clips: []
-    fadeInDuration: 0
-    baseVolume: 0
-    minPitch: 0
-    maxPitch: 0
+    clips:
+    - {fileID: 8300000, guid: 2f949b40b7283404099a802630fb2077, type: 3}
+    - {fileID: 8300000, guid: dfff2b3c7dfb43c419592789f0a6ab81, type: 3}
+    - {fileID: 8300000, guid: 812100e3982e56842adb6ba5be867b7a, type: 3}
+    fadeInDuration: 0.4
+    baseVolume: 1
+    minPitch: 0.8
+    maxPitch: 0.9
   - surfaceTag: SafeRoom
-    clips: []
-    fadeInDuration: 0
-    baseVolume: 0
-    minPitch: 0
-    maxPitch: 0
+    clips:
+    - {fileID: 8300000, guid: 83c58d64f2e240c41b1f2c2885b253a6, type: 3}
+    - {fileID: 8300000, guid: 3610d597db7918e44906d575bd074616, type: 3}
+    fadeInDuration: 0.4
+    baseVolume: 2
+    minPitch: 0.9
+    maxPitch: 1
   - surfaceTag: GlassRoom
-    clips: []
-    fadeInDuration: 0
-    baseVolume: 0
-    minPitch: 0
-    maxPitch: 0
+    clips:
+    - {fileID: 8300000, guid: 149e8ca9df68d744e9722158daa78ab1, type: 3}
+    - {fileID: 8300000, guid: d25a8335420d09f43bedf446e2deffa0, type: 3}
+    fadeInDuration: 0.5
+    baseVolume: 1
+    minPitch: 0.9
+    maxPitch: 1
+  - surfaceTag: ElevatorRoom
+    clips:
+    - {fileID: 8300000, guid: cb111f071b2e63844afba5ac99aceb2b, type: 3}
+    - {fileID: 8300000, guid: 2c32dcddf9cd3a944a54728c2c878557, type: 3}
+    fadeInDuration: 0.5
+    baseVolume: 1
+    minPitch: 0.9
+    maxPitch: 1
   surfaceMask:
     serializedVersion: 2
     m_Bits: 4294967295
@@ -1337,7 +1332,7 @@ MonoBehaviour:
   hitsToDie: 4
   overlayCanvas: {fileID: 0}
   overlayImage: {fileID: 0}
-  loseScreenCanvas: {fileID: 1279889443026124581, guid: 92677e9a314ba494ea74a3fd226cc647, type: 3}
+  loseScreenCanvas: {fileID: 0}
   firstHitRedAlpha: 0.25
   firstHitFlashDuration: 0.18
   gameoverAnimationDelay: 1.2
@@ -1358,6 +1353,23 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   captureRange: 10
   correctionFactor: 0.1
+--- !u!114 &1059375786991201131
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2308958626575937540}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 50c8635bb69b7b14592dc7d2bb65a678, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  promptUI: {fileID: 0}
+  interactRange: 1
+  interactLayer:
+    serializedVersion: 2
+    m_Bits: 4294967295
 --- !u!1 &2320712906770638076
 GameObject:
   m_ObjectHideFlags: 0
@@ -1540,14 +1552,14 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2706886949989475588}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.151, y: 1.424, z: 0.443}
+  m_LocalRotation: {x: 0.20172064, y: -0.23299174, z: 0.0494708, w: 0.95004016}
+  m_LocalPosition: {x: -0.115, y: 1.505, z: 0.4}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 3258925818660538281}
   m_Father: {fileID: 290632965567463538}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 23.975, y: -27.559, z: 0}
 --- !u!82 &450292822744165481
 AudioSource:
   m_ObjectHideFlags: 0
