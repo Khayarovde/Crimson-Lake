@@ -63,6 +63,8 @@ public class WeaponHandler : MonoBehaviour
     [SerializeField] public Animator playerAnimator;
     [SerializeField] public string meleeTrigger = "MeleePush";
     [SerializeField] private string finisherAnimation = "attack_stun_enemy";
+    [SerializeField] private string defaultIdleAnimation = "Idle";
+    [SerializeField] private float finisherReturnToIdleDelay = 0.8f;
     [SerializeField] private float finisherRange = 1.4f;
     [SerializeField] private bool requireFrontForFinisher = true;
     [SerializeField, Range(1f, 179f)] private float finisherFrontMaxAngle = 85f;
@@ -103,6 +105,7 @@ public class WeaponHandler : MonoBehaviour
     [SerializeField] private Animator m_Animator;
     private GameObject currentWeaponModel;
     private float nextFireTime = 0f;
+    private Coroutine finisherReturnCoroutine;
     // Словарь для отслеживания количества попаданий по каждому врагу
     private Dictionary<AdvancedEnemyAI, int> enemyHitCount = new Dictionary<AdvancedEnemyAI, int>();
 
@@ -171,6 +174,9 @@ public class WeaponHandler : MonoBehaviour
 
         FaceEnemy(enemy.transform);
         PlayFinisherAnimation();
+        if (finisherReturnCoroutine != null)
+            StopCoroutine(finisherReturnCoroutine);
+        finisherReturnCoroutine = StartCoroutine(ReturnToIdleAfterFinisher());
         StartCoroutine(KillEnemyAfterDelay(enemy, finisherEnemyDeathDelay));
         return true;
     }
@@ -228,6 +234,14 @@ public class WeaponHandler : MonoBehaviour
             enemy.KillDuringStun();
     }
 
+    private IEnumerator ReturnToIdleAfterFinisher()
+    {
+        float delay = Mathf.Max(0.05f, finisherReturnToIdleDelay);
+        yield return new WaitForSeconds(delay);
+        ForceDefaultIdle();
+        finisherReturnCoroutine = null;
+    }
+
     private void FaceEnemy(Transform enemyTransform)
     {
         if (enemyTransform == null) return;
@@ -240,12 +254,6 @@ public class WeaponHandler : MonoBehaviour
     private void StartAiming()
     {
         isAiming = true;
-        Animator anim = GetAnimator();
-        if (anim != null)
-        {
-            anim.SetBool("isAiming", true);
-            anim.SetLayerWeight(1, 1f);
-        }
         EquipActiveWeapon();
         if (tankController)
             tankController.moveSpeed = aimWalkSpeed;
@@ -255,16 +263,23 @@ public class WeaponHandler : MonoBehaviour
     private void StopAiming()
     {
         isAiming = false;
-        Animator anim = GetAnimator();
-        if (anim != null)
-        {
-            anim.SetBool("isAiming", false);
-            anim.SetLayerWeight(1, 0f);
-        }
+        ForceDefaultIdle();
         UnequipWeapon();
         if (tankController)
             tankController.moveSpeed = originalWalkSpeed;
         aimAssist.SetAiming(false, null);
+    }
+
+    private void ForceDefaultIdle()
+    {
+        Animator anim = GetAnimator();
+        if (anim == null) return;
+        if (string.IsNullOrEmpty(defaultIdleAnimation)) return;
+
+        int stateHash = Animator.StringToHash(defaultIdleAnimation);
+        if (!anim.HasState(0, stateHash)) return;
+
+        anim.CrossFadeInFixedTime(defaultIdleAnimation, 0.1f, 0);
     }
 
     private Animator GetAnimator()
@@ -660,6 +675,8 @@ public class WeaponHandler : MonoBehaviour
 
     private void OnDestroy()
     {
+        if (finisherReturnCoroutine != null)
+            StopCoroutine(finisherReturnCoroutine);
         enemyHitCount.Clear();
     }
 }

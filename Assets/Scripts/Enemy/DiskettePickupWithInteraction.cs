@@ -99,7 +99,7 @@ public class DiskettePickupWithInteraction : MonoBehaviour
         if (item == null)
             Debug.LogWarning($"[DiskettePickup] Предмет (InventoryItem) не назначен на {gameObject.name}. Подбор будет без добавления в инвентарь.");
 
-        cachedPlayerInventory = FindObjectOfType<PlayerInventory>();
+        cachedPlayerInventory = FindFirstObjectByType<PlayerInventory>();
         hadCassetteInInventoryPreviousFrame = IsCassetteInPlayerInventory(cachedPlayerInventory);
 
     }
@@ -134,7 +134,7 @@ public class DiskettePickupWithInteraction : MonoBehaviour
         if (!alreadyPickedUp)
         {
             if (cachedPlayerInventory == null)
-                cachedPlayerInventory = FindObjectOfType<PlayerInventory>();
+                cachedPlayerInventory = FindFirstObjectByType<PlayerInventory>();
 
             if (!useYarnPickupFlow)
             {
@@ -354,7 +354,7 @@ public class DiskettePickupWithInteraction : MonoBehaviour
 
     private MusicZoneTrigger FindCurrentActiveZone()
     {
-        var allZones = FindObjectsOfType<MusicZoneTrigger>();
+        var allZones = FindObjectsByType<MusicZoneTrigger>(FindObjectsSortMode.InstanceID);
         return allZones.FirstOrDefault(z =>
             z.zoneAudioSource != null &&
             z.zoneAudioSource.isPlaying &&
@@ -363,7 +363,7 @@ public class DiskettePickupWithInteraction : MonoBehaviour
 
     private void FadeOutAllZoneMusic()
     {
-        var allZones = FindObjectsOfType<MusicZoneTrigger>();
+        var allZones = FindObjectsByType<MusicZoneTrigger>(FindObjectsSortMode.InstanceID);
         foreach (var zone in allZones)
         {
             if (zone.zoneAudioSource != null && zone.zoneAudioSource.isPlaying)

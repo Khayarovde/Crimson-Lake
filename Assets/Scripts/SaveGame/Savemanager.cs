@@ -19,7 +19,7 @@ public class SaveManager : MonoBehaviour
     {
         if (Instance != null) return Instance;
 
-        var existing = FindObjectOfType<SaveManager>();
+        var existing = FindFirstObjectByType<SaveManager>();
         if (existing != null) return existing;
 
         var go = new GameObject("SaveManager");
@@ -31,7 +31,8 @@ public class SaveManager : MonoBehaviour
         if (Instance == null)
         {
             Instance = this;
-            DontDestroyOnLoad(gameObject);
+            GameObject persistentRoot = transform.root != null ? transform.root.gameObject : gameObject;
+            DontDestroyOnLoad(persistentRoot);
             SceneManager.sceneLoaded += OnSceneLoaded;
         }
         else
@@ -55,7 +56,7 @@ public class SaveManager : MonoBehaviour
     public void SaveGame()
     {
         // Находим все сундуки на сцене и сохраняем их
-        Chest[] allChests = FindObjectsOfType<Chest>();
+        Chest[] allChests = FindObjectsByType<Chest>(FindObjectsSortMode.InstanceID);
         foreach (Chest chest in allChests)
         {
             // Данные сохраняются автоматически в классе Chest
@@ -208,7 +209,7 @@ public class SaveManager : MonoBehaviour
 
         PlayerInventory inventory = playerTransform.GetComponent<PlayerInventory>();
         if (inventory == null)
-            inventory = FindObjectOfType<PlayerInventory>();
+            inventory = FindFirstObjectByType<PlayerInventory>();
 
         if (inventory != null && inventory.inventoryData != null)
         {
@@ -237,7 +238,7 @@ public class SaveManager : MonoBehaviour
 
         PlayerInventory inventory = playerTransform != null
             ? playerTransform.GetComponent<PlayerInventory>()
-            : FindObjectOfType<PlayerInventory>();
+            : FindFirstObjectByType<PlayerInventory>();
 
         if (inventory != null && inventory.inventoryData != null)
         {
@@ -263,7 +264,7 @@ public class SaveManager : MonoBehaviour
 
     private Transform ResolvePlayerTransform()
     {
-        PlayerInventory inventory = FindObjectOfType<PlayerInventory>();
+        PlayerInventory inventory = FindFirstObjectByType<PlayerInventory>();
         if (inventory != null) return inventory.transform;
 
         GameObject playerObj = GameObject.FindGameObjectWithTag("Player");

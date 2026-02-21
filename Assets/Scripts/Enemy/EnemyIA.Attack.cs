@@ -83,6 +83,9 @@ public partial class AdvancedEnemyAI
         if (remainingLock > 0f)
             yield return new WaitForSecondsRealtime(remainingLock);
 
+        if (!caughtPlayer && postAttackSideStepEnabled && !isStunned && !isDead)
+            yield return StartCoroutine(PostAttackSideStep());
+
         if (m_Animator != null)
             m_Animator.speed = baseAnimatorSpeed;
         if (!caughtPlayer) ResumeAgentMovement();
