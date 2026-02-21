@@ -15,7 +15,7 @@ public class SavePointInteraction : MonoBehaviour
 
     [Header("Interaction")]
     [SerializeField] private KeyCode interactKey = KeyCode.E;
-
+ 
     private bool isPlayerNearby;
 
     private void Start()
@@ -57,7 +57,7 @@ public class SavePointInteraction : MonoBehaviour
             return SaveSlotsUI.Instance;
 
 #if UNITY_2020_1_OR_NEWER
-        var all = FindObjectsOfType<SaveSlotsUI>(true);
+    var all = FindObjectsByType<SaveSlotsUI>(FindObjectsInactive.Include, FindObjectsSortMode.InstanceID);
 #else
         var all = Resources.FindObjectsOfTypeAll<SaveSlotsUI>();
 #endif

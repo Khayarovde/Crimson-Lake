@@ -4,10 +4,24 @@ using System.Collections;
 
 public partial class AdvancedEnemyAI
 {
+    private float GetNonSprintChaseSpeed()
+    {
+        return Mathf.Max(0.1f, patrolSpeed);
+    }
+
+    private void SetChasingState(bool chasing)
+    {
+        isChasing = chasing;
+        isPatrolling = !chasing;
+
+        if (m_Animator != null)
+            m_Animator.SetBool("isChasing", chasing);
+    }
+
     private void StopChasing()
     {
-        isChasing = false;
-        isPatrolling = true;
+        SetChasingState(false);
+        if (navMeshAgent == null) return;
         navMeshAgent.speed = patrolSpeed;
         if (navMeshAgent.enabled)
             BeginPatrol();
@@ -43,6 +57,9 @@ public partial class AdvancedEnemyAI
         }
 
         if (!useRandomPatrolWhenNoWaypoints)
+            return;
+
+        if (!isRandomPatrolling)
             return;
 
         if (Time.time < randomPatrolWaitEndTime)
@@ -124,20 +141,36 @@ public partial class AdvancedEnemyAI
 
     private void BeginAttackSpeedSlowdown()
     {
+        if (navMeshAgent == null || !navMeshAgent.enabled) return;
+
         if (attackSpeedRoutine != null)
         {
             StopCoroutine(attackSpeedRoutine);
             attackSpeedRoutine = null;
         }
+
+        float baseline = Mathf.Max(0.1f, navMeshAgent.speed);
+        float target = baseline * Mathf.Max(0f, attackMoveSpeedMultiplier);
+        attackSpeedRoutine = StartCoroutine(SmoothAgentSpeed(target));
     }
 
     private void EndAttackSpeedSlowdown()
     {
+        if (navMeshAgent == null || !navMeshAgent.enabled) return;
+
         if (attackSpeedRoutine != null)
         {
             StopCoroutine(attackSpeedRoutine);
             attackSpeedRoutine = null;
         }
+
+        float targetSpeed = patrolSpeed;
+        if (isSearching)
+            targetSpeed = searchSpeed;
+        else if (isChasing)
+            targetSpeed = GetNonSprintChaseSpeed();
+
+        attackSpeedRoutine = StartCoroutine(SmoothAgentSpeed(Mathf.Max(0.1f, targetSpeed)));
     }
 
     private IEnumerator SmoothAgentSpeed(float targetSpeed)
@@ -166,7 +199,8 @@ public partial class AdvancedEnemyAI
 
         if (isChasing && player != null)
         {
-            navMeshAgent.SetDestination(player.position);
+            float desiredDistance = Mathf.Max(stopBeforePlayerDistance, attackRange + 0.35f);
+            navMeshAgent.SetDestination(GetApproachDestination(desiredDistance));
         }
         else if (isPatrolling)
         {
@@ -205,14 +239,20 @@ public partial class AdvancedEnemyAI
             }
         }
 
-        isPatrolling = false;
-        isChasing = true;
-        navMeshAgent.speed = Mathf.Max(0.1f, approachSpeed);
+        if (navMeshAgent == null)
+        {
+            Debug.LogWarning("NavMeshAgent не найден: запуск преследования невозможен.");
+            return;
+        }
+
+        SetChasingState(true);
+        navMeshAgent.speed = Mathf.Max(0.1f, patrolSpeed);
 
         if (navMeshAgent.enabled)
-            navMeshAgent.SetDestination(player.position);
-
-        m_Animator.SetBool("isChasing", true);
+        {
+            float desiredDistance = Mathf.Max(stopBeforePlayerDistance, attackRange + 0.35f);
+            navMeshAgent.SetDestination(GetApproachDestination(desiredDistance));
+        }
 
         Debug.Log("Враг активирован и начал преследование игрока после взятия дискеты!");
     }

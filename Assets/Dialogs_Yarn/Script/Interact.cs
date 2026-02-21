@@ -167,7 +167,7 @@ public class Interact : MonoBehaviour {
             return false;
         }
 
-        PlayerInventory playerInventory = UnityEngine.Object.FindObjectOfType<PlayerInventory>();
+        PlayerInventory playerInventory = UnityEngine.Object.FindFirstObjectByType<PlayerInventory>();
         if (playerInventory == null) {
             Debug.LogError("[Interact] PlayerInventory не найден в сцене.");
             return false;
@@ -204,7 +204,7 @@ public class Interact : MonoBehaviour {
 
     private static DialogueRunner GetDialogueRunner() {
         if (cachedRunner == null) {
-            cachedRunner = UnityEngine.Object.FindObjectOfType<DialogueRunner>();
+            cachedRunner = UnityEngine.Object.FindFirstObjectByType<DialogueRunner>();
         }
 
         return cachedRunner;

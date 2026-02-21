@@ -93,7 +93,12 @@ public partial class AdvancedEnemyAI : MonoBehaviour
         gameObject.layer = LayerMask.NameToLayer("Enemy");
 
         if (navMeshAgent != null)
+        {
             navMeshAgent.stoppingDistance = Mathf.Max(navMeshAgent.stoppingDistance, stopBeforePlayerDistance);
+            navMeshAgent.autoBraking = true;
+            navMeshAgent.acceleration = Mathf.Max(0.1f, agentAcceleration);
+            navMeshAgent.angularSpeed = Mathf.Max(1f, agentAngularSpeed);
+        }
 
         if (scanOnSpawn)
             BeginScan();
@@ -121,8 +126,9 @@ public partial class AdvancedEnemyAI : MonoBehaviour
 
     private void ApplySceneSpeeds()
     {
+        chaseSpeed = patrolSpeed;
         speedWalk = patrolSpeed;
-        speedRun = chaseSpeed;
+        speedRun = patrolSpeed;
     }
 
     void Update()

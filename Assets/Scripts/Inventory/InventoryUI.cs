@@ -56,12 +56,9 @@ public class InventoryUI : MonoBehaviour
     private Button[] chestTakeButtons;
     private Button[] chestDestroyButtons;
 
-    // Флаг для предотвращения одновременного открытия
-    private bool isUIOpen = false;
-
     private void Start()
     {
-        playerInventory = FindObjectOfType<PlayerInventory>();
+        playerInventory = FindFirstObjectByType<PlayerInventory>();
         if (playerInventory == null)
         {
             Debug.LogError("[InventoryUI] PlayerInventory не найден!");
@@ -565,13 +562,11 @@ public class InventoryUI : MonoBehaviour
                 UpdateInventoryUI();
                 // Cursor.lockState = CursorLockMode.None;
                 // Cursor.visible = true;
-                isUIOpen = true;
             }
             else
             {
                 if (!IsChestUIOpen()) // Если сундук не открыт, сбрасываем флаг
                 {
-                    isUIOpen = false;
                     // Cursor.lockState = CursorLockMode.Locked;
                     // Cursor.visible = false;
                 }
@@ -606,7 +601,6 @@ public class InventoryUI : MonoBehaviour
             UpdateChestUI();
             // Cursor.lockState = CursorLockMode.None;
             // Cursor.visible = true;
-            isUIOpen = true;
         }
     }
 
@@ -651,8 +645,6 @@ public class InventoryUI : MonoBehaviour
             inventoryCanvas.SetActive(true);
             UpdateInventoryUI();
         }
-
-        isUIOpen = true;
         wasInventoryOpenBeforeChest = false;
     }
 
@@ -674,7 +666,6 @@ public class InventoryUI : MonoBehaviour
         {
             inventoryCanvas.SetActive(true);
             UpdateInventoryUI();
-            isUIOpen = true;
         }
         else
         {
@@ -682,7 +673,6 @@ public class InventoryUI : MonoBehaviour
             {
                 inventoryCanvas.SetActive(false);
             }
-            isUIOpen = false;
             // Cursor.lockState = CursorLockMode.Locked;
             // Cursor.visible = false;
         }

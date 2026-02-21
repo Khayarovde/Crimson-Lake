@@ -29,10 +29,28 @@ public class TankController : MonoBehaviour
     [SerializeField] private float idleSwitchDelayAfterComplete = 2f;
     [SerializeField] private string hitAnimation = "Hit";
     [SerializeField] private string gameoverAnimation = "gameover_player";
-    public float moveSpeed = 3f; // Forward-backward speed
-    [SerializeField] private float aimMoveSpeed = 1.5f;
+    public float moveSpeed = 2.6f; // Forward-backward speed
+    [SerializeField] private float aimMoveSpeed = 1.25f;
+    [Header("Movement Feel")]
+    [SerializeField] private float acceleration = 8.5f;
+    [SerializeField] private float deceleration = 11.5f;
+    [SerializeField] private float aimAcceleration = 6.5f;
+    [SerializeField] private float aimDeceleration = 13.5f;
+    [SerializeField] private float movingVelocityThreshold = 0.08f;
+    [Header("Rigidbody Setup")]
+    [SerializeField] private bool autoConfigureRigidbody = true;
+    [SerializeField] private float rigidbodyMass = 75f;
+#if UNITY_6000_0_OR_NEWER
+    [SerializeField] private float rigidbodyLinearDamping = 4f;
+#else
+    [SerializeField] private float rigidbodyDrag = 4f;
+#endif
     public float rotateSpeed = 10f; // Rotation damping
     [SerializeField] private float rotationSmoothTime = 0.12f;
+    [Header("Aim Feel")]
+    [SerializeField] private float aimRotationSmoothTime = 0.07f;
+    [SerializeField, Range(0.01f, 0.5f)] private float aimInputDeadZone = 0.12f;
+    [SerializeField, Range(0.01f, 0.5f)] private float aimAxisDominanceBias = 0.2f;
     private Rigidbody rb;
     [SerializeField] private PlayerInventory playerInventory;
     private float inputHorizontal;
@@ -44,10 +62,11 @@ public class TankController : MonoBehaviour
     private float lastMoveTime;
     private bool idleActive;
     private bool idleSwitchScheduled;
-    private bool wasMoving;
+    private bool wasMoveInput;
     private float rotationVelocity;
     private Vector2 lastMoveDirection;
     private Vector3 aimForward = Vector3.forward;
+    private Vector3 currentPlanarVelocity;
 
     private const string GameAnimatorControllerPath = "Assets/Animate/Phylanc/Player_GameScene";
 
@@ -59,7 +78,10 @@ public class TankController : MonoBehaviour
         if (playerInventory == null)
             playerInventory = GetComponent<PlayerInventory>();
 
+        ConfigureRigidbody();
+
         lastMoveTime = Time.time;
+        currentPlanarVelocity = Vector3.zero;
         ApplyAnimatorControllerForScene();
     }
 
@@ -68,11 +90,11 @@ public class TankController : MonoBehaviour
         bool hasActiveWeapon = HasActiveWeaponSelected();
         isAiming = hasActiveWeapon && Input.GetMouseButton(1);
         ProcessMovement();
-        bool isMoving = Mathf.Abs(inputHorizontal) > 0.1f || Mathf.Abs(inputVertical) > 0.1f;
+        bool isMoving = IsCharacterMoving();
         if (isAiming)
             RotateByMouse();
         else if (isMoving)
-            RotateByMovement(lastMoveDirection);
+            RotateByMovement(new Vector2(currentPlanarVelocity.x, currentPlanarVelocity.z));
         else
             RotateByMouse();
         wasAiming = isAiming;
@@ -85,20 +107,19 @@ public class TankController : MonoBehaviour
 
     void ProcessMovement()
     {
-        // Берём только ось Vertical (W/S)
         inputHorizontal = Input.GetAxisRaw("Horizontal");
         inputVertical = Input.GetAxisRaw("Vertical");
 
-        bool isMoving = Mathf.Abs(inputHorizontal) > 0.1f || Mathf.Abs(inputVertical) > 0.1f;
+        bool hasMoveInput = Mathf.Abs(inputHorizontal) > 0.1f || Mathf.Abs(inputVertical) > 0.1f;
 
-        if (isMoving)
+        if (hasMoveInput)
         {
             lastMoveTime = Time.time;
             idleActive = false;
             idleSwitchScheduled = false;
             lastMoveDirection = new Vector2(inputHorizontal, inputVertical);
         }
-        else if (wasMoving)
+        else if (wasMoveInput)
         {
             lastMoveTime = Time.time;
             idleActive = false;
@@ -113,9 +134,13 @@ public class TankController : MonoBehaviour
             ChangeAnimation(baseIdleAnimation);
         }
 
-        wasMoving = isMoving;
+        wasMoveInput = hasMoveInput;
 
-        CheckAnimation(new Vector2(inputHorizontal, inputVertical), isAiming);
+        Vector2 movementForAnimation = isAiming
+            ? GetAimRelativeInput(new Vector2(inputHorizontal, inputVertical))
+            : new Vector2(currentPlanarVelocity.x, currentPlanarVelocity.z);
+
+        CheckAnimation(movementForAnimation, isAiming);
     }
 
     void ApplyMovement()
@@ -125,16 +150,38 @@ public class TankController : MonoBehaviour
             input.Normalize();
 
         Vector3 movement = input;
-        if (isAiming)
-        {
-            Vector3 aimRight = Vector3.Cross(Vector3.up, aimForward).normalized;
-            movement = aimRight * inputHorizontal + aimForward * inputVertical;
-            movement.y = 0f;
-        }
 
-        float currentSpeed = isAiming ? aimMoveSpeed : moveSpeed;
-        rb.MovePosition(rb.position + movement * currentSpeed * Time.fixedDeltaTime);
+        float targetSpeed = isAiming ? aimMoveSpeed : moveSpeed;
+        Vector3 targetVelocity = movement * targetSpeed;
+
+        bool hasMovementInput = input.sqrMagnitude > 0.001f;
+        float accel = isAiming ? aimAcceleration : acceleration;
+        float decel = isAiming ? aimDeceleration : deceleration;
+        float velocityChange = (hasMovementInput ? accel : decel) * Time.fixedDeltaTime;
+
+        currentPlanarVelocity = Vector3.MoveTowards(currentPlanarVelocity, targetVelocity, Mathf.Max(0f, velocityChange));
+        rb.MovePosition(rb.position + currentPlanarVelocity * Time.fixedDeltaTime);
     }
+
+    private bool IsCharacterMoving()
+    {
+        return currentPlanarVelocity.sqrMagnitude > movingVelocityThreshold * movingVelocityThreshold;
+    }
+
+        private void ConfigureRigidbody()
+        {
+        if (!autoConfigureRigidbody || rb == null) return;
+
+        rb.mass = Mathf.Max(1f, rigidbodyMass);
+    #if UNITY_6000_0_OR_NEWER
+        rb.linearDamping = Mathf.Max(0f, rigidbodyLinearDamping);
+    #else
+        rb.drag = Mathf.Max(0f, rigidbodyDrag);
+    #endif
+        rb.interpolation = RigidbodyInterpolation.Interpolate;
+        rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
+        rb.constraints |= RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
+        }
 
     void RotateByMovement(Vector2 movement)
     {
@@ -168,11 +215,12 @@ public class TankController : MonoBehaviour
         aimForward = direction.normalized;
 
         float targetAngle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg;
+        float smoothTime = isAiming ? aimRotationSmoothTime : rotationSmoothTime;
         float smoothAngle = Mathf.SmoothDampAngle(
             transform.eulerAngles.y,
             targetAngle,
             ref rotationVelocity,
-            rotationSmoothTime,
+            Mathf.Max(0.001f, smoothTime),
             Mathf.Max(1f, rotateSpeed)
         );
 
@@ -204,31 +252,63 @@ public class TankController : MonoBehaviour
 
         if (isAimMode)
         {
-            ChangeMovementAnimation(true);
+            ChangeAnimation(baseIdleAnimation);
             SetBlendVelocity(Vector2.zero);
         }
         else
         {
+            bool canPlayIdleVariants = Time.time >= lastMoveTime + Mathf.Max(0f, idleStartDelay);
+            if (canPlayIdleVariants)
+                CheckIdle();
+            else
+            {
+                idleActive = false;
+                idleSwitchScheduled = false;
+                ChangeAnimation(baseIdleAnimation);
+            }
             SetBlendVelocity(Vector2.zero);
         }
 
-        if (!isAimMode)
-        {
-            if (aiming)
-                ChangeAnimation(baseIdleAnimation);
-            else if (Time.time - lastMoveTime >= Mathf.Max(0f, idleStartDelay))
-                CheckIdle();
-        }
+        if (!isAimMode && aiming)
+            ChangeAnimation(baseIdleAnimation);
     }
 
     private Vector2 GetAimDirection(Vector2 movement)
     {
-        float horizontal = Mathf.Abs(movement.x) > 0.1f ? Mathf.Sign(movement.x) : 0f;
-        float vertical = Mathf.Abs(movement.y) > 0.1f ? Mathf.Sign(movement.y) : 0f;
+        float horizontal = Mathf.Abs(movement.x) >= aimInputDeadZone ? movement.x : 0f;
+        float vertical = Mathf.Abs(movement.y) >= aimInputDeadZone ? movement.y : 0f;
 
-        Vector2 direction = new Vector2(horizontal, vertical);
+        if (Mathf.Approximately(horizontal, 0f) && Mathf.Approximately(vertical, 0f))
+            return Vector2.zero;
 
-        return direction;
+        float absX = Mathf.Abs(horizontal);
+        float absY = Mathf.Abs(vertical);
+
+        if (Mathf.Abs(absX - absY) > aimAxisDominanceBias)
+        {
+            if (absX > absY)
+                vertical = 0f;
+            else
+                horizontal = 0f;
+        }
+
+        return new Vector2(Mathf.Sign(horizontal), Mathf.Sign(vertical));
+    }
+
+    private Vector2 GetAimRelativeInput(Vector2 worldInput)
+    {
+        if (worldInput.sqrMagnitude > 1f)
+            worldInput.Normalize();
+
+        Vector3 worldMove = new Vector3(worldInput.x, 0f, worldInput.y);
+        if (worldMove.sqrMagnitude < 0.0001f)
+            return Vector2.zero;
+
+        Vector3 aimRight = Vector3.Cross(Vector3.up, aimForward).normalized;
+        float localX = Vector3.Dot(worldMove, aimRight);
+        float localY = Vector3.Dot(worldMove, aimForward);
+
+        return new Vector2(localX, localY);
     }
 
     private void SetBlendVelocity(Vector2 direction)
@@ -251,6 +331,10 @@ public class TankController : MonoBehaviour
         float absY = Mathf.Abs(direction.y);
         if (Mathf.Abs(absX - absY) < 0.1f && lastMoveDirection.sqrMagnitude > 0.01f)
             direction = lastMoveDirection.normalized;
+
+        float speed01 = Mathf.Clamp01(new Vector2(currentPlanarVelocity.x, currentPlanarVelocity.z).magnitude / Mathf.Max(0.01f, moveSpeed));
+        direction *= speed01;
+
         return direction;
     }
 

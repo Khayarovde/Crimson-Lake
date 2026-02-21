@@ -9,7 +9,9 @@ public class VideoTrigger : MonoBehaviour
     [SerializeField] private VideoPlayer videoPlayer;
     [SerializeField] private GameObject videoPanel;
     [SerializeField] private RawImage videoRawImage;
+#if UNITY_WEBGL
     [SerializeField] private string videoFileName = "cutscene.mp4"; // Имя файла видео в StreamingAssets для WebGL
+#endif
 
     [Header("Подсказка (интерактивная)")]
     [SerializeField] private GameObject hintPanel;

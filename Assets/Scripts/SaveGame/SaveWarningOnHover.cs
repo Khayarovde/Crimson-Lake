@@ -16,7 +16,7 @@ public class SaveWarningOnHover : MonoBehaviour, IPointerEnterHandler
         string messageToShow = string.IsNullOrWhiteSpace(pendingMessage) ? warningMessage : pendingMessage;
 
         if (warningUI == null)
-            warningUI = FindObjectOfType<SaveWarningUI>();
+            warningUI = FindFirstObjectByType<SaveWarningUI>();
 
         if (warningUI != null)
         {

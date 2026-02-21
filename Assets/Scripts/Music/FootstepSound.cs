@@ -15,7 +15,7 @@ public class FootstepSound : MonoBehaviour
 
     [Header("Input Gate")]
     public bool requireMovementInput = true; // Не играть шаги без ввода движения
-    public bool useHorizontalForMovement = false; // Учитывать ли Horizontal как движение (иначе только Vertical)
+    public bool useHorizontalForMovement = true; // Учитывать ли Horizontal как движение (иначе только Vertical)
     public float movementInputThreshold = 0.1f;
     
     [Header("Sound Variation")]
@@ -109,11 +109,22 @@ public class FootstepSound : MonoBehaviour
 
     private void CalculateSpeed()
     {
-        // Вычисляем скорость на основе изменения позиции
+        if (rb != null)
+        {
+#if UNITY_6000_0_OR_NEWER
+            Vector3 planarVelocity = rb.linearVelocity;
+#else
+            Vector3 planarVelocity = rb.velocity;
+#endif
+            planarVelocity.y = 0f;
+            currentSpeed = planarVelocity.magnitude;
+            lastPosition = transform.position;
+            return;
+        }
+
         Vector3 positionChange = transform.position - lastPosition;
-        positionChange.y = 0; // Игнорируем вертикальное движение
-        
-        currentSpeed = positionChange.magnitude / Time.deltaTime;
+        positionChange.y = 0;
+        currentSpeed = positionChange.magnitude / Mathf.Max(0.0001f, Time.deltaTime);
         lastPosition = transform.position;
     }
 

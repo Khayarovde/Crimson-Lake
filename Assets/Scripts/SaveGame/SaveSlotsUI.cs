@@ -291,7 +291,7 @@ public class SaveSlotsUI : MonoBehaviour
         if (string.IsNullOrWhiteSpace(message)) return;
 
         if (warningUI == null)
-            warningUI = FindObjectOfType<SaveWarningUI>();
+            warningUI = FindFirstObjectByType<SaveWarningUI>();
 
         if (warningUI != null)
         {
@@ -406,6 +406,12 @@ public class SaveSlotsUI : MonoBehaviour
     {
         if (lockInput)
         {
+            if (pauseTimeWhileOpen)
+            {
+                previousTimeScale = Time.timeScale;
+                Time.timeScale = 0f;
+            }
+
             previousCursorVisible = Cursor.visible;
             previousCursorLock = Cursor.lockState;
             if (unlockCursorWhileOpen)
@@ -427,6 +433,9 @@ public class SaveSlotsUI : MonoBehaviour
         }
         else
         {
+            if (pauseTimeWhileOpen)
+                Time.timeScale = previousTimeScale;
+
             if (unlockCursorWhileOpen)
             {
                 Cursor.visible = previousCursorVisible;

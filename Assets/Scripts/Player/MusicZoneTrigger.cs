@@ -55,7 +55,7 @@ public class MusicZoneTrigger : MonoBehaviour
 
         // ← ВАЖНО: Уведомляем все активные скрипты подбора дискеты,
         // что игрок вошёл в новую зону (это нужно для остановки chase-музыки)
-        DiskettePickupWithInteraction[] disketteScripts = FindObjectsOfType<DiskettePickupWithInteraction>();
+        DiskettePickupWithInteraction[] disketteScripts = FindObjectsByType<DiskettePickupWithInteraction>(FindObjectsSortMode.InstanceID);
         foreach (var diskette in disketteScripts)
         {
             diskette.OnPlayerEnteredNewZone(this);
@@ -132,7 +132,7 @@ public class MusicZoneTrigger : MonoBehaviour
 
     public static void RefreshAllZoneVolumes()
     {
-        var zones = FindObjectsOfType<MusicZoneTrigger>();
+        var zones = FindObjectsByType<MusicZoneTrigger>(FindObjectsSortMode.InstanceID);
         foreach (var z in zones)
             z.ApplyCurrentVolume();
     }
@@ -140,7 +140,7 @@ public class MusicZoneTrigger : MonoBehaviour
     // Останавливаем музыку во всех других зонах
     private void StopAllOtherZoneMusic()
     {
-        MusicZoneTrigger[] allZones = FindObjectsOfType<MusicZoneTrigger>();
+        MusicZoneTrigger[] allZones = FindObjectsByType<MusicZoneTrigger>(FindObjectsSortMode.InstanceID);
         foreach (var zone in allZones)
         {
             if (zone != this && zone.zoneAudioSource != null && zone.zoneAudioSource.isPlaying)
