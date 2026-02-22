@@ -2214,6 +2214,22 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1107905442660160329, guid: 215d359dddb471743ae06571fa64a44a, type: 3}
+      propertyPath: speedRun
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1107905442660160329, guid: 215d359dddb471743ae06571fa64a44a, type: 3}
+      propertyPath: speedWalk
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1107905442660160329, guid: 215d359dddb471743ae06571fa64a44a, type: 3}
+      propertyPath: caughtPlayer
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1107905442660160329, guid: 215d359dddb471743ae06571fa64a44a, type: 3}
+      propertyPath: disableMovement
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1393534560132879237, guid: 215d359dddb471743ae06571fa64a44a, type: 3}
       propertyPath: m_Name
       value: Enemy
@@ -6104,13 +6120,13 @@ MonoBehaviour:
   finishingCameraPlacementMode: 0
   enemyAnimationState: death
   playerAttackTrigger: attack_stun_enemy
-  effectStartNormalizedTime: 0.664
-  useAutomaticTiming: 1
+  effectStartNormalizedTime: 0.648
+  useAutomaticTiming: 0
   finishingLayerName: FinishingOnly
   redOverlayColor: {r: 0.6, g: 0, b: 0, a: 1}
-  requireFrontSide: 1
+  requireFrontSide: 0
   maxFrontAngle: 85
-  slowMotionScale: 0.789
+  slowMotionScale: 0.7
   disablePlayerControlDuringFinishing: 1
   autoDetectPlayerControlScripts: 1
   playerControlScripts: []
@@ -8732,6 +8748,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: MainChar
       objectReference: {fileID: 0}
+    - target: {fileID: 2854331892077450836, guid: ebc4bac64a24a7f42a07cb2499345bc4, type: 3}
+      propertyPath: promptUI
+      value: 
+      objectReference: {fileID: 2034645046}
     - target: {fileID: 3253778392951045453, guid: ebc4bac64a24a7f42a07cb2499345bc4, type: 3}
       propertyPath: m_LocalPosition.x
       value: -70.39
@@ -8771,6 +8791,18 @@ PrefabInstance:
     - target: {fileID: 3253778392951045453, guid: ebc4bac64a24a7f42a07cb2499345bc4, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3654670086047877682, guid: ebc4bac64a24a7f42a07cb2499345bc4, type: 3}
+      propertyPath: finisherEnterStateTimeout
+      value: 0.45
+      objectReference: {fileID: 0}
+    - target: {fileID: 3654670086047877682, guid: ebc4bac64a24a7f42a07cb2499345bc4, type: 3}
+      propertyPath: finisherReturnToIdleDelay
+      value: 0.62
+      objectReference: {fileID: 0}
+    - target: {fileID: 3654670086047877682, guid: ebc4bac64a24a7f42a07cb2499345bc4, type: 3}
+      propertyPath: finisherSnapPositionProbeSteps
+      value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 7514065535736419860, guid: ebc4bac64a24a7f42a07cb2499345bc4, type: 3}
       propertyPath: inventoryUI

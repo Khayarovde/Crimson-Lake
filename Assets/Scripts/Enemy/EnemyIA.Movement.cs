@@ -1,12 +1,11 @@
 using UnityEngine;
 using UnityEngine.AI;
-using System.Collections;
 
 public partial class AdvancedEnemyAI
 {
-    private float GetNonSprintChaseSpeed()
+    private bool IsMovementDisabled()
     {
-        return Mathf.Max(0.1f, patrolSpeed);
+        return disableMovement;
     }
 
     private void SetChasingState(bool chasing)
@@ -22,13 +21,25 @@ public partial class AdvancedEnemyAI
     {
         SetChasingState(false);
         if (navMeshAgent == null) return;
-        navMeshAgent.speed = patrolSpeed;
+        if (IsMovementDisabled())
+        {
+            StopAgentMovement();
+            return;
+        }
+        navMeshAgent.speed = Mathf.Max(0.1f, speedWalk);
         if (navMeshAgent.enabled)
             BeginPatrol();
     }
 
     private void BeginPatrol()
     {
+        if (IsMovementDisabled())
+        {
+            StopAgentMovement();
+            isRandomPatrolling = false;
+            return;
+        }
+
         if (HasWaypoints())
         {
             currentWaypointIndex = (currentWaypointIndex + 1) % waypoints.Length;
@@ -47,6 +58,12 @@ public partial class AdvancedEnemyAI
 
     private void UpdatePatrol()
     {
+        if (IsMovementDisabled())
+        {
+            StopAgentMovement();
+            return;
+        }
+
         if (navMeshAgent == null || !navMeshAgent.enabled) return;
 
         if (HasWaypoints())
@@ -79,6 +96,12 @@ public partial class AdvancedEnemyAI
 
     private void PickRandomPatrolPoint()
     {
+        if (IsMovementDisabled())
+        {
+            StopAgentMovement();
+            return;
+        }
+
         Vector2 rand = Random.insideUnitCircle * Mathf.Max(1f, randomPatrolRadius);
         Vector3 candidate = transform.position + new Vector3(rand.x, 0f, rand.y);
         if (NavMesh.SamplePosition(candidate, out NavMeshHit hit, randomPatrolRadius, NavMesh.AllAreas))
@@ -86,7 +109,7 @@ public partial class AdvancedEnemyAI
         else
             currentRandomPatrolPoint = transform.position;
 
-        navMeshAgent.speed = patrolSpeed;
+        navMeshAgent.speed = Mathf.Max(0.1f, speedWalk);
         navMeshAgent.SetDestination(currentRandomPatrolPoint);
     }
 
@@ -130,70 +153,35 @@ public partial class AdvancedEnemyAI
     private void ResumeAgentMovement()
     {
         if (navMeshAgent == null) return;
+        if (IsMovementDisabled())
+        {
+            StopAgentMovement();
+            return;
+        }
         navMeshAgent.isStopped = false;
     }
 
     private void EnsureAgentActiveForAttack()
     {
         if (navMeshAgent == null) return;
+        if (IsMovementDisabled())
+        {
+            StopAgentMovement();
+            return;
+        }
         navMeshAgent.isStopped = false;
-    }
-
-    private void BeginAttackSpeedSlowdown()
-    {
-        if (navMeshAgent == null || !navMeshAgent.enabled) return;
-
-        if (attackSpeedRoutine != null)
-        {
-            StopCoroutine(attackSpeedRoutine);
-            attackSpeedRoutine = null;
-        }
-
-        float baseline = Mathf.Max(0.1f, navMeshAgent.speed);
-        float target = baseline * Mathf.Max(0f, attackMoveSpeedMultiplier);
-        attackSpeedRoutine = StartCoroutine(SmoothAgentSpeed(target));
-    }
-
-    private void EndAttackSpeedSlowdown()
-    {
-        if (navMeshAgent == null || !navMeshAgent.enabled) return;
-
-        if (attackSpeedRoutine != null)
-        {
-            StopCoroutine(attackSpeedRoutine);
-            attackSpeedRoutine = null;
-        }
-
-        float targetSpeed = patrolSpeed;
-        if (isSearching)
-            targetSpeed = searchSpeed;
-        else if (isChasing)
-            targetSpeed = GetNonSprintChaseSpeed();
-
-        attackSpeedRoutine = StartCoroutine(SmoothAgentSpeed(Mathf.Max(0.1f, targetSpeed)));
-    }
-
-    private IEnumerator SmoothAgentSpeed(float targetSpeed)
-    {
-        if (navMeshAgent == null) yield break;
-
-        float t = 0f;
-        float start = navMeshAgent.speed;
-        float duration = 1f / Mathf.Max(0.01f, attackSpeedLerp);
-        while (t < duration)
-        {
-            t += Time.deltaTime;
-            navMeshAgent.speed = Mathf.Lerp(start, targetSpeed, t / duration);
-            yield return null;
-        }
-
-        navMeshAgent.speed = targetSpeed;
     }
 
     private void ResumeAgentMovementAndRepath()
     {
         if (navMeshAgent == null || !navMeshAgent.enabled) return;
         if (isStunned || caughtPlayer || isDead) return;
+
+        if (IsMovementDisabled())
+        {
+            StopAgentMovement();
+            return;
+        }
 
         navMeshAgent.isStopped = false;
 
@@ -245,8 +233,14 @@ public partial class AdvancedEnemyAI
             return;
         }
 
+        if (IsMovementDisabled())
+        {
+            StopAgentMovement();
+            return;
+        }
+
         SetChasingState(true);
-        navMeshAgent.speed = Mathf.Max(0.1f, patrolSpeed);
+        navMeshAgent.speed = Mathf.Max(0.1f, speedWalk);
 
         if (navMeshAgent.enabled)
         {

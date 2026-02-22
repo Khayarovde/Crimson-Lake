@@ -67,6 +67,11 @@ public class TankController : MonoBehaviour
     private Vector2 lastMoveDirection;
     private Vector3 aimForward = Vector3.forward;
     private Vector3 currentPlanarVelocity;
+    private bool animationLockActive;
+    private string lockedAnimationState;
+
+    public float CurrentPlanarSpeed => new Vector2(currentPlanarVelocity.x, currentPlanarVelocity.z).magnitude;
+    public bool IsAnimationLocked => animationLockActive;
 
     private const string GameAnimatorControllerPath = "Assets/Animate/Phylanc/Player_GameScene";
 
@@ -87,6 +92,18 @@ public class TankController : MonoBehaviour
 
     void Update()
     {
+        if (animationLockActive)
+        {
+            inputHorizontal = 0f;
+            inputVertical = 0f;
+            SetBlendVelocity(Vector2.zero);
+
+            if (!string.IsNullOrEmpty(lockedAnimationState))
+                TryChangeAnimation(lockedAnimationState);
+
+            return;
+        }
+
         bool hasActiveWeapon = HasActiveWeaponSelected();
         isAiming = hasActiveWeapon && Input.GetMouseButton(1);
         ProcessMovement();
@@ -102,7 +119,39 @@ public class TankController : MonoBehaviour
 
     private void FixedUpdate()
     {
+        if (animationLockActive)
+        {
+            currentPlanarVelocity = Vector3.zero;
+            return;
+        }
+
         ApplyMovement();
+    }
+
+    public void SetAnimationLock(bool isLocked, string animationState = null)
+    {
+        animationLockActive = isLocked;
+        lockedAnimationState = isLocked ? animationState : null;
+
+        if (isLocked)
+        {
+            inputHorizontal = 0f;
+            inputVertical = 0f;
+            currentPlanarVelocity = Vector3.zero;
+            idleActive = false;
+            idleSwitchScheduled = false;
+            SetBlendVelocity(Vector2.zero);
+
+            if (!string.IsNullOrEmpty(lockedAnimationState))
+                TryChangeAnimation(lockedAnimationState);
+
+            return;
+        }
+
+        lastMoveTime = Time.time;
+        idleActive = false;
+        idleSwitchScheduled = false;
+        SetBlendVelocity(Vector2.zero);
     }
 
     void ProcessMovement()

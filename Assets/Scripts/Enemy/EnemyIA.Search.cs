@@ -25,12 +25,19 @@ public partial class AdvancedEnemyAI
 
     private void BeginSearch()
     {
+        if (IsMovementDisabled())
+        {
+            StopSearch();
+            StopAgentMovement();
+            return;
+        }
+
         isSearching = true;
         currentSearchIndex = 0;
         searchWaitEndTime = 0f;
         searchPoints = BuildSearchPoints(playerLastPosition);
         if (navMeshAgent != null)
-            navMeshAgent.speed = searchSpeed;
+            navMeshAgent.speed = Mathf.Max(0.1f, speedWalk);
         MoveToSearchPoint();
     }
 
@@ -40,12 +47,18 @@ public partial class AdvancedEnemyAI
         searchPoints = null;
         currentSearchIndex = 0;
         searchWaitEndTime = 0f;
-        if (navMeshAgent != null)
-            navMeshAgent.speed = patrolSpeed;
+        if (navMeshAgent != null && !IsMovementDisabled())
+            navMeshAgent.speed = Mathf.Max(0.1f, speedWalk);
     }
 
     private void UpdateSearch()
     {
+        if (IsMovementDisabled())
+        {
+            StopAgentMovement();
+            return;
+        }
+
         if (!isSearching || navMeshAgent == null || !navMeshAgent.enabled)
             return;
 
@@ -70,6 +83,12 @@ public partial class AdvancedEnemyAI
 
     private void MoveToSearchPoint()
     {
+        if (IsMovementDisabled())
+        {
+            StopAgentMovement();
+            return;
+        }
+
         if (searchPoints == null || searchPoints.Length == 0)
         {
             StopChasing();
