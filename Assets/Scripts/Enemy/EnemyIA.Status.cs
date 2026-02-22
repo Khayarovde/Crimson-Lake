@@ -131,8 +131,15 @@ public partial class AdvancedEnemyAI
 
         if (navMeshAgent != null)
         {
-            navMeshAgent.isStopped = false;
-            navMeshAgent.speed = speedWalk;
+            if (IsMovementDisabled())
+            {
+                StopAgentMovement();
+            }
+            else
+            {
+                navMeshAgent.isStopped = false;
+                navMeshAgent.speed = speedWalk;
+            }
         }
 
         isPatrolling = true;

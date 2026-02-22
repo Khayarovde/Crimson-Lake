@@ -6,6 +6,7 @@ public partial class AdvancedEnemyAI
 {
     private void AttackPlayer()
     {
+        if (IsMovementDisabled()) return;
         if (isAttacking) return;
         if (isStunned) return;
         if (isWakingUp) return;
@@ -22,13 +23,12 @@ public partial class AdvancedEnemyAI
     {
         isAttacking = true;
 
-        if (isStunned)
+        if (isStunned || IsMovementDisabled())
         {
             isAttacking = false;
             yield break;
         }
 
-        BeginAttackSpeedSlowdown();
         StopAgentMovement();
 
         if (facePlayerOnAttack)
@@ -54,7 +54,7 @@ public partial class AdvancedEnemyAI
         float elapsed = 0f;
         while (elapsed < hitTime)
         {
-            if (!IsCloseToPlayer())
+            if (!IsCloseToPlayer() || IsMovementDisabled())
             {
                 CleanupAttack(interrupted: true);
                 yield break;
@@ -83,7 +83,7 @@ public partial class AdvancedEnemyAI
         if (remainingLock > 0f)
             yield return new WaitForSecondsRealtime(remainingLock);
 
-        if (!caughtPlayer && postAttackSideStepEnabled && !isStunned && !isDead)
+        if (!caughtPlayer && postAttackSideStepEnabled && !isStunned && !isDead && !IsMovementDisabled())
             yield return StartCoroutine(PostAttackSideStep());
 
         if (m_Animator != null)
@@ -95,7 +95,6 @@ public partial class AdvancedEnemyAI
 
     private void CleanupAttack(bool interrupted)
     {
-        EndAttackSpeedSlowdown();
         SetPlayerCollisionIgnored(false);
 
         if (!caughtPlayer)
@@ -108,12 +107,14 @@ public partial class AdvancedEnemyAI
 
     private IEnumerator PostAttackSideStep()
     {
+        if (IsMovementDisabled())
+            yield break;
+
         if (navMeshAgent == null || !navMeshAgent.enabled || player == null)
             yield break;
 
         float duration = Mathf.Max(0.05f, postAttackSideStepDuration);
         float distance = Mathf.Max(0.1f, postAttackSideStepDistance);
-        float speed = Mathf.Max(0.1f, postAttackSideStepSpeed);
 
         Vector3 toPlayer = player.position - transform.position;
         toPlayer.y = 0f;
@@ -128,7 +129,7 @@ public partial class AdvancedEnemyAI
 
         bool cachedUpdateRotation = navMeshAgent.updateRotation;
         navMeshAgent.updateRotation = false;
-        navMeshAgent.speed = speed;
+        navMeshAgent.speed = Mathf.Max(0.1f, speedWalk);
         navMeshAgent.isStopped = false;
         navMeshAgent.SetDestination(target);
 
@@ -147,7 +148,7 @@ public partial class AdvancedEnemyAI
     {
         if (m_Animator == null) return;
 
-        m_Animator.speed = baseAnimatorSpeed * Mathf.Max(0.1f, attackAnimationSpeed);
+        m_Animator.speed = baseAnimatorSpeed;
 
         string stateName = GetAttackStateName(attackIndex);
         if (HasState(m_Animator, baseAnimLayer, stateName))

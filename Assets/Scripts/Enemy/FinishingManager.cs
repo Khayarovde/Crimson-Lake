@@ -81,7 +81,7 @@ public class FinishingManager : MonoBehaviour
 
     public void StartFinishing(Transform p, Transform e)
     {
-        StartFinishingInternal(p, e, false, false, true);
+        StartFinishingInternal(p, e, true, false, true);
     }
 
     public void StartFinishingImmediate(Transform p, Transform e)

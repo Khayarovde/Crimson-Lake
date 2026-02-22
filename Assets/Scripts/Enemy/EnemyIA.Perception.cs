@@ -15,19 +15,25 @@ public partial class AdvancedEnemyAI
             playerLastPosition = player.position;
             isScanning = false;
             StopSearch();
+
+            if (IsMovementDisabled())
+            {
+                SetChasingState(false);
+                StopAgentMovement();
+                return;
+            }
+
             if (!isChasing)
             {
                 SetChasingState(true);
             }
             isRandomPatrolling = false;
+
             if (navMeshAgent.enabled)
             {
                 float desiredDistance = Mathf.Max(stopBeforePlayerDistance, attackRange + 0.35f);
                 navMeshAgent.stoppingDistance = Mathf.Max(navMeshAgent.stoppingDistance, desiredDistance);
-                navMeshAgent.speed = Mathf.Max(0.1f, patrolSpeed);
-
-                if (!isAttacking)
-                    UpdateChaseSpeed(dist);
+                navMeshAgent.speed = Mathf.Max(0.1f, speedWalk);
 
                 if (dist <= desiredDistance)
                 {
@@ -44,6 +50,13 @@ public partial class AdvancedEnemyAI
         }
         else if (isChasing)
         {
+            if (IsMovementDisabled())
+            {
+                SetChasingState(false);
+                StopAgentMovement();
+                return;
+            }
+
             if (isSearching)
             {
                 UpdateSearch();
@@ -101,27 +114,6 @@ public partial class AdvancedEnemyAI
             return false;
 
         return hitTransform == player || hitTransform.IsChildOf(player);
-    }
-
-    private void UpdateChaseSpeed(float distance)
-    {
-        if (navMeshAgent == null) return;
-
-        float farSpeed = Mathf.Max(0.1f, chaseSpeed);
-        float nearSpeed = Mathf.Max(0.1f, farSpeed * Mathf.Max(0f, chaseCloseSpeedMultiplier));
-
-        float blend = 0f;
-        if (approachDistance > 0.01f)
-            blend = Mathf.Clamp01(1f - (distance / approachDistance));
-
-        blend = Mathf.Pow(blend, Mathf.Max(0.01f, chaseSpeedFalloffPower));
-
-        float targetSpeed = Mathf.Lerp(farSpeed, nearSpeed, blend);
-        if (distance <= Mathf.Max(0.1f, stopBeforePlayerDistance))
-            targetSpeed = Mathf.Min(targetSpeed, Mathf.Max(0.1f, approachSpeed));
-
-        float changeStep = Mathf.Max(0.1f, attackSpeedLerp) * Time.deltaTime;
-        navMeshAgent.speed = Mathf.MoveTowards(navMeshAgent.speed, targetSpeed, changeStep);
     }
 
     private Vector3 GetApproachDestination(float desiredDistance)

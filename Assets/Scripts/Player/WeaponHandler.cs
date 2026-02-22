@@ -65,9 +65,31 @@ public class WeaponHandler : MonoBehaviour
     [SerializeField] private string finisherAnimation = "attack_stun_enemy";
     [SerializeField] private string defaultIdleAnimation = "Idle";
     [SerializeField] private float finisherReturnToIdleDelay = 0.8f;
+    [SerializeField, Tooltip("Таймаут ожидания входа в state добивания")]
+    private float finisherEnterStateTimeout = 0.35f;
     [SerializeField] private float finisherRange = 1.4f;
+    [SerializeField, Tooltip("Автоподшаг к позиции добивания перед запуском анимации")]
+    private bool autoSnapToFinisherPosition = true;
+    [SerializeField, Tooltip("Дистанция от врага для позиции добивания (впереди врага)")]
+    private float finisherSnapDistance = 0.9f;
+    [SerializeField, Tooltip("Длительность автоподшага перед добиванием")]
+    private float finisherSnapDuration = 0.12f;
+    [SerializeField, Tooltip("Минимальная дистанция автоподшага, если у врага тесно")]
+    private float finisherSnapMinDistance = 0.45f;
+    [SerializeField, Tooltip("Сколько вариантов точки проверять при тесном окружении")]
+    private int finisherSnapPositionProbeSteps = 6;
+    [SerializeField, Tooltip("Маска препятствий для безопасного автоподшага")]
+    private LayerMask finisherSnapObstacleMask = ~0;
+    [SerializeField, Tooltip("Запас по радиусу капсулы при проверке безопасной позиции")]
+    private float finisherSnapClearancePadding = 0.03f;
     [SerializeField] private bool requireFrontForFinisher = true;
     [SerializeField, Range(1f, 179f)] private float finisherFrontMaxAngle = 85f;
+    [SerializeField, Tooltip("Разрешать запуск добивания только при почти нулевой скорости игрока")]
+    private bool requireLowSpeedForFinisher = true;
+    [SerializeField, Tooltip("Порог скорости игрока для старта добивания")]
+    private float finisherStartSpeedThreshold = 0.2f;
+    [SerializeField, Tooltip("Запрещать прицеливание (ПКМ), если рядом есть оглушённый враг для добивания")]
+    private bool blockRightMouseNearStunnedEnemy = true;
     [SerializeField, Tooltip("Задержка перед запуском смерти врага (сек)")]
     private float finisherEnemyDeathDelay = 0.6f;
 
@@ -106,12 +128,17 @@ public class WeaponHandler : MonoBehaviour
     private GameObject currentWeaponModel;
     private float nextFireTime = 0f;
     private Coroutine finisherReturnCoroutine;
+    private Coroutine finisherKillCoroutine;
+    private Coroutine finisherSequenceCoroutine;
+    private bool isFinisherInProgress;
+    private CapsuleCollider playerCapsule;
     // Словарь для отслеживания количества попаданий по каждому врагу
     private Dictionary<AdvancedEnemyAI, int> enemyHitCount = new Dictionary<AdvancedEnemyAI, int>();
 
     private void Awake()
     {
         m_Animator = GetComponent<Animator>();
+        playerCapsule = GetComponent<CapsuleCollider>();
         playerInventory = GetComponent<PlayerInventory>();
         tankController = GetComponent<TankController>();
         if (tankController) originalWalkSpeed = tankController.moveSpeed;
@@ -133,6 +160,10 @@ public class WeaponHandler : MonoBehaviour
     {
         if (TryFinisherAttack())
             return;
+
+        if (isFinisherInProgress)
+            return;
+
         HandleInput();
         if (Input.GetKeyDown(KeyCode.R)) TryManualReload();
     }
@@ -140,7 +171,12 @@ public class WeaponHandler : MonoBehaviour
     private void HandleInput()
     {
         bool hasActiveWeapon = HasActiveWeaponSelected();
-        bool aiming = hasActiveWeapon && Input.GetMouseButton(1);
+        bool blockAimingNow = ShouldBlockAimingForFinisher();
+        bool aiming = hasActiveWeapon && !blockAimingNow && Input.GetMouseButton(1);
+
+        if (blockAimingNow && isAiming)
+            StopAiming();
+
         if (aiming && !isAiming)
             StartAiming();
         else if (!aiming && isAiming)
@@ -167,18 +203,219 @@ public class WeaponHandler : MonoBehaviour
 
     private bool TryFinisherAttack()
     {
+        if (isFinisherInProgress) return false;
         if (!Input.GetMouseButtonDown(0)) return false;
+
+        if (requireLowSpeedForFinisher && tankController != null && tankController.CurrentPlanarSpeed > Mathf.Max(0.01f, finisherStartSpeedThreshold))
+            return false;
 
         var enemy = FindClosestStunnedEnemy(finisherRange);
         if (enemy == null) return false;
 
-        FaceEnemy(enemy.transform);
-        PlayFinisherAnimation();
+        if (isAiming)
+            StopAiming();
+
+        isFinisherInProgress = true;
+        ApplyFinisherMovementLock();
+
         if (finisherReturnCoroutine != null)
             StopCoroutine(finisherReturnCoroutine);
-        finisherReturnCoroutine = StartCoroutine(ReturnToIdleAfterFinisher());
-        StartCoroutine(KillEnemyAfterDelay(enemy, finisherEnemyDeathDelay));
+        if (finisherKillCoroutine != null)
+            StopCoroutine(finisherKillCoroutine);
+        if (finisherSequenceCoroutine != null)
+            StopCoroutine(finisherSequenceCoroutine);
+
+        finisherSequenceCoroutine = StartCoroutine(BeginFinisherSequence(enemy));
         return true;
+    }
+
+    private IEnumerator BeginFinisherSequence(AdvancedEnemyAI enemy)
+    {
+        if (enemy == null || !enemy.CanBeFinished())
+        {
+            ReleaseFinisherAnimationLock();
+            isFinisherInProgress = false;
+            finisherSequenceCoroutine = null;
+            yield break;
+        }
+
+        if (autoSnapToFinisherPosition)
+            yield return SnapToFinisherPosition(enemy.transform);
+
+        if (enemy == null || !enemy.CanBeFinished())
+        {
+            ReleaseFinisherAnimationLock();
+            isFinisherInProgress = false;
+            finisherSequenceCoroutine = null;
+            yield break;
+        }
+
+        FaceEnemy(enemy.transform);
+        if (!PlayFinisherAnimation())
+        {
+            ReleaseFinisherAnimationLock();
+            isFinisherInProgress = false;
+            finisherSequenceCoroutine = null;
+            yield break;
+        }
+
+        ApplyFinisherAnimationLock();
+        finisherReturnCoroutine = StartCoroutine(ReturnToIdleAfterFinisher());
+        finisherKillCoroutine = StartCoroutine(KillEnemyAfterFinisherAnimation(enemy));
+        finisherSequenceCoroutine = null;
+    }
+
+    private IEnumerator SnapToFinisherPosition(Transform enemyTransform)
+    {
+        if (enemyTransform == null)
+            yield break;
+
+        Vector3 startPos = transform.position;
+        Quaternion startRot = transform.rotation;
+
+        TryGetSafeSnapTarget(enemyTransform, startPos, out Vector3 targetPos);
+
+        Vector3 toEnemy = enemyTransform.position - targetPos;
+        toEnemy.y = 0f;
+        Quaternion targetRot = toEnemy.sqrMagnitude > 0.0001f
+            ? Quaternion.LookRotation(toEnemy.normalized, Vector3.up)
+            : startRot;
+
+        float duration = Mathf.Max(0f, finisherSnapDuration);
+        if (duration <= 0.001f)
+        {
+            transform.position = targetPos;
+            transform.rotation = targetRot;
+            yield break;
+        }
+
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            if (enemyTransform == null)
+                yield break;
+
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / duration);
+            transform.position = Vector3.Lerp(startPos, targetPos, t);
+            transform.rotation = Quaternion.Slerp(startRot, targetRot, t);
+            yield return null;
+        }
+
+        transform.position = targetPos;
+        transform.rotation = targetRot;
+    }
+
+    private bool TryGetSafeSnapTarget(Transform enemyTransform, Vector3 startPos, out Vector3 targetPos)
+    {
+        float preferredDistance = Mathf.Max(0.1f, finisherSnapDistance);
+        float minDistance = Mathf.Clamp(finisherSnapMinDistance, 0.1f, preferredDistance);
+        int probeSteps = Mathf.Max(1, finisherSnapPositionProbeSteps);
+
+        for (int i = 0; i <= probeSteps; i++)
+        {
+            float t = probeSteps == 0 ? 0f : i / (float)probeSteps;
+            float distance = Mathf.Lerp(preferredDistance, minDistance, t);
+            Vector3 candidate = enemyTransform.position + enemyTransform.forward * distance;
+            candidate.y = startPos.y;
+
+            if (!IsSnapCandidateClear(candidate))
+                continue;
+
+            if (!IsSnapPathClear(startPos, candidate))
+                continue;
+
+            targetPos = candidate;
+            return true;
+        }
+
+        targetPos = startPos;
+        return false;
+    }
+
+    private bool IsSnapCandidateClear(Vector3 candidatePosition)
+    {
+        GetPlayerCapsuleAtPosition(candidatePosition, out Vector3 top, out Vector3 bottom, out float radius);
+        int mask = GetSnapObstacleMaskWithoutPlayerAndEnemy();
+        return !Physics.CheckCapsule(
+            top,
+            bottom,
+            Mathf.Max(0.01f, radius + Mathf.Max(0f, finisherSnapClearancePadding)),
+            mask,
+            QueryTriggerInteraction.Ignore
+        );
+    }
+
+    private bool IsSnapPathClear(Vector3 startPos, Vector3 targetPos)
+    {
+        Vector3 direction = targetPos - startPos;
+        float distance = direction.magnitude;
+        if (distance < 0.0001f)
+            return true;
+
+        direction /= distance;
+        GetPlayerCapsuleAtPosition(startPos, out Vector3 top, out Vector3 bottom, out float radius);
+        int mask = GetSnapObstacleMaskWithoutPlayerAndEnemy();
+
+        return !Physics.CapsuleCast(
+            top,
+            bottom,
+            Mathf.Max(0.01f, radius),
+            direction,
+            distance,
+            mask,
+            QueryTriggerInteraction.Ignore
+        );
+    }
+
+    private int GetSnapObstacleMaskWithoutPlayerAndEnemy()
+    {
+        int mask = finisherSnapObstacleMask.value;
+        int playerLayerBit = 1 << gameObject.layer;
+        mask &= ~playerLayerBit;
+        mask &= ~enemyLayerMask.value;
+        return mask;
+    }
+
+    private void GetPlayerCapsuleAtPosition(Vector3 worldPosition, out Vector3 top, out Vector3 bottom, out float radius)
+    {
+        if (playerCapsule != null)
+        {
+            Vector3 lossyScale = transform.lossyScale;
+            float scaleX = Mathf.Abs(lossyScale.x);
+            float scaleY = Mathf.Abs(lossyScale.y);
+            float scaleZ = Mathf.Abs(lossyScale.z);
+
+            radius = playerCapsule.radius * Mathf.Max(scaleX, scaleZ);
+            float height = Mathf.Max(radius * 2f, playerCapsule.height * scaleY);
+            float halfSegment = Mathf.Max(0f, (height * 0.5f) - radius);
+
+            Vector3 centerOffset = transform.rotation * new Vector3(
+                playerCapsule.center.x * scaleX,
+                playerCapsule.center.y * scaleY,
+                playerCapsule.center.z * scaleZ
+            );
+
+            Vector3 center = worldPosition + centerOffset;
+            Vector3 up = transform.up;
+            top = center + up * halfSegment;
+            bottom = center - up * halfSegment;
+            return;
+        }
+
+        radius = 0.28f;
+        float halfSegmentFallback = 0.55f;
+        Vector3 centerFallback = worldPosition + Vector3.up * 0.9f;
+        top = centerFallback + Vector3.up * halfSegmentFallback;
+        bottom = centerFallback - Vector3.up * halfSegmentFallback;
+    }
+
+    private bool ShouldBlockAimingForFinisher()
+    {
+        if (!blockRightMouseNearStunnedEnemy)
+            return false;
+
+        return FindClosestStunnedEnemy(finisherRange) != null;
     }
 
     private AdvancedEnemyAI FindClosestStunnedEnemy(float range)
@@ -217,28 +454,116 @@ public class WeaponHandler : MonoBehaviour
         return angle <= Mathf.Clamp(finisherFrontMaxAngle, 1f, 179f);
     }
 
-    private void PlayFinisherAnimation()
+    private bool PlayFinisherAnimation()
     {
         Animator anim = GetAnimator();
-        if (anim == null) return;
-        if (string.IsNullOrEmpty(finisherAnimation)) return;
+        if (anim == null) return false;
+        if (string.IsNullOrEmpty(finisherAnimation)) return false;
 
-        anim.CrossFadeInFixedTime(finisherAnimation, 0.1f, 0);
+        int finisherHash = Animator.StringToHash(finisherAnimation);
+        if (!anim.HasState(0, finisherHash))
+        {
+            Debug.LogWarning("WeaponHandler: не найдено состояние анимации добивания '" + finisherAnimation + "' в base layer.");
+            return false;
+        }
+
+        anim.Play(finisherHash, 0, 0f);
+        anim.Update(0f);
+        return true;
     }
 
-    private IEnumerator KillEnemyAfterDelay(AdvancedEnemyAI enemy, float delay)
+    private IEnumerator KillEnemyAfterFinisherAnimation(AdvancedEnemyAI enemy)
     {
-        if (delay > 0f)
-            yield return new WaitForSeconds(delay);
-        if (enemy != null)
+        Animator anim = GetAnimator();
+        if (anim == null)
+        {
+            if (finisherReturnCoroutine != null)
+            {
+                StopCoroutine(finisherReturnCoroutine);
+                finisherReturnCoroutine = null;
+            }
+            ReleaseFinisherAnimationLock();
+            isFinisherInProgress = false;
+            finisherKillCoroutine = null;
+            yield break;
+        }
+
+        int finisherHash = Animator.StringToHash(finisherAnimation);
+        float enterTimeout = Mathf.Max(0.05f, finisherEnterStateTimeout);
+        float elapsed = 0f;
+        bool finisherStarted = false;
+
+        while (elapsed < enterTimeout)
+        {
+            AnimatorStateInfo currentState = anim.GetCurrentAnimatorStateInfo(0);
+            AnimatorStateInfo nextState = anim.GetNextAnimatorStateInfo(0);
+
+            if (currentState.shortNameHash == finisherHash || nextState.shortNameHash == finisherHash)
+            {
+                finisherStarted = true;
+                break;
+            }
+
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+
+        if (!finisherStarted)
+        {
+            Debug.LogWarning("WeaponHandler: анимация добивания не стартовала, враг не будет убит без анимации.");
+            if (finisherReturnCoroutine != null)
+            {
+                StopCoroutine(finisherReturnCoroutine);
+                finisherReturnCoroutine = null;
+            }
+            ReleaseFinisherAnimationLock();
+            isFinisherInProgress = false;
+            finisherKillCoroutine = null;
+            yield break;
+        }
+
+        float delay = Mathf.Max(0.05f, finisherEnemyDeathDelay);
+        yield return new WaitForSeconds(delay);
+
+        if (enemy != null && enemy.CanBeFinished())
             enemy.KillDuringStun();
+
+        finisherKillCoroutine = null;
     }
 
     private IEnumerator ReturnToIdleAfterFinisher()
     {
+        Animator anim = GetAnimator();
+        float enterTimeout = Mathf.Max(0.05f, finisherEnterStateTimeout);
+        float elapsed = 0f;
+        int finisherHash = Animator.StringToHash(finisherAnimation);
+        bool finisherStarted = false;
+
+        while (elapsed < enterTimeout)
+        {
+            if (anim == null)
+                break;
+
+            AnimatorStateInfo currentState = anim.GetCurrentAnimatorStateInfo(0);
+            AnimatorStateInfo nextState = anim.GetNextAnimatorStateInfo(0);
+            if (currentState.shortNameHash == finisherHash || nextState.shortNameHash == finisherHash)
+            {
+                finisherStarted = true;
+                break;
+            }
+
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+
         float delay = Mathf.Max(0.05f, finisherReturnToIdleDelay);
+        if (!finisherStarted)
+            delay = Mathf.Max(delay, finisherEnemyDeathDelay + 0.05f);
+
         yield return new WaitForSeconds(delay);
         ForceDefaultIdle();
+        ReleaseFinisherAnimationLock();
+        isFinisherInProgress = false;
         finisherReturnCoroutine = null;
     }
 
@@ -280,6 +605,54 @@ public class WeaponHandler : MonoBehaviour
         if (!anim.HasState(0, stateHash)) return;
 
         anim.CrossFadeInFixedTime(defaultIdleAnimation, 0.1f, 0);
+    }
+
+    private void ApplyFinisherAnimationLock()
+    {
+        if (tankController == null)
+            return;
+
+        tankController.SetAnimationLock(true, finisherAnimation);
+    }
+
+    private void ApplyFinisherMovementLock()
+    {
+        if (tankController == null)
+            return;
+
+        tankController.SetAnimationLock(true);
+    }
+
+    private void ReleaseFinisherAnimationLock()
+    {
+        if (tankController == null)
+            return;
+
+        tankController.SetAnimationLock(false);
+    }
+
+    private void OnDisable()
+    {
+        ReleaseFinisherAnimationLock();
+        isFinisherInProgress = false;
+
+        if (finisherReturnCoroutine != null)
+        {
+            StopCoroutine(finisherReturnCoroutine);
+            finisherReturnCoroutine = null;
+        }
+
+        if (finisherKillCoroutine != null)
+        {
+            StopCoroutine(finisherKillCoroutine);
+            finisherKillCoroutine = null;
+        }
+
+        if (finisherSequenceCoroutine != null)
+        {
+            StopCoroutine(finisherSequenceCoroutine);
+            finisherSequenceCoroutine = null;
+        }
     }
 
     private Animator GetAnimator()
