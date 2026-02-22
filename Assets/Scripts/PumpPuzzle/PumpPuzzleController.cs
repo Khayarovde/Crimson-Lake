@@ -310,7 +310,7 @@ public class PumpPuzzleController : MonoBehaviour
     {
         if (tankFillImages == null || tankFillImages.Length != 3)
         {
-            Debug.LogWarning("[PumpPuzzleController] Tank Fill Images должен содержать ровно 3 элемента (A, B, C).", this);
+            // Debug.LogWarning("[PumpPuzzleController] Tank Fill Images должен содержать ровно 3 элемента (A, B, C).", this);
             return;
         }
 
@@ -319,7 +319,7 @@ public class PumpPuzzleController : MonoBehaviour
             Image tank = tankFillImages[i];
             if (tank == null)
             {
-                Debug.LogWarning($"[PumpPuzzleController] Tank Fill Images[{i}] не назначен.", this);
+                // Debug.LogWarning($"[PumpPuzzleController] Tank Fill Images[{i}] не назначен.", this);
                 continue;
             }
 
@@ -383,7 +383,7 @@ public class PumpPuzzleController : MonoBehaviour
             PumpButtonBinding binding = buttonBindings[i];
             if (binding == null || binding.button == null)
             {
-                Debug.LogWarning($"[PumpPuzzleController] buttonBindings[{i}] не настроен.", this);
+                // Debug.LogWarning($"[PumpPuzzleController] buttonBindings[{i}] не настроен.", this);
                 continue;
             }
 
@@ -428,7 +428,7 @@ public class PumpPuzzleController : MonoBehaviour
     {
         if (actionButtons == null || actionButtons.Length == 0)
         {
-            Debug.LogWarning("[PumpPuzzleController] Action Buttons не заполнен. Кнопки могут остаться неинтерактивными после победы.", this);
+            // Debug.LogWarning("[PumpPuzzleController] Action Buttons не заполнен. Кнопки могут остаться неинтерактивными после победы.", this);
             return;
         }
 
@@ -437,7 +437,7 @@ public class PumpPuzzleController : MonoBehaviour
             Button button = actionButtons[i];
             if (button == null)
             {
-                Debug.LogWarning($"[PumpPuzzleController] Action Buttons[{i}] не назначен.", this);
+                // Debug.LogWarning($"[PumpPuzzleController] Action Buttons[{i}] не назначен.", this);
                 continue;
             }
 
@@ -453,7 +453,7 @@ public class PumpPuzzleController : MonoBehaviour
             return;
         }
 
-        Debug.Log($"[PumpPuzzleController] {message}", this);
+        // Debug.Log($"[PumpPuzzleController] {message}", this);
     }
 
     private static string TankName(int index)

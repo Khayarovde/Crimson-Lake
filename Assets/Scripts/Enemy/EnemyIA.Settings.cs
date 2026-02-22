@@ -6,7 +6,8 @@ public partial class AdvancedEnemyAI
     [SerializeField] private NavMeshAgent navMeshAgent;
     [SerializeField] private Animator m_Animator;
     [SerializeField] private float speedWalk = 2f;
-    [SerializeField] private float speedRun = 2f;
+    [SerializeField, Tooltip("Если включено — враг не ходит (патруль/поиск/преследование отключены)")]
+    private bool disableMovement = false;
 
     [Header("Patrol")]
     [SerializeField] private Transform[] waypoints;
@@ -14,11 +15,6 @@ public partial class AdvancedEnemyAI
     [SerializeField] private float randomPatrolRadius = 10f;
     [SerializeField] private float randomPatrolPointTolerance = 0.8f;
     [SerializeField] private float randomPatrolWait = 0.6f;
-
-    [Header("Scene Speeds")]
-    [SerializeField] private float patrolSpeed = 2f;
-    [SerializeField] private float searchSpeed = 2f;
-    [SerializeField] private float chaseSpeed = 2f;
 
     [Header("Detection")]
     [SerializeField] private float viewRadius = 15f;
@@ -28,19 +24,7 @@ public partial class AdvancedEnemyAI
     [SerializeField] private Vector3 sightOriginOffset = new Vector3(0f, 1.4f, 0f);
     [SerializeField] private Vector3 sightTargetOffset = new Vector3(0f, 1.2f, 0f);
     [SerializeField, Tooltip("Дистанция остановки перед игроком, чтобы не толкать")]
-    private float stopBeforePlayerDistance = 1.2f;
-
-    [Header("Aggression")]
-    [SerializeField, Tooltip("Множитель скорости, когда враг очень близко к игроку")]
-    private float chaseCloseSpeedMultiplier = 0.4f;
-    [SerializeField, Tooltip("Плавность снижения скорости при приближении (больше = медленнее ближе)")]
-    private float chaseSpeedFalloffPower = 1.5f;
-
-    [Header("Approach")]
-    [SerializeField, Tooltip("Скорость неспешного сближения до атаки")]
-    private float approachSpeed = 2f;
-    [SerializeField, Tooltip("Дистанция, на которой враг начинает ускоряться (0 = не ускоряться)")]
-    private float approachDistance = 0f;
+    private float stopBeforePlayerDistance = 1.8f;
 
     [Header("Scan On Spawn")]
     [SerializeField] private bool scanOnSpawn = true;
@@ -69,8 +53,6 @@ public partial class AdvancedEnemyAI
     private float attackAnimationDuration = 1.2f;
     [SerializeField, Tooltip("Сколько времени враг стоит на месте во время удара (реальное время)")]
     private float attackLockTime = 0.8f;
-    [SerializeField, Tooltip("Множитель скорости анимации на время удара/захвата")]
-    private float attackAnimationSpeed = 1f;
     [SerializeField, Tooltip("Максимальный угол (в градусах) между forward врага и направлением на игрока для атаки/урона")]
     private float maxAttackAngle = 60f;
     [SerializeField, Tooltip("Автоповорот к игроку перед атакой (только по оси Y)")]
@@ -79,10 +61,6 @@ public partial class AdvancedEnemyAI
     private float attackHitRadius = 0.8f;
     [SerializeField, Tooltip("Смещение хитбокса вперёд вдоль forward")]
     private float attackHitForwardOffset = 0.5f;
-    [SerializeField, Tooltip("Множитель скорости NavMeshAgent во время атаки")]
-    private float attackMoveSpeedMultiplier = 0f;
-    [SerializeField, Tooltip("Скорость плавного изменения скорости при атаке")]
-    private float attackSpeedLerp = 6f;
     [SerializeField, Tooltip("Отключать коллизии с игроком во время атаки")]
     private bool disableCollisionDuringAttack = true;
 
@@ -93,8 +71,6 @@ public partial class AdvancedEnemyAI
     private float postAttackSideStepDistance = 1.5f;
     [SerializeField, Tooltip("Длительность бокового шага (сек)")]
     private float postAttackSideStepDuration = 0.6f;
-    [SerializeField, Tooltip("Скорость бокового шага")]
-    private float postAttackSideStepSpeed = 2f;
 
     [Header("Attack Variants")]
     [SerializeField, Range(0f, 5f)] private float attack1Weight = 1f;

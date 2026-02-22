@@ -15,19 +15,27 @@ public partial class AdvancedEnemyAI
             playerLastPosition = player.position;
             isScanning = false;
             StopSearch();
+
+            if (IsMovementDisabled())
+            {
+                SetChasingState(false);
+                StopAgentMovement();
+                return;
+            }
+
             if (!isChasing)
             {
-                isPatrolling = false;
-                isChasing = true;
+                SetChasingState(true);
             }
             isRandomPatrolling = false;
+
             if (navMeshAgent.enabled)
             {
-                if (!isAttacking)
-                    UpdateChaseSpeed(dist);
+                float desiredDistance = Mathf.Max(stopBeforePlayerDistance, attackRange + 0.35f);
+                navMeshAgent.stoppingDistance = Mathf.Max(navMeshAgent.stoppingDistance, desiredDistance);
+                navMeshAgent.speed = Mathf.Max(0.1f, speedWalk);
 
-
-                if (dist <= Mathf.Max(stopBeforePlayerDistance, attackRange))
+                if (dist <= desiredDistance)
                 {
                     StopAgentMovement();
                     if (facePlayerOnAttack)
@@ -36,12 +44,19 @@ public partial class AdvancedEnemyAI
                 else
                 {
                     ResumeAgentMovement();
-                    navMeshAgent.SetDestination(player.position);
+                    navMeshAgent.SetDestination(GetApproachDestination(desiredDistance));
                 }
             }
         }
         else if (isChasing)
         {
+            if (IsMovementDisabled())
+            {
+                SetChasingState(false);
+                StopAgentMovement();
+                return;
+            }
+
             if (isSearching)
             {
                 UpdateSearch();
@@ -101,22 +116,21 @@ public partial class AdvancedEnemyAI
         return hitTransform == player || hitTransform.IsChildOf(player);
     }
 
-    private void UpdateChaseSpeed(float distance)
+    private Vector3 GetApproachDestination(float desiredDistance)
     {
-        if (navMeshAgent == null) return;
+        if (player == null)
+            return transform.position;
 
-        float minSpeed = Mathf.Max(0.1f, patrolSpeed * Mathf.Clamp01(chaseCloseSpeedMultiplier));
-        float targetApproach = Mathf.Max(minSpeed, approachSpeed);
-        float targetRun = Mathf.Max(targetApproach, chaseSpeed);
+        Vector3 toPlayer = player.position - transform.position;
+        toPlayer.y = 0f;
+        if (toPlayer.sqrMagnitude < 0.0001f)
+            return player.position;
 
-        float accelDistance = Mathf.Max(0f, approachDistance);
-        float t = accelDistance > 0f
-            ? Mathf.InverseLerp(attackRange, accelDistance, distance)
-            : 0f;
-        t = Mathf.Clamp01(t);
-        t = Mathf.Pow(t, Mathf.Max(0.01f, chaseSpeedFalloffPower));
+        Vector3 destination = player.position - toPlayer.normalized * Mathf.Max(0.1f, desiredDistance);
+        if (NavMesh.SamplePosition(destination, out NavMeshHit hit, 1.5f, NavMesh.AllAreas))
+            return hit.position;
 
-        navMeshAgent.speed = Mathf.Lerp(targetApproach, targetRun, t);
+        return destination;
     }
 
     private void OnDrawGizmosSelected()

@@ -36,7 +36,7 @@ public class Chest : MonoBehaviour
         // Проверяем, не был ли закрыт UI сундука другим способом
         if (isChestOpen)
         {
-            InventoryUI inventoryUI = FindObjectOfType<InventoryUI>();
+            InventoryUI inventoryUI = FindFirstObjectByType<InventoryUI>();
             if (inventoryUI != null && !inventoryUI.IsChestUIOpen())
             {
                 isChestOpen = false;
@@ -78,14 +78,14 @@ public class Chest : MonoBehaviour
     private void ClearPlayerReferences()
     {
         // Находим все объекты PlayerInventory и очищаем ссылки на этот сундук
-        PlayerInventory[] allPlayers = FindObjectsOfType<PlayerInventory>();
+        PlayerInventory[] allPlayers = FindObjectsByType<PlayerInventory>(FindObjectsSortMode.InstanceID);
         foreach (PlayerInventory player in allPlayers)
         {
             player.ClearChestReference(this);
         }
         
         // Находим все объекты InventoryUI и очищаем ссылки на этот сундук
-        InventoryUI[] allInventoryUIs = FindObjectsOfType<InventoryUI>();
+        InventoryUI[] allInventoryUIs = FindObjectsByType<InventoryUI>(FindObjectsSortMode.InstanceID);
         foreach (InventoryUI inventoryUI in allInventoryUIs)
         {
             inventoryUI.ClearChestReference(this);

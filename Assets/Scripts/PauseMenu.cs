@@ -186,7 +186,7 @@ public class PauseMenu : MonoBehaviour
         }
 
         // 2. Потом по клипам (для PlayOneShot и динамических объектов)
-        AudioSource[] allSources = FindObjectsOfType<AudioSource>();
+        AudioSource[] allSources = FindObjectsByType<AudioSource>(FindObjectsSortMode.InstanceID);
         foreach (var source in allSources)
         {
             if (source == null || source.clip == null) continue;
@@ -254,7 +254,7 @@ public class PauseMenu : MonoBehaviour
         {
             pauseMusicFilters.Clear();
 
-            AudioSource[] allSources = FindObjectsOfType<AudioSource>();
+            AudioSource[] allSources = FindObjectsByType<AudioSource>(FindObjectsSortMode.InstanceID);
             foreach (var source in allSources)
             {
                 if (source == null || !IsMusicSource(source))

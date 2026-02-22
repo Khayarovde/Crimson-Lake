@@ -22,8 +22,6 @@ public partial class AdvancedEnemyAI : MonoBehaviour
     private string currentAnimState;
     private Coroutine attackRoutine;
     private bool isWakingUp;
-    private float baseNavSpeed;
-    private Coroutine attackSpeedRoutine;
     private bool isDead;
     private int lastAttackIndex = -1;
 
@@ -47,12 +45,13 @@ public partial class AdvancedEnemyAI : MonoBehaviour
         if (!gameObject.activeInHierarchy) return;
 
         navMeshAgent = GetComponent<NavMeshAgent>();
-        if (navMeshAgent != null) baseNavSpeed = navMeshAgent.speed;
         m_Animator = GetComponent<Animator>();
-        if (m_Animator != null) baseAnimatorSpeed = m_Animator.speed;
+        if (m_Animator != null)
+        {
+            baseAnimatorSpeed = m_Animator.speed;
+            m_Animator.applyRootMotion = !disableMovement;
+        }
         currentHealth = maxHealth;
-
-        ApplySceneSpeeds();
 
         player = GameObject.FindGameObjectWithTag("Player")?.transform;
         if (player != null)
@@ -93,7 +92,11 @@ public partial class AdvancedEnemyAI : MonoBehaviour
         gameObject.layer = LayerMask.NameToLayer("Enemy");
 
         if (navMeshAgent != null)
+        {
+            navMeshAgent.speed = Mathf.Max(0.1f, speedWalk);
             navMeshAgent.stoppingDistance = Mathf.Max(navMeshAgent.stoppingDistance, stopBeforePlayerDistance);
+            navMeshAgent.autoBraking = true;
+        }
 
         if (scanOnSpawn)
             BeginScan();
@@ -119,15 +122,12 @@ public partial class AdvancedEnemyAI : MonoBehaviour
         Physics.IgnoreCollision(enemyCollider, playerCollider, ignore);
     }
 
-    private void ApplySceneSpeeds()
-    {
-        speedWalk = patrolSpeed;
-        speedRun = chaseSpeed;
-    }
-
     void Update()
     {
         if (caughtPlayer || !gameObject.activeInHierarchy || isDead) return;
+
+        if (m_Animator != null)
+            m_Animator.applyRootMotion = !disableMovement;
 
         if (isStunned)
         {
@@ -162,6 +162,12 @@ public partial class AdvancedEnemyAI : MonoBehaviour
                 UpdatePatrol();
 
             CheckForPlayer();
+        }
+
+        if (IsMovementDisabled())
+        {
+            StopAgentMovement();
+            return;
         }
 
         // m_Animator.SetFloat("Speed", navMeshAgent.velocity.magnitude);

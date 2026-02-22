@@ -181,11 +181,7 @@ public class PlayerHealth : MonoBehaviour
         }
 
         // Поиск по Canvas'ам (включая неактивные)
-    #if UNITY_2023_1_OR_NEWER
         var canvases = UnityEngine.Object.FindObjectsByType<Canvas>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-    #else
-        var canvases = UnityEngine.Object.FindObjectsOfType<Canvas>(true);
-    #endif
         foreach (var c in canvases)
         {
             if (c == null) continue;

@@ -14,7 +14,7 @@ public class SettingsManager : MonoBehaviour
     {
         if (Instance != null) return Instance;
 
-        var existing = FindObjectOfType<SettingsManager>();
+        var existing = FindFirstObjectByType<SettingsManager>();
         if (existing != null)
             return existing;
 
@@ -39,7 +39,8 @@ public class SettingsManager : MonoBehaviour
         if (Instance == null)
         {
             Instance = this;
-            DontDestroyOnLoad(gameObject);
+            GameObject persistentRoot = transform.root != null ? transform.root.gameObject : gameObject;
+            DontDestroyOnLoad(persistentRoot);
 
             LoadVolumes();
             ApplyVolumes();
@@ -113,7 +114,7 @@ public class SettingsManager : MonoBehaviour
 
     public void ApplyVolumes()
     {
-        AudioSource[] sources = FindObjectsOfType<AudioSource>();
+        AudioSource[] sources = FindObjectsByType<AudioSource>(FindObjectsSortMode.InstanceID);
         foreach (var source in sources)
         {
             if (source == null) continue;

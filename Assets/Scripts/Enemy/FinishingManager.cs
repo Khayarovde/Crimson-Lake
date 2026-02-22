@@ -1,0 +1,650 @@
+using UnityEngine;
+using UnityEngine.UI;
+using System.Collections;
+using System.Collections.Generic;
+
+public class FinishingManager : MonoBehaviour
+{
+    public enum FinishingCameraPlacementMode
+    {
+        KeepCurrentTransform
+    }
+
+    [Header("Scene References")]
+    public Camera finishingCam;
+    public Canvas finishingCanvas;
+    public RawImage finishingRawImage;
+    public Camera playerCamera;
+    public Transform player;
+    public Transform enemy;
+    public FinishingCameraPlacementMode finishingCameraPlacementMode = FinishingCameraPlacementMode.KeepCurrentTransform;
+
+    [Header("Animation")]
+    public string enemyAnimationState = "Stun";
+    public string playerAttackTrigger = "death";
+    [Range(0.05f, 0.95f)] public float effectStartNormalizedTime = 0.5f;
+    public bool useAutomaticTiming = true;
+
+    [Header("Visual")]
+    public string finishingLayerName = "FinishingOnly";
+    public Color redOverlayColor = new Color(0.6f, 0f, 0f, 1f);
+
+    [Header("Finishing Rules")]
+    public bool requireFrontSide = true;
+    [Range(1f, 179f)] public float maxFrontAngle = 85f;
+
+    [Header("Gameplay")]
+    [Range(0.1f, 1f)] public float slowMotionScale = 0.5f;
+
+    [Header("Player Control Lock")]
+    public bool disablePlayerControlDuringFinishing = true;
+    public bool autoDetectPlayerControlScripts = true;
+    public List<Behaviour> playerControlScripts = new List<Behaviour>();
+    public bool disablePlayerCameraDuringFinishing = true;
+
+    private Animator playerAnim;
+    private Animator enemyAnim;
+    private Coroutine automaticSequenceRoutine;
+    private readonly Dictionary<Transform, int> originalLayers = new Dictionary<Transform, int>();
+    private CameraClearFlags previousClearFlags;
+    private Color previousBackgroundColor;
+    private int previousCullingMask;
+    private bool isFinishingActive;
+    private bool usingTemporaryLayer;
+    private bool previousPlayerCameraEnabled;
+    private readonly List<Behaviour> temporarilyDisabledControls = new List<Behaviour>();
+    private RenderTexture runtimeFinishingTexture;
+
+    public bool IsFinishingActive => isFinishingActive;
+
+    private void Awake()
+    {
+        if (finishingCam != null)
+        {
+            previousClearFlags = finishingCam.clearFlags;
+            previousBackgroundColor = finishingCam.backgroundColor;
+            previousCullingMask = finishingCam.cullingMask;
+            finishingCam.gameObject.SetActive(false);
+        }
+
+        if (finishingCanvas != null)
+        {
+            finishingCanvas.gameObject.SetActive(false);
+        }
+
+        ValidateSetup();
+    }
+
+    private void Update()
+    {
+    }
+
+    public void StartFinishing(Transform p, Transform e)
+    {
+        StartFinishingInternal(p, e, true, false, true);
+    }
+
+    public void StartFinishingImmediate(Transform p, Transform e)
+    {
+        StartFinishingInternal(p, e, true, true, false);
+    }
+
+    private void StartFinishingInternal(Transform p, Transform e, bool startEffectImmediately, bool forceAutomaticSequence, bool replayEnemyAnimation)
+    {
+        if (isFinishingActive)
+        {
+            Debug.Log("FinishingManager: Start ignored because finishing is already active.");
+            return;
+        }
+
+        EndAutomaticRoutine();
+        RestoreSceneState();
+
+        player = p;
+        enemy = e;
+
+        if (player == null || enemy == null)
+        {
+            Debug.LogWarning("FinishingManager: player or enemy is not assigned.");
+            return;
+        }
+
+        playerAnim = player.GetComponent<Animator>();
+        enemyAnim = enemy.GetComponent<Animator>();
+
+        if (playerAnim == null || enemyAnim == null)
+        {
+            Debug.LogWarning("FinishingManager: Animator not found on player or enemy.");
+            return;
+        }
+
+        if (requireFrontSide && !IsPlayerInEnemyFront(player, enemy))
+        {
+            Debug.Log("FinishingManager: Finishing blocked because player is behind enemy.");
+            return;
+        }
+
+        ValidateSetup();
+        DisablePlayerControl();
+        DisablePlayerCamera();
+
+        PrepareFinishingCamera();
+
+        if (replayEnemyAnimation)
+        {
+            enemyAnim.Play(enemyAnimationState, 0, 0f);
+        }
+        playerAnim.ResetTrigger(playerAttackTrigger);
+        playerAnim.SetTrigger(playerAttackTrigger);
+
+        Debug.Log("FinishingManager: StartFinishing called. Sequence started.");
+
+        isFinishingActive = true;
+
+        UpdateFinishingCameraTransform();
+
+        if (startEffectImmediately)
+        {
+            StartFinishingEffect();
+        }
+
+        if (useAutomaticTiming || forceAutomaticSequence)
+        {
+            float duration = replayEnemyAnimation
+                ? GetClipLength(enemyAnim, enemyAnimationState, 1f)
+                : GetCurrentStateRemainingTime(enemyAnim, 1f);
+            automaticSequenceRoutine = StartCoroutine(AutomaticSequence(duration, startEffectImmediately));
+        }
+    }
+
+    public void StartFinishing()
+    {
+        if (player == null || enemy == null)
+        {
+            Debug.LogWarning("FinishingManager: StartFinishing() called without assigned player/enemy in Inspector.");
+            return;
+        }
+
+        StartFinishing(player, enemy);
+    }
+
+    public void StartFinishingEffect()
+    {
+        if (!isFinishingActive)
+        {
+            Debug.LogWarning("FinishingManager: StartFinishingEffect ignored because finishing is not active.");
+            return;
+        }
+
+        if (finishingCam != null)
+        {
+            EnsureRenderTextureHasDepthBuffer();
+            finishingCam.gameObject.SetActive(true);
+        }
+        if (finishingCanvas != null)
+        {
+            finishingCanvas.gameObject.SetActive(true);
+        }
+        if (finishingRawImage != null)
+        {
+            finishingRawImage.color = Color.white;
+        }
+
+        Time.timeScale = slowMotionScale;
+        Debug.Log("FinishingManager: Finishing effect ON.");
+    }
+
+    public void EndFinishingEffect()
+    {
+        if (!isFinishingActive)
+        {
+            Debug.LogWarning("FinishingManager: EndFinishingEffect ignored because finishing is not active.");
+            return;
+        }
+
+        EndAutomaticRoutine();
+        RestoreSceneState();
+
+        player = null;
+        enemy = null;
+        playerAnim = null;
+        enemyAnim = null;
+
+        Debug.Log("FinishingManager: Finishing effect OFF. Scene restored.");
+    }
+
+    private IEnumerator AutomaticSequence(float enemyAnimationDuration, bool effectAlreadyStarted)
+    {
+        if (effectAlreadyStarted)
+        {
+            if (enemyAnimationDuration > 0f)
+            {
+                yield return new WaitForSeconds(enemyAnimationDuration);
+            }
+
+            EndFinishingEffect();
+            yield break;
+        }
+
+        float firstPart = enemyAnimationDuration * effectStartNormalizedTime;
+        float secondPart = enemyAnimationDuration - firstPart;
+
+        if (firstPart > 0f)
+        {
+            yield return new WaitForSeconds(firstPart);
+        }
+
+        StartFinishingEffect();
+
+        if (secondPart > 0f)
+        {
+            yield return new WaitForSeconds(secondPart);
+        }
+
+        EndFinishingEffect();
+    }
+
+    private void PrepareFinishingCamera()
+    {
+        if (finishingCam == null)
+        {
+            return;
+        }
+
+        previousClearFlags = finishingCam.clearFlags;
+        previousBackgroundColor = finishingCam.backgroundColor;
+        previousCullingMask = finishingCam.cullingMask;
+
+        finishingCam.clearFlags = CameraClearFlags.SolidColor;
+        finishingCam.backgroundColor = redOverlayColor;
+        EnsureRenderTextureHasDepthBuffer();
+
+        int targetLayer = LayerMask.NameToLayer(finishingLayerName);
+        originalLayers.Clear();
+        usingTemporaryLayer = targetLayer >= 0;
+
+        if (usingTemporaryLayer)
+        {
+            CacheAndSetLayerRecursively(player, targetLayer);
+            CacheAndSetLayerRecursively(enemy, targetLayer);
+            finishingCam.cullingMask = 1 << targetLayer;
+        }
+        else
+        {
+            int playerMask = player != null ? 1 << player.gameObject.layer : 0;
+            int enemyMask = enemy != null ? 1 << enemy.gameObject.layer : 0;
+            finishingCam.cullingMask = playerMask | enemyMask;
+            Debug.LogWarning("FinishingManager: Layer '" + finishingLayerName + "' not found. Using current player/enemy layers.");
+        }
+    }
+
+    private void RestoreSceneState()
+    {
+        Time.timeScale = 1f;
+
+        if (finishingCam != null)
+        {
+            finishingCam.cullingMask = previousCullingMask;
+            finishingCam.clearFlags = previousClearFlags;
+            finishingCam.backgroundColor = previousBackgroundColor;
+            finishingCam.gameObject.SetActive(false);
+        }
+
+        if (finishingCanvas != null)
+        {
+            finishingCanvas.gameObject.SetActive(false);
+        }
+
+        if (usingTemporaryLayer)
+        {
+            RestoreOriginalLayers();
+        }
+
+        RestorePlayerControl();
+        RestorePlayerCamera();
+
+        isFinishingActive = false;
+    }
+
+    private void CacheAndSetLayerRecursively(Transform root, int layer)
+    {
+        if (root == null)
+        {
+            return;
+        }
+
+        if (!originalLayers.ContainsKey(root))
+        {
+            originalLayers[root] = root.gameObject.layer;
+        }
+        root.gameObject.layer = layer;
+
+        for (int i = 0; i < root.childCount; i++)
+        {
+            CacheAndSetLayerRecursively(root.GetChild(i), layer);
+        }
+    }
+
+    private void RestoreOriginalLayers()
+    {
+        foreach (var pair in originalLayers)
+        {
+            if (pair.Key != null)
+            {
+                pair.Key.gameObject.layer = pair.Value;
+            }
+        }
+        originalLayers.Clear();
+    }
+
+    private void EndAutomaticRoutine()
+    {
+        if (automaticSequenceRoutine != null)
+        {
+            StopCoroutine(automaticSequenceRoutine);
+            automaticSequenceRoutine = null;
+        }
+    }
+
+    private void UpdateFinishingCameraTransform()
+    {
+        if (finishingCam == null || player == null || enemy == null)
+        {
+            return;
+        }
+
+        if (finishingCameraPlacementMode == FinishingCameraPlacementMode.KeepCurrentTransform)
+        {
+            return;
+        }
+    }
+
+    private float GetClipLength(Animator animator, string clipName, float fallback)
+    {
+        if (animator == null || animator.runtimeAnimatorController == null)
+        {
+            return fallback;
+        }
+
+        AnimationClip[] clips = animator.runtimeAnimatorController.animationClips;
+        for (int i = 0; i < clips.Length; i++)
+        {
+            if (clips[i] != null && clips[i].name == clipName)
+            {
+                return clips[i].length;
+            }
+        }
+
+        return fallback;
+    }
+
+    private float GetCurrentStateRemainingTime(Animator animator, float fallback)
+    {
+        if (animator == null)
+        {
+            return fallback;
+        }
+
+        AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
+        float speed = Mathf.Abs(stateInfo.speed * animator.speed);
+        if (speed < 0.0001f)
+        {
+            speed = 1f;
+        }
+
+        float normalizedLoop = stateInfo.normalizedTime;
+        float normalizedInCurrentLoop = normalizedLoop - Mathf.Floor(normalizedLoop);
+        float remainingNormalized = Mathf.Clamp01(1f - normalizedInCurrentLoop);
+        float remaining = stateInfo.length * remainingNormalized / speed;
+
+        if (remaining <= 0f)
+        {
+            return fallback;
+        }
+
+        return remaining;
+    }
+
+    private bool IsPlayerInEnemyFront(Transform playerTransform, Transform enemyTransform)
+    {
+        if (playerTransform == null || enemyTransform == null)
+        {
+            return false;
+        }
+
+        Vector3 toPlayer = playerTransform.position - enemyTransform.position;
+        toPlayer.y = 0f;
+        if (toPlayer.sqrMagnitude < 0.0001f)
+        {
+            return true;
+        }
+
+        float angle = Vector3.Angle(enemyTransform.forward, toPlayer.normalized);
+        return angle <= Mathf.Clamp(maxFrontAngle, 1f, 179f);
+    }
+
+    private void EnsureRenderTextureHasDepthBuffer()
+    {
+        if (finishingCam == null || finishingCam.targetTexture == null)
+        {
+            return;
+        }
+
+        RenderTexture current = finishingCam.targetTexture;
+        if (current.depth > 0)
+        {
+            return;
+        }
+
+        RenderTexture replacement = new RenderTexture(
+            Mathf.Max(1, current.width),
+            Mathf.Max(1, current.height),
+            24,
+            current.format
+        );
+
+        replacement.name = current.name + "_Depth";
+        replacement.antiAliasing = current.antiAliasing;
+        replacement.wrapMode = current.wrapMode;
+        replacement.filterMode = current.filterMode;
+        replacement.useMipMap = current.useMipMap;
+        replacement.autoGenerateMips = current.autoGenerateMips;
+        replacement.Create();
+
+        runtimeFinishingTexture = replacement;
+        finishingCam.targetTexture = replacement;
+
+        if (finishingRawImage != null)
+        {
+            finishingRawImage.texture = replacement;
+        }
+
+        Debug.Log("FinishingManager: Replaced finishing RenderTexture with depth-enabled texture to satisfy Render Graph.");
+    }
+
+    private void OnDisable()
+    {
+        EndAutomaticRoutine();
+        RestoreSceneState();
+    }
+
+    private void OnDestroy()
+    {
+        if (runtimeFinishingTexture != null)
+        {
+            runtimeFinishingTexture.Release();
+            runtimeFinishingTexture = null;
+        }
+    }
+
+    private void ValidateSetup()
+    {
+        if (finishingCam == null)
+        {
+            Debug.LogWarning("FinishingManager: finishingCam is not assigned.");
+        }
+
+        if (finishingCanvas == null)
+        {
+            Debug.LogWarning("FinishingManager: finishingCanvas is not assigned.");
+        }
+
+        if (finishingRawImage == null)
+        {
+            Debug.LogWarning("FinishingManager: finishingRawImage is not assigned.");
+        }
+
+        if (finishingCam != null && finishingCam.targetTexture == null)
+        {
+            Debug.LogWarning("FinishingManager: finishingCam.targetTexture is empty. Assign your RenderTexture.");
+        }
+        else
+        {
+            EnsureRenderTextureHasDepthBuffer();
+        }
+
+        if (finishingRawImage != null && finishingRawImage.texture == null)
+        {
+            Debug.LogWarning("FinishingManager: finishingRawImage.texture is empty. Assign the same RenderTexture as finishingCam.targetTexture.");
+        }
+
+        if (playerCamera == null && player != null)
+        {
+            playerCamera = player.GetComponentInChildren<Camera>(true);
+            if (playerCamera == null)
+            {
+                playerCamera = Camera.main;
+            }
+        }
+    }
+
+    private void DisablePlayerControl()
+    {
+        if (!disablePlayerControlDuringFinishing || player == null)
+        {
+            return;
+        }
+
+        temporarilyDisabledControls.Clear();
+
+        if (autoDetectPlayerControlScripts)
+        {
+            TryAutoDetectPlayerControlScripts();
+        }
+
+        for (int i = 0; i < playerControlScripts.Count; i++)
+        {
+            Behaviour controlScript = playerControlScripts[i];
+            if (controlScript == null)
+            {
+                continue;
+            }
+
+            if (controlScript.enabled)
+            {
+                controlScript.enabled = false;
+                temporarilyDisabledControls.Add(controlScript);
+            }
+        }
+    }
+
+    private void RestorePlayerControl()
+    {
+        for (int i = 0; i < temporarilyDisabledControls.Count; i++)
+        {
+            Behaviour controlScript = temporarilyDisabledControls[i];
+            if (controlScript != null)
+            {
+                controlScript.enabled = true;
+            }
+        }
+
+        temporarilyDisabledControls.Clear();
+    }
+
+    private void DisablePlayerCamera()
+    {
+        if (!disablePlayerCameraDuringFinishing)
+        {
+            return;
+        }
+
+        if (playerCamera == null)
+        {
+            if (player != null)
+            {
+                playerCamera = player.GetComponentInChildren<Camera>(true);
+            }
+
+            if (playerCamera == null)
+            {
+                playerCamera = Camera.main;
+            }
+        }
+
+        if (playerCamera == null || playerCamera == finishingCam)
+        {
+            return;
+        }
+
+        previousPlayerCameraEnabled = playerCamera.enabled;
+        playerCamera.enabled = false;
+    }
+
+    private void RestorePlayerCamera()
+    {
+        if (!disablePlayerCameraDuringFinishing)
+        {
+            return;
+        }
+
+        if (playerCamera == null || playerCamera == finishingCam)
+        {
+            return;
+        }
+
+        playerCamera.enabled = previousPlayerCameraEnabled;
+    }
+
+    private void TryAutoDetectPlayerControlScripts()
+    {
+        if (player == null)
+        {
+            return;
+        }
+
+        Behaviour[] allBehaviours = player.GetComponentsInChildren<Behaviour>(true);
+        for (int i = 0; i < allBehaviours.Length; i++)
+        {
+            Behaviour behaviour = allBehaviours[i];
+            if (behaviour == null)
+            {
+                continue;
+            }
+
+            if (behaviour == this || behaviour is Animator)
+            {
+                continue;
+            }
+
+            string typeName = behaviour.GetType().Name.ToLowerInvariant();
+            bool looksLikeControl =
+                typeName.Contains("controller") ||
+                typeName.Contains("movement") ||
+                typeName.Contains("input") ||
+                typeName.Contains("weapon") ||
+                typeName.Contains("interaction") ||
+                typeName.Contains("look");
+
+            if (!looksLikeControl)
+            {
+                continue;
+            }
+
+            if (!playerControlScripts.Contains(behaviour))
+            {
+                playerControlScripts.Add(behaviour);
+            }
+        }
+    }
+}
