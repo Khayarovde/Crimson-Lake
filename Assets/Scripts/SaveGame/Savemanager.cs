@@ -207,6 +207,20 @@ public class SaveManager : MonoBehaviour
             playSeconds = Mathf.FloorToInt(sessionPlaySeconds)
         };
 
+        Chest[] allChests = FindObjectsByType<Chest>(FindObjectsSortMode.InstanceID);
+        data.chests = new List<ChestSlotData>();
+        foreach (var chest in allChests)
+        {
+            if (chest == null || string.IsNullOrEmpty(chest.chestId))
+                continue;
+
+            data.chests.Add(new ChestSlotData
+            {
+                chestId = chest.chestId,
+                itemNames = chest.GetChestItemNamesSnapshot()
+            });
+        }
+
         PlayerInventory inventory = playerTransform.GetComponent<PlayerInventory>();
         if (inventory == null)
             inventory = FindFirstObjectByType<PlayerInventory>();
@@ -256,6 +270,28 @@ public class SaveManager : MonoBehaviour
 
             if (inventory.inventoryUI != null)
                 inventory.inventoryUI.UpdateInventoryUI();
+        }
+
+        if (data.chests != null && data.chests.Count > 0)
+        {
+            Chest[] sceneChests = FindObjectsByType<Chest>(FindObjectsSortMode.InstanceID);
+            Dictionary<string, Chest> chestById = new Dictionary<string, Chest>();
+            foreach (var chest in sceneChests)
+            {
+                if (chest == null || string.IsNullOrEmpty(chest.chestId))
+                    continue;
+                if (!chestById.ContainsKey(chest.chestId))
+                    chestById.Add(chest.chestId, chest);
+            }
+
+            foreach (var savedChest in data.chests)
+            {
+                if (savedChest == null || string.IsNullOrEmpty(savedChest.chestId))
+                    continue;
+
+                if (chestById.TryGetValue(savedChest.chestId, out Chest chest))
+                    chest.ApplyChestItemNamesSnapshot(savedChest.itemNames);
+            }
         }
 
         hasUnsavedChanges = false;
@@ -371,9 +407,17 @@ public class GameSaveData
     public SerializableVector3 playerPosition;
     public SerializableVector3 playerRotationEuler;
     public List<string> inventoryItemNames;
+    public List<ChestSlotData> chests;
     public int activeItemIndex = -1;
     public string savedAt;
     public int playSeconds;
+}
+
+[System.Serializable]
+public class ChestSlotData
+{
+    public string chestId;
+    public List<string> itemNames;
 }
 
 [System.Serializable]

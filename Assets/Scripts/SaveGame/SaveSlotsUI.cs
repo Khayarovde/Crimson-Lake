@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using TMPro;
+using UnityEngine.SceneManagement;
 
 public class SaveSlotsUI : MonoBehaviour
 {
@@ -56,6 +57,8 @@ public class SaveSlotsUI : MonoBehaviour
     private bool[] previousBehaviourStates;
     private bool isInitialized;
     private int openedFrame = -1;
+    private bool isLoadMode;
+    private string loadFallbackScene;
 
     public bool IsOpen => isOpen;
     public static bool IsSaveMenuOpen { get; private set; }
@@ -150,6 +153,25 @@ public class SaveSlotsUI : MonoBehaviour
 
     public void Show()
     {
+        ShowForSave();
+    }
+
+    public void ShowForSave()
+    {
+        isLoadMode = false;
+        loadFallbackScene = string.Empty;
+        ShowInternal();
+    }
+
+    public void ShowForLoad(string fallbackScene = "")
+    {
+        isLoadMode = true;
+        loadFallbackScene = fallbackScene;
+        ShowInternal();
+    }
+
+    private void ShowInternal()
+    {
         EnsureInitialized();
 
         if (canvasRoot != null)
@@ -162,7 +184,8 @@ public class SaveSlotsUI : MonoBehaviour
         isOpen = true;
         IsSaveMenuOpen = true;
         openedFrame = Time.frameCount;
-        saveManager.MarkUnsaved();
+        if (!isLoadMode)
+            saveManager.MarkUnsaved();
         RefreshSlots();
         EnsureEventSystem();
         ApplyInputLock(true);
@@ -214,6 +237,21 @@ public class SaveSlotsUI : MonoBehaviour
 
     private void OnSlotPressed(int slotIndex)
     {
+        if (isLoadMode)
+        {
+            if (!saveManager.HasSave(slotIndex))
+            {
+                ShowWarningMessage("В этом слоте нет сохранения");
+                return;
+            }
+
+            Hide();
+            bool loaded = saveManager.LoadSlot(slotIndex);
+            if (!loaded)
+                ShowWarningMessage("Не удалось загрузить выбранный слот");
+            return;
+        }
+
         if (saveManager.HasSave(slotIndex))
         {
             pendingOverwriteSlot = slotIndex;
@@ -280,6 +318,20 @@ public class SaveSlotsUI : MonoBehaviour
 
     private void ContinueWithoutSaving()
     {
+        if (isLoadMode)
+        {
+            Hide();
+            if (!string.IsNullOrEmpty(loadFallbackScene))
+            {
+                SceneManager.LoadScene(loadFallbackScene);
+            }
+            else
+            {
+                ShowWarningMessage("Сцена для новой игры не назначена");
+            }
+            return;
+        }
+
         saveManager.MarkUnsaved();
         Hide();
 

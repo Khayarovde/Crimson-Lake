@@ -1,6 +1,5 @@
 using UnityEngine;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 
 public class Chest : MonoBehaviour
@@ -21,14 +20,11 @@ public class Chest : MonoBehaviour
     public bool canOpenWhenInventoryOpen = false;
     
     private AudioSource audioSource;
-    private string savePath;
-    private bool isQuitting = false;
     private bool isChestOpen = false;
 
     private void Start()
     {
         InitializeChest();
-        LoadChestData();
     }
 
     private void Update()
@@ -58,8 +54,6 @@ public class Chest : MonoBehaviour
             chestData.maxSlots = maxSlots;
         }
 
-        savePath = Path.Combine(Application.persistentDataPath, $"{chestId}_chest.json");
-        
         SetupCollider();
         
         // Подписываемся на события смены сцены
@@ -68,9 +62,6 @@ public class Chest : MonoBehaviour
 
     private void OnSceneChanged(UnityEngine.SceneManagement.Scene current, UnityEngine.SceneManagement.Scene next)
     {
-        // Сохраняем данные при смене сцены
-        SaveChestData();
-        
         // Очищаем ссылки на этот сундук у игрока
         ClearPlayerReferences();
     }
@@ -109,75 +100,11 @@ public class Chest : MonoBehaviour
         }
     }
 
-    private void OnApplicationQuit()
-    {
-        isQuitting = true;
-    }
-
     private void OnDestroy()
     {
         // Отписываемся от события
         UnityEngine.SceneManagement.SceneManager.activeSceneChanged -= OnSceneChanged;
-        
-        if (!isQuitting)
-        {
-            SaveChestData();
-            ClearPlayerReferences();
-        }
-    }
-
-    private void LoadChestData()
-    {
-        if (File.Exists(savePath))
-        {
-            try
-            {
-                string json = File.ReadAllText(savePath);
-                ChestSaveData saveData = JsonUtility.FromJson<ChestSaveData>(json);
-                
-                chestData.items.Clear();
-                
-                foreach (var itemSave in saveData.items)
-                {
-                    InventoryItem item = LoadItemFromResources(itemSave.itemName);
-                    if (item != null)
-                    {
-                        chestData.items.Add(item);
-                    }
-                }
-                
-                Debug.Log($"[Chest] Данные сундука загружены: {chestData.items.Count} предметов");
-            }
-            catch (System.Exception e)
-            {
-                Debug.LogError($"[Chest] Ошибка загрузки данных сундука: {e.Message}");
-            }
-        }
-    }
-
-    private void SaveChestData()
-    {
-        try
-        {
-            ChestSaveData saveData = new ChestSaveData();
-            
-            foreach (var item in chestData.items)
-            {
-                if (item != null)
-                {
-                    saveData.items.Add(new ItemSaveData { itemName = item.itemName });
-                }
-            }
-            
-            string json = JsonUtility.ToJson(saveData, true);
-            File.WriteAllText(savePath, json);
-            
-            Debug.Log($"[Chest] Данные сундука сохранены: {chestData.items.Count} предметов");
-        }
-        catch (System.Exception e)
-        {
-            Debug.LogError($"[Chest] Ошибка сохранения данных сундука: {e.Message}");
-        }
+        ClearPlayerReferences();
     }
 
     private InventoryItem LoadItemFromResources(string itemName)
@@ -206,7 +133,7 @@ public class Chest : MonoBehaviour
         {
             chestData.RemoveItem(item);
             PlayStorageEffects();
-            SaveChestData();
+            SaveManager.Instance?.MarkUnsaved();
             return true;
         }
         return false;
@@ -217,7 +144,7 @@ public class Chest : MonoBehaviour
         if (chestData == null || item == null) return;
         
         chestData.RemoveItem(item);
-        SaveChestData();
+        SaveManager.Instance?.MarkUnsaved();
     }
 
     public bool AddItemToChest(InventoryItem item)
@@ -228,7 +155,7 @@ public class Chest : MonoBehaviour
         if (added)
         {
             PlayStorageEffects();
-            SaveChestData();
+            SaveManager.Instance?.MarkUnsaved();
             return true;
         }
         return false;
@@ -255,6 +182,39 @@ public class Chest : MonoBehaviour
     public bool IsFull { get { return chestData != null && chestData.items.Count >= chestData.maxSlots; } }
     public int ItemCount { get { return chestData != null ? chestData.items.Count : 0; } }
     public List<InventoryItem> GetChestItems() { return chestData != null ? chestData.items : new List<InventoryItem>(); }
+
+    public List<string> GetChestItemNamesSnapshot()
+    {
+        List<string> result = new List<string>();
+        if (chestData == null || chestData.items == null) return result;
+
+        foreach (var item in chestData.items)
+        {
+            if (item != null && !string.IsNullOrEmpty(item.itemName))
+                result.Add(item.itemName);
+        }
+
+        return result;
+    }
+
+    public void ApplyChestItemNamesSnapshot(List<string> itemNames)
+    {
+        if (chestData == null)
+        {
+            chestData = ScriptableObject.CreateInstance<InventoryData>();
+            chestData.maxSlots = maxSlots;
+        }
+
+        chestData.items.Clear();
+        if (itemNames == null) return;
+
+        foreach (var itemName in itemNames)
+        {
+            InventoryItem item = LoadItemFromResources(itemName);
+            if (item != null)
+                chestData.items.Add(item);
+        }
+    }
 }
 
 [System.Serializable]

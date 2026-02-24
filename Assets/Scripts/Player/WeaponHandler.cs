@@ -714,7 +714,7 @@ public class WeaponHandler : MonoBehaviour
             out RaycastHit hit,
             maxTracerDistance,
             Physics.DefaultRaycastLayers,
-            QueryTriggerInteraction.Collide
+            QueryTriggerInteraction.Ignore
         );
 
         // === СИСТЕМА ОГЛУШЕНИЯ ===
@@ -776,7 +776,7 @@ public class WeaponHandler : MonoBehaviour
                 out RaycastHit hit,
                 maxTracerDistance,
                 Physics.DefaultRaycastLayers,
-                QueryTriggerInteraction.Collide))
+                QueryTriggerInteraction.Ignore))
             {
                 hitSomething = true;
                 if (hit.distance < closestDistance)
