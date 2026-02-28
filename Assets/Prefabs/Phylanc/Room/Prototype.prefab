@@ -8436,6 +8436,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: gun_drop
       objectReference: {fileID: 0}
+    - target: {fileID: 2450226193629245308, guid: 1b00fad12ddaad4478b4e73b6807861d, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 2975510536207250886, guid: 1b00fad12ddaad4478b4e73b6807861d, type: 3}
       propertyPath: m_LocalScale.x
       value: 2.5202992
@@ -8916,6 +8920,12 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 100000, guid: 86f94647b91659e4d941245a0d85ba93, type: 3}
       insertIndex: -1
       addedObject: {fileID: 4784777220637122140}
+    - targetCorrespondingSourceObject: {fileID: 100000, guid: 86f94647b91659e4d941245a0d85ba93, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4819635336612813138}
+    - targetCorrespondingSourceObject: {fileID: 100000, guid: 86f94647b91659e4d941245a0d85ba93, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3694385990721369629}
   m_SourcePrefab: {fileID: 100100000, guid: 86f94647b91659e4d941245a0d85ba93, type: 3}
 --- !u!4 &5818404235394547166 stripped
 Transform:
@@ -8944,11 +8954,50 @@ MeshCollider:
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
   m_ProvidesContacts: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 5
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 4300000, guid: 86f94647b91659e4d941245a0d85ba93, type: 3}
+--- !u!65 &4819635336612813138
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5818404235394834942}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1.31, y: 1.99, z: 1.74}
+  m_Center: {x: 0.0000014305115, y: 0.53109205, z: -0.000003784895}
+--- !u!114 &3694385990721369629
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5818404235394834942}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8a2459463fbf89246b07e0339f87c3a3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  imageCanvas: {fileID: 0}
+  playerTag: Player
+  clickScaleMultiplier: 1.12
+  clickDuration: 0.28
+  clickEase: 4
+  stunStateName: Stun
 --- !u!1001 &6783072260938899562
 PrefabInstance:
   m_ObjectHideFlags: 0

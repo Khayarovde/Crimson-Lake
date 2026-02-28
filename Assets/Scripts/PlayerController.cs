@@ -324,24 +324,26 @@ public class TankController : MonoBehaviour
 
     private Vector2 GetAimDirection(Vector2 movement)
     {
-        float horizontal = Mathf.Abs(movement.x) >= aimInputDeadZone ? movement.x : 0f;
-        float vertical = Mathf.Abs(movement.y) >= aimInputDeadZone ? movement.y : 0f;
-
-        if (Mathf.Approximately(horizontal, 0f) && Mathf.Approximately(vertical, 0f))
+        float deadZone = Mathf.Clamp(aimInputDeadZone, 0.01f, 0.5f);
+        if (movement.sqrMagnitude < deadZone * deadZone)
             return Vector2.zero;
 
-        float absX = Mathf.Abs(horizontal);
-        float absY = Mathf.Abs(vertical);
+        Vector2 normalized = movement.normalized;
+        float absX = Mathf.Abs(normalized.x);
+        float absY = Mathf.Abs(normalized.y);
+        float dominance = Mathf.Clamp(aimAxisDominanceBias, 0.01f, 0.5f);
 
-        if (Mathf.Abs(absX - absY) > aimAxisDominanceBias)
+        if (Mathf.Abs(absX - absY) > dominance)
         {
             if (absX > absY)
-                vertical = 0f;
-            else
-                horizontal = 0f;
+                return new Vector2(Mathf.Sign(normalized.x), 0f);
+
+            return new Vector2(0f, Mathf.Sign(normalized.y));
         }
 
-        return new Vector2(Mathf.Sign(horizontal), Mathf.Sign(vertical));
+        float snappedX = Mathf.Sign(normalized.x);
+        float snappedY = Mathf.Sign(normalized.y);
+        return new Vector2(snappedX, snappedY);
     }
 
     private Vector2 GetAimRelativeInput(Vector2 worldInput)
@@ -353,9 +355,14 @@ public class TankController : MonoBehaviour
         if (worldMove.sqrMagnitude < 0.0001f)
             return Vector2.zero;
 
-        Vector3 aimRight = Vector3.Cross(Vector3.up, aimForward).normalized;
+        Vector3 flatAimForward = new Vector3(aimForward.x, 0f, aimForward.z);
+        if (flatAimForward.sqrMagnitude < 0.0001f)
+            flatAimForward = transform.forward;
+
+        flatAimForward.Normalize();
+        Vector3 aimRight = Vector3.Cross(Vector3.up, flatAimForward).normalized;
         float localX = Vector3.Dot(worldMove, aimRight);
-        float localY = Vector3.Dot(worldMove, aimForward);
+        float localY = Vector3.Dot(worldMove, flatAimForward);
 
         return new Vector2(localX, localY);
     }

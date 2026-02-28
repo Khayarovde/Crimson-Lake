@@ -8,27 +8,41 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Textile_chair
-  m_Shader: {fileID: 4800000, guid: 933532a4fcc9baf4fa0491de14d08ed7, type: 3}
+  m_Shader: {fileID: -6465566751694194690, guid: 48d2973587effe3458a4351037268ea0, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
-  m_ValidKeywords:
-  - _NORMALMAP
+  m_ValidKeywords: []
   m_InvalidKeywords: []
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
   m_CustomRenderQueue: -1
-  stringTagMap:
-    RenderType: Opaque
+  stringTagMap: {}
   disabledShaderPasses:
   - MOTIONVECTORS
   m_LockedProperties: 
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
+    - Base_Map:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - Normal_Map:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _BASE_COLOR_MAP:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _BaseMap:
         m_Texture: {fileID: 2800000, guid: efe076efcbccf4b3196d06e39875cb5c, type: 3}
         m_Scale: {x: 5, y: 5}
+        m_Offset: {x: 0, y: 0}
+    - _Base_texture:
+        m_Texture: {fileID: 2800000, guid: b807a14f88068f944bca9b5a2d4dabf4, type: 3}
+        m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _BumpMap:
         m_Texture: {fileID: 2800000, guid: 722ed740276354f76933545fad8008e9, type: 3}
@@ -46,15 +60,39 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _EMISSION_COLOR_MAP:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _EmissionMap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 5, y: 5}
         m_Offset: {x: 0, y: 0}
-    - _MainTex:
+    - _METALNESS_MAP:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _MainTex:
+        m_Texture: {fileID: 2800000, guid: efe076efcbccf4b3196d06e39875cb5c, type: 3}
+        m_Scale: {x: 5, y: 5}
+        m_Offset: {x: 0, y: 0}
     - _MetallicGlossMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _NORMAL_MAP:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Noise:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Normal:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _OPACITY_MAP:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
@@ -66,7 +104,35 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _SPECULAR_COLOR_MAP:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _SPECULAR_IOR_MAP:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _SPECULAR_ROUGHNESS_MAP:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _SpecGlossMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _SplatMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Texture2D:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _TrailColor:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _TrailNormal:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
@@ -84,6 +150,7 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
+    - Normal_Blend: 0.5
     - _AddPrecomputedVelocity: 0
     - _AlphaClip: 0
     - _AlphaToMask: 0
@@ -94,34 +161,70 @@ Material:
     - _ClearCoatSmoothness: 0
     - _Cull: 2
     - _Cutoff: 0.5
+    - _DecalMeshBiasType: 0
+    - _DecalMeshDepthBias: 0
+    - _DecalMeshViewBias: 0
     - _DetailAlbedoMapScale: 1
     - _DetailNormalMapScale: 1
+    - _DissolveRate: 0
+    - _DrawOrder: 0
     - _DstBlend: 0
     - _DstBlendAlpha: 0
+    - _Emission: 0
     - _EnvironmentReflections: 1
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
+    - _Grid_Size: 0.1
+    - _HeightMultiplier: 0
+    - _Intensity: 1
+    - _METALNESS: 0
     - _Metallic: 0
     - _Mode: 0
+    - _OPACITY: 1
     - _OcclusionStrength: 1
     - _Parallax: 0.02
+    - _Pixelsize: 400
+    - _QueueControl: 0
     - _QueueOffset: 0
     - _ReceiveShadows: 1
+    - _SPECULAR_IOR: 1.5
+    - _SPECULAR_ROUGHNESS: 0
+    - _Scale: 1
     - _Smoothness: 0.5
     - _SmoothnessTextureChannel: 0
+    - _Snap_to_grid: 0
+    - _SnowGloss: 0
+    - _SparkleMix: 0.5
     - _SpecularHighlights: 1
+    - _Speed: 0.2
     - _SrcBlend: 1
     - _SrcBlendAlpha: 1
+    - _Step1: 0.5
+    - _Step2: 0.5
     - _Surface: 0
+    - _Tiling: 0.5
+    - _TrailBlend: 0
+    - _TrailGloss: 0
     - _UVSec: 0
     - _WorkflowMode: 1
     - _ZWrite: 1
+    - _colorresolution: 0
+    - _ditherspread: 0
     m_Colors:
+    - Vector2_7B6887A: {r: 0, g: 0, b: 0, a: 0}
+    - _BASE_COLOR: {r: 0, g: 0, b: 0, a: 0}
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
-    - _Color: {r: 1, g: 1, b: 1, a: 1}
+    - _Color: {r: 0.49056602, g: 0.48788178, b: 0.42346027, a: 1}
+    - _Color1: {r: 1, g: 1, b: 1, a: 1}
+    - _Color2: {r: 0, g: 0.3270395, b: 1, a: 1}
+    - _EMISSION_COLOR: {r: 0, g: 0, b: 0, a: 0}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+    - _Remap: {r: 0, g: 1, b: 0, a: 0}
+    - _SPECULAR_COLOR: {r: 1, g: 1, b: 1, a: 0}
     - _SpecColor: {r: 0.2, g: 0.2, b: 0.2, a: 1}
+    - _TrailColor_1: {r: 1, g: 1, b: 1, a: 1}
+    - _TrailTiling: {r: 0, g: 0, b: 0, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
 --- !u!114 &131580067167675641
