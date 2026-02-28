@@ -10,6 +10,9 @@ public class PauseMenu : MonoBehaviour
     [Header("Панели")]
     [SerializeField] private GameObject pausePanel;
     [SerializeField] private GameObject settingsPanel;
+    [SerializeField] private GameObject exitWithoutSaveConfirmPanel;
+    [SerializeField] private Button exitWithoutSaveYesButton;
+    [SerializeField] private Button exitWithoutSaveNoButton;
 
     [Header("Слайдеры звука")]
     [SerializeField] private Slider musicSlider;
@@ -39,6 +42,12 @@ public class PauseMenu : MonoBehaviour
     {
         if (pausePanel != null) pausePanel.SetActive(false);
         if (settingsPanel != null) settingsPanel.SetActive(false);
+        if (exitWithoutSaveConfirmPanel != null) exitWithoutSaveConfirmPanel.SetActive(false);
+
+        if (exitWithoutSaveYesButton != null)
+            exitWithoutSaveYesButton.onClick.AddListener(ConfirmExitToMainMenu);
+        if (exitWithoutSaveNoButton != null)
+            exitWithoutSaveNoButton.onClick.AddListener(CancelExitToMainMenu);
 
         SettingsManager.GetOrCreate();
         LoadSettings();
@@ -51,6 +60,13 @@ public class PauseMenu : MonoBehaviour
     {
         if (SaveSlotsUI.IsSaveMenuOpen)
             return;
+
+        if (exitWithoutSaveConfirmPanel != null && exitWithoutSaveConfirmPanel.activeSelf)
+        {
+            if (Input.GetKeyDown(KeyCode.Escape))
+                CancelExitToMainMenu();
+            return;
+        }
 
         if (Input.GetKeyDown(KeyCode.Escape))
         {
@@ -76,6 +92,7 @@ public class PauseMenu : MonoBehaviour
     {
         pausePanel.SetActive(false);
         if (settingsPanel != null) settingsPanel.SetActive(false);
+        if (exitWithoutSaveConfirmPanel != null) exitWithoutSaveConfirmPanel.SetActive(false);
         Time.timeScale = 1f;
         isPaused = false;
 
@@ -97,6 +114,8 @@ public class PauseMenu : MonoBehaviour
         pausePanel.transform.SetAsLastSibling();
         if (settingsPanel != null && settingsPanel.activeSelf)
             settingsPanel.transform.SetAsLastSibling();
+        if (exitWithoutSaveConfirmPanel != null && exitWithoutSaveConfirmPanel.activeSelf)
+            exitWithoutSaveConfirmPanel.transform.SetAsLastSibling();
     }
 
     private void EnableAllButtonsInPause()
@@ -238,6 +257,38 @@ public class PauseMenu : MonoBehaviour
     }
 
     public void ToMainMenu()
+    {
+        bool hasUnsaved = SaveManager.Instance != null && SaveManager.Instance.HasUnsavedChanges;
+        if (hasUnsaved)
+        {
+            if (exitWithoutSaveConfirmPanel != null)
+            {
+                exitWithoutSaveConfirmPanel.SetActive(true);
+                ForcePausePanelToTop();
+            }
+            else
+            {
+                Debug.LogWarning("[PauseMenu] Есть несохраненные изменения, но панель подтверждения не назначена. Выполняется выход в меню.");
+                LoadMainMenuNow();
+            }
+            return;
+        }
+
+        LoadMainMenuNow();
+    }
+
+    public void ConfirmExitToMainMenu()
+    {
+        LoadMainMenuNow();
+    }
+
+    public void CancelExitToMainMenu()
+    {
+        if (exitWithoutSaveConfirmPanel != null)
+            exitWithoutSaveConfirmPanel.SetActive(false);
+    }
+
+    private void LoadMainMenuNow()
     {
         Time.timeScale = 1f;
         SceneManager.LoadScene("Menu");

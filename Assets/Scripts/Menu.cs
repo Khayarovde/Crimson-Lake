@@ -7,6 +7,9 @@ public class Menu : MonoBehaviour
     [Header("Панель настроек")]
     [SerializeField] private GameObject settingsPanel;
 
+    [Header("Play Flow")]
+    [SerializeField] private MenuSaveSlotsLauncher playFlowLauncher;
+
     [Header("Слайдеры звука")]
     [SerializeField] private Slider musicSlider;
     [SerializeField] private Slider sfxSlider;
@@ -51,6 +54,13 @@ public class Menu : MonoBehaviour
             settingsPanel.SetActive(false);
 
         Time.timeScale = 1f;
+
+        if (playFlowLauncher != null)
+        {
+            playFlowLauncher.BeginPlayFlow();
+            return;
+        }
+
         SaveManager.GetOrCreate().LoadLatestSaveOrDefault("cameratest2");
     }
 
