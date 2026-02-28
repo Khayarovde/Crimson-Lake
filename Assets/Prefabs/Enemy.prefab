@@ -395,6 +395,8 @@ GameObject:
   - component: {fileID: 3632101850224339137}
   - component: {fileID: 1107905442660160329}
   - component: {fileID: 6233944818743881817}
+  - component: {fileID: 5638432195465296436}
+  - component: {fileID: 7070780147296986859}
   m_Layer: 9
   m_Name: Enemy
   m_TagString: MeleePush
@@ -601,16 +603,13 @@ MonoBehaviour:
   caughtPlayer: 0
   navMeshAgent: {fileID: 8564032716929835383}
   m_Animator: {fileID: 4446118427321490031}
-  speedWalk: 2
-  speedRun: 3
+  speedWalk: 1
+  disableMovement: 0
   waypoints: []
   useRandomPatrolWhenNoWaypoints: 1
   randomPatrolRadius: 10
   randomPatrolPointTolerance: 0.8
   randomPatrolWait: 0.6
-  patrolSpeed: 2
-  searchSpeed: 4.5
-  chaseSpeed: 6.5
   viewRadius: 6
   viewAngle: 90
   lineOfSightMask:
@@ -619,10 +618,6 @@ MonoBehaviour:
   sightOriginOffset: {x: 0, y: 1.4, z: 0}
   sightTargetOffset: {x: 0, y: 1.2, z: 0}
   stopBeforePlayerDistance: 1.2
-  chaseCloseSpeedMultiplier: 0.4
-  chaseSpeedFalloffPower: 1.5
-  approachSpeed: 2.5
-  approachDistance: 0
   scanOnSpawn: 1
   scanDuration: 2.5
   scanTurnSpeed: 120
@@ -639,18 +634,14 @@ MonoBehaviour:
   attackHitNormalizedTime: 0.7
   attackAnimationDuration: 2.12
   attackLockTime: 0.1
-  attackAnimationSpeed: 1.6
   maxAttackAngle: 60
   facePlayerOnAttack: 1
   attackHitRadius: 0.8
   attackHitForwardOffset: 0.5
-  attackMoveSpeedMultiplier: 0.2
-  attackSpeedLerp: 6
   disableCollisionDuringAttack: 1
   postAttackSideStepEnabled: 1
   postAttackSideStepDistance: 1.5
   postAttackSideStepDuration: 0.6
-  postAttackSideStepSpeed: 2
   attack1Weight: 1.46
   attack2Weight: 1
   attack3Weight: 0.59
@@ -691,6 +682,45 @@ MonoBehaviour:
   manager: {fileID: 0}
   player: {fileID: 0}
   enemy: {fileID: 8787136720880704195}
+--- !u!65 &5638432195465296436
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1393534560132879237}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 2, y: 1, z: 2}
+  m_Center: {x: 0, y: 1.5, z: 0}
+--- !u!114 &7070780147296986859
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1393534560132879237}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8a2459463fbf89246b07e0339f87c3a3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  imageCanvas: {fileID: 0}
+  playerTag: Player
+  clickScaleMultiplier: 1.12
+  clickDuration: 0.28
+  clickEase: 4
+  stunStateName: Stun
 --- !u!1 &1703601893383264415
 GameObject:
   m_ObjectHideFlags: 0
