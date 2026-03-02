@@ -138,7 +138,6 @@ public partial class AdvancedEnemyAI
             else
             {
                 navMeshAgent.isStopped = false;
-                navMeshAgent.speed = speedWalk;
             }
         }
 

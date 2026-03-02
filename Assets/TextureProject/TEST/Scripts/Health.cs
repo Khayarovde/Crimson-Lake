@@ -24,7 +24,7 @@ public class Health : MonoBehaviour
 
     private void Start()
     {
-        _respawnManager = FindObjectOfType<RespawnManager>();
+        _respawnManager = FindFirstObjectByType<RespawnManager>();
         _currentHealth = _healthAmount;
     }
 

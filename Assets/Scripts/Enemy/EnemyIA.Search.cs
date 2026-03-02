@@ -36,8 +36,6 @@ public partial class AdvancedEnemyAI
         currentSearchIndex = 0;
         searchWaitEndTime = 0f;
         searchPoints = BuildSearchPoints(playerLastPosition);
-        if (navMeshAgent != null)
-            navMeshAgent.speed = Mathf.Max(0.1f, speedWalk);
         MoveToSearchPoint();
     }
 
@@ -47,8 +45,6 @@ public partial class AdvancedEnemyAI
         searchPoints = null;
         currentSearchIndex = 0;
         searchWaitEndTime = 0f;
-        if (navMeshAgent != null && !IsMovementDisabled())
-            navMeshAgent.speed = Mathf.Max(0.1f, speedWalk);
     }
 
     private void UpdateSearch()

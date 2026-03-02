@@ -93,7 +93,7 @@ public partial class AdvancedEnemyAI : MonoBehaviour
 
         if (navMeshAgent != null)
         {
-            navMeshAgent.speed = Mathf.Max(0.1f, speedWalk);
+            navMeshAgent.speed = Mathf.Max(0f, speedWalk);
             navMeshAgent.stoppingDistance = Mathf.Max(navMeshAgent.stoppingDistance, stopBeforePlayerDistance);
             navMeshAgent.autoBraking = true;
         }
