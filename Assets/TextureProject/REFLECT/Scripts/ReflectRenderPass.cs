@@ -112,7 +112,7 @@ public class ReflectRenderPass : ScriptableRendererFeature
 
             var colorCopyDescriptor = renderingData.cameraData.cameraTargetDescriptor;
             colorCopyDescriptor.depthBufferBits = (int) DepthBits.None;
-            RenderingUtils.ReAllocateIfNeeded(ref m_CopiedColor, colorCopyDescriptor, name: "_FullscreenPassColorCopy");
+            RenderingUtils.ReAllocateHandleIfNeeded(ref m_CopiedColor, colorCopyDescriptor, name: "_FullscreenPassColorCopy");
 
             ScreenSpaceRelfectionsTex = RTHandles.Alloc("SSRT", name: "SSRT");
             downSample = ds;
@@ -125,11 +125,13 @@ public class ReflectRenderPass : ScriptableRendererFeature
             m_CopiedColor?.Release();
         }
 
+        [System.Obsolete]
         public override void Configure(CommandBuffer cmd, RenderTextureDescriptor cameraTextureDescriptor)
         {
             cmd.SetGlobalTexture("_ScreenSpaceRelfectionsTex", Shader.PropertyToID(ScreenSpaceRelfectionsTex.name));
         }
 
+        [System.Obsolete]
         public override void OnCameraSetup(CommandBuffer cmd, ref RenderingData renderingData)
         {
             RenderTextureDescriptor cameraTargetDescriptor = renderingData.cameraData.cameraTargetDescriptor;
@@ -147,6 +149,7 @@ public class ReflectRenderPass : ScriptableRendererFeature
             cmd.GetTemporaryRT(Shader.PropertyToID(ScreenSpaceRelfectionsTex.name), cameraTargetDescriptor, FilterMode.Bilinear);
         }
 
+        [System.Obsolete]
         public override void Execute(ScriptableRenderContext context, ref RenderingData renderingData)
         {
             m_PassData.effectMaterial = m_PassMaterial;
@@ -191,7 +194,9 @@ public class ReflectRenderPass : ScriptableRendererFeature
                 // For some reason BlitCameraTexture(cmd, dest, dest) scenario (as with before transparents effects) blitter fails to correctly blit the data
                 // Sometimes it copies only one effect out of two, sometimes second, sometimes data is invalid (as if sampling failed?).
                 // Adding RTHandle in between solves this issue.
+#pragma warning disable CS0618
                 var source = isBeforeTransparents ? cameraData.renderer.cameraColorTargetHandle : cameraData.renderer.cameraColorTargetHandle;
+#pragma warning restore CS0618
 
                 Blitter.BlitCameraTexture(cmd, source, copiedColor);
                 passMaterial.SetTexture(m_BlitTextureShaderID, copiedColor);
@@ -232,7 +237,7 @@ public class ReflectRenderPass : ScriptableRendererFeature
 
             var colorCopyDescriptor = renderingData.cameraData.cameraTargetDescriptor;
             colorCopyDescriptor.depthBufferBits = (int)DepthBits.None;
-            RenderingUtils.ReAllocateIfNeeded(ref m_CopiedColor, colorCopyDescriptor, name: "_FullscreenPassColorCopy");
+            RenderingUtils.ReAllocateHandleIfNeeded(ref m_CopiedColor, colorCopyDescriptor, name: "_FullscreenPassColorCopy");
 
             m_PassData ??= new PassData();
         }
@@ -242,8 +247,8 @@ public class ReflectRenderPass : ScriptableRendererFeature
             m_CopiedColor?.Release();
         }
 
-
-        public override void Execute(ScriptableRenderContext context, ref RenderingData renderingData)
+    [System.Obsolete]
+    public override void Execute(ScriptableRenderContext context, ref RenderingData renderingData)
         {
             m_PassData.effectMaterial = m_PassMaterial;
             m_PassData.passIndex = m_PassIndex;
@@ -282,13 +287,17 @@ public class ReflectRenderPass : ScriptableRendererFeature
                 // For some reason BlitCameraTexture(cmd, dest, dest) scenario (as with before transparents effects) blitter fails to correctly blit the data
                 // Sometimes it copies only one effect out of two, sometimes second, sometimes data is invalid (as if sampling failed?).
                 // Adding RTHandle in between solves this issue.
+#pragma warning disable CS0618
                 var source = isBeforeTransparents ? cameraData.renderer.cameraColorTargetHandle : cameraData.renderer.cameraColorTargetHandle;
+#pragma warning restore CS0618
 
                 Blitter.BlitCameraTexture(cmd, source, copiedColor);
                 passMaterial.SetTexture(m_BlitTextureShaderID, copiedColor);
             }
 
+#pragma warning disable CS0618
             CoreUtils.SetRenderTarget(cmd, cameraData.renderer.cameraColorTargetHandle);
+#pragma warning restore CS0618
             CoreUtils.DrawFullScreen(cmd, passMaterial);
             context.ExecuteCommandBuffer(cmd);
             cmd.Clear();

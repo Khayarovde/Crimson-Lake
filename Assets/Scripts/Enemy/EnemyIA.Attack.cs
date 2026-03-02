@@ -129,7 +129,6 @@ public partial class AdvancedEnemyAI
 
         bool cachedUpdateRotation = navMeshAgent.updateRotation;
         navMeshAgent.updateRotation = false;
-        navMeshAgent.speed = Mathf.Max(0.1f, speedWalk);
         navMeshAgent.isStopped = false;
         navMeshAgent.SetDestination(target);
 

@@ -9,7 +9,7 @@ public class FPSController : MonoBehaviour
     [SerializeField] private TMP_InputField inputField;
 
     private const int MIN_FPS = 60;
-    private const int MAX_FPS = 360;
+    private const int MAX_FPS = 60;
     private const int DEFAULT_FPS = 60;
 
     private void Awake()

@@ -11,6 +11,7 @@ public class TankController : MonoBehaviour
     [SerializeField] private RuntimeAnimatorController animatorController;
     [SerializeField] private float animationTransition = 0.18f;
     [SerializeField] private float blendParameterDampTime = 0.12f;
+    [SerializeField] private float animationVelocitySmoothing = 14f;
     [SerializeField] private string blendTreeWalkState = "Blend Tree_WALK"; // Blend Tree для движения
     [SerializeField] private string blendTreeAimWalkState = "Blend Tree_AIM_WALK";
     [SerializeField] private string blendTreeXParam = "v";
@@ -67,6 +68,7 @@ public class TankController : MonoBehaviour
     private Vector2 lastMoveDirection;
     private Vector3 aimForward = Vector3.forward;
     private Vector3 currentPlanarVelocity;
+    private Vector2 animationPlanarVelocity;
     private bool animationLockActive;
     private string lockedAnimationState;
 
@@ -87,6 +89,7 @@ public class TankController : MonoBehaviour
 
         lastMoveTime = Time.time;
         currentPlanarVelocity = Vector3.zero;
+        animationPlanarVelocity = Vector2.zero;
         ApplyAnimatorControllerForScene();
     }
 
@@ -106,6 +109,7 @@ public class TankController : MonoBehaviour
 
         bool hasActiveWeapon = HasActiveWeaponSelected();
         isAiming = hasActiveWeapon && Input.GetMouseButton(1);
+        UpdateAnimationPlanarVelocity();
         ProcessMovement();
         bool isMoving = IsCharacterMoving();
         if (isAiming)
@@ -138,6 +142,7 @@ public class TankController : MonoBehaviour
             inputHorizontal = 0f;
             inputVertical = 0f;
             currentPlanarVelocity = Vector3.zero;
+            animationPlanarVelocity = Vector2.zero;
             idleActive = false;
             idleSwitchScheduled = false;
             SetBlendVelocity(Vector2.zero);
@@ -187,7 +192,7 @@ public class TankController : MonoBehaviour
 
         Vector2 movementForAnimation = isAiming
             ? GetAimRelativeInput(new Vector2(inputHorizontal, inputVertical))
-            : new Vector2(currentPlanarVelocity.x, currentPlanarVelocity.z);
+            : animationPlanarVelocity;
 
         CheckAnimation(movementForAnimation, isAiming);
     }
@@ -367,6 +372,21 @@ public class TankController : MonoBehaviour
         return new Vector2(localX, localY);
     }
 
+    private void UpdateAnimationPlanarVelocity()
+    {
+        Vector2 targetVelocity = new Vector2(currentPlanarVelocity.x, currentPlanarVelocity.z);
+        float smoothing = Mathf.Max(0f, animationVelocitySmoothing);
+
+        if (smoothing <= 0f)
+        {
+            animationPlanarVelocity = targetVelocity;
+            return;
+        }
+
+        float factor = 1f - Mathf.Exp(-smoothing * Time.deltaTime);
+        animationPlanarVelocity = Vector2.Lerp(animationPlanarVelocity, targetVelocity, factor);
+    }
+
     private void SetBlendVelocity(Vector2 direction)
     {
         if (animator == null) return;
@@ -388,7 +408,7 @@ public class TankController : MonoBehaviour
         if (Mathf.Abs(absX - absY) < 0.1f && lastMoveDirection.sqrMagnitude > 0.01f)
             direction = lastMoveDirection.normalized;
 
-        float speed01 = Mathf.Clamp01(new Vector2(currentPlanarVelocity.x, currentPlanarVelocity.z).magnitude / Mathf.Max(0.01f, moveSpeed));
+        float speed01 = Mathf.Clamp01(animationPlanarVelocity.magnitude / Mathf.Max(0.01f, moveSpeed));
         direction *= speed01;
 
         return direction;

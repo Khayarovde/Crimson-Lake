@@ -26,7 +26,6 @@ public partial class AdvancedEnemyAI
             StopAgentMovement();
             return;
         }
-        navMeshAgent.speed = Mathf.Max(0.1f, speedWalk);
         if (navMeshAgent.enabled)
             BeginPatrol();
     }
@@ -109,7 +108,6 @@ public partial class AdvancedEnemyAI
         else
             currentRandomPatrolPoint = transform.position;
 
-        navMeshAgent.speed = Mathf.Max(0.1f, speedWalk);
         navMeshAgent.SetDestination(currentRandomPatrolPoint);
     }
 
@@ -240,7 +238,6 @@ public partial class AdvancedEnemyAI
         }
 
         SetChasingState(true);
-        navMeshAgent.speed = Mathf.Max(0.1f, speedWalk);
 
         if (navMeshAgent.enabled)
         {

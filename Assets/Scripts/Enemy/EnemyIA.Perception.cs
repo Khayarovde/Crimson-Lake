@@ -33,7 +33,6 @@ public partial class AdvancedEnemyAI
             {
                 float desiredDistance = Mathf.Max(stopBeforePlayerDistance, attackRange + 0.35f);
                 navMeshAgent.stoppingDistance = Mathf.Max(navMeshAgent.stoppingDistance, desiredDistance);
-                navMeshAgent.speed = Mathf.Max(0.1f, speedWalk);
 
                 if (dist <= desiredDistance)
                 {
