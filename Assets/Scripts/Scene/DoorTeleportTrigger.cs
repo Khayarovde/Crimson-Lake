@@ -79,6 +79,7 @@ public class DoorTeleportTrigger : MonoBehaviour
     private Tween playerApproachTween;
     private Coroutine autoCloseRoutine;
     private TankController cachedPlayerController;
+    private Rigidbody cachedPlayerRigidbody;
     private Vector3 doorClosedLocalPosition;
     private Vector3 hintBaseScale;
     private bool hasHintBaseScale;
@@ -156,11 +157,13 @@ public class DoorTeleportTrigger : MonoBehaviour
         playerInsideTrigger = false;
         playerTriggerContacts = 0;
         isInteracting = false;
+        cachedPlayerController = null;
+        cachedPlayerRigidbody = null;
     }
 
     private void OnTriggerEnter(Collider other)
     {
-        if (!other.CompareTag(playerTag))
+        if (!IsPlayerCollider(other))
         {
             return;
         }
@@ -180,13 +183,14 @@ public class DoorTeleportTrigger : MonoBehaviour
         playerTriggerContacts++;
         playerInsideTrigger = true;
         cachedPlayerController = null;
+        cachedPlayerRigidbody = null;
         TryResolvePlayerAnimator();
         ShowHint();
     }
 
     private void OnTriggerExit(Collider other)
     {
-        if (!other.CompareTag(playerTag))
+        if (!IsPlayerCollider(other))
         {
             return;
         }
@@ -212,11 +216,18 @@ public class DoorTeleportTrigger : MonoBehaviour
 
         playerTransform = null;
         cachedPlayerController = null;
+        cachedPlayerRigidbody = null;
         HideHint();
     }
 
     private Transform ResolvePlayerTransform(Collider other)
     {
+        TankController controller = other.GetComponentInParent<TankController>();
+        if (controller != null)
+        {
+            return controller.transform;
+        }
+
         if (other.attachedRigidbody != null)
         {
             return other.attachedRigidbody.transform;
@@ -237,10 +248,41 @@ public class DoorTeleportTrigger : MonoBehaviour
         return other.transform;
     }
 
+    private bool IsPlayerCollider(Collider other)
+    {
+        if (other == null)
+        {
+            return false;
+        }
+
+        if (other.CompareTag(playerTag))
+        {
+            return true;
+        }
+
+        Transform root = other.transform.root;
+        if (root != null && root.CompareTag(playerTag))
+        {
+            return true;
+        }
+
+        return other.GetComponentInParent<TankController>() != null;
+    }
+
     private void TeleportPlayer()
     {
         if (teleportTarget == null || playerTransform == null)
         {
+            return;
+        }
+
+        Rigidbody playerBody = GetPlayerRigidbody();
+        if (playerBody != null)
+        {
+            playerBody.linearVelocity = Vector3.zero;
+            playerBody.angularVelocity = Vector3.zero;
+            playerBody.position = teleportTarget.position;
+            playerBody.rotation = teleportTarget.rotation;
             return;
         }
 
@@ -392,11 +434,26 @@ public class DoorTeleportTrigger : MonoBehaviour
             : Mathf.Max(0.01f, autoApproachDuration);
         float timeout = Mathf.Max(0.05f, approachDuration + Mathf.Max(0f, approachTimeoutPadding));
 
-        playerApproachTween = targetPlayer.DOMove(targetPoint.position, Mathf.Max(0.01f, approachDuration))
-            .SetEase(autoApproachEase)
-            .OnComplete(() => completed = true)
-            .OnKill(() => completed = true)
-            .SetLink(gameObject, LinkBehaviour.KillOnDisable);
+        Rigidbody playerBody = GetPlayerRigidbody();
+        if (playerBody != null)
+        {
+            playerBody.linearVelocity = Vector3.zero;
+            playerBody.angularVelocity = Vector3.zero;
+
+            playerApproachTween = playerBody.DOMove(targetPoint.position, Mathf.Max(0.01f, approachDuration))
+                .SetEase(autoApproachEase)
+                .OnComplete(() => completed = true)
+                .OnKill(() => completed = true)
+                .SetLink(gameObject, LinkBehaviour.KillOnDisable);
+        }
+        else
+        {
+            playerApproachTween = targetPlayer.DOMove(targetPoint.position, Mathf.Max(0.01f, approachDuration))
+                .SetEase(autoApproachEase)
+                .OnComplete(() => completed = true)
+                .OnKill(() => completed = true)
+                .SetLink(gameObject, LinkBehaviour.KillOnDisable);
+        }
 
         float elapsed = 0f;
         while (!completed && elapsed < timeout)
@@ -441,6 +498,31 @@ public class DoorTeleportTrigger : MonoBehaviour
 
         cachedPlayerController = playerTransform.GetComponentInParent<TankController>();
         return cachedPlayerController;
+    }
+
+    private Rigidbody GetPlayerRigidbody()
+    {
+        if (cachedPlayerRigidbody != null)
+        {
+            return cachedPlayerRigidbody;
+        }
+
+        TankController controller = GetPlayerController();
+        if (controller != null)
+        {
+            cachedPlayerRigidbody = controller.GetComponent<Rigidbody>();
+            if (cachedPlayerRigidbody != null)
+            {
+                return cachedPlayerRigidbody;
+            }
+        }
+
+        if (playerTransform != null)
+        {
+            cachedPlayerRigidbody = playerTransform.GetComponentInParent<Rigidbody>();
+        }
+
+        return cachedPlayerRigidbody;
     }
 
     private void SetPlayerInteractionLock(bool isLocked)
@@ -671,6 +753,7 @@ public class DoorTeleportTrigger : MonoBehaviour
         playerTriggerContacts = 0;
         playerTransform = null;
         cachedPlayerController = null;
+        cachedPlayerRigidbody = null;
         HideHint();
     }
 

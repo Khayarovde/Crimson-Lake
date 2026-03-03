@@ -52,6 +52,8 @@ public class TankController : MonoBehaviour
     [SerializeField] private float aimRotationSmoothTime = 0.07f;
     [SerializeField, Range(0.01f, 0.5f)] private float aimInputDeadZone = 0.12f;
     [SerializeField, Range(0.01f, 0.5f)] private float aimAxisDominanceBias = 0.2f;
+    [SerializeField] private bool mouseRotationEnabled = true;
+    [SerializeField] private bool cameraRelativeMovement = true;
     private Rigidbody rb;
     [SerializeField] private PlayerInventory playerInventory;
     private float inputHorizontal;
@@ -71,6 +73,7 @@ public class TankController : MonoBehaviour
     private Vector2 animationPlanarVelocity;
     private bool animationLockActive;
     private string lockedAnimationState;
+    private Vector3 desiredMoveDirectionWorld;
 
     public float CurrentPlanarSpeed => new Vector2(currentPlanarVelocity.x, currentPlanarVelocity.z).magnitude;
     public bool IsAnimationLocked => animationLockActive;
@@ -112,13 +115,26 @@ public class TankController : MonoBehaviour
         UpdateAnimationPlanarVelocity();
         ProcessMovement();
         bool isMoving = IsCharacterMoving();
-        if (isAiming)
-            RotateByMouse();
+        if (mouseRotationEnabled)
+        {
+            if (isAiming)
+                RotateByMouse();
+            else if (isMoving)
+                RotateByMovement(new Vector2(currentPlanarVelocity.x, currentPlanarVelocity.z));
+            else
+                RotateByMouse();
+        }
         else if (isMoving)
+        {
             RotateByMovement(new Vector2(currentPlanarVelocity.x, currentPlanarVelocity.z));
-        else
-            RotateByMouse();
+        }
+
         wasAiming = isAiming;
+    }
+
+    public void SetMouseRotationEnabled(bool isEnabled)
+    {
+        mouseRotationEnabled = isEnabled;
     }
 
     private void FixedUpdate()
@@ -164,6 +180,9 @@ public class TankController : MonoBehaviour
         inputHorizontal = Input.GetAxisRaw("Horizontal");
         inputVertical = Input.GetAxisRaw("Vertical");
 
+        desiredMoveDirectionWorld = GetMovementDirectionWorld(inputHorizontal, inputVertical);
+        Vector2 movementInputWorld2D = new Vector2(desiredMoveDirectionWorld.x, desiredMoveDirectionWorld.z);
+
         bool hasMoveInput = Mathf.Abs(inputHorizontal) > 0.1f || Mathf.Abs(inputVertical) > 0.1f;
 
         if (hasMoveInput)
@@ -171,7 +190,7 @@ public class TankController : MonoBehaviour
             lastMoveTime = Time.time;
             idleActive = false;
             idleSwitchScheduled = false;
-            lastMoveDirection = new Vector2(inputHorizontal, inputVertical);
+            lastMoveDirection = movementInputWorld2D.sqrMagnitude > 0.0001f ? movementInputWorld2D.normalized : Vector2.zero;
         }
         else if (wasMoveInput)
         {
@@ -191,7 +210,7 @@ public class TankController : MonoBehaviour
         wasMoveInput = hasMoveInput;
 
         Vector2 movementForAnimation = isAiming
-            ? GetAimRelativeInput(new Vector2(inputHorizontal, inputVertical))
+            ? GetAimRelativeInput(movementInputWorld2D)
             : animationPlanarVelocity;
 
         CheckAnimation(movementForAnimation, isAiming);
@@ -199,7 +218,7 @@ public class TankController : MonoBehaviour
 
     void ApplyMovement()
     {
-        Vector3 input = new Vector3(inputHorizontal, 0f, inputVertical);
+        Vector3 input = desiredMoveDirectionWorld;
         if (input.sqrMagnitude > 1f)
             input.Normalize();
 
@@ -215,6 +234,42 @@ public class TankController : MonoBehaviour
 
         currentPlanarVelocity = Vector3.MoveTowards(currentPlanarVelocity, targetVelocity, Mathf.Max(0f, velocityChange));
         rb.MovePosition(rb.position + currentPlanarVelocity * Time.fixedDeltaTime);
+    }
+
+    private Vector3 GetMovementDirectionWorld(float horizontal, float vertical)
+    {
+        Vector3 rawInput = new Vector3(horizontal, 0f, vertical);
+        if (rawInput.sqrMagnitude < 0.0001f)
+        {
+            return Vector3.zero;
+        }
+
+        if (!cameraRelativeMovement)
+        {
+            return rawInput.normalized;
+        }
+
+        Camera mainCamera = Camera.main;
+        if (mainCamera == null)
+        {
+            return rawInput.normalized;
+        }
+
+        Vector3 camForward = mainCamera.transform.forward;
+        Vector3 camRight = mainCamera.transform.right;
+        camForward.y = 0f;
+        camRight.y = 0f;
+
+        if (camForward.sqrMagnitude < 0.0001f || camRight.sqrMagnitude < 0.0001f)
+        {
+            return rawInput.normalized;
+        }
+
+        camForward.Normalize();
+        camRight.Normalize();
+
+        Vector3 worldDirection = camRight * horizontal + camForward * vertical;
+        return worldDirection.sqrMagnitude < 0.0001f ? Vector3.zero : worldDirection.normalized;
     }
 
     private bool IsCharacterMoving()
