@@ -214,7 +214,7 @@ Terrain:
   m_StaticShadowCaster: 0
   m_IgnoreQualitySettings: 0
   m_ReflectionProbeUsage: 1
-  m_MaterialTemplate: {fileID: 2100000, guid: 594ea882c5a793440b60ff72d896021e, type: 2}
+  m_MaterialTemplate: {fileID: 2100000, guid: f3ea7e3e248088a4d8c7c7f5e5da224b, type: 2}
   m_BakeLightProbesForTrees: 1
   m_PreserveTreePrototypeLayers: 0
   m_DeringLightProbesForTrees: 1
@@ -457,7 +457,7 @@ BoxCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 1
+  m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
@@ -792,7 +792,7 @@ Transform:
   m_GameObject: {fileID: 5588183574552150900}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.49, y: 0, z: 0}
+  m_LocalPosition: {x: -0.7, y: -0.473, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -824,13 +824,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5765653758028190808}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.09229615, y: 0.70105654, z: -0.09229535, w: 0.7010584}
-  m_LocalPosition: {x: 40.62, y: 8.14, z: -5.16}
+  m_LocalRotation: {x: 0.5043618, y: 0.49559867, z: -0.50436205, w: 0.4956008}
+  m_LocalPosition: {x: 41.8, y: 53.5, z: 25.6}
   m_LocalScale: {x: 1.2, y: 1.6028837, z: 9.397117}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1770817672587844151}
-  m_LocalEulerAnglesHint: {x: 15, y: 90, z: 0}
+  m_LocalEulerAnglesHint: {x: 88.996, y: -449.992, z: -539.992}
 --- !u!108 &1755106292929051864
 Light:
   m_ObjectHideFlags: 0
@@ -842,8 +842,8 @@ Light:
   serializedVersion: 11
   m_Type: 0
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_Intensity: 831.96
-  m_Range: 393.91
+  m_Intensity: 903.14
+  m_Range: 957.5
   m_SpotAngle: 136.77193
   m_InnerSpotAngle: 21.80208
   m_CookieSize: 10
@@ -884,7 +884,7 @@ Light:
   m_Lightmapping: 4
   m_LightShadowCasterMode: 0
   m_AreaSize: {x: 1, y: 1}
-  m_BounceIntensity: 17.02
+  m_BounceIntensity: 343.3
   m_ColorTemperature: 6570
   m_UseColorTemperature: 0
   m_BoundingSphereOverride: {x: 0, y: 0, z: 0, w: 0}
@@ -935,7 +935,7 @@ GameObject:
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 2147483647
+  m_StaticEditorFlags: 0
   m_IsActive: 1
 --- !u!4 &8119352858294278966
 Transform:
@@ -979,14 +979,14 @@ Terrain:
   m_StaticShadowCaster: 0
   m_IgnoreQualitySettings: 0
   m_ReflectionProbeUsage: 1
-  m_MaterialTemplate: {fileID: 2100000, guid: 594ea882c5a793440b60ff72d896021e, type: 2}
+  m_MaterialTemplate: {fileID: 2100000, guid: f3ea7e3e248088a4d8c7c7f5e5da224b, type: 2}
   m_BakeLightProbesForTrees: 1
   m_PreserveTreePrototypeLayers: 0
   m_DeringLightProbesForTrees: 1
   m_ReceiveGI: 1
   m_ScaleInLightmap: 0.0256
   m_LightmapParameters: {fileID: 15203, guid: 0000000000000000f000000000000000, type: 0}
-  m_GroupingID: 0
+  m_GroupingID: 1
   m_RenderingLayerMask: 1
   m_AllowAutoConnect: 1
   m_EnableHeightmapRayTracing: 1
@@ -1350,6 +1350,7 @@ GameObject:
   - component: {fileID: 7594913755139678745}
   - component: {fileID: 8028828379695997669}
   - component: {fileID: 3715464062028530275}
+  - component: {fileID: 2205409734778340359}
   - component: {fileID: 5674781334255979250}
   - component: {fileID: 7708908645676991420}
   - component: {fileID: 2267362771481697451}
@@ -1450,6 +1451,27 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 2, y: 1, z: 1}
   m_Center: {x: -1.01, y: 0, z: 0}
+--- !u!65 &2205409734778340359
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8049752553243104020}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1, y: 1, z: 1}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &5674781334255979250
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1464,11 +1486,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   teleportTarget: {fileID: 0}
   doorVisual: {fileID: 1130205941014626351}
-  doorOpenYOffset: 10.66
+  doorOpenYOffset: 3
   doorOpenDuration: 0.1
   doorOpenEase: 3
   doorBlockColliders:
-  - {fileID: 3715464062028530275}
+  - {fileID: 0}
+  - {fileID: 0}
   autoCloseDoor: 0
   autoCloseDelay: 4
   doorCloseDuration: 0.45
@@ -1480,16 +1503,16 @@ MonoBehaviour:
   doorOpenClip: {fileID: 8300000, guid: f2d8f3d939c1ffe4db79f85593fdbbd6, type: 3}
   playerAnimator: {fileID: 0}
   playerDoorStateName: Blend Tree
-  playerDoorAnimationDuration: 0.8
+  playerDoorAnimationDuration: 0.1
   playerAnimationTransition: 0.1
   interactionPoint: {fileID: 2403679343751310564}
   autoApproachDuration: 0.4
   autoApproachEase: 1
   arriveDistanceThreshold: 0.05
   approachTimeoutPadding: 0.35
-  hintCanvas: {fileID: 5529972196444512751, guid: 00317d20fb9e2bc40a28cf076dbe91c7, type: 3}
-  hintSpriteTransform: {fileID: 2199391061011766774, guid: 00317d20fb9e2bc40a28cf076dbe91c7, type: 3}
-  hintImage: {fileID: 3060181768317308913, guid: db119d0bfa33e8b41a5e6d7f12595c64, type: 3}
+  hintCanvas: {fileID: 0}
+  hintSpriteTransform: {fileID: 0}
+  hintImage: {fileID: 0}
   closedDoorSprite: {fileID: 21300000, guid: 418be423d53a6c24e881b937810dd552, type: 3}
   openDoorSprite: {fileID: 21300000, guid: 0178ddb9589327445945f35bcd005b10, type: 3}
   needKeySprite: {fileID: 21300000, guid: e18f21fac57b48643915fad247f73ade, type: 3}

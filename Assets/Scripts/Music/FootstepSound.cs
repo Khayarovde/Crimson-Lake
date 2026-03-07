@@ -201,8 +201,8 @@ public class FootstepSound : MonoBehaviour
         audioSource.pitch = pitch;
 
         audioSource.PlayOneShot(selectedClip);
-        
-        Debug.Log($"Footstep played: {selectedClip.name}, Speed: {currentSpeed:F2} m/s");
+
+        // Debug.Log($"Footstep played: {selectedClip.name}, Speed: {currentSpeed:F2} m/s");
     }
 
     // Визуализация области проверки земли в редакторе

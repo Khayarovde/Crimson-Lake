@@ -69,7 +69,7 @@ Camera:
   field of view: 44
   orthographic: 1
   orthographic size: 2.5
-  m_Depth: 0
+  m_Depth: 2
   m_CullingMask:
     serializedVersion: 2
     m_Bits: 768
@@ -138,15 +138,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 290632965567463538, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -400.26
+      value: -363.4
       objectReference: {fileID: 0}
     - target: {fileID: 290632965567463538, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 1.76
+      value: 0.04
       objectReference: {fileID: 0}
     - target: {fileID: 290632965567463538, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 33.6
+      value: 34.988
       objectReference: {fileID: 0}
     - target: {fileID: 290632965567463538, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
       propertyPath: m_LocalRotation.w
@@ -198,7 +198,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2406689343700059058, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
       propertyPath: surfaceClips.Array.size
-      value: 6
+      value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 2406689343700059058, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
       propertyPath: surfaceClips.Array.data[5].maxPitch
@@ -206,6 +206,14 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2406689343700059058, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
       propertyPath: surfaceClips.Array.data[5].minPitch
+      value: 0.9
+      objectReference: {fileID: 0}
+    - target: {fileID: 2406689343700059058, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
+      propertyPath: surfaceClips.Array.data[6].maxPitch
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2406689343700059058, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
+      propertyPath: surfaceClips.Array.data[6].minPitch
       value: 0.9
       objectReference: {fileID: 0}
     - target: {fileID: 2406689343700059058, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
@@ -217,12 +225,28 @@ PrefabInstance:
       value: SnowRoom
       objectReference: {fileID: 0}
     - target: {fileID: 2406689343700059058, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
+      propertyPath: surfaceClips.Array.data[6].baseVolume
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2406689343700059058, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
+      propertyPath: surfaceClips.Array.data[6].surfaceTag
+      value: EntranceRoom
+      objectReference: {fileID: 0}
+    - target: {fileID: 2406689343700059058, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
       propertyPath: surfaceClips.Array.data[5].fadeInDuration
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 2406689343700059058, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
+      propertyPath: surfaceClips.Array.data[6].fadeInDuration
       value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 2406689343700059058, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
       propertyPath: surfaceClips.Array.data[5].clips.Array.size
       value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 2406689343700059058, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
+      propertyPath: surfaceClips.Array.data[6].clips.Array.size
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 2406689343700059058, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
       propertyPath: 'surfaceClips.Array.data[5].clips.Array.data[0]'
@@ -256,6 +280,22 @@ PrefabInstance:
       propertyPath: 'surfaceClips.Array.data[5].clips.Array.data[7]'
       value: 
       objectReference: {fileID: 8300000, guid: b23f7c7c86040274a82bba2ec1674717, type: 3}
+    - target: {fileID: 2406689343700059058, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
+      propertyPath: 'surfaceClips.Array.data[6].clips.Array.data[0]'
+      value: 
+      objectReference: {fileID: 8300000, guid: 149e8ca9df68d744e9722158daa78ab1, type: 3}
+    - target: {fileID: 2406689343700059058, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
+      propertyPath: 'surfaceClips.Array.data[6].clips.Array.data[1]'
+      value: 
+      objectReference: {fileID: 8300000, guid: 2705e9a452d315940a37bf3403ce5927, type: 3}
+    - target: {fileID: 2406689343700059058, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
+      propertyPath: 'surfaceClips.Array.data[6].clips.Array.data[2]'
+      value: 
+      objectReference: {fileID: 8300000, guid: 5e0fe368d9a158a46b0fe96e660e78cc, type: 3}
+    - target: {fileID: 2406689343700059058, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
+      propertyPath: 'surfaceClips.Array.data[6].clips.Array.data[3]'
+      value: 
+      objectReference: {fileID: 8300000, guid: 2f949b40b7283404099a802630fb2077, type: 3}
     - target: {fileID: 3348004520985068418, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
       propertyPath: m_LocalPosition.x
       value: -0.184
@@ -331,6 +371,9 @@ PrefabInstance:
       insertIndex: 0
       addedObject: {fileID: 3705253265233893303}
     m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 2308958626575937540, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 9088604346388668586}
     - targetCorrespondingSourceObject: {fileID: 7819799283928641911, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
       insertIndex: -1
       addedObject: {fileID: 8734585731890071937}
@@ -341,6 +384,48 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 7976591834161454228}
   m_SourcePrefab: {fileID: 100100000, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
+--- !u!1 &658693994858614075 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 2308958626575937540, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
+  m_PrefabInstance: {fileID: 2967651229793713471}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &9088604346388668586
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 658693994858614075}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6155deae416263f48ae9d8a2cdb5853a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  tagCameraBindings:
+  - surfaceTag: SnowRoom
+    virtualCamera: {fileID: 0}
+  - surfaceTag: EntranceRoom
+    virtualCamera: {fileID: 0}
+  defaultCamera: {fileID: 0}
+  useDefaultCameraWhenNoTaggedSurface: 1
+  instantSwitchWithoutBlend: 1
+  useFadeTransition: 0
+  fadeOutDuration: 0.15
+  fadeInDuration: 0.2
+  fadeColor: {r: 0, g: 0, b: 0, a: 1}
+  fadeCanvasSortOrder: 10000
+  disableCameraRotationByCursor: 1
+  mouseLookControllers: []
+  useCollisionContacts: 1
+  useTriggerContacts: 1
+  forceDeterministicStartupCamera: 1
+  evaluateSurfaceOnStartup: 1
+  startupRaycastDistance: 3
+  startupRaycastHeight: 0.2
+  startupSurfaceLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  startupTriggerInteraction: 2
 --- !u!95 &2448681510951377980 stripped
 Animator:
   m_CorrespondingSourceObject: {fileID: 636205799131586819, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}

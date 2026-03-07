@@ -758,6 +758,37 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!1 &2668777746026427737
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7159034727017667260}
+  m_Layer: 0
+  m_Name: TPposle_snow
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7159034727017667260
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2668777746026427737}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 9.600006, y: 1.1499999, z: 0.049999237}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2309960520535389654}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2941658161805201101
 GameObject:
   m_ObjectHideFlags: 0
@@ -1096,7 +1127,7 @@ GameObject:
   - component: {fileID: 5816031627541886513}
   m_Layer: 0
   m_Name: Plane (2)
-  m_TagString: Untagged
+  m_TagString: EntranceRoom
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1655,6 +1686,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 7159034727017667260}
   - {fileID: 6732908808450836905}
   - {fileID: 2306217559247945224}
   - {fileID: 3030730919851854815}
@@ -1805,7 +1837,7 @@ GameObject:
   - component: {fileID: 6786361823352581240}
   m_Layer: 0
   m_Name: Plane
-  m_TagString: Untagged
+  m_TagString: EntranceRoom
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -2252,7 +2284,7 @@ GameObject:
   - component: {fileID: 4210695278812596491}
   m_Layer: 0
   m_Name: Plane (3)
-  m_TagString: Untagged
+  m_TagString: EntranceRoom
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -2266,7 +2298,7 @@ Transform:
   m_GameObject: {fileID: 8267873693030916894}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 9.6, y: 0, z: 0.05}
+  m_LocalPosition: {x: 9.6, y: 0.11, z: 0.05}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2303,7 +2335,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  - {fileID: 2100000, guid: f3ea7e3e248088a4d8c7c7f5e5da224b, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -2361,7 +2393,7 @@ GameObject:
   - component: {fileID: 1259614180869026278}
   m_Layer: 0
   m_Name: Plane (1)
-  m_TagString: Untagged
+  m_TagString: EntranceRoom
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -2577,6 +2609,7 @@ GameObject:
   - component: {fileID: 2658665122641969078}
   - component: {fileID: 7585652824862509459}
   - component: {fileID: 3529331645361703688}
+  - component: {fileID: 21463502516525084}
   m_Layer: 0
   m_Name: Door (5)
   m_TagString: Untagged
@@ -2667,12 +2700,57 @@ BoxCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &21463502516525084
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8983622692189268902}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 73d41f195dd8e22489185ff8adb743d6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  teleportTarget: {fileID: 7159034727017667260}
+  doorVisual: {fileID: 2306217559247945224}
+  doorOpenYOffset: 2
+  doorOpenDuration: 0.6
+  doorOpenEase: 3
+  doorBlockColliders: []
+  autoCloseDoor: 1
+  autoCloseDelay: 2.5
+  doorCloseDuration: 0.45
+  doorCloseEase: 2
+  doorState: 0
+  playerTag: Player
+  interactKey: 101
+  doorAudioSource: {fileID: 0}
+  doorOpenClip: {fileID: 0}
+  playerAnimator: {fileID: 0}
+  playerDoorStateName: DoorWalk
+  playerDoorAnimationDuration: 0.8
+  playerAnimationTransition: 0.1
+  interactionPoint: {fileID: 0}
+  autoApproachDuration: 0.4
+  autoApproachEase: 1
+  arriveDistanceThreshold: 0.05
+  approachTimeoutPadding: 0.35
+  hintCanvas: {fileID: 0}
+  hintSpriteTransform: {fileID: 0}
+  hintImage: {fileID: 0}
+  closedDoorSprite: {fileID: 21300000, guid: 418be423d53a6c24e881b937810dd552, type: 3}
+  openDoorSprite: {fileID: 21300000, guid: 0178ddb9589327445945f35bcd005b10, type: 3}
+  needKeySprite: {fileID: 21300000, guid: e18f21fac57b48643915fad247f73ade, type: 3}
+  pulseScaleMultiplier: 1.1
+  pulseDuration: 0.35
+  pulseEase: 4
 --- !u!1 &9133342215888842160
 GameObject:
   m_ObjectHideFlags: 0
