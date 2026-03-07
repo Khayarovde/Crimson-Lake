@@ -6,11 +6,15 @@ public class CameraFollowTarget : MonoBehaviour
 {
     public Transform target;
     Vector3 targetPos;
-    public Vector3 offsetPos;
     public float moveSpeed = 5;
     public float smooth = 0.2f;
+    [SerializeField] private bool keepInitialOffset = true;
+    [SerializeField] private bool useManualOffset;
+    [SerializeField] private Vector3 manualOffset = new Vector3(0f, 1.6f, -3f);
     private Vector3 velocity = Vector3.zero;
     private bool warnedAboutTarget;
+    private Vector3 followOffset;
+    private bool isOffsetInitialized;
 
     // Start is called before the first frame update
     void Start()
@@ -21,6 +25,8 @@ public class CameraFollowTarget : MonoBehaviour
             enabled = false;
             return;
         }
+
+        TryInitializeOffset();
     }
 
     // Update is called once per frame
@@ -40,9 +46,35 @@ public class CameraFollowTarget : MonoBehaviour
             return;
         }
 
+        if (!isOffsetInitialized)
+        {
+            TryInitializeOffset();
+        }
+
         warnedAboutTarget = false;
-        targetPos = target.transform.position + offsetPos;
+        targetPos = target.transform.position + GetActiveOffset();
         //transform.position = Vector3.Lerp(transform.position, targetPos, moveSpeed * Time.deltaTime* smooth);
         transform.position = Vector3.SmoothDamp(transform.position, targetPos, ref velocity, smooth);
+    }
+
+    private void TryInitializeOffset()
+    {
+        if (target == null)
+        {
+            return;
+        }
+
+        followOffset = keepInitialOffset ? transform.position - target.position : Vector3.zero;
+        isOffsetInitialized = true;
+    }
+
+    private Vector3 GetActiveOffset()
+    {
+        if (useManualOffset)
+        {
+            return manualOffset;
+        }
+
+        return followOffset;
     }
 }

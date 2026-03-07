@@ -3,6 +3,8 @@ using UnityEngine;
 
 public class PlayerStepSound : MonoBehaviour
 {
+    private static readonly AudioClip[] EmptyClips = System.Array.Empty<AudioClip>();
+
     [System.Serializable]
     public struct SurfaceStepSounds
     {
@@ -60,8 +62,8 @@ public class PlayerStepSound : MonoBehaviour
                 StopCoroutine(fadeRoutine);
             fadeRoutine = StartCoroutine(FadeInAudio(surfaceSettings.baseVolume, surfaceSettings.fadeInDuration));
 
-            Debug.Log("Событие шага сработало"); // Для отладки: смотрите в консоль Unity
-            print("Звук шага"); // Ваш оригинальный print
+            // Debug.Log("Событие шага сработало"); // Для отладки: смотрите в консоль Unity
+            // print("Звук шага"); // Ваш оригинальный print
         }
         else
         {
@@ -109,7 +111,7 @@ public class PlayerStepSound : MonoBehaviour
             }
         }
 
-        return new AudioClip[0];
+        return EmptyClips;
     }
 
     private IEnumerator FadeInAudio(float targetVolume, float duration)

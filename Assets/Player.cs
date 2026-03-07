@@ -15,6 +15,13 @@ public class CharacterMovement : MonoBehaviour
 
     private void Start()
     {
+        if (GetComponent<TankController>() != null)
+        {
+            Debug.LogWarning("CharacterMovement disabled: TankController is present on the same GameObject.", this);
+            enabled = false;
+            return;
+        }
+
         // Get the Rigidbody component attached to the character
         rb = GetComponent<Rigidbody>();
     }

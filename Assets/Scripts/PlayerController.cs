@@ -74,6 +74,9 @@ public class TankController : MonoBehaviour
     private bool animationLockActive;
     private string lockedAnimationState;
     private Vector3 desiredMoveDirectionWorld;
+    private Camera cachedMainCamera;
+    private Quaternion targetRotation;
+    private bool hasRotationTarget;
 
     public float CurrentPlanarSpeed => new Vector2(currentPlanarVelocity.x, currentPlanarVelocity.z).magnitude;
     public bool IsAnimationLocked => animationLockActive;
@@ -93,7 +96,26 @@ public class TankController : MonoBehaviour
         lastMoveTime = Time.time;
         currentPlanarVelocity = Vector3.zero;
         animationPlanarVelocity = Vector2.zero;
+        targetRotation = rb != null ? rb.rotation : transform.rotation;
+        hasRotationTarget = true;
         ApplyAnimatorControllerForScene();
+
+        if (animator != null)
+        {
+            animator.updateMode = AnimatorUpdateMode.Normal;
+            animator.applyRootMotion = false;
+        }
+    }
+
+    private Camera GetMainCameraCached()
+    {
+        if (cachedMainCamera != null)
+        {
+            return cachedMainCamera;
+        }
+
+        cachedMainCamera = Camera.main;
+        return cachedMainCamera;
     }
 
     void Update()
@@ -118,15 +140,15 @@ public class TankController : MonoBehaviour
         if (mouseRotationEnabled)
         {
             if (isAiming)
-                RotateByMouse();
+                UpdateRotationTargetByMouse();
             else if (isMoving)
-                RotateByMovement(new Vector2(currentPlanarVelocity.x, currentPlanarVelocity.z));
+                UpdateRotationTargetByMovement(new Vector2(currentPlanarVelocity.x, currentPlanarVelocity.z));
             else
-                RotateByMouse();
+                UpdateRotationTargetByMouse();
         }
         else if (isMoving)
         {
-            RotateByMovement(new Vector2(currentPlanarVelocity.x, currentPlanarVelocity.z));
+            UpdateRotationTargetByMovement(new Vector2(currentPlanarVelocity.x, currentPlanarVelocity.z));
         }
 
         wasAiming = isAiming;
@@ -146,6 +168,7 @@ public class TankController : MonoBehaviour
         }
 
         ApplyMovement();
+        ApplyRotation();
     }
 
     public void SetAnimationLock(bool isLocked, string animationState = null)
@@ -249,7 +272,7 @@ public class TankController : MonoBehaviour
             return rawInput.normalized;
         }
 
-        Camera mainCamera = Camera.main;
+        Camera mainCamera = GetMainCameraCached();
         if (mainCamera == null)
         {
             return rawInput.normalized;
@@ -292,24 +315,17 @@ public class TankController : MonoBehaviour
         rb.constraints |= RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
         }
 
-    void RotateByMovement(Vector2 movement)
+    void UpdateRotationTargetByMovement(Vector2 movement)
     {
         if (movement.sqrMagnitude < 0.001f) return;
         float targetAngle = Mathf.Atan2(movement.x, movement.y) * Mathf.Rad2Deg;
-        float smoothAngle = Mathf.SmoothDampAngle(
-            transform.eulerAngles.y,
-            targetAngle,
-            ref rotationVelocity,
-            rotationSmoothTime,
-            Mathf.Max(1f, rotateSpeed)
-        );
-
-        transform.rotation = Quaternion.Euler(0f, smoothAngle, 0f);
+        targetRotation = Quaternion.Euler(0f, targetAngle, 0f);
+        hasRotationTarget = true;
     }
 
-    void RotateByMouse()
+    void UpdateRotationTargetByMouse()
     {
-        Camera cameraMain = Camera.main;
+        Camera cameraMain = GetMainCameraCached();
         if (cameraMain == null) return;
 
         Ray mouseRay = cameraMain.ScreenPointToRay(Input.mousePosition);
@@ -324,16 +340,30 @@ public class TankController : MonoBehaviour
         aimForward = direction.normalized;
 
         float targetAngle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg;
+        targetRotation = Quaternion.Euler(0f, targetAngle, 0f);
+        hasRotationTarget = true;
+    }
+
+    private void ApplyRotation()
+    {
+        if (!hasRotationTarget || rb == null)
+            return;
+
         float smoothTime = isAiming ? aimRotationSmoothTime : rotationSmoothTime;
-        float smoothAngle = Mathf.SmoothDampAngle(
-            transform.eulerAngles.y,
+        float currentAngle = rb.rotation.eulerAngles.y;
+        float targetAngle = targetRotation.eulerAngles.y;
+        float maxTurnSpeed = Mathf.Max(1f, rotateSpeed);
+        float smoothedAngle = Mathf.SmoothDampAngle(
+            currentAngle,
             targetAngle,
             ref rotationVelocity,
             Mathf.Max(0.001f, smoothTime),
-            Mathf.Max(1f, rotateSpeed)
+            maxTurnSpeed,
+            Time.fixedDeltaTime
         );
 
-        transform.rotation = Quaternion.Euler(0f, smoothAngle, 0f);
+        Quaternion nextRotation = Quaternion.Euler(0f, smoothedAngle, 0f);
+        rb.MoveRotation(nextRotation);
     }
 
     private void CheckAnimation(Vector2 movement, bool aiming)
@@ -445,8 +475,9 @@ public class TankController : MonoBehaviour
     private void SetBlendVelocity(Vector2 direction)
     {
         if (animator == null) return;
-        animator.SetFloat(blendTreeXParam, direction.x, Mathf.Max(0f, blendParameterDampTime), Time.deltaTime);
-        animator.SetFloat(blendTreeYParam, direction.y, Mathf.Max(0f, blendParameterDampTime), Time.deltaTime);
+        float dampDeltaTime = Time.deltaTime;
+        animator.SetFloat(blendTreeXParam, direction.x, Mathf.Max(0f, blendParameterDampTime), dampDeltaTime);
+        animator.SetFloat(blendTreeYParam, direction.y, Mathf.Max(0f, blendParameterDampTime), dampDeltaTime);
     }
 
     private void ChangeMovementAnimation(bool isAimMode)
