@@ -1,812 +1,623 @@
+using System.Collections;
 using DG.Tweening;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
+/// <summary>
+/// Дверь в стиле Signalis:
+///   1. Игрок входит в триггер → показывается подсказка [E] с иконкой состояния двери
+///   2. Нажимает E → стоит на месте, поворачивается к двери, анимация взаимодействия
+///   3. Дверь открывается
+///   4. Персонаж проходит через дверной проём (только по X/Z, без взлёта по Y)
+///   5. Fade to black → телепорт → fade from black
+///   6. Персонаж выходит из двери на другой стороне
+/// </summary>
 [DisallowMultipleComponent]
 [RequireComponent(typeof(Collider))]
 public class DoorTeleportTrigger : MonoBehaviour
 {
-    private enum DoorState
-    {
-        Closed,
-        Open,
-        LockedNeedKey
-    }
+    // ─── Состояние двери ────────────────────────────────────────────────────
 
-    [Header("Target")]
+    public enum DoorState { Open, Locked, LockedNeedKey }
+
+    [Header("Состояние двери")]
+    [SerializeField] private DoorState doorState = DoorState.Open;
+    [SerializeField] private bool hasKey = false;
+    [SerializeField] private bool consumeKeyOnUse = true;
+
+    // ─── Телепорт ────────────────────────────────────────────────────────────
+
+    [Header("Телепорт")]
+    [Tooltip("Точка, куда телепортируется игрок (на другой стороне двери)")]
     [SerializeField] private Transform teleportTarget;
 
-    [Header("Door Open Animation")]
-    [SerializeField] private Transform doorVisual;
-    [SerializeField] private float doorOpenYOffset = 2f;
-    [SerializeField] private float doorOpenDuration = 0.6f;
-    [SerializeField] private Ease doorOpenEase = Ease.OutSine;
+    // ─── Визуал двери ───────────────────────────────────────────────────────
 
-    [Header("Door Collision")]
+    [Header("Визуал двери")]
+    [SerializeField] private Transform doorVisual;
+    [SerializeField] private float doorOpenOffset = 2f;
+    [SerializeField] private float doorOpenDuration = 0.55f;
+    [SerializeField] private Ease doorOpenEase = Ease.OutSine;
     [SerializeField] private Collider[] doorBlockColliders;
 
-    [Header("Door Auto Close")]
-    [SerializeField] private bool autoCloseDoor = true;
-    [SerializeField] private float autoCloseDelay = 2.5f;
-    [SerializeField] private float doorCloseDuration = 0.45f;
-    [SerializeField] private Ease doorCloseEase = Ease.InSine;
+    // ─── Звук ───────────────────────────────────────────────────────────────
 
-    [Header("Door State")]
-    [SerializeField] private DoorState doorState = DoorState.Closed;
+    [Header("Звук")]
+    [SerializeField] private AudioSource audioSource;
+    [SerializeField] private AudioClip doorOpenClip;
+    [SerializeField] private AudioClip doorLockedClip;
 
-    [Header("Player")]
+    // ─── Движение через дверь ────────────────────────────────────────────────
+
+    [Header("Проход через дверь (перед телепортом)")]
+    [Tooltip("Точка за дверным проёмом — движение только по X/Z, Y персонажа не меняется")]
+    [SerializeField] private Transform enterPoint;
+    [SerializeField] private float enterDuration = 0.35f;
+    [SerializeField] private Ease enterEase = Ease.Linear;
+
+    [Header("Выход из двери (после телепорта)")]
+    [Tooltip("Точка выхода на другой стороне — движение только по X/Z")]
+    [SerializeField] private Transform exitPoint;
+    [SerializeField] private float exitDuration = 0.35f;
+    [SerializeField] private Ease exitEase = Ease.Linear;
+
+    // ─── Анимации игрока ─────────────────────────────────────────────────────
+
+    [Header("Анимации игрока")]
+    [SerializeField] private Animator playerAnimator;
+    [SerializeField] private string interactAnimState = "Interact_Door";
+    [SerializeField] private float interactAnimDuration = 0.75f;
+    [SerializeField] private string walkAnimState = "Blend Tree_WALK";
+    [SerializeField] private string idleAnimState = "Idle";
+    [SerializeField] private float animCrossFade = 0.1f;
+
+    // ─── Fade (затемнение экрана) ─────────────────────────────────────────────
+
+    [Header("Затемнение экрана")]
+    [SerializeField] private Image fadeImage;
+    [SerializeField] private Color fadeColor = Color.black;
+    [SerializeField] private float fadeToDarkDuration = 0.5f;
+    [SerializeField] private float fadeFromDarkDuration = 0.5f;
+    [SerializeField] private float holdDarkDuration = 0.2f;
+
+    // ─── Hint UI (подсказка с иконкой состояния) ──────────────────────────────
+
+    [Header("Подсказка UI")]
+    [SerializeField] private GameObject hintRoot;
+    [Tooltip("Image, в котором меняется спрайт в зависимости от состояния двери")]
+    [SerializeField] private Image hintStateImage;
+    [SerializeField] private Sprite spriteOpen;
+    [SerializeField] private Sprite spriteLocked;
+    [SerializeField] private Sprite spriteNeedKey;
+
+    [Header("Анимация появления подсказки")]
+    [Tooltip("Длительность растягивания по Y от 0 до исходного размера")]
+    [SerializeField] private float hintRevealDuration = 0.2f;
+    [SerializeField] private Ease hintRevealEase = Ease.OutBack;
+
+    // ─── Управление ──────────────────────────────────────────────────────────
+
+    [Header("Управление")]
     [SerializeField] private string playerTag = "Player";
-
-    [Header("Interaction")]
     [SerializeField] private KeyCode interactKey = KeyCode.E;
 
-    [Header("Door Sound")]
-    [SerializeField] private AudioSource doorAudioSource;
-    [SerializeField] private AudioClip doorOpenClip;
+    // ─── Приватные поля ───────────────────────────────────────────────────────
 
-    [Header("Player Door Animation")]
-    [SerializeField] private Animator playerAnimator;
-    [SerializeField] private string playerDoorStateName = "Blend Tree_WALK";
-    [SerializeField] private float playerDoorAnimationDuration = 0.8f;
-    [SerializeField] private float playerAnimationTransition = 0.1f;
+    private Transform _player;
+    private Rigidbody _playerRb;
+    private bool _playerInRange;
+    private bool _isInteracting;
+    private Vector3 _doorClosedPos;
+    private Tween _hintTween;
 
-    [Header("Approach Door")]
-    [SerializeField] private Transform interactionPoint;
-    [SerializeField] private float autoApproachDuration = 0.4f;
-    [SerializeField] private Ease autoApproachEase = Ease.Linear;
-    [SerializeField] private float arriveDistanceThreshold = 0.05f;
-    [SerializeField] private float approachTimeoutPadding = 0.35f;
-
-    [Header("Hint UI")]
-    [SerializeField] private GameObject hintCanvas;
-    [SerializeField] private RectTransform hintSpriteTransform;
-    [SerializeField] private Image hintImage;
-
-    [Header("State Sprites")]
-    [SerializeField] private Sprite closedDoorSprite;
-    [SerializeField] private Sprite openDoorSprite;
-    [SerializeField] private Sprite needKeySprite;
-
-    [Header("Hint Animation (DOTween)")]
-    [SerializeField] private float pulseScaleMultiplier = 1.1f;
-    [SerializeField] private float pulseDuration = 0.35f;
-    [SerializeField] private Ease pulseEase = Ease.InOutSine;
-
-    private Transform playerTransform;
-    private Sequence hintSequence;
-    private Tween doorOpenTween;
-    private Tween playerApproachTween;
-    private Coroutine autoCloseRoutine;
-    private TankController cachedPlayerController;
-    private Rigidbody cachedPlayerRigidbody;
-    private Vector3 doorClosedLocalPosition;
-    private Vector3 hintBaseScale;
-    private bool hasHintBaseScale;
-    private bool isInteracting;
-    private bool isDoorOpened;
-    private bool playerInsideTrigger;
-    private int playerTriggerContacts;
-
-    private void Reset()
-    {
-        EnsureTriggerCollider();
-    }
-
-    private void OnValidate()
-    {
-        EnsureTriggerCollider();
-        ResolveHintReferences();
-        ResolveDoorBlockColliders();
-
-        if (doorVisual == null)
-        {
-            doorVisual = transform;
-        }
-
-        doorClosedLocalPosition = doorVisual.localPosition;
-
-        if (doorAudioSource == null)
-        {
-            doorAudioSource = GetComponent<AudioSource>();
-        }
-    }
+    // ─────────────────────────────────────────────────────────────────────────
+    // Unity lifecycle
+    // ─────────────────────────────────────────────────────────────────────────
 
     private void Awake()
     {
-        EnsureTriggerCollider();
+        GetComponent<Collider>().isTrigger = true;
 
-        ResolveHintReferences();
-        ResolveDoorBlockColliders();
+        if (doorVisual != null)
+            _doorClosedPos = doorVisual.localPosition;
 
-        if (hintSpriteTransform != null)
+        SetDoorBlockers(true);
+        HideHintImmediate(); // без анимации при старте сцены
+
+        if (fadeImage != null)
         {
-            hintBaseScale = hintSpriteTransform.localScale;
-            hasHintBaseScale = true;
+            fadeImage.color = Color.clear;
+            fadeImage.gameObject.SetActive(false);
         }
-
-        ApplyDoorBlockersEnabled(!isDoorOpened);
-
-        HideHint();
     }
 
     private void Update()
     {
-        if (!playerInsideTrigger || playerTransform == null)
-        {
+        if (!_playerInRange || _isInteracting)
             return;
-        }
-
-        RefreshHintSprite();
 
         if (Input.GetKeyDown(interactKey))
-        {
-            HandleInteraction();
-        }
-    }
-
-    private void OnDisable()
-    {
-        StopDoorAnimation();
-        StopApproachTween();
-        StopAutoCloseRoutine();
-        ApplyDoorBlockersEnabled(true);
-        SetPlayerInteractionLock(false);
-        HideHint();
-        playerTransform = null;
-        playerInsideTrigger = false;
-        playerTriggerContacts = 0;
-        isInteracting = false;
-        cachedPlayerController = null;
-        cachedPlayerRigidbody = null;
+            StartCoroutine(InteractionSequence());
     }
 
     private void OnTriggerEnter(Collider other)
     {
-        if (!IsPlayerCollider(other))
-        {
+        if (!IsPlayer(other) || _isInteracting)
             return;
-        }
 
-        Transform enteringPlayer = ResolvePlayerTransform(other);
-        if (enteringPlayer == null)
-        {
-            return;
-        }
+        _player = GetPlayerRoot(other);
+        _playerRb = _player != null ? _player.GetComponentInParent<Rigidbody>() : null;
+        _playerInRange = true;
 
-        if (playerTransform != null && enteringPlayer != playerTransform)
-        {
-            return;
-        }
+        if (playerAnimator == null && _player != null)
+            playerAnimator = _player.GetComponentInChildren<Animator>();
 
-        playerTransform = enteringPlayer;
-        playerTriggerContacts++;
-        playerInsideTrigger = true;
-        cachedPlayerController = null;
-        cachedPlayerRigidbody = null;
-        TryResolvePlayerAnimator();
         ShowHint();
     }
 
     private void OnTriggerExit(Collider other)
     {
-        if (!IsPlayerCollider(other))
-        {
+        if (!IsPlayer(other) || _isInteracting)
             return;
-        }
 
-        Transform exitingPlayer = ResolvePlayerTransform(other);
-        if (exitingPlayer != playerTransform)
-        {
-            return;
-        }
-
-        playerTriggerContacts = Mathf.Max(0, playerTriggerContacts - 1);
-        playerInsideTrigger = playerTriggerContacts > 0;
-
-        if (isInteracting)
-        {
-            return;
-        }
-
-        if (playerInsideTrigger)
-        {
-            return;
-        }
-
-        playerTransform = null;
-        cachedPlayerController = null;
-        cachedPlayerRigidbody = null;
-        HideHint();
+        _playerInRange = false;
+        SetHintVisible(false);
     }
 
-    private Transform ResolvePlayerTransform(Collider other)
+    private void OnDisable()
     {
-        TankController controller = other.GetComponentInParent<TankController>();
-        if (controller != null)
-        {
-            return controller.transform;
-        }
-
-        if (other.attachedRigidbody != null)
-        {
-            return other.attachedRigidbody.transform;
-        }
-
-        Rigidbody parentBody = other.GetComponentInParent<Rigidbody>();
-        if (parentBody != null)
-        {
-            return parentBody.transform;
-        }
-
-        Transform taggedRoot = other.transform.root;
-        if (taggedRoot != null && taggedRoot.CompareTag(playerTag))
-        {
-            return taggedRoot;
-        }
-
-        return other.transform;
+        DOTween.Kill(gameObject);
+        _playerInRange = false;
+        _isInteracting = false;
+        HideHintImmediate();
+        ResetFade();
     }
 
-    private bool IsPlayerCollider(Collider other)
+    // ─────────────────────────────────────────────────────────────────────────
+    // Главная последовательность взаимодействия
+    // ─────────────────────────────────────────────────────────────────────────
+
+    private IEnumerator InteractionSequence()
     {
-        if (other == null)
+        if (teleportTarget == null || _player == null)
+            yield break;
+
+        _isInteracting = true;
+        SetHintVisible(false);
+        LockPlayerInput(true);
+
+        // 1. Повернуться к двери (стоя на месте)
+        yield return FacePlayerToDoor();
+
+        // 2. Проверка доступа
+        bool canOpen = false;
+        yield return ValidateAccess(result => canOpen = result);
+
+        if (!canOpen)
         {
-            return false;
+            // Дверь заблокирована — просто разблокируем игрока
+            LockPlayerInput(false);
+            _isInteracting = false;
+            yield break;
         }
 
-        if (other.CompareTag(playerTag))
-        {
-            return true;
-        }
+        // 3. Анимация взаимодействия с дверью
+        yield return PlayAnimation(interactAnimState, interactAnimDuration);
 
-        Transform root = other.transform.root;
-        if (root != null && root.CompareTag(playerTag))
-        {
-            return true;
-        }
+        // 4. Дверь открывается
+        yield return OpenDoor();
 
-        return other.GetComponentInParent<TankController>() != null;
+        // 5. Пройти через дверной проём (только X/Z)
+        yield return PlayAnimation(walkAnimState, 0f);
+        yield return MovePlayerFlatTo(enterPoint, enterDuration, enterEase);
+
+        // 6. Fade to black → телепорт → fade from black
+        yield return FadeTo(1f, fadeToDarkDuration);
+        yield return new WaitForSeconds(holdDarkDuration);
+        Teleport();
+        yield return new WaitForSeconds(holdDarkDuration);
+
+        // 7. Выйти из двери на другой стороне (только X/Z)
+        yield return PlayAnimation(walkAnimState, 0f);
+        yield return MovePlayerFlatTo(exitPoint, exitDuration, exitEase);
+
+        yield return FadeTo(0f, fadeFromDarkDuration);
+
+        // 8. Вернуть Idle — игрок ждёт следующего действия
+        yield return PlayAnimation(idleAnimState, 0f);
+
+        LockPlayerInput(false);
+        _isInteracting = false;
+        _playerInRange = false;
+        _player = null;
+        _playerRb = null;
     }
 
-    private void TeleportPlayer()
+    // ─────────────────────────────────────────────────────────────────────────
+    // Проверка доступа к двери
+    // ─────────────────────────────────────────────────────────────────────────
+
+    private IEnumerator ValidateAccess(System.Action<bool> result)
     {
-        if (teleportTarget == null || playerTransform == null)
-        {
-            return;
-        }
-
-        Rigidbody playerBody = GetPlayerRigidbody();
-        if (playerBody != null)
-        {
-            playerBody.linearVelocity = Vector3.zero;
-            playerBody.angularVelocity = Vector3.zero;
-            playerBody.position = teleportTarget.position;
-            playerBody.rotation = teleportTarget.rotation;
-            return;
-        }
-
-        playerTransform.SetPositionAndRotation(teleportTarget.position, teleportTarget.rotation);
-    }
-
-    private void ShowHint()
-    {
-        if (hintCanvas == null)
-        {
-            return;
-        }
-
-        RefreshHintSprite();
-        hintCanvas.SetActive(true);
-        StartHintAnimation();
-    }
-
-    private void HandleInteraction()
-    {
-        if (isInteracting)
-        {
-            return;
-        }
-
         switch (doorState)
         {
             case DoorState.Open:
-                StartInteractionSequence();
-                break;
+                result(true);
+                yield break;
+
+            case DoorState.Locked:
+                // Полностью заперта — нельзя открыть
+                if (audioSource != null && doorLockedClip != null)
+                    audioSource.PlayOneShot(doorLockedClip);
+                result(false);
+                yield break;
 
             case DoorState.LockedNeedKey:
-                // TODO: Здесь добавить проверку инвентаря/ключа и логику открытия двери.
-                // Заблокировано: без ключа нельзя открывать дверь, проигрывать анимации и телепортироваться.
-                break;
+                if (!hasKey)
+                {
+                    if (audioSource != null && doorLockedClip != null)
+                        audioSource.PlayOneShot(doorLockedClip);
+                    result(false);
+                    yield break;
+                }
 
-            case DoorState.Closed:
-                // Заблокировано: закрытая дверь не должна запускать анимации и телепорт.
-                break;
+                // Используем ключ (без анимации)
+                if (consumeKeyOnUse)
+                    hasKey = false;
 
-            default:
-                break;
+                doorState = DoorState.Open;
+                result(true);
+                yield break;
         }
     }
 
-    private void StartInteractionSequence()
+    // ─────────────────────────────────────────────────────────────────────────
+    // Телепорт
+    // ─────────────────────────────────────────────────────────────────────────
+
+    private void Teleport()
     {
-        if (teleportTarget == null || playerTransform == null)
-        {
+        if (_player == null || teleportTarget == null)
             return;
-        }
 
-        isInteracting = true;
-        StartCoroutine(PlayInteractionSequence());
-    }
-
-    private System.Collections.IEnumerator PlayInteractionSequence()
-    {
-        SetPlayerInteractionLock(true);
-
-        try
+        if (_playerRb != null)
         {
-            StartCoroutine(PlayDoorOpening());
-
-            PlayPlayerDoorAnimation();
-            yield return MovePlayerToDoorPoint();
-
-            TeleportPlayer();
+            _playerRb.linearVelocity = Vector3.zero;
+            _playerRb.angularVelocity = Vector3.zero;
+            _playerRb.position = teleportTarget.position;
+            _playerRb.rotation = teleportTarget.rotation;
         }
-        finally
+        else
         {
-            SetPlayerInteractionLock(false);
-            isInteracting = false;
-            ClearPlayerInteractionContext();
+            _player.SetPositionAndRotation(teleportTarget.position, teleportTarget.rotation);
         }
     }
 
-    private System.Collections.IEnumerator PlayDoorOpening()
+    // ─────────────────────────────────────────────────────────────────────────
+    // Движение игрока — ТОЛЬКО по X/Z, Y не меняется (нет взлёта/провала)
+    // ─────────────────────────────────────────────────────────────────────────
+
+    private IEnumerator MovePlayerFlatTo(Transform target, float duration, Ease ease)
     {
-        if (isDoorOpened)
-        {
+        if (target == null || _player == null)
             yield break;
-        }
 
-        if (doorAudioSource != null && doorOpenClip != null)
+        // Целевая позиция: X/Z из точки, Y остаётся от текущего положения персонажа
+        Vector3 flatTarget = new Vector3(
+            target.position.x,
+            _player.position.y,   // <-- Y персонажа не меняем!
+            target.position.z
+        );
+
+        bool done = false;
+        float safeDuration = Mathf.Max(0.05f, duration);
+
+        if (_playerRb != null)
         {
-            doorAudioSource.PlayOneShot(doorOpenClip);
-        }
-
-        if (doorVisual == null)
-        {
-            isDoorOpened = true;
-            ApplyDoorBlockersEnabled(false);
-            yield break;
-        }
-
-        StopDoorAnimation();
-        ApplyDoorBlockersEnabled(false);
-
-        Vector3 openedPosition = doorClosedLocalPosition + Vector3.up * doorOpenYOffset;
-        bool completed = false;
-
-        doorOpenTween = doorVisual.DOLocalMove(openedPosition, doorOpenDuration)
-            .SetEase(doorOpenEase)
-            .OnComplete(() => completed = true)
-            .SetLink(gameObject, LinkBehaviour.KillOnDisable);
-
-        while (!completed)
-        {
-            yield return null;
-        }
-
-        isDoorOpened = true;
-        if (doorState == DoorState.Closed)
-        {
-            doorState = DoorState.Open;
-        }
-
-        RestartAutoCloseRoutine();
-    }
-
-    private System.Collections.IEnumerator MovePlayerToDoorPoint()
-    {
-        if (interactionPoint == null || playerTransform == null)
-        {
-            yield break;
-        }
-
-        Transform targetPlayer = playerTransform;
-        Transform targetPoint = interactionPoint;
-        if (targetPlayer == null || targetPoint == null)
-        {
-            yield break;
-        }
-
-        StopApproachTween();
-
-        bool completed = false;
-        float distance = Vector3.Distance(targetPlayer.position, targetPoint.position);
-        if (distance <= Mathf.Max(0f, arriveDistanceThreshold))
-        {
-            targetPlayer.rotation = targetPoint.rotation;
-            yield break;
-        }
-
-        float playerSpeed = GetPlayerApproachSpeed();
-        float approachDuration = playerSpeed > 0.01f
-            ? distance / playerSpeed
-            : Mathf.Max(0.01f, autoApproachDuration);
-        float timeout = Mathf.Max(0.05f, approachDuration + Mathf.Max(0f, approachTimeoutPadding));
-
-        Rigidbody playerBody = GetPlayerRigidbody();
-        if (playerBody != null)
-        {
-            playerBody.linearVelocity = Vector3.zero;
-            playerBody.angularVelocity = Vector3.zero;
-
-            playerApproachTween = playerBody.DOMove(targetPoint.position, Mathf.Max(0.01f, approachDuration))
-                .SetEase(autoApproachEase)
-                .OnComplete(() => completed = true)
-                .OnKill(() => completed = true)
+            _playerRb.linearVelocity = Vector3.zero;
+            _playerRb.DOMove(flatTarget, safeDuration)
+                .SetEase(ease)
+                .OnComplete(() => done = true)
                 .SetLink(gameObject, LinkBehaviour.KillOnDisable);
         }
         else
         {
-            playerApproachTween = targetPlayer.DOMove(targetPoint.position, Mathf.Max(0.01f, approachDuration))
-                .SetEase(autoApproachEase)
-                .OnComplete(() => completed = true)
-                .OnKill(() => completed = true)
+            _player.DOMove(flatTarget, safeDuration)
+                .SetEase(ease)
+                .OnComplete(() => done = true)
                 .SetLink(gameObject, LinkBehaviour.KillOnDisable);
         }
 
-        float elapsed = 0f;
-        while (!completed && elapsed < timeout)
-        {
-            elapsed += Time.deltaTime;
-            yield return null;
-        }
-
-        if (!completed && playerApproachTween != null)
-        {
-            playerApproachTween.Kill();
-        }
-
-        if (targetPlayer != null && targetPoint != null)
-        {
-            targetPlayer.rotation = targetPoint.rotation;
-        }
+        yield return new WaitUntil(() => done);
     }
 
-    private float GetPlayerApproachSpeed()
+    // ─────────────────────────────────────────────────────────────────────────
+    // Поворот к двери (стоя на месте, Y игнорируется)
+    // ─────────────────────────────────────────────────────────────────────────
+
+    private IEnumerator FacePlayerToDoor()
     {
-        TankController controller = GetPlayerController();
-        if (controller == null)
-        {
-            return 0f;
-        }
-
-        return Mathf.Max(0f, controller.moveSpeed);
-    }
-
-    private TankController GetPlayerController()
-    {
-        if (cachedPlayerController != null)
-        {
-            return cachedPlayerController;
-        }
-
-        if (playerTransform == null)
-        {
-            return null;
-        }
-
-        cachedPlayerController = playerTransform.GetComponentInParent<TankController>();
-        return cachedPlayerController;
-    }
-
-    private Rigidbody GetPlayerRigidbody()
-    {
-        if (cachedPlayerRigidbody != null)
-        {
-            return cachedPlayerRigidbody;
-        }
-
-        TankController controller = GetPlayerController();
-        if (controller != null)
-        {
-            cachedPlayerRigidbody = controller.GetComponent<Rigidbody>();
-            if (cachedPlayerRigidbody != null)
-            {
-                return cachedPlayerRigidbody;
-            }
-        }
-
-        if (playerTransform != null)
-        {
-            cachedPlayerRigidbody = playerTransform.GetComponentInParent<Rigidbody>();
-        }
-
-        return cachedPlayerRigidbody;
-    }
-
-    private void SetPlayerInteractionLock(bool isLocked)
-    {
-        TankController controller = GetPlayerController();
-        if (controller == null)
-        {
-            return;
-        }
-
-        controller.SetAnimationLock(isLocked, isLocked ? playerDoorStateName : null);
-    }
-
-    private void RestartAutoCloseRoutine()
-    {
-        if (!autoCloseDoor || !isDoorOpened)
-        {
-            return;
-        }
-
-        StopAutoCloseRoutine();
-        autoCloseRoutine = StartCoroutine(AutoCloseDoorRoutine());
-    }
-
-    private System.Collections.IEnumerator AutoCloseDoorRoutine()
-    {
-        if (autoCloseDelay > 0f)
-        {
-            yield return new WaitForSeconds(autoCloseDelay);
-        }
-
-        if (isInteracting)
-        {
-            autoCloseRoutine = StartCoroutine(AutoCloseDoorRoutine());
+        if (_player == null)
             yield break;
-        }
 
-        yield return PlayDoorClosing();
-        autoCloseRoutine = null;
-    }
+        Transform lookAt = doorVisual != null ? doorVisual : transform;
+        Vector3 dir = lookAt.position - _player.position;
+        dir.y = 0f; // только горизонтальный поворот
 
-    private System.Collections.IEnumerator PlayDoorClosing()
-    {
-        if (!isDoorOpened || doorVisual == null)
-        {
+        if (dir.sqrMagnitude < 0.001f)
             yield break;
-        }
 
-        StopDoorAnimation();
+        Quaternion targetRot = Quaternion.LookRotation(dir.normalized);
 
-        bool completed = false;
-        doorOpenTween = doorVisual.DOLocalMove(doorClosedLocalPosition, Mathf.Max(0.01f, doorCloseDuration))
-            .SetEase(doorCloseEase)
-            .OnComplete(() => completed = true)
+        bool done = false;
+        _player.DORotateQuaternion(targetRot, 0.15f)
+            .SetEase(Ease.OutSine)
+            .OnComplete(() => done = true)
             .SetLink(gameObject, LinkBehaviour.KillOnDisable);
 
-        while (!completed)
-        {
-            yield return null;
-        }
-
-        isDoorOpened = false;
-        ApplyDoorBlockersEnabled(true);
+        yield return new WaitUntil(() => done);
     }
 
-    private void PlayPlayerDoorAnimation()
+    // ─────────────────────────────────────────────────────────────────────────
+    // Открытие двери
+    // ─────────────────────────────────────────────────────────────────────────
+
+    private IEnumerator OpenDoor()
     {
-        TryResolvePlayerAnimator();
-        if (playerAnimator == null || string.IsNullOrEmpty(playerDoorStateName))
-        {
+        if (audioSource != null && doorOpenClip != null)
+            audioSource.PlayOneShot(doorOpenClip);
+
+        SetDoorBlockers(false);
+
+        if (doorVisual == null)
+            yield break;
+
+        bool done = false;
+        Vector3 openPos = _doorClosedPos + Vector3.up * doorOpenOffset;
+
+        doorVisual.DOLocalMove(openPos, doorOpenDuration)
+            .SetEase(doorOpenEase)
+            .OnComplete(() => done = true)
+            .SetLink(gameObject, LinkBehaviour.KillOnDisable);
+
+        yield return new WaitUntil(() => done);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Анимации игрока
+    // ─────────────────────────────────────────────────────────────────────────
+
+    private IEnumerator PlayAnimation(string stateName, float waitDuration)
+    {
+        if (playerAnimator == null || string.IsNullOrEmpty(stateName))
+            yield break;
+
+        int hash = Animator.StringToHash(stateName);
+        if (playerAnimator.HasState(0, hash))
+            playerAnimator.CrossFadeInFixedTime(stateName, animCrossFade, 0);
+
+        if (waitDuration > 0f)
+            yield return new WaitForSeconds(waitDuration);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Fade
+    // ─────────────────────────────────────────────────────────────────────────
+
+    private IEnumerator FadeTo(float targetAlpha, float duration)
+    {
+        if (fadeImage == null)
+            yield break;
+
+        fadeImage.gameObject.SetActive(true);
+        Color to = fadeColor;
+        to.a = targetAlpha;
+
+        bool done = false;
+        DOTween.To(() => fadeImage.color, c => fadeImage.color = c, to, Mathf.Max(0.05f, duration))
+            .SetEase(Ease.Linear)
+            .OnComplete(() => done = true)
+            .SetLink(gameObject, LinkBehaviour.KillOnDisable);
+
+        yield return new WaitUntil(() => done);
+
+        if (targetAlpha <= 0f)
+            fadeImage.gameObject.SetActive(false);
+    }
+
+    private void ResetFade()
+    {
+        if (fadeImage == null)
             return;
-        }
-
-        if (playerAnimator.HasState(0, Animator.StringToHash(playerDoorStateName)))
-        {
-            playerAnimator.CrossFadeInFixedTime(playerDoorStateName, Mathf.Max(0f, playerAnimationTransition), 0);
-        }
+        fadeImage.color = Color.clear;
+        fadeImage.gameObject.SetActive(false);
     }
 
-    private void TryResolvePlayerAnimator()
+    // ─────────────────────────────────────────────────────────────────────────
+    // Hint UI
+    // ─────────────────────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Показывает подсказку и меняет спрайт под текущее состояние двери.
+    /// </summary>
+    private void ShowHint()
     {
-        if (playerAnimator != null)
+        if (hintStateImage != null)
         {
-            return;
-        }
-
-        if (playerTransform != null)
-        {
-            playerAnimator = playerTransform.GetComponentInChildren<Animator>();
-        }
-    }
-
-    private void RefreshHintSprite()
-    {
-        if (hintImage == null)
-        {
-            return;
-        }
-
-        Sprite targetSprite = GetCurrentStateSprite();
-        if (targetSprite != null)
-        {
-            hintImage.sprite = targetSprite;
-        }
-    }
-
-    private void ResolveHintReferences()
-    {
-        if (hintImage != null && hintSpriteTransform == null)
-        {
-            hintSpriteTransform = hintImage.rectTransform;
-        }
-
-        if (hintImage == null && hintSpriteTransform != null)
-        {
-            hintImage = hintSpriteTransform.GetComponent<Image>();
-        }
-
-        if (hintImage == null && hintCanvas != null)
-        {
-            hintImage = hintCanvas.GetComponent<Image>();
-        }
-
-        if (hintSpriteTransform == null && hintImage != null)
-        {
-            hintSpriteTransform = hintImage.rectTransform;
-        }
-
-        if (hintSpriteTransform == null && hintCanvas != null)
-        {
-            hintSpriteTransform = hintCanvas.GetComponent<RectTransform>();
-        }
-    }
-
-    private Sprite GetCurrentStateSprite()
-    {
-        switch (doorState)
-        {
-            case DoorState.Open:
-                return openDoorSprite;
-
-            case DoorState.LockedNeedKey:
-                return needKeySprite;
-
-            case DoorState.Closed:
-            default:
-                return closedDoorSprite;
-        }
-    }
-
-    private void HideHint()
-    {
-        StopHintAnimation();
-
-        if (hintCanvas != null)
-        {
-            hintCanvas.SetActive(false);
-        }
-    }
-
-    private void StartHintAnimation()
-    {
-        if (hintSpriteTransform == null)
-        {
-            return;
-        }
-
-        if (!hasHintBaseScale)
-        {
-            hintBaseScale = hintSpriteTransform.localScale;
-            hasHintBaseScale = true;
-        }
-
-        StopHintAnimation();
-        hintSpriteTransform.localScale = hintBaseScale;
-
-        hintSequence = DOTween.Sequence();
-        hintSequence.Append(hintSpriteTransform.DOScale(hintBaseScale * pulseScaleMultiplier, pulseDuration).SetEase(pulseEase));
-        hintSequence.Append(hintSpriteTransform.DOScale(hintBaseScale, pulseDuration).SetEase(pulseEase));
-        hintSequence.SetLoops(-1);
-        hintSequence.SetLink(gameObject, LinkBehaviour.KillOnDisable);
-    }
-
-    private void StopHintAnimation()
-    {
-        if (hintSequence != null)
-        {
-            hintSequence.Kill();
-            hintSequence = null;
-        }
-
-        if (hintSpriteTransform != null && hasHintBaseScale)
-        {
-            hintSpriteTransform.localScale = hintBaseScale;
-        }
-    }
-
-    private void StopDoorAnimation()
-    {
-        if (doorOpenTween != null)
-        {
-            doorOpenTween.Kill();
-            doorOpenTween = null;
-        }
-    }
-
-    private void StopApproachTween()
-    {
-        if (playerApproachTween != null)
-        {
-            playerApproachTween.Kill();
-            playerApproachTween = null;
-        }
-    }
-
-    private void StopAutoCloseRoutine()
-    {
-        if (autoCloseRoutine != null)
-        {
-            StopCoroutine(autoCloseRoutine);
-            autoCloseRoutine = null;
-        }
-    }
-
-    private void ClearPlayerInteractionContext()
-    {
-        playerInsideTrigger = false;
-        playerTriggerContacts = 0;
-        playerTransform = null;
-        cachedPlayerController = null;
-        cachedPlayerRigidbody = null;
-        HideHint();
-    }
-
-    private void EnsureTriggerCollider()
-    {
-        Collider col = GetComponent<Collider>();
-        if (col != null)
-        {
-            col.isTrigger = true;
-        }
-    }
-
-    private void ResolveDoorBlockColliders()
-    {
-        if (doorBlockColliders != null && doorBlockColliders.Length > 0)
-        {
-            return;
-        }
-
-        Transform source = doorVisual != null ? doorVisual : transform;
-        Collider[] found = source.GetComponentsInChildren<Collider>(true);
-        List<Collider> blockers = new List<Collider>(found.Length);
-
-        for (int i = 0; i < found.Length; i++)
-        {
-            Collider col = found[i];
-            if (col == null || col.isTrigger)
+            hintStateImage.sprite = doorState switch
             {
-                continue;
-            }
-
-            blockers.Add(col);
+                DoorState.Open          => spriteOpen,
+                DoorState.Locked        => spriteLocked,
+                DoorState.LockedNeedKey => hasKey ? spriteOpen : spriteNeedKey,
+                _                       => null
+            };
         }
 
-        doorBlockColliders = blockers.ToArray();
+        SetHintVisible(true);
+        PlayHintReveal();
     }
 
-    private void ApplyDoorBlockersEnabled(bool enabled)
+    private void SetHintVisible(bool visible)
+    {
+        if (hintRoot == null) return;
+
+        if (!visible)
+        {
+            PlayHintHide();
+            return;
+        }
+
+        hintRoot.SetActive(true);
+    }
+
+    /// <summary>
+    /// Мгновенное скрытие без анимации — используется в Awake и OnDisable.
+    /// </summary>
+    private void HideHintImmediate()
+    {
+        _hintTween?.Kill();
+
+        if (hintStateImage != null)
+        {
+            Vector3 s = hintStateImage.rectTransform.localScale;
+            s.y = 1f; // сбросить на случай если tween оборвался на середине
+            hintStateImage.rectTransform.localScale = s;
+        }
+
+        if (hintRoot != null)
+            hintRoot.SetActive(false);
+    }
+
+    /// <summary>
+    /// Появление: scale.y 0 → 1 (раскрывается по высоте).
+    /// </summary>
+    private void PlayHintReveal()
+    {
+        if (hintStateImage == null) return;
+
+        RectTransform rt = hintStateImage.rectTransform;
+        _hintTween?.Kill();
+
+        Vector3 s = rt.localScale;
+        s.y = 0f;
+        rt.localScale = s;
+
+        _hintTween = DOTween
+            .To(() => rt.localScale.y, v =>
+            {
+                Vector3 cur = rt.localScale;
+                cur.y = v;
+                rt.localScale = cur;
+            }, 1f, Mathf.Max(0.05f, hintRevealDuration))
+            .SetEase(hintRevealEase)
+            .SetLink(gameObject, LinkBehaviour.KillOnDisable);
+    }
+
+    /// <summary>
+    /// Пропадание: scale.y 1 → 0 (схлопывается по высоте), затем скрывает объект.
+    /// </summary>
+    private void PlayHintHide()
+    {
+        if (hintStateImage == null)
+        {
+            hintRoot.SetActive(false);
+            return;
+        }
+
+        RectTransform rt = hintStateImage.rectTransform;
+        _hintTween?.Kill();
+
+        // Убедиться что начинаем с текущего scale.y (мог не дойти до 1)
+        _hintTween = DOTween
+            .To(() => rt.localScale.y, v =>
+            {
+                Vector3 cur = rt.localScale;
+                cur.y = v;
+                rt.localScale = cur;
+            }, 0f, Mathf.Max(0.05f, hintRevealDuration))
+            .SetEase(hintRevealEase)
+            .OnComplete(() =>
+            {
+                if (hintRoot != null)
+                    hintRoot.SetActive(false);
+
+                // Сбросить scale.y в 1 чтобы следующий Reveal стартовал корректно
+                Vector3 cur = rt.localScale;
+                cur.y = 1f;
+                rt.localScale = cur;
+            })
+            .SetLink(gameObject, LinkBehaviour.KillOnDisable);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Вспомогательные методы
+    // ─────────────────────────────────────────────────────────────────────────
+
+    private bool IsPlayer(Collider other)
+    {
+        return other.CompareTag(playerTag)
+            || (other.transform.root != null && other.transform.root.CompareTag(playerTag));
+    }
+
+    private Transform GetPlayerRoot(Collider other)
+    {
+        if (other.attachedRigidbody != null)
+            return other.attachedRigidbody.transform;
+
+        Rigidbody rb = other.GetComponentInParent<Rigidbody>();
+        if (rb != null)
+            return rb.transform;
+
+        return other.transform.root != null ? other.transform.root : other.transform;
+    }
+
+    private void SetDoorBlockers(bool enabled)
     {
         if (doorBlockColliders == null)
-        {
             return;
-        }
 
-        for (int i = 0; i < doorBlockColliders.Length; i++)
+        foreach (Collider col in doorBlockColliders)
         {
-            Collider col = doorBlockColliders[i];
-            if (col == null)
-            {
-                continue;
-            }
-
-            col.enabled = enabled;
+            if (col != null)
+                col.enabled = enabled;
         }
     }
+
+    private void LockPlayerInput(bool locked)
+    {
+        // Подключи сюда свой PlayerController
+        // Пример: playerController.SetInputLocked(locked);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Editor helpers
+    // ─────────────────────────────────────────────────────────────────────────
+
+    private void OnValidate()
+    {
+        GetComponent<Collider>().isTrigger = true;
+
+        if (doorVisual != null)
+            _doorClosedPos = doorVisual.localPosition;
+
+        if (audioSource == null)
+            audioSource = GetComponent<AudioSource>();
+    }
+
+#if UNITY_EDITOR
+    private void OnDrawGizmosSelected()
+    {
+        DrawPoint(enterPoint,       Color.cyan,    "Enter");
+        DrawPoint(exitPoint,        Color.green,   "Exit");
+        DrawPoint(teleportTarget,   Color.magenta, "Teleport");
+    }
+
+    private void DrawPoint(Transform t, Color color, string label)
+    {
+        if (t == null) return;
+        Gizmos.color = color;
+        Gizmos.DrawSphere(t.position, 0.1f);
+        UnityEditor.Handles.Label(t.position + Vector3.up * 0.2f, label);
+    }
+#endif
 }
