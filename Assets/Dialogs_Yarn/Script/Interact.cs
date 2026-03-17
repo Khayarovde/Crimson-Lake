@@ -184,7 +184,7 @@ public class Interact : MonoBehaviour {
         isCollected = true;
         SetInteractionHintVisible(false);
 
-        bool hasDiskettePickupFlow = GetComponent<DiskettePickupWithInteraction>() != null;
+        bool hasDiskettePickupFlow = GetComponent<EnemyPickupInteraction>() != null;
         if (destroyObjectAfterPickup && !hasDiskettePickupFlow) {
             Destroy(gameObject);
         }
