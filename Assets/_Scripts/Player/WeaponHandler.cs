@@ -1,6 +1,6 @@
 using UnityEngine;
 using System.Collections;
-using System.Collections.Generic; // ← Добавлено для Dictionary
+using System.Collections.Generic; 
 
 public class WeaponHandler : MonoBehaviour
 {

@@ -6,6 +6,7 @@ using UnityEngine.SceneManagement;
 public class SaveManager : MonoBehaviour
 {
     public static SaveManager Instance;
+    private static readonly HashSet<string> seenEventIds = new HashSet<string>();
 
     private const string SaveSlotFilePrefix = "save_slot_";
     private const string PendingWarningKey = "PendingSaveWarning";
@@ -157,6 +158,23 @@ public class SaveManager : MonoBehaviour
 
     public bool HasUnsavedChanges => hasUnsavedChanges;
 
+    public static bool HasSeenEvent(string eventId)
+    {
+        if (string.IsNullOrWhiteSpace(eventId))
+            return false;
+
+        return seenEventIds.Contains(eventId);
+    }
+
+    public static void MarkEventSeen(string eventId)
+    {
+        if (string.IsNullOrWhiteSpace(eventId))
+            return;
+
+        if (seenEventIds.Add(eventId))
+            Instance?.MarkUnsaved();
+    }
+
     public void RequestWarningOnNextScene(string message)
     {
         if (string.IsNullOrWhiteSpace(message)) return;
@@ -204,7 +222,8 @@ public class SaveManager : MonoBehaviour
             playerPosition = SerializableVector3.FromVector3(playerTransform.position),
             playerRotationEuler = SerializableVector3.FromVector3(playerTransform.rotation.eulerAngles),
             savedAt = System.DateTime.Now.ToString("yyyy-MM-dd HH:mm"),
-            playSeconds = Mathf.FloorToInt(sessionPlaySeconds)
+            playSeconds = Mathf.FloorToInt(sessionPlaySeconds),
+            seenEventIds = new List<string>(seenEventIds)
         };
 
         Chest[] allChests = FindObjectsByType<Chest>(FindObjectsSortMode.InstanceID);
@@ -242,6 +261,17 @@ public class SaveManager : MonoBehaviour
     private void ApplySaveData(GameSaveData data)
     {
         sessionPlaySeconds = Mathf.Max(0, data.playSeconds);
+
+        seenEventIds.Clear();
+        if (data.seenEventIds != null)
+        {
+            for (int i = 0; i < data.seenEventIds.Count; i++)
+            {
+                string id = data.seenEventIds[i];
+                if (!string.IsNullOrWhiteSpace(id))
+                    seenEventIds.Add(id);
+            }
+        }
 
         Transform playerTransform = ResolvePlayerTransform();
         if (playerTransform != null)
@@ -411,6 +441,7 @@ public class GameSaveData
     public int activeItemIndex = -1;
     public string savedAt;
     public int playSeconds;
+    public List<string> seenEventIds;
 }
 
 [System.Serializable]
