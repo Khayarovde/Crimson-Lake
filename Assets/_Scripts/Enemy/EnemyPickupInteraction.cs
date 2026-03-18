@@ -45,6 +45,7 @@ public class EnemyPickupInteraction : MonoBehaviour
     private bool isChaseMusicActive = false;
     private Coroutine chaseFadeRoutine;
     private bool isEndingChase;
+    private bool isChaseFadingOut;
 
     private void Awake()
     {
@@ -372,6 +373,7 @@ public class EnemyPickupInteraction : MonoBehaviour
 
     private IEnumerator FadeInChaseMusic()
     {
+        isChaseFadingOut = false;
         chaseLocalVolume = 0f;
         ApplyChaseVolume();
         chaseAudioSource.Play();
@@ -390,6 +392,7 @@ public class EnemyPickupInteraction : MonoBehaviour
 
     private IEnumerator FadeOutChaseMusic()
     {
+        isChaseFadingOut = true;
         float elapsed = 0f;
         float startLocal = chaseLocalVolume;
         while (elapsed < chaseFadeTime)
@@ -403,7 +406,22 @@ public class EnemyPickupInteraction : MonoBehaviour
         chaseLocalVolume = 0f;
         ApplyChaseVolume();
         isChaseMusicActive = false;
+        isChaseFadingOut = false;
         chaseFadeRoutine = null;
+    }
+
+    private void StartFadeOutChaseMusicIfNeeded()
+    {
+        if (!isChaseMusicActive || chaseAudioSource == null)
+            return;
+
+        if (isChaseFadingOut)
+            return;
+
+        if (chaseFadeRoutine != null)
+            StopCoroutine(chaseFadeRoutine);
+
+        chaseFadeRoutine = StartCoroutine(FadeOutChaseMusic());
     }
 
     private void ApplyChaseVolume()
@@ -428,10 +446,7 @@ public class EnemyPickupInteraction : MonoBehaviour
         isEndingChase = true;
         if (chaseAudioSource != null && chaseAudioSource.isPlaying)
         {
-            if (chaseFadeRoutine != null)
-                StopCoroutine(chaseFadeRoutine);
-
-            chaseFadeRoutine = StartCoroutine(FadeOutChaseMusic());
+            StartFadeOutChaseMusicIfNeeded();
             yield return chaseFadeRoutine;
         }
         originalChaseZone = null;
@@ -439,17 +454,29 @@ public class EnemyPickupInteraction : MonoBehaviour
         Debug.Log("Погоня полностью завершена (враг мёртв).");
     }
 
+    private bool IsPlayableMusicZone(MusicZoneTrigger zone)
+    {
+        return zone != null &&
+               zone.playOnEnter &&
+               zone.zoneMusic != null;
+    }
+
     // Вызывается из MusicZoneTrigger при входе в новую зону
     public void OnPlayerEnteredNewZone(MusicZoneTrigger newZone)
     {
-        if (isChaseMusicActive && originalChaseZone != null && newZone != originalChaseZone)
-        {
-            Debug.Log("Игрок вошёл в другую зону → chase-музыка затухает.");
-            if (chaseFadeRoutine != null)
-                StopCoroutine(chaseFadeRoutine);
-            chaseFadeRoutine = StartCoroutine(FadeOutChaseMusic());
-            originalChaseZone = null;
-        }
+        if (!isChaseMusicActive)
+            return;
+
+        if (!IsPlayableMusicZone(newZone))
+            return;
+
+        // В зоне, где была поднята дискета, chase-музыка продолжает играть.
+        if (originalChaseZone != null && newZone == originalChaseZone)
+            return;
+
+        Debug.Log("Игрок вошёл в другую музыкальную зону -> chase-музыка затухает.");
+        StartFadeOutChaseMusicIfNeeded();
+        originalChaseZone = null;
     }
 
     private void OnDrawGizmosSelected()

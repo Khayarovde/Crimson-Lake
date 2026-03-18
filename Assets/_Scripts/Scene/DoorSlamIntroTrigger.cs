@@ -21,8 +21,6 @@ public class DoorSlamIntroTrigger : MonoBehaviour
     [SerializeField] private float dropDistance = 1.5f;
     [SerializeField] private float dropDuration = 0.25f;
     [SerializeField] private Ease dropEase = Ease.InQuart;
-    [SerializeField] private float returnDuration = 0.15f;
-    [SerializeField] private Ease returnEase = Ease.OutSine;
 
     [Header("Тряска камеры")]
     [SerializeField] private float shakeDuration = 0.3f;
@@ -121,14 +119,6 @@ public class DoorSlamIntroTrigger : MonoBehaviour
 
                 yield return new WaitForSeconds(Mathf.Max(0.05f, shakeDuration));
             }
-
-            bool upDone = false;
-            doorVisual.DOMove(startPos, Mathf.Max(0.05f, returnDuration))
-                .SetEase(returnEase)
-                .OnComplete(() => upDone = true)
-                .SetLink(gameObject, LinkBehaviour.KillOnDisable);
-
-            yield return new WaitUntil(() => upDone);
         }
         else
         {

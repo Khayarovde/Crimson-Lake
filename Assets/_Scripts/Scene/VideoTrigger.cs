@@ -30,7 +30,7 @@ public class VideoTrigger : MonoBehaviour
 
     [Header("Настройки")]
     [SerializeField] private string playerTag = "Player";
-    [SerializeField] private string shownPrefsKey = "VideoShown_Trigger1";
+    [SerializeField] private string cutsceneEventId = "cutscene_trigger_1";
 
     [Header("ВРЕМЕННО: Тестовый режим (смотреть видео много раз)")]
     [SerializeField] private bool testModeAllowRepeat = true;
@@ -49,7 +49,7 @@ public class VideoTrigger : MonoBehaviour
     private bool soundPlayed = false;
     private bool teleported = false;
 
-    private bool HasShown => !testModeAllowRepeat && PlayerPrefs.GetInt(shownPrefsKey, 0) == 1;
+    private bool HasShown => !testModeAllowRepeat && SaveManager.HasSeenEvent(cutsceneEventId);
 
     void Start()
     {
@@ -236,21 +236,19 @@ public class VideoTrigger : MonoBehaviour
         if (videoPanel != null) videoPanel.SetActive(false);
         if (videoPlayer != null) videoPlayer.Stop();
 
-        if (!testModeAllowRepeat)
-            PlayerPrefs.SetInt(shownPrefsKey, 1);
+        if (!testModeAllowRepeat && !string.IsNullOrWhiteSpace(cutsceneEventId))
+            SaveManager.MarkEventSeen(cutsceneEventId);
     }
 
     // Отладка
     private void OnVideoPrepared(VideoPlayer vp) => Debug.Log("Видео подготовлено");
     private void OnVideoError(VideoPlayer vp, string message) => Debug.LogError("ОШИБКА ВИДЕО: " + message);
 
-    // === КНОПКА СБРОСА В КОНТЕКСТНОМ МЕНЮ (работает всегда!) ===
+    // === КНОПКА СБРОСА В КОНТЕКСТНОМ МЕНЮ ===
     [ContextMenu("Reset Video Viewed Flag")]
     private void ResetVideoViewedFlag()
     {
-        PlayerPrefs.DeleteKey(shownPrefsKey);
-        PlayerPrefs.Save();
-        Debug.Log($"<color=cyan>Флаг просмотра видео сброшен! Теперь можно смотреть заново (ключ: {shownPrefsKey})</color>");
+        Debug.LogWarning("[VideoTrigger] Сброс через PlayerPrefs больше не используется. Для тестов включите 'testModeAllowRepeat', для полного сброса удалите сохранение слота.");
     }
 
     void OnDestroy()
