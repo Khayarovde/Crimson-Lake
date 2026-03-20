@@ -117,14 +117,7 @@ public class SaveSlotsUI : MonoBehaviour
 
     private void ResolveSaveManager()
     {
-        if (SaveManager.Instance != null)
-        {
-            saveManager = SaveManager.Instance;
-            return;
-        }
-
-        var go = new GameObject("SaveManager");
-        saveManager = go.AddComponent<SaveManager>();
+        saveManager = SaveManager.GetOrCreate();
     }
 
     private void HookupButtons()
@@ -323,6 +316,7 @@ public class SaveSlotsUI : MonoBehaviour
             Hide();
             if (!string.IsNullOrEmpty(loadFallbackScene))
             {
+                saveManager.StartNewGameSession();
                 SceneManager.LoadScene(loadFallbackScene);
             }
             else

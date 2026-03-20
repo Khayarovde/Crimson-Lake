@@ -25,6 +25,7 @@ public class VideoTrigger : MonoBehaviour
     [SerializeField] private AudioClip warningClip;
 
     [Header("Телепортация (за 1 сек до конца видео)")]
+    [SerializeField] private DoorTeleportTrigger doorTeleportTrigger;
     [SerializeField] private Transform teleportTarget;
     [SerializeField] private bool copyRotation = true;
 
@@ -203,12 +204,13 @@ public class VideoTrigger : MonoBehaviour
 
     private void TeleportPlayer()
     {
+        Transform target = doorTeleportTrigger != null ? doorTeleportTrigger.TeleportTarget : teleportTarget;
         GameObject player = GameObject.FindGameObjectWithTag("Player");
-        if (player != null && teleportTarget != null)
+        if (player != null && target != null)
         {
-            player.transform.position = teleportTarget.position;
+            player.transform.position = target.position;
             if (copyRotation)
-                player.transform.rotation = teleportTarget.rotation;
+                player.transform.rotation = target.rotation;
         }
     }
 

@@ -14,7 +14,19 @@ public class SaveManager : MonoBehaviour
     private bool hasUnsavedChanges;
     private GameSaveData pendingLoadData;
     private bool hasPendingLoad;
+    private string pendingLoadSceneName;
     private float sessionPlaySeconds;
+    private Coroutine pendingApplyRoutine;
+    private Coroutine postLoadStabilizeRoutine;
+
+    private const float PendingLoadMaxWaitSeconds = 15f;
+    private const int PostLoadStabilizeFrames = 8;
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+    private static void BootstrapBeforeFirstScene()
+    {
+        GetOrCreate();
+    }
 
     public static SaveManager GetOrCreate()
     {
@@ -50,7 +62,20 @@ public class SaveManager : MonoBehaviour
     private void OnDestroy()
     {
         if (Instance == this)
+        {
             SceneManager.sceneLoaded -= OnSceneLoaded;
+            if (pendingApplyRoutine != null)
+            {
+                StopCoroutine(pendingApplyRoutine);
+                pendingApplyRoutine = null;
+            }
+            if (postLoadStabilizeRoutine != null)
+            {
+                StopCoroutine(postLoadStabilizeRoutine);
+                postLoadStabilizeRoutine = null;
+            }
+            Instance = null;
+        }
     }
     
     // Сохранение игры
@@ -121,6 +146,7 @@ public class SaveManager : MonoBehaviour
 
         if (!string.IsNullOrEmpty(defaultScene))
         {
+            StartNewGameSession();
             SceneManager.LoadScene(defaultScene);
             return true;
         }
@@ -141,14 +167,38 @@ public class SaveManager : MonoBehaviour
 
         if (!string.IsNullOrEmpty(data.sceneName) && SceneManager.GetActiveScene().name != data.sceneName)
         {
-            pendingLoadData = data;
-            hasPendingLoad = true;
+            QueuePendingApply(data);
             SceneManager.LoadScene(data.sceneName);
             return true;
         }
 
-        ApplySaveData(data);
+        if (!TryApplyNow(data))
+            QueuePendingApply(data);
+
         return true;
+    }
+
+    public void StartNewGameSession()
+    {
+        sessionPlaySeconds = 0f;
+        hasUnsavedChanges = false;
+        seenEventIds.Clear();
+
+        hasPendingLoad = false;
+        pendingLoadData = null;
+        pendingLoadSceneName = string.Empty;
+
+        if (pendingApplyRoutine != null)
+        {
+            StopCoroutine(pendingApplyRoutine);
+            pendingApplyRoutine = null;
+        }
+
+        if (postLoadStabilizeRoutine != null)
+        {
+            StopCoroutine(postLoadStabilizeRoutine);
+            postLoadStabilizeRoutine = null;
+        }
     }
 
     public void MarkUnsaved()
@@ -274,11 +324,17 @@ public class SaveManager : MonoBehaviour
         }
 
         Transform playerTransform = ResolvePlayerTransform();
-        if (playerTransform != null)
+        if (playerTransform == null)
         {
-            playerTransform.position = data.playerPosition.ToVector3();
-            playerTransform.rotation = Quaternion.Euler(data.playerRotationEuler.ToVector3());
+            Debug.LogWarning("[SaveManager] Игрок не найден при применении сохранения");
+            return;
         }
+
+        Vector3 savedPosition = data.playerPosition.ToVector3();
+        Quaternion savedRotation = Quaternion.Euler(data.playerRotationEuler.ToVector3());
+
+        ApplyPlayerTransform(playerTransform, savedPosition, savedRotation);
+        StartPostLoadStabilization(playerTransform, savedPosition, savedRotation);
 
         PlayerInventory inventory = playerTransform != null
             ? playerTransform.GetComponent<PlayerInventory>()
@@ -328,6 +384,63 @@ public class SaveManager : MonoBehaviour
         Debug.Log("[SaveManager] Сохранение применено");
     }
 
+    private void ApplyPlayerTransform(Transform playerTransform, Vector3 savedPosition, Quaternion savedRotation)
+    {
+        if (playerTransform == null)
+            return;
+
+        CharacterController controller = playerTransform.GetComponent<CharacterController>();
+        bool controllerWasEnabled = false;
+        if (controller != null)
+        {
+            controllerWasEnabled = controller.enabled;
+            if (controllerWasEnabled)
+                controller.enabled = false;
+        }
+
+        Rigidbody playerRb = playerTransform.GetComponent<Rigidbody>();
+        if (playerRb != null)
+        {
+            playerRb.position = savedPosition;
+            playerRb.rotation = savedRotation;
+#if UNITY_6000_0_OR_NEWER
+            playerRb.linearVelocity = Vector3.zero;
+#else
+            playerRb.velocity = Vector3.zero;
+#endif
+            playerRb.angularVelocity = Vector3.zero;
+        }
+        else
+        {
+            playerTransform.SetPositionAndRotation(savedPosition, savedRotation);
+        }
+
+        if (controller != null && controllerWasEnabled)
+            controller.enabled = true;
+    }
+
+    private void StartPostLoadStabilization(Transform playerTransform, Vector3 savedPosition, Quaternion savedRotation)
+    {
+        if (postLoadStabilizeRoutine != null)
+            StopCoroutine(postLoadStabilizeRoutine);
+
+        postLoadStabilizeRoutine = StartCoroutine(StabilizeLoadedPlayerPose(playerTransform, savedPosition, savedRotation));
+    }
+
+    private System.Collections.IEnumerator StabilizeLoadedPlayerPose(Transform playerTransform, Vector3 savedPosition, Quaternion savedRotation)
+    {
+        for (int i = 0; i < PostLoadStabilizeFrames; i++)
+        {
+            if (playerTransform == null)
+                break;
+
+            yield return new WaitForEndOfFrame();
+            ApplyPlayerTransform(playerTransform, savedPosition, savedRotation);
+        }
+
+        postLoadStabilizeRoutine = null;
+    }
+
     private Transform ResolvePlayerTransform()
     {
         PlayerInventory inventory = FindFirstObjectByType<PlayerInventory>();
@@ -360,11 +473,94 @@ public class SaveManager : MonoBehaviour
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        if (hasPendingLoad)
+        if (!hasPendingLoad || pendingLoadData == null)
+            return;
+
+        if (pendingApplyRoutine != null)
+            StopCoroutine(pendingApplyRoutine);
+
+        pendingApplyRoutine = StartCoroutine(ApplyPendingWhenReady());
+    }
+
+    private bool TryApplyNow(GameSaveData data)
+    {
+        if (data == null)
+            return false;
+
+        Transform playerTransform = ResolvePlayerTransform();
+        if (playerTransform == null)
+            return false;
+
+        ApplySaveData(data);
+        return true;
+    }
+
+    private void QueuePendingApply(GameSaveData data)
+    {
+        pendingLoadData = data;
+        hasPendingLoad = data != null;
+        pendingLoadSceneName = hasPendingLoad ? data.sceneName : string.Empty;
+
+        if (!hasPendingLoad)
+            return;
+
+        if (pendingApplyRoutine != null)
+            StopCoroutine(pendingApplyRoutine);
+
+        pendingApplyRoutine = StartCoroutine(ApplyPendingWhenReady());
+    }
+
+    private System.Collections.IEnumerator ApplyPendingWhenReady()
+    {
+        float startedAt = Time.realtimeSinceStartup;
+        bool targetSceneReached = string.IsNullOrEmpty(pendingLoadSceneName)
+            || SceneManager.GetActiveScene().name == pendingLoadSceneName;
+
+        while (hasPendingLoad && pendingLoadData != null)
         {
-            hasPendingLoad = false;
-            ApplySaveData(pendingLoadData);
+            if (!targetSceneReached)
+            {
+                targetSceneReached = SceneManager.GetActiveScene().name == pendingLoadSceneName;
+                if (!targetSceneReached)
+                {
+                    yield return null;
+                    continue;
+                }
+
+                // Даем целевой сцене создать игрока (Awake/OnEnable/Start).
+                startedAt = Time.realtimeSinceStartup;
+                yield return null;
+            }
+
+            if (ResolvePlayerTransform() != null)
+            {
+                // Даем сцене инициализировать объекты (Start/OnEnable), затем применяем сохранение.
+                yield return null;
+
+                if (TryApplyNow(pendingLoadData))
+                {
+                    hasPendingLoad = false;
+                    pendingLoadData = null;
+                    pendingLoadSceneName = string.Empty;
+                    pendingApplyRoutine = null;
+                    yield break;
+                }
+            }
+
+            if (Time.realtimeSinceStartup - startedAt >= PendingLoadMaxWaitSeconds)
+            {
+                Debug.LogWarning("[SaveManager] Игрок не найден вовремя, сохранение не применено полностью");
+                hasPendingLoad = false;
+                pendingLoadData = null;
+                pendingLoadSceneName = string.Empty;
+                pendingApplyRoutine = null;
+                yield break;
+            }
+
+            yield return null;
         }
+
+        pendingApplyRoutine = null;
     }
 
     private static string GetSlotPath(int slotIndex)

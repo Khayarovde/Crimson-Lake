@@ -16,6 +16,8 @@ using UnityEngine.UI;
 [RequireComponent(typeof(Collider))]
 public class DoorTeleportTrigger : MonoBehaviour
 {
+    public Transform TeleportTarget => teleportTarget;
+
     // ─── Состояние двери ────────────────────────────────────────────────────
 
     public enum DoorState { Open, Locked, LockedNeedKey }
