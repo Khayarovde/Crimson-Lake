@@ -50,6 +50,9 @@ public class InventoryUI : MonoBehaviour
     private PlayerInventory playerInventory;
     private Chest currentChest;
     private bool wasInventoryOpenBeforeChest;
+    private int lastClickedSlotIndex = -1;
+    private float lastClickTime = -10f;
+    [SerializeField] private float medkitDoubleClickThreshold = 0.3f;
 
     // UI элементы сундука
     private Image[] chestSlotIcons;
@@ -152,6 +155,14 @@ public class InventoryUI : MonoBehaviour
         {
             GameObject slot = Instantiate(slotPrefab, gridTransform);
             slot.name = $"Slot_{i}";
+
+            Button slotButton = slot.GetComponent<Button>();
+            if (slotButton == null)
+                slotButton = slot.AddComponent<Button>();
+
+            slotButton.transition = Selectable.Transition.None;
+            int slotIndex = i;
+            slotButton.onClick.AddListener(() => OnInventorySlotClicked(slotIndex));
             
             Image icon = slot.transform.Find("ItemIcon")?.GetComponent<Image>();
             slotIcons[i] = icon;
@@ -164,8 +175,8 @@ public class InventoryUI : MonoBehaviour
             storeButtons[i] = storeButton;
             if (storeButton != null)
             {
-                int slotIndex = i;
-                storeButton.onClick.AddListener(() => OnStoreButtonClicked(slotIndex));
+                int storeSlotIndex = i;
+                storeButton.onClick.AddListener(() => OnStoreButtonClicked(storeSlotIndex));
                 
                 // Устанавливаем позицию кнопки Store
                 RectTransform storeRect = storeButton.GetComponent<RectTransform>();
@@ -181,8 +192,8 @@ public class InventoryUI : MonoBehaviour
             destroyButtons[i] = destroyButton;
             if (destroyButton != null)
             {
-                int slotIndex = i;
-                destroyButton.onClick.AddListener(() => OnDestroyButtonClicked(slotIndex));
+                int destroySlotIndex = i;
+                destroyButton.onClick.AddListener(() => OnDestroyButtonClicked(destroySlotIndex));
                 
                 // Устанавливаем позицию кнопки Destroy
                 RectTransform destroyRect = destroyButton.GetComponent<RectTransform>();
@@ -348,11 +359,11 @@ public class InventoryUI : MonoBehaviour
     {
         if (leftArrowButton != null)
         {
-            leftArrowButton.onClick.AddListener(() => playerInventory.SwitchActiveItem(-1));
+            leftArrowButton.gameObject.SetActive(false);
         }
         if (rightArrowButton != null)
         {
-            rightArrowButton.onClick.AddListener(() => playerInventory.SwitchActiveItem(1));
+            rightArrowButton.gameObject.SetActive(false);
         }
 
         if (toChestButton != null)
@@ -405,6 +416,23 @@ public class InventoryUI : MonoBehaviour
                         break;
                     case InventoryItem.ItemType.Pistol:
                         activeItemInfoText.text = $"Тип: {activeItem.itemName}\nЛёгкий пистолет с патронами 9мм. Быстрая перезарядка, низкий урон.";
+                        break;
+                    case InventoryItem.ItemType.Disketa:
+                    case InventoryItem.ItemType.Cassette:
+                        activeItemInfoText.text = $"Тип: {activeItem.itemName}\nНоситель данных для терминалов и сюжетных взаимодействий.";
+                        break;
+                    case InventoryItem.ItemType.PistolAmmo:
+                        activeItemInfoText.text = $"Тип: {activeItem.itemName}\nБоеприпасы для пистолета. Доступно: <b>{PlayerAmmoData.pistolReserve}</b>.";
+                        break;
+                    case InventoryItem.ItemType.ShotgunAmmo:
+                        activeItemInfoText.text = $"Тип: {activeItem.itemName}\nБоеприпасы для дробовика. Доступно: <b>{PlayerAmmoData.gunReserve}</b>.";
+                        break;
+                    case InventoryItem.ItemType.Medkit:
+                        int healAmount = activeItem.medkitProfile != null ? activeItem.medkitProfile.HealAmount : 0;
+                        if (healAmount > 0)
+                            activeItemInfoText.text = $"Тип: {activeItem.itemName}\nАптечка. Восстанавливает <b>{healAmount}</b> HP.";
+                        else
+                            activeItemInfoText.text = $"Тип: {activeItem.itemName}\nАптечка. Профиль лечения не назначен.";
                         break;
                     default:
                         activeItemInfoText.text = $"Активный предмет: {activeItem.itemName}\nТип: {activeItem.type}";
@@ -514,6 +542,33 @@ public class InventoryUI : MonoBehaviour
             playerInventory.DestroyItem(slots[slotIndex], slotIndex);
             UpdateInventoryUI();
         }
+    }
+
+    private void OnInventorySlotClicked(int slotIndex)
+    {
+        if (playerInventory == null || inventoryData == null)
+            return;
+
+        var slots = inventoryData.GetSlots();
+        if (slotIndex < 0 || slotIndex >= slots.Count)
+            return;
+
+        if (slots[slotIndex] == null || slots[slotIndex].type == InventoryItem.ItemType.Empty)
+            return;
+
+        InventoryItem clickedItem = slots[slotIndex];
+        bool isDoubleClick = lastClickedSlotIndex == slotIndex && (Time.unscaledTime - lastClickTime) <= Mathf.Max(0.05f, medkitDoubleClickThreshold);
+
+        playerInventory.SetActiveItemByIndex(slotIndex);
+
+        // Только аптечка использует двойной ЛКМ.
+        if (clickedItem.type == InventoryItem.ItemType.Medkit && isDoubleClick)
+        {
+            playerInventory.UseMedkitFromInventory();
+        }
+
+        lastClickedSlotIndex = slotIndex;
+        lastClickTime = Time.unscaledTime;
     }
 
     private void OnChestTakeButtonClicked(int slotIndex)

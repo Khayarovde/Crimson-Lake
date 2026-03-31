@@ -1,9 +1,21 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic; 
+using TheDeveloperTrain.SciFiGuns;
 
 public class WeaponHandler : MonoBehaviour
 {
+    [System.Serializable]
+    private class WeaponGlowProfile
+    {
+        [Tooltip("Индекс glow-материала в Renderer.materials")]
+        public int materialIndex = 0;
+        public float glowBaseIntensity = 0.2f;
+        public float glowMaxIntensity = 2f;
+        public AnimationCurve glowScaling = AnimationCurve.EaseInOut(0, 0, 1, 1);
+        public bool invertGlow = false;
+    }
+
     [Header("=== Точки ===")]
     [SerializeField] private Transform weaponHoldPoint;
     [SerializeField] private Transform defaultMuzzlePoint;
@@ -17,22 +29,22 @@ public class WeaponHandler : MonoBehaviour
     [Header("=== Звуки ===")]
     [SerializeField] public AudioSource audioSource;
     [SerializeField] public AudioClip emptyMagSound;
+    [SerializeField, Tooltip("Минимальный интервал между звуками пустого магазина")]
+    private float emptyMagSoundCooldown = 0.2f;
 
     [Header("=== ЛАЗЕРНАЯ ВИНТОВКА ===")]
-    [SerializeField] private float gunFireRate = 0.15f;
-    [SerializeField] private int gunMagazineSize = 7;
-    [SerializeField] private int gunStartReserve = 35;
-    [SerializeField] private float gunReloadTime = 2f;
+    [SerializeField] private GunStats shotgunStats;
     [SerializeField] private AudioClip[] gunShootSounds;
     [SerializeField] private AudioClip gunReloadSound;
+    [SerializeField] private RecoilProfile shotgunRecoilProfile;
+    [SerializeField] private WeaponGlowProfile shotgunGlowProfile = new WeaponGlowProfile();
 
     [Header("=== ПИСТОЛЕТ ===")]
-    [SerializeField] private float pistolFireRate = 0.35f;
-    [SerializeField] private int pistolMagazineSize = 12;
-    [SerializeField] private int pistolStartReserve = 120;
-    [SerializeField] private float pistolReloadTime = 1.5f;
+    [SerializeField] private GunStats pistolStats;
     [SerializeField] private AudioClip[] pistolShootSounds;
     [SerializeField] private AudioClip pistolReloadSound;
+    [SerializeField] private RecoilProfile pistolRecoilProfile;
+    [SerializeField] private WeaponGlowProfile pistolGlowProfile = new WeaponGlowProfile();
 
     [Header("=== ВИЗУАЛЬНЫЕ ЭФФЕКТЫ ===")]
     [SerializeField] private GameObject gunTracerPrefab;
@@ -117,13 +129,21 @@ public class WeaponHandler : MonoBehaviour
     private bool isReloading = false;
     private Coroutine firingCoroutine;
     private InventoryItem.ItemType currentWeaponType = InventoryItem.ItemType.Empty;
-    private float currentFireRate;
+    private GunStats currentWeaponStats;
+    private RecoilProfile currentRecoilProfile;
+    private WeaponGlowProfile currentGlowProfile;
+    private float currentShotInterval;
+    private float currentShootDelay;
+    private FireMode currentFireMode = FireMode.Single;
+    private int currentBurstCount = 1;
+    private float currentBurstInterval;
     private int currentMagazineSize;
     private int currentReserveAmmo;
     private int currentAmmoInMag;
     private float currentReloadTime;
     private AudioClip[] currentShootSounds;
     private AudioClip currentReloadSound;
+    private bool isShotSequenceRunning;
     [SerializeField] private Animator m_Animator;
     private GameObject currentWeaponModel;
     private float nextFireTime = 0f;
@@ -132,6 +152,13 @@ public class WeaponHandler : MonoBehaviour
     private Coroutine finisherSequenceCoroutine;
     private bool isFinisherInProgress;
     private CapsuleCollider playerCapsule;
+    private Coroutine recoilCoroutine;
+    private Coroutine reloadGlowCoroutine;
+    private Vector3 weaponModelBaseLocalPos;
+    private Quaternion weaponModelBaseLocalRot;
+    private Color currentGlowBaseColor = Color.white;
+    private bool hasGlowBaseColor;
+    private float nextEmptyMagSoundTime;
     // Словарь для отслеживания количества попаданий по каждому врагу
     private Dictionary<AdvancedEnemyAI, int> enemyHitCount = new Dictionary<AdvancedEnemyAI, int>();
 
@@ -144,13 +171,11 @@ public class WeaponHandler : MonoBehaviour
         if (tankController) originalWalkSpeed = tankController.moveSpeed;
         muzzlePoint = defaultMuzzlePoint;
 
-        // Unity сериализует поля: если значение уже задано в инспекторе/префабе
-        // изменение дефолта в коде не применится
-        // минимум задержки между выстрелами пистолета
-        pistolFireRate = Mathf.Max(pistolFireRate, 0.35f);
-
-        if (PlayerAmmoData.gunReserve == 0) PlayerAmmoData.gunReserve = gunStartReserve;
-        if (PlayerAmmoData.pistolReserve == 0) PlayerAmmoData.pistolReserve = pistolStartReserve;
+        int startShotgunReserve = shotgunStats != null ? Mathf.Max(0, shotgunStats.totalAmmo) : 35;
+        int startShotgunMag = shotgunStats != null ? Mathf.Max(1, shotgunStats.magazineSize) : 7;
+        int startPistolReserve = pistolStats != null ? Mathf.Max(0, pistolStats.totalAmmo) : 120;
+        int startPistolMag = pistolStats != null ? Mathf.Max(1, pistolStats.magazineSize) : 12;
+        PlayerAmmoData.InitializeIfNeeded(startShotgunReserve, startShotgunMag, startPistolReserve, startPistolMag);
 
         if (aimAssist == null) aimAssist = gameObject.AddComponent<AimAssist>();
         aimAssist.Initialize(enemyLayerMask);
@@ -166,6 +191,7 @@ public class WeaponHandler : MonoBehaviour
 
         HandleInput();
         if (Input.GetKeyDown(KeyCode.R)) TryManualReload();
+        UpdateWeaponGlowVisual();
     }
 
     private void HandleInput()
@@ -660,14 +686,18 @@ public class WeaponHandler : MonoBehaviour
         return playerAnimator != null ? playerAnimator : m_Animator;
     }
 
-    private bool CanShoot() => currentWeaponType != InventoryItem.ItemType.Empty && !isReloading;
+    private bool CanShoot() =>
+        currentWeaponType != InventoryItem.ItemType.Empty &&
+        !isReloading &&
+        !isShotSequenceRunning;
 
     private IEnumerator ShootingRoutine()
     {
         while (Input.GetMouseButton(0) && CanShoot())
         {
             ShootOnce();
-            yield return new WaitForSeconds(currentAmmoInMag > 0 ? currentFireRate : 0.3f);
+            float delay = currentAmmoInMag <= 0 ? Mathf.Max(0.05f, emptyMagSoundCooldown) : 0.01f;
+            yield return new WaitForSeconds(delay);
         }
         firingCoroutine = null;
     }
@@ -679,17 +709,40 @@ public class WeaponHandler : MonoBehaviour
         if (currentAmmoInMag <= 0)
         {
             PlayEmptyMagSound();
-            if (currentReserveAmmo > 0 && isAiming) StartReload();
             return;
         }
 
-        currentAmmoInMag--;
-        PlayShootSound();
-        PerformRaycastShot();
-        nextFireTime = Time.time + currentFireRate;
+        StartCoroutine(ShootSequenceRoutine());
+    }
 
-        if (currentAmmoInMag <= 0 && currentReserveAmmo > 0 && isAiming)
-            StartReload();
+    private IEnumerator ShootSequenceRoutine()
+    {
+        isShotSequenceRunning = true;
+
+        float shootDelay = Mathf.Max(0f, currentShootDelay);
+        if (shootDelay > 0f)
+            yield return new WaitForSeconds(shootDelay);
+
+        int shotsInSequence = currentFireMode == FireMode.Burst ? Mathf.Max(1, currentBurstCount) : 1;
+        float intraBurstInterval = Mathf.Max(0f, currentBurstInterval);
+
+        for (int i = 0; i < shotsInSequence; i++)
+        {
+            if (currentAmmoInMag <= 0)
+                break;
+
+            currentAmmoInMag--;
+            PlayShootSound();
+            PerformRaycastShot();
+            ApplyWeaponRecoil();
+
+            if (i < shotsInSequence - 1 && intraBurstInterval > 0f)
+                yield return new WaitForSeconds(intraBurstInterval);
+        }
+
+        nextFireTime = Time.time + Mathf.Max(0.0001f, currentShotInterval);
+
+        isShotSequenceRunning = false;
     }
 
     private void PerformRaycastShot()
@@ -870,8 +923,14 @@ public class WeaponHandler : MonoBehaviour
 
     private void PlayEmptyMagSound()
     {
-        if (audioSource && emptyMagSound)
-            audioSource.PlayOneShot(emptyMagSound);
+        if (!audioSource || !emptyMagSound)
+            return;
+
+        if (Time.time < nextEmptyMagSoundTime)
+            return;
+
+        audioSource.PlayOneShot(emptyMagSound);
+        nextEmptyMagSoundTime = Time.time + Mathf.Max(0.05f, emptyMagSoundCooldown);
     }
 
     // ===================================================================
@@ -906,26 +965,52 @@ public class WeaponHandler : MonoBehaviour
 
         if (item.type == InventoryItem.ItemType.Gun)
         {
-            currentFireRate = gunFireRate;
-            currentMagazineSize = gunMagazineSize;
-            currentReloadTime = gunReloadTime;
+            currentWeaponStats = shotgunStats;
+            currentRecoilProfile = shotgunRecoilProfile;
+            currentGlowProfile = shotgunGlowProfile;
             currentShootSounds = gunShootSounds;
             currentReloadSound = gunReloadSound;
             currentReserveAmmo = PlayerAmmoData.gunReserve;
-            currentAmmoInMag = PlayerAmmoData.gunInMag > 0 ? PlayerAmmoData.gunInMag : gunMagazineSize;
+            ApplyStatsFromProfile(currentWeaponStats, 7, 2f);
+            currentAmmoInMag = Mathf.Clamp(PlayerAmmoData.gunInMag, 0, currentMagazineSize);
         }
         else if (item.type == InventoryItem.ItemType.Pistol)
         {
-            currentFireRate = pistolFireRate;
-            currentMagazineSize = pistolMagazineSize;
-            currentReloadTime = pistolReloadTime;
+            currentWeaponStats = pistolStats;
+            currentRecoilProfile = pistolRecoilProfile;
+            currentGlowProfile = pistolGlowProfile;
             currentShootSounds = pistolShootSounds;
             currentReloadSound = pistolReloadSound;
             currentReserveAmmo = PlayerAmmoData.pistolReserve;
-            currentAmmoInMag = PlayerAmmoData.pistolInMag > 0 ? PlayerAmmoData.pistolInMag : pistolMagazineSize;
+            ApplyStatsFromProfile(currentWeaponStats, 12, 1.5f);
+            currentAmmoInMag = Mathf.Clamp(PlayerAmmoData.pistolInMag, 0, currentMagazineSize);
         }
 
         isReloading = false;
+        isShotSequenceRunning = false;
+    }
+
+    private void ApplyStatsFromProfile(GunStats stats, int fallbackMag, float fallbackReload)
+    {
+        if (stats != null)
+        {
+            currentMagazineSize = Mathf.Max(1, stats.magazineSize);
+            currentReloadTime = Mathf.Max(0f, stats.reloadDuration);
+            currentShotInterval = 1f / Mathf.Max(0.0001f, stats.fireRate);
+            currentShootDelay = Mathf.Max(0f, stats.shootDelay);
+            currentFireMode = stats.fireMode;
+            currentBurstCount = Mathf.Clamp(stats.burstCount, 1, currentMagazineSize);
+            currentBurstInterval = Mathf.Max(0f, stats.burstInterval);
+            return;
+        }
+
+        currentMagazineSize = Mathf.Max(1, fallbackMag);
+        currentReloadTime = Mathf.Max(0f, fallbackReload);
+        currentShotInterval = 0.25f;
+        currentShootDelay = 0f;
+        currentFireMode = FireMode.Single;
+        currentBurstCount = 1;
+        currentBurstInterval = 0f;
     }
 
     private void CreateWeaponModelIfNeeded()
@@ -946,6 +1031,9 @@ public class WeaponHandler : MonoBehaviour
         {
             currentWeaponModel = Instantiate(prefab, weaponHoldPoint, false);
             currentWeaponModel.transform.localScale = scale;
+            weaponModelBaseLocalPos = currentWeaponModel.transform.localPosition;
+            weaponModelBaseLocalRot = currentWeaponModel.transform.localRotation;
+            CaptureGlowBaseColor();
         }
     }
 
@@ -955,12 +1043,27 @@ public class WeaponHandler : MonoBehaviour
         if (currentWeaponModel)
             Destroy(currentWeaponModel);
         currentWeaponModel = null;
+        hasGlowBaseColor = false;
 
         if (firingCoroutine != null)
         {
             StopCoroutine(firingCoroutine);
             firingCoroutine = null;
         }
+
+        if (recoilCoroutine != null)
+        {
+            StopCoroutine(recoilCoroutine);
+            recoilCoroutine = null;
+        }
+
+        if (reloadGlowCoroutine != null)
+        {
+            StopCoroutine(reloadGlowCoroutine);
+            reloadGlowCoroutine = null;
+        }
+
+        isShotSequenceRunning = false;
     }
 
     private void SaveCurrentAmmo()
@@ -988,27 +1091,200 @@ public class WeaponHandler : MonoBehaviour
         !isReloading &&
         currentAmmoInMag < currentMagazineSize &&
         currentReserveAmmo > 0 &&
+        HasAmmoItemForCurrentWeapon() &&
         isAiming;
 
     private IEnumerator ReloadRoutine()
     {
         isReloading = true;
+        SyncCurrentReserveFromData();
+        currentAmmoInMag = Mathf.Clamp(currentAmmoInMag, 0, currentMagazineSize);
+        currentReserveAmmo = Mathf.Max(0, currentReserveAmmo);
+
+        int needed = currentMagazineSize - currentAmmoInMag;
+        if (needed <= 0 || currentReserveAmmo <= 0 || !ConsumeOneAmmoItemForCurrentWeapon())
+        {
+            isReloading = false;
+            yield break;
+        }
+
         if (audioSource && currentReloadSound) audioSource.PlayOneShot(currentReloadSound);
+        StartReloadGlowTransition();
 
         yield return new WaitForSeconds(currentReloadTime);
 
-        int needed = currentMagazineSize - currentAmmoInMag;
         int take = Mathf.Min(needed, currentReserveAmmo);
-        currentAmmoInMag += take;
-        currentReserveAmmo -= take;
+        currentAmmoInMag = Mathf.Clamp(currentAmmoInMag + take, 0, currentMagazineSize);
+        currentReserveAmmo = Mathf.Max(0, currentReserveAmmo - take);
 
         SaveCurrentAmmo();
         isReloading = false;
     }
 
+    private void ApplyWeaponRecoil()
+    {
+        if (currentWeaponModel == null || currentRecoilProfile == null)
+            return;
+
+        if (recoilCoroutine != null)
+            StopCoroutine(recoilCoroutine);
+
+        recoilCoroutine = StartCoroutine(PlayWeaponRecoil(currentRecoilProfile));
+    }
+
+    private IEnumerator PlayWeaponRecoil(RecoilProfile profile)
+    {
+        Transform weaponTransform = currentWeaponModel != null ? currentWeaponModel.transform : null;
+        if (weaponTransform == null)
+            yield break;
+
+        Vector3 recoilPos = weaponModelBaseLocalPos + (-Vector3.forward * profile.movementAmplitude);
+        Quaternion recoilRot = weaponModelBaseLocalRot * Quaternion.Euler(
+            -profile.rotationAmplitude,
+            Random.Range(0.25f, 0.5f) * profile.rotationAmplitude,
+            Random.Range(-0.2f, 0.2f) * profile.rotationAmplitude
+        );
+
+        float recoilTime = Mathf.Max(0.001f, profile.recoilDuration);
+        float t = 0f;
+        while (t < recoilTime && weaponTransform != null)
+        {
+            t += Time.deltaTime;
+            float k = profile.recoilCurve.Evaluate(Mathf.Clamp01(t / recoilTime));
+            weaponTransform.localPosition = Vector3.Lerp(weaponModelBaseLocalPos, recoilPos, k);
+            weaponTransform.localRotation = Quaternion.Slerp(weaponModelBaseLocalRot, recoilRot, k);
+            yield return null;
+        }
+
+        float recoverTime = Mathf.Max(0.001f, profile.recoveryDuration);
+        t = 0f;
+        while (t < recoverTime && weaponTransform != null)
+        {
+            t += Time.deltaTime;
+            float k = profile.recoveryCurve.Evaluate(Mathf.Clamp01(t / recoverTime));
+            weaponTransform.localPosition = Vector3.Lerp(recoilPos, weaponModelBaseLocalPos, k);
+            weaponTransform.localRotation = Quaternion.Slerp(recoilRot, weaponModelBaseLocalRot, k);
+            yield return null;
+        }
+
+        if (weaponTransform != null)
+        {
+            weaponTransform.localPosition = weaponModelBaseLocalPos;
+            weaponTransform.localRotation = weaponModelBaseLocalRot;
+        }
+
+        recoilCoroutine = null;
+    }
+
+    private void UpdateWeaponGlowVisual()
+    {
+        if (!isAiming || currentWeaponModel == null || currentGlowProfile == null)
+            return;
+
+        float mag = Mathf.Max(1f, currentMagazineSize);
+        float transitionFactor = currentGlowProfile.invertGlow
+            ? currentAmmoInMag / mag
+            : 1f - (currentAmmoInMag / mag);
+
+        float curveValue = currentGlowProfile.glowScaling != null
+            ? currentGlowProfile.glowScaling.Evaluate(Mathf.Clamp01(transitionFactor))
+            : Mathf.Clamp01(transitionFactor);
+
+        float glowIntensity = currentGlowProfile.invertGlow
+            ? Mathf.Lerp(currentGlowProfile.glowMaxIntensity, currentGlowProfile.glowBaseIntensity, curveValue)
+            : Mathf.Lerp(currentGlowProfile.glowBaseIntensity, currentGlowProfile.glowMaxIntensity, curveValue);
+
+        SetGlowIntensity(glowIntensity);
+    }
+
+    private void StartReloadGlowTransition()
+    {
+        if (currentGlowProfile == null || currentWeaponModel == null)
+            return;
+
+        if (reloadGlowCoroutine != null)
+            StopCoroutine(reloadGlowCoroutine);
+
+        reloadGlowCoroutine = StartCoroutine(ReloadGlowTransitionRoutine(Mathf.Max(0.01f, currentReloadTime)));
+    }
+
+    private IEnumerator ReloadGlowTransitionRoutine(float duration)
+    {
+        float startIntensity = currentGlowProfile.glowMaxIntensity;
+        float targetIntensity = currentGlowProfile.invertGlow
+            ? currentGlowProfile.glowMaxIntensity
+            : currentGlowProfile.glowBaseIntensity;
+
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / duration);
+            float intensity = Mathf.Lerp(startIntensity, targetIntensity, t);
+            SetGlowIntensity(intensity);
+            yield return null;
+        }
+
+        SetGlowIntensity(targetIntensity);
+        reloadGlowCoroutine = null;
+    }
+
+    private void CaptureGlowBaseColor()
+    {
+        hasGlowBaseColor = false;
+
+        if (currentWeaponModel == null || currentGlowProfile == null)
+            return;
+
+        var renderer = currentWeaponModel.GetComponentInChildren<Renderer>();
+        if (renderer == null)
+            return;
+
+        Material[] materials = renderer.materials;
+        if (materials == null || materials.Length == 0)
+            return;
+
+        int idx = Mathf.Clamp(currentGlowProfile.materialIndex, 0, materials.Length - 1);
+        Material mat = materials[idx];
+        if (mat == null || !mat.HasProperty("_EmissionColor"))
+            return;
+
+        currentGlowBaseColor = mat.GetColor("_EmissionColor");
+        hasGlowBaseColor = true;
+    }
+
+    private void SetGlowIntensity(float intensity)
+    {
+        if (currentWeaponModel == null || currentGlowProfile == null)
+            return;
+
+        var renderer = currentWeaponModel.GetComponentInChildren<Renderer>();
+        if (renderer == null)
+            return;
+
+        Material[] materials = renderer.materials;
+        if (materials == null || materials.Length == 0)
+            return;
+
+        int idx = Mathf.Clamp(currentGlowProfile.materialIndex, 0, materials.Length - 1);
+        Material mat = materials[idx];
+        if (mat == null || !mat.HasProperty("_EmissionColor"))
+            return;
+
+        if (!hasGlowBaseColor)
+        {
+            currentGlowBaseColor = mat.GetColor("_EmissionColor");
+            hasGlowBaseColor = true;
+        }
+
+        mat.EnableKeyword("_EMISSION");
+        mat.SetColor("_EmissionColor", currentGlowBaseColor * Mathf.Max(0f, intensity));
+    }
+
     private void TryManualReload()
     {
         if (currentWeaponType == InventoryItem.ItemType.Empty || isReloading) return;
+        SyncCurrentReserveFromData();
 
         if (currentAmmoInMag >= currentMagazineSize || currentReserveAmmo <= 0 || !isAiming)
         {
@@ -1021,16 +1297,18 @@ public class WeaponHandler : MonoBehaviour
 
     public void AddAmmo(InventoryItem.ItemType type, int amount)
     {
-        if (type == InventoryItem.ItemType.Gun)
+        if (type == InventoryItem.ItemType.Gun || type == InventoryItem.ItemType.ShotgunAmmo)
             PlayerAmmoData.gunReserve += amount;
-        else if (type == InventoryItem.ItemType.Pistol)
+        else if (type == InventoryItem.ItemType.Pistol || type == InventoryItem.ItemType.PistolAmmo)
             PlayerAmmoData.pistolReserve += amount;
 
-        if (currentWeaponType == type)
+        if (currentWeaponType == InventoryItem.ItemType.Gun && (type == InventoryItem.ItemType.Gun || type == InventoryItem.ItemType.ShotgunAmmo))
         {
-            currentReserveAmmo = type == InventoryItem.ItemType.Gun ? PlayerAmmoData.gunReserve : PlayerAmmoData.pistolReserve;
-            if (currentAmmoInMag <= 0 && currentReserveAmmo > 0 && isAiming)
-                StartReload();
+            currentReserveAmmo = PlayerAmmoData.gunReserve;
+        }
+        else if (currentWeaponType == InventoryItem.ItemType.Pistol && (type == InventoryItem.ItemType.Pistol || type == InventoryItem.ItemType.PistolAmmo))
+        {
+            currentReserveAmmo = PlayerAmmoData.pistolReserve;
         }
     }
 
@@ -1046,10 +1324,64 @@ public class WeaponHandler : MonoBehaviour
         }
     }
 
+    private void SyncCurrentReserveFromData()
+    {
+        if (currentWeaponType == InventoryItem.ItemType.Gun)
+            currentReserveAmmo = Mathf.Max(0, PlayerAmmoData.gunReserve);
+        else if (currentWeaponType == InventoryItem.ItemType.Pistol)
+            currentReserveAmmo = Mathf.Max(0, PlayerAmmoData.pistolReserve);
+    }
+
+    private bool HasAmmoItemForCurrentWeapon()
+    {
+        if (playerInventory == null || playerInventory.inventoryData == null)
+            return false;
+
+        var requiredType = GetRequiredAmmoItemTypeForCurrentWeapon();
+        if (requiredType == InventoryItem.ItemType.Empty)
+            return false;
+
+        return playerInventory.inventoryData.CountItemsByType(requiredType) > 0;
+    }
+
+    private bool ConsumeOneAmmoItemForCurrentWeapon()
+    {
+        if (playerInventory == null || playerInventory.inventoryData == null)
+            return false;
+
+        var requiredType = GetRequiredAmmoItemTypeForCurrentWeapon();
+        if (requiredType == InventoryItem.ItemType.Empty)
+            return false;
+
+        bool consumed = playerInventory.inventoryData.ConsumeOneItemByType(requiredType);
+        if (consumed && playerInventory.inventoryUI != null)
+            playerInventory.inventoryUI.UpdateInventoryUI();
+
+        return consumed;
+    }
+
+    private InventoryItem.ItemType GetRequiredAmmoItemTypeForCurrentWeapon()
+    {
+        if (currentWeaponType == InventoryItem.ItemType.Pistol)
+            return InventoryItem.ItemType.PistolAmmo;
+
+        if (currentWeaponType == InventoryItem.ItemType.Gun)
+            return InventoryItem.ItemType.ShotgunAmmo;
+
+        return InventoryItem.ItemType.Empty;
+    }
+
     private void OnDestroy()
     {
         if (finisherReturnCoroutine != null)
             StopCoroutine(finisherReturnCoroutine);
+
+        if (recoilCoroutine != null)
+            StopCoroutine(recoilCoroutine);
+
+        if (reloadGlowCoroutine != null)
+            StopCoroutine(reloadGlowCoroutine);
+
         enemyHitCount.Clear();
     }
 }

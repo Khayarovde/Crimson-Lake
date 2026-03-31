@@ -1,0 +1,13 @@
+﻿title: medkit25
+---
+Player: Подобрать аптечку25?
+-> Да
+    <<pickup_current_medkit>>
+    <<if not $pickup_success>>
+        Player: Не удалось использовать аптечку. Возможно, HP уже полный.
+    <<endif>>
+    <<stop>>
+-> Нет
+    <<stop>>
+
+===

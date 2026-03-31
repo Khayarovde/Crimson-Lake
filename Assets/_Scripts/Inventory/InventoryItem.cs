@@ -5,13 +5,19 @@ public class InventoryItem : ScriptableObject
 {
     public string itemName;
     public Sprite icon;  // Иконка для слота (из спрайтов)
-    public ItemType type;  // Тип: Gun, Cassette, Character и т.д.
+    public ItemType type;  // Тип: Gun, Disketa/Cassette, Character, Ammo и т.д.
+    public MedkitProfile medkitProfile; // Профиль аптечки (используется, если type == Medkit)
 
-  public enum ItemType {
-    Gun,
-    Cassette,
-    Character,
-    Pistol,
-    Empty
-  }
+    public enum ItemType
+    {
+        Gun = 0,
+        Disketa = 1,
+        Character = 2,
+        Pistol = 3,
+        Empty = 4,
+        Cassette = 5,
+        PistolAmmo = 6,
+        ShotgunAmmo = 7,
+        Medkit = 8
+    }
 }

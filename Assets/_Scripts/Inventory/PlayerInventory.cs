@@ -22,6 +22,49 @@ public class PlayerInventory : MonoBehaviour
     private Chest nearbyChest;
     private List<Chest> nearbyChests = new List<Chest>();
 
+    public void UseMedkitFromInventory()
+    {
+        if (activeItemIndex < 0 || activeItemIndex >= inventoryData.GetSlots().Count)
+            return;
+
+        InventoryItem activeItem = inventoryData.GetSlots()[activeItemIndex];
+        if (activeItem == null || activeItem.type != InventoryItem.ItemType.Medkit)
+        {
+            Debug.LogWarning("[PlayerInventory] Активный предмет не является аптечкой.");
+            return;
+        }
+
+        PlayerHealth playerHealth = GetComponent<PlayerHealth>();
+        if (playerHealth == null)
+        {
+            Debug.LogError("[PlayerInventory] PlayerHealth не найден на игроке.");
+            return;
+        }
+
+        MedkitProfile profile = activeItem.medkitProfile;
+        if (profile == null)
+        {
+            Debug.LogWarning("[PlayerInventory] Профиль аптечки не назначен.");
+            return;
+        }
+
+        if (playerHealth.IsFullHealth)
+        {
+            Debug.Log("[PlayerInventory] HP уже полный. Аптечка не использована.");
+            return;
+        }
+
+        playerHealth.Heal(profile.HealAmount);
+        Debug.Log($"[PlayerInventory] Использована аптечка. Восстановлено {profile.HealAmount} HP.");
+
+        // Удаляем аптечку из инвентаря
+        inventoryData.RemoveItem(activeItem);
+        activeItemIndex = -1;
+
+        if (inventoryUI != null)
+            inventoryUI.UpdateInventoryUI();
+    }
+
     private void Awake()
     {
         InitializeInventoryData();
@@ -171,6 +214,30 @@ public class PlayerInventory : MonoBehaviour
             return true;
         }
         return false;
+    }
+
+    public void SetActiveItemByIndex(int index)
+    {
+        if (inventoryData == null)
+            return;
+
+        var slots = inventoryData.GetSlots();
+        if (index < 0 || index >= slots.Count)
+            return;
+
+        var item = slots[index];
+        if (item == null || item.type == InventoryItem.ItemType.Empty)
+            return;
+
+        activeItemIndex = index;
+        Debug.Log($"[PlayerInventory] Выбран предмет: {item.itemName} (индекс {index}, тип {item.type})");
+
+        if (inventoryUI != null)
+            inventoryUI.UpdateInventoryUI();
+
+        var handler = GetComponent<WeaponHandler>();
+        if (handler != null)
+            handler.OnActiveItemChanged();
     }
 
     public void StoreItemInChest(InventoryItem item, int slotIndex)

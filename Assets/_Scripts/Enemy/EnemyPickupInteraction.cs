@@ -33,8 +33,7 @@ public class EnemyPickupInteraction : MonoBehaviour
     private bool isPlayerNearby = false;
     private Transform player;
     private bool alreadyPickedUp = false;
-    private PlayerInventory cachedPlayerInventory;
-    private bool hadCassetteInInventoryPreviousFrame;
+    private bool warnedAboutMissingInteractSource;
 
     private AudioSource chaseAudioSource;
     private GameObject chaseAudioObject;
@@ -49,6 +48,9 @@ public class EnemyPickupInteraction : MonoBehaviour
 
     private void Awake()
     {
+        if (yarnInteractSource == null)
+            yarnInteractSource = GetComponent<Interact>();
+
         PrepareEnemyForDiskettePickup();
     }
 
@@ -84,8 +86,11 @@ public class EnemyPickupInteraction : MonoBehaviour
         if (item == null)
             Debug.LogWarning($"[DiskettePickup] Предмет (InventoryItem) не назначен на {gameObject.name}. Подбор будет без добавления в инвентарь.");
 
-        cachedPlayerInventory = FindFirstObjectByType<PlayerInventory>();
-        hadCassetteInInventoryPreviousFrame = IsCassetteInPlayerInventory(cachedPlayerInventory);
+        if (yarnInteractSource == null && !warnedAboutMissingInteractSource)
+        {
+            warnedAboutMissingInteractSource = true;
+            Debug.LogWarning($"[DiskettePickup] Для {gameObject.name} не назначен Yarn Interact Source. События Interact.ItemPickedUp будут игнорироваться.");
+        }
 
     }
 
@@ -114,21 +119,6 @@ public class EnemyPickupInteraction : MonoBehaviour
         if (spawnEnemyOnlyAfterPickup && !alreadyPickedUp && enemyAI != null && enemyAI.gameObject.activeSelf)
         {
             enemyAI.gameObject.SetActive(false);
-        }
-
-        if (!alreadyPickedUp)
-        {
-            if (cachedPlayerInventory == null)
-                cachedPlayerInventory = FindFirstObjectByType<PlayerInventory>();
-
-            bool hasCassetteNow = IsCassetteInPlayerInventory(cachedPlayerInventory);
-            if (!hadCassetteInInventoryPreviousFrame && hasCassetteNow)
-            {
-                CompletePickupAndStartChase();
-                return;
-            }
-
-            hadCassetteInInventoryPreviousFrame = hasCassetteNow;
         }
 
         if (!alreadyPickedUp && isPlayerNearby && Input.GetKeyDown(KeyCode.E))
@@ -206,8 +196,6 @@ public class EnemyPickupInteraction : MonoBehaviour
             return;
         }
 
-        cachedPlayerInventory = playerInventory;
-        hadCassetteInInventoryPreviousFrame = true;
         CompletePickupAndStartChase();
     }
 
@@ -219,7 +207,8 @@ public class EnemyPickupInteraction : MonoBehaviour
         if (source == null)
             return;
 
-        if (yarnInteractSource != null && source != yarnInteractSource)
+        // Реагируем только на конкретный Interact этого объекта, чтобы чужие подборы не запускали погоню.
+        if (yarnInteractSource == null || source != yarnInteractSource)
             return;
 
         if (item != null)
@@ -233,8 +222,6 @@ public class EnemyPickupInteraction : MonoBehaviour
                 return;
         }
 
-        cachedPlayerInventory = playerInventory;
-        hadCassetteInInventoryPreviousFrame = true;
         CompletePickupAndStartChase();
     }
 

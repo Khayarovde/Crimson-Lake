@@ -5,7 +5,11 @@ using UnityEngine.SceneManagement;
 
 public class PlayerHealth : MonoBehaviour
 {
-    [Header("Hits")]
+    [Header("Health")]
+    [SerializeField, Min(1)] private int maxHealth = 100;
+    [SerializeField, Min(0)] private int currentHealth = 100;
+
+    [Header("Enemy Hits")]
     [SerializeField, Min(1)] private int hitsToDie = 2;
 
     [Header("UI (optional)")]
@@ -27,17 +31,24 @@ public class PlayerHealth : MonoBehaviour
     [SerializeField, Tooltip("Задержка (в реальном времени) перед переходом в Menu после показа LoseScreen")]
     private float deathMenuDelay = 1.2f;
 
-    private int hitsTaken;
     private bool isDead;
     private Coroutine overlayRoutine;
 
     public bool IsDead => isDead;
+    public int MaxHealth => maxHealth;
+    public int CurrentHealth => currentHealth;
+    public bool IsFullHealth => currentHealth >= maxHealth;
 
     private void Awake()
     {
+        maxHealth = Mathf.Max(1, maxHealth);
+        currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
+
         EnsureOverlay();
         TryResolveLoseCanvasIfMissing();
         if (loseScreenCanvas != null) loseScreenCanvas.SetActive(false);
+
+        Debug.Log($"[PlayerHealth] HP: {currentHealth}/{maxHealth}");
     }
 
     public void SetLoseCanvas(GameObject canvas)
@@ -51,24 +62,46 @@ public class PlayerHealth : MonoBehaviour
     {
         if (isDead) return;
 
-        hitsTaken++;
+        int enemyHitDamage = Mathf.CeilToInt((float)maxHealth / Mathf.Max(1, hitsToDie));
+        ApplyDamage(enemyHitDamage, source);
 
-        if (hitsTaken < hitsToDie)
+        if (!isDead)
         {
             var tankController = GetComponent<TankController>();
             if (tankController != null)
                 tankController.PlayHit();
-            StartOverlayRoutine(FlashColor(new Color(1f, 0f, 0f, 1f), firstHitRedAlpha, firstHitFlashDuration));
-            return;
-        }
 
-        Die(source);
+            StartOverlayRoutine(FlashColor(new Color(1f, 0f, 0f, 1f), firstHitRedAlpha, firstHitFlashDuration));
+        }
+    }
+
+    public void ApplyDamage(int amount, AdvancedEnemyAI source = null)
+    {
+        if (isDead || amount <= 0)
+            return;
+
+        currentHealth = Mathf.Max(0, currentHealth - amount);
+        Debug.Log($"[PlayerHealth] HP: {currentHealth}/{maxHealth}");
+
+        if (currentHealth <= 0)
+            Die(source);
+    }
+
+    public void Heal(int amount)
+    {
+        if (isDead || amount <= 0)
+            return;
+
+        currentHealth = Mathf.Min(maxHealth, currentHealth + amount);
+        Debug.Log($"[PlayerHealth] HP: {currentHealth}/{maxHealth}");
     }
 
     private void Die(AdvancedEnemyAI source)
     {
         if (isDead) return;
         isDead = true;
+        currentHealth = 0;
+        Debug.Log($"[PlayerHealth] HP: {currentHealth}/{maxHealth}");
 
         var tankController = GetComponent<TankController>();
         if (tankController != null)

@@ -1,0 +1,13 @@
+﻿title: ammoShotgun
+---
+Player: Подобрать Дробовые патроны?
+-> Да
+    <<pickup_current_ammo>>
+    <<if not $pickup_success>>
+        Player: Инвентарь полон.
+    <<endif>>
+    <<stop>>
+-> Нет
+    <<stop>>
+    
+===

@@ -63,6 +63,41 @@ public class InventoryData : ScriptableObject
         }
     }
 
+    public int CountItemsByType(InventoryItem.ItemType type)
+    {
+        EnsureInitialized();
+
+        int count = 0;
+        for (int i = 0; i < items.Count; i++)
+        {
+            if (items[i] != null && items[i].type == type)
+                count++;
+        }
+
+        return count;
+    }
+
+    public bool HasItemType(InventoryItem.ItemType type)
+    {
+        return CountItemsByType(type) > 0;
+    }
+
+    public bool ConsumeOneItemByType(InventoryItem.ItemType type)
+    {
+        EnsureInitialized();
+
+        for (int i = 0; i < items.Count; i++)
+        {
+            if (items[i] == null || items[i].type != type)
+                continue;
+
+            items[i] = GetEmptyItem();
+            return true;
+        }
+
+        return false;
+    }
+
     // Новый метод: Своп предметов (indexA и indexB; -1 значит "пустой")
     public void SwapItems(int indexA, int indexB)
     {
