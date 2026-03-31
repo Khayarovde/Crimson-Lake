@@ -2,8 +2,20 @@
 using UnityEngine.AI;
 using System.Collections;
 
+[DisallowMultipleComponent]
+[RequireComponent(typeof(NavMeshAgent))]
 public partial class AdvancedEnemyAI : MonoBehaviour
 {
+    public enum EnemyState
+    {
+        Patrol,
+        Alert,
+        Chase,
+        Attack,
+        Stunned,
+        Dead
+    }
+
     private int currentWaypointIndex = 0;
     private bool isPatrolling = true;
     private bool isChasing = false;
@@ -21,6 +33,7 @@ public partial class AdvancedEnemyAI : MonoBehaviour
     private float baseAnimatorSpeed = 1f;
     private string currentAnimState;
     private Coroutine attackRoutine;
+    private Coroutine stunRoutine;
     private bool isWakingUp;
     private bool isDead;
     private int lastAttackIndex = -1;
@@ -39,31 +52,83 @@ public partial class AdvancedEnemyAI : MonoBehaviour
     private bool isRandomPatrolling;
     private Vector3 currentRandomPatrolPoint;
     private float randomPatrolWaitEndTime;
+    private readonly RaycastHit[] lineOfSightHits = new RaycastHit[16];
+    private bool isInitialized;
+    private float shotInvestigationEndTime;
+    private bool rootMotionApplied;
+    private bool movementAnimIsWalking;
+    private float nextMovementAnimSwitchTime;
+    private float stateEndTime;
+    private float nextRunNoiseCheckTime;
+    private Vector3 lastHeardRunPosition;
+    private Coroutine resurrectionRoutine;
+    private readonly Collider[] playerDetectionHits = new Collider[24];
+    private EnemyState currentState = EnemyState.Patrol;
 
-    void Start()
+    public bool IsDead => isDead;
+    public EnemyState CurrentState => currentState;
+
+    private void Awake()
     {
-        if (!gameObject.activeInHierarchy) return;
+        EnsureInitialized();
+    }
 
-        navMeshAgent = GetComponent<NavMeshAgent>();
-        m_Animator = GetComponent<Animator>();
+    private void OnEnable()
+    {
+        WeaponHandler.PlayerShotFired += HandlePlayerShotFired;
+    }
+
+    private void OnDisable()
+    {
+        WeaponHandler.PlayerShotFired -= HandlePlayerShotFired;
+        SetPlayerCollisionIgnored(false);
+    }
+
+    private void OnDestroy()
+    {
+        WeaponHandler.PlayerShotFired -= HandlePlayerShotFired;
+        SetPlayerCollisionIgnored(false);
+    }
+
+    private void EnsureInitialized()
+    {
+        if (isInitialized)
+            return;
+
+        if (navMeshAgent == null)
+            TryGetComponent(out navMeshAgent);
+
+        if (m_Animator == null)
+            TryGetComponent(out m_Animator);
+
         if (m_Animator != null)
         {
             baseAnimatorSpeed = m_Animator.speed;
-            m_Animator.applyRootMotion = !disableMovement;
+            rootMotionApplied = !disableMovement;
+            m_Animator.applyRootMotion = rootMotionApplied;
         }
-        currentHealth = maxHealth;
 
         player = GameObject.FindGameObjectWithTag("Player")?.transform;
         if (player != null)
         {
-            playerHealth = player.GetComponent<PlayerHealth>();
-            playerCollider = player.GetComponent<Collider>();
+            player.TryGetComponent(out playerHealth);
+            player.TryGetComponent(out playerCollider);
 
-            // Если компонент не повесили вручную — добавим сами, иначе враг не сможет "наносить удары".
             if (playerHealth == null)
-                playerHealth = player.gameObject.AddComponent<PlayerHealth>();
+                Debug.LogWarning("У игрока отсутствует компонент PlayerHealth. Враг не сможет нанести урон, пока компонент не добавлен вручную.", this);
 
+            playerLastPosition = player.position;
         }
+
+        isInitialized = true;
+    }
+
+    private void Start()
+    {
+        if (!gameObject.activeInHierarchy) return;
+
+        EnsureInitialized();
+        currentHealth = maxHealth;
 
         if (audioSource == null)
             audioSource = GetComponent<AudioSource>() ?? gameObject.AddComponent<AudioSource>();
@@ -89,7 +154,11 @@ public partial class AdvancedEnemyAI : MonoBehaviour
             rb.useGravity = true;
         }
 
-        gameObject.layer = LayerMask.NameToLayer("Enemy");
+        int enemyLayer = LayerMask.NameToLayer("Enemy");
+        if (enemyLayer >= 0)
+            gameObject.layer = enemyLayer;
+        else
+            Debug.LogWarning("Слой 'Enemy' не найден в проекте. Назначение слоя пропущено.", this);
 
         if (navMeshAgent != null)
         {
@@ -97,6 +166,8 @@ public partial class AdvancedEnemyAI : MonoBehaviour
             navMeshAgent.stoppingDistance = Mathf.Max(navMeshAgent.stoppingDistance, stopBeforePlayerDistance);
             navMeshAgent.autoBraking = true;
         }
+
+        SetState(scanOnSpawn ? EnemyState.Alert : EnemyState.Patrol);
 
         if (scanOnSpawn)
             BeginScan();
@@ -107,7 +178,7 @@ public partial class AdvancedEnemyAI : MonoBehaviour
     private void CachePlayerCollider()
     {
         if (player == null || playerCollider != null) return;
-        playerCollider = player.GetComponent<Collider>();
+        player.TryGetComponent(out playerCollider);
     }
 
     private void SetPlayerCollisionIgnored(bool ignore)
@@ -122,15 +193,83 @@ public partial class AdvancedEnemyAI : MonoBehaviour
         Physics.IgnoreCollision(enemyCollider, playerCollider, ignore);
     }
 
-    void Update()
+    private void HandlePlayerShotFired(Vector3 shotPosition, float loudness)
     {
-        if (caughtPlayer || !gameObject.activeInHierarchy || isDead) return;
+        RegisterShotStimulus(shotPosition, loudness, true);
+    }
+
+    public void NotifyShotHitByPlayer(Vector3 shotPosition)
+    {
+        RegisterShotStimulus(shotPosition, 2f, false);
+    }
+
+    public void NotifyPlayerRunning(Vector3 runPosition, float loudness = 1f)
+    {
+        RegisterShotStimulus(runPosition, loudness, true);
+    }
+
+    private void RegisterShotStimulus(Vector3 shotPosition, float loudness, bool requireHearingCheck)
+    {
+        if (!gameObject.activeInHierarchy || isDead || isPermanentlyDead || caughtPlayer)
+            return;
+
+        if (isStunned || isWakingUp)
+            return;
+
+        EnsureInitialized();
+
+        if (IsMovementDisabled())
+            return;
+
+        float normalizedLoudness = Mathf.Max(0.1f, loudness);
+        if (requireHearingCheck)
+        {
+            float hearDistance = hearingRadius * normalizedLoudness;
+            if (Vector3.Distance(transform.position, shotPosition) > hearDistance)
+                return;
+        }
+
+        isScanning = false;
+        StopSearch();
+        isRandomPatrolling = false;
+        shotInvestigationEndTime = Time.time + Mathf.Max(0.5f, investigateShotDuration);
+        playerLastPosition = shotPosition;
+
+        if (currentState == EnemyState.Patrol)
+            BeginAlert(shotPosition);
+        else if (currentState != EnemyState.Attack)
+            SetState(EnemyState.Chase);
+
+        if (navMeshAgent != null && navMeshAgent.enabled)
+        {
+            Vector3 destination = shotPosition;
+            if (NavMesh.SamplePosition(shotPosition, out NavMeshHit hit, 3f, NavMesh.AllAreas))
+                destination = hit.position;
+            navMeshAgent.isStopped = false;
+            navMeshAgent.SetDestination(destination);
+        }
+    }
+
+    private void Update()
+    {
+        if (caughtPlayer || !gameObject.activeInHierarchy || isPermanentlyDead) return;
+
+        if (isDead || currentState == EnemyState.Dead)
+            return;
 
         if (m_Animator != null)
-            m_Animator.applyRootMotion = !disableMovement;
+        {
+            bool shouldApplyRootMotion = !disableMovement;
+            if (rootMotionApplied != shouldApplyRootMotion)
+            {
+                rootMotionApplied = shouldApplyRootMotion;
+                m_Animator.applyRootMotion = rootMotionApplied;
+            }
+        }
 
         if (isStunned)
         {
+            SetState(EnemyState.Stunned);
             StopAgentMovement();
             ForceStunAnimatorState();
             PlayStateWithFallback(stunStateName, stunAnimLayer);
@@ -151,6 +290,8 @@ public partial class AdvancedEnemyAI : MonoBehaviour
             return;
         }
 
+        UpdateRunNoiseStimulus();
+
         if (isScanning)
         {
             CheckForPlayer();
@@ -164,6 +305,15 @@ public partial class AdvancedEnemyAI : MonoBehaviour
             CheckForPlayer();
         }
 
+        if (currentState == EnemyState.Alert)
+            UpdateAlert();
+
+        if (currentState == EnemyState.Chase)
+            UpdateErraticChaseSpeed();
+
+        if (isChasing && shotInvestigationEndTime > 0f && Time.time > shotInvestigationEndTime && !isSearching)
+            shotInvestigationEndTime = 0f;
+
         if (IsMovementDisabled())
         {
             StopAgentMovement();
@@ -176,8 +326,108 @@ public partial class AdvancedEnemyAI : MonoBehaviour
         if (useWalkingAnimation)
             UpdateMovementAnimation();
 
-        if (IsCloseToPlayer())
+        if (currentState == EnemyState.Chase && IsCloseToPlayer())
             AttackPlayer();
+    }
+
+    private void UpdateAlert()
+    {
+        if (Time.time < stateEndTime)
+            return;
+
+        SetState(EnemyState.Chase);
+        ResumeAgentMovementAndRepath();
+    }
+
+    private void UpdateRunNoiseStimulus()
+    {
+        if (!listenToPlayerRunNoise || player == null)
+            return;
+
+        if (Time.time < nextRunNoiseCheckTime)
+            return;
+
+        nextRunNoiseCheckTime = Time.time + Mathf.Max(0.05f, runNoiseCheckInterval);
+
+        float speed = 0f;
+        if (player.TryGetComponent<Rigidbody>(out var rb))
+            speed = rb.linearVelocity.magnitude;
+        else if (player.TryGetComponent<CharacterController>(out var cc))
+            speed = cc.velocity.magnitude;
+
+        if (speed >= Mathf.Max(0.1f, playerRunSpeedThreshold))
+        {
+            lastHeardRunPosition = player.position;
+            RegisterShotStimulus(lastHeardRunPosition, playerRunLoudness, true);
+        }
+    }
+
+    private void UpdateErraticChaseSpeed()
+    {
+        if (navMeshAgent == null || !navMeshAgent.enabled)
+            return;
+
+        float minSpeed = Mathf.Max(speedWalk, Mathf.Min(speedChaseMin, speedChaseMax));
+        float maxSpeed = Mathf.Max(minSpeed, Mathf.Max(speedChaseMin, speedChaseMax));
+        float t = Mathf.PerlinNoise(GetInstanceID() * 0.037f, Time.time * Mathf.Max(0.1f, chaseErraticChangeRate));
+        navMeshAgent.speed = Mathf.Lerp(minSpeed, maxSpeed, t);
+    }
+
+    private void SetState(EnemyState newState)
+    {
+        currentState = newState;
+        currentStateDebug = newState;
+
+        switch (newState)
+        {
+            case EnemyState.Patrol:
+                isPatrolling = true;
+                isChasing = false;
+                break;
+            case EnemyState.Alert:
+                isPatrolling = false;
+                isChasing = false;
+                break;
+            case EnemyState.Chase:
+                isPatrolling = false;
+                isChasing = true;
+                break;
+            case EnemyState.Attack:
+                isPatrolling = false;
+                isChasing = true;
+                break;
+            case EnemyState.Stunned:
+                isPatrolling = false;
+                isChasing = false;
+                break;
+            case EnemyState.Dead:
+                isPatrolling = false;
+                isChasing = false;
+                break;
+        }
+
+        if (m_Animator != null)
+            m_Animator.SetBool("isChasing", useChaseAnimatorFlag && (newState == EnemyState.Chase || newState == EnemyState.Attack));
+    }
+
+    private void BeginAlert(Vector3 focusPoint)
+    {
+        if (isDead || isStunned || isWakingUp)
+            return;
+
+        playerLastPosition = focusPoint;
+        stateEndTime = Time.time + Mathf.Max(0.1f, alertDuration);
+        SetState(EnemyState.Alert);
+        StopAgentMovement();
+
+        Vector3 lookDir = focusPoint - transform.position;
+        lookDir.y = 0f;
+        if (lookDir.sqrMagnitude > 0.001f)
+            transform.rotation = Quaternion.LookRotation(lookDir.normalized, Vector3.up);
+
+        PlayStateWithFallback(screamStateName, baseAnimLayer);
+        if (screamClip != null && audioSource != null)
+            audioSource.PlayOneShot(screamClip);
     }
 
         // ← НОВЫЕ МЕТОДЫ ДЛЯ АКТИВАЦИИ ОХОТЫ ИЗВНЕ
@@ -187,11 +437,17 @@ public partial class AdvancedEnemyAI : MonoBehaviour
     /// </summary>
     public void TeleportToPosition(Vector3 newPosition)
     {
+        EnsureInitialized();
+
         if (navMeshAgent != null && navMeshAgent.enabled)
         {
-            navMeshAgent.enabled = false; // Отключаем на кадр, чтобы телепорт прошёл без ошибок
-            transform.position = newPosition;
-            navMeshAgent.enabled = true;
+            if (!navMeshAgent.Warp(newPosition))
+            {
+                if (NavMesh.SamplePosition(newPosition, out NavMeshHit hit, 2f, NavMesh.AllAreas))
+                    navMeshAgent.Warp(hit.position);
+                else
+                    transform.position = newPosition;
+            }
         }
         else
         {

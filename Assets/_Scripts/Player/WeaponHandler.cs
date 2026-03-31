@@ -5,6 +5,8 @@ using TheDeveloperTrain.SciFiGuns;
 
 public class WeaponHandler : MonoBehaviour
 {
+    public static event System.Action<Vector3, float> PlayerShotFired;
+
     [System.Serializable]
     private class WeaponGlowProfile
     {
@@ -31,6 +33,10 @@ public class WeaponHandler : MonoBehaviour
     [SerializeField] public AudioClip emptyMagSound;
     [SerializeField, Tooltip("Минимальный интервал между звуками пустого магазина")]
     private float emptyMagSoundCooldown = 0.2f;
+    [SerializeField, Tooltip("Громкость выстрела для системы слуха врагов")]
+    private float pistolShotLoudness = 1f;
+    [SerializeField, Tooltip("Громкость выстрела для системы слуха врагов")]
+    private float gunShotLoudness = 1.35f;
 
     [Header("=== ЛАЗЕРНАЯ ВИНТОВКА ===")]
     [SerializeField] private GunStats shotgunStats;
@@ -733,6 +739,7 @@ public class WeaponHandler : MonoBehaviour
 
             currentAmmoInMag--;
             PlayShootSound();
+            NotifyShotHeardByEnemies();
             PerformRaycastShot();
             ApplyWeaponRecoil();
 
@@ -773,6 +780,8 @@ public class WeaponHandler : MonoBehaviour
         // === СИСТЕМА ОГЛУШЕНИЯ ===
         if (hitSomething && hit.collider.TryGetComponent<AdvancedEnemyAI>(out var enemy))
         {
+            enemy.NotifyShotHitByPlayer(muzzlePoint.position);
+
             // В стане урон/стан не проходит
             if (enemy.IsStunned) return;
 
@@ -845,6 +854,8 @@ public class WeaponHandler : MonoBehaviour
 
         if (hitEnemy != null && !hitEnemy.IsStunned)
         {
+            hitEnemy.NotifyShotHitByPlayer(muzzlePoint.position);
+
             int hitsRequired = gunHitsToStun;
 
             if (!enemyHitCount.ContainsKey(hitEnemy))
@@ -867,6 +878,16 @@ public class WeaponHandler : MonoBehaviour
 
         float distance = hitSomething ? closestDistance : maxTracerDistance;
         CreateTracer(baseDir, distance);
+    }
+
+    private void NotifyShotHeardByEnemies()
+    {
+        float loudness = currentWeaponType == InventoryItem.ItemType.Gun
+            ? Mathf.Max(0.1f, gunShotLoudness)
+            : Mathf.Max(0.1f, pistolShotLoudness);
+
+        Vector3 origin = muzzlePoint != null ? muzzlePoint.position : transform.position;
+        PlayerShotFired?.Invoke(origin, loudness);
     }
 
     private void CreateTracer(Vector3 direction, float distance)

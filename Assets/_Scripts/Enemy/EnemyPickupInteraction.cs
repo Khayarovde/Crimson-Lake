@@ -129,7 +129,7 @@ public class EnemyPickupInteraction : MonoBehaviour
         // Проверка окончания погони (враг мёртв)
         if (isChaseMusicActive && enemyAI != null)
         {
-            bool enemyDead = !enemyAI.gameObject.activeInHierarchy || enemyAI.caughtPlayer;
+            bool enemyDead = !enemyAI.gameObject.activeInHierarchy || enemyAI.IsDead;
             if (enemyDead && !isEndingChase)
             {
                 StartCoroutine(EndChaseCompletely());

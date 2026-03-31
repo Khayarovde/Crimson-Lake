@@ -3,11 +3,16 @@ using UnityEngine;
 public class AimAssist : MonoBehaviour
 {
     [SerializeField] private float captureRange = 10f;
-    [SerializeField] private float correctionFactor = 0.15f; // чуть сильнее, если хочешь
+    [SerializeField] private float correctionFactor = 0.15f;
+    [SerializeField] private float maxAimDistance = 300f;
+    [SerializeField] private float maxAssistAngle = 12f;
+    [SerializeField] private LayerMask aimRayMask = ~0;
 
     private Transform muzzlePoint;
     private Transform currentTarget;
     private Vector3 lastKnownPosition;
+    private Vector3 rawAimDirection = Vector3.forward;
+    private Camera cachedMainCamera;
 
     public bool Enabled { get; private set; }
 
@@ -22,14 +27,75 @@ public class AimAssist : MonoBehaviour
     {
         Enabled = enabled;
         muzzlePoint = muzzle;
-        if (!enabled) currentTarget = null;
+        if (!enabled)
+        {
+            currentTarget = null;
+            rawAimDirection = transform.forward;
+        }
     }
 
     private void Update()
     {
         if (!Enabled || muzzlePoint == null) return;
 
+        UpdateRawAimDirection();
         FindBestTarget();
+    }
+
+    private Camera GetMainCamera()
+    {
+        if (cachedMainCamera != null)
+            return cachedMainCamera;
+
+        cachedMainCamera = Camera.main;
+        return cachedMainCamera;
+    }
+
+    private void UpdateRawAimDirection()
+    {
+        Camera cam = GetMainCamera();
+        if (cam == null)
+        {
+            rawAimDirection = muzzlePoint.forward;
+            return;
+        }
+
+        Ray ray = cam.ScreenPointToRay(Input.mousePosition);
+        Vector3 aimPoint;
+
+        int mask = aimRayMask.value & ~(1 << gameObject.layer);
+        bool hasHit = Physics.Raycast(
+            ray,
+            out RaycastHit hit,
+            Mathf.Max(1f, maxAimDistance),
+            mask,
+            QueryTriggerInteraction.Ignore
+        );
+
+        if (hasHit)
+        {
+            aimPoint = hit.point;
+        }
+        else
+        {
+            Plane fallbackPlane = new Plane(Vector3.up, new Vector3(0f, muzzlePoint.position.y, 0f));
+            if (!fallbackPlane.Raycast(ray, out float planeDistance))
+            {
+                rawAimDirection = muzzlePoint.forward;
+                return;
+            }
+
+            aimPoint = ray.GetPoint(planeDistance);
+        }
+
+        Vector3 toAimPoint = aimPoint - muzzlePoint.position;
+        if (toAimPoint.sqrMagnitude < 0.0001f)
+        {
+            rawAimDirection = muzzlePoint.forward;
+            return;
+        }
+
+        rawAimDirection = toAimPoint.normalized;
     }
 
     private void FindBestTarget()
@@ -42,30 +108,48 @@ public class AimAssist : MonoBehaviour
         }
 
         Transform best = null;
-        float closestDist = float.MaxValue;
+        float bestScore = float.MaxValue;
 
         foreach (var col in hits)
         {
-            float dist = Vector3.Distance(muzzlePoint.position, col.transform.position);
-            if (dist < closestDist)
+            if (col == null)
+                continue;
+
+            Vector3 targetPos = col.bounds.center;
+            Vector3 toTarget = targetPos - muzzlePoint.position;
+            float dist = toTarget.magnitude;
+            if (dist <= 0.001f)
+                continue;
+
+            Vector3 targetDir = toTarget / dist;
+            float angle = Vector3.Angle(rawAimDirection, targetDir);
+            if (angle > Mathf.Max(0.1f, maxAssistAngle))
+                continue;
+
+            float score = angle + dist * 0.05f;
+            if (score < bestScore)
             {
-                closestDist = dist;
+                bestScore = score;
                 best = col.transform;
+                lastKnownPosition = targetPos;
             }
         }
 
         currentTarget = best;
-        if (currentTarget != null)
-            lastKnownPosition = currentTarget.position;
     }
 
     public Vector3 GetAimDirection()
     {
-        if (!Enabled || muzzlePoint == null || currentTarget == null)
-            return muzzlePoint.forward;
+        if (!Enabled || muzzlePoint == null)
+            return transform.forward;
+
+        Vector3 baseDirection = rawAimDirection.sqrMagnitude > 0.0001f ? rawAimDirection.normalized : muzzlePoint.forward;
+
+        if (currentTarget == null)
+            return baseDirection;
 
         Vector3 toTarget = (lastKnownPosition - muzzlePoint.position).normalized;
-        return Vector3.Lerp(muzzlePoint.forward, toTarget, correctionFactor);
+        return Vector3.Slerp(baseDirection, toTarget, Mathf.Clamp01(correctionFactor)).normalized;
     }
 
     public float GetSpread() => Random.Range(0.5f, 1.5f);

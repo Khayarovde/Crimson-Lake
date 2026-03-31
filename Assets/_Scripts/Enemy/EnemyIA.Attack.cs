@@ -16,12 +16,14 @@ public partial class AdvancedEnemyAI
         if (!IsFacingPlayer()) return;
 
         nextAttackTime = Time.time + attackCooldown;
+        SetState(EnemyState.Attack);
         attackRoutine = StartCoroutine(AttackSequence());
     }
 
     private IEnumerator AttackSequence()
     {
         isAttacking = true;
+        onAttackStarted?.Invoke();
 
         if (isStunned || IsMovementDisabled())
         {
@@ -65,7 +67,10 @@ public partial class AdvancedEnemyAI
         }
 
         if (!caughtPlayer && !isStunned && IsCloseToPlayer())
+        {
             TryDealDamage();
+            onAttackHit?.Invoke();
+        }
 
         float remainingAnim = Mathf.Max(0f, animDuration - hitTime);
         if (remainingAnim > 0f)
@@ -97,12 +102,16 @@ public partial class AdvancedEnemyAI
     {
         SetPlayerCollisionIgnored(false);
 
-        if (!caughtPlayer)
+        if (!caughtPlayer && !isDead)
+        {
+            SetState(EnemyState.Chase);
             ResumeAgentMovementAndRepath();
+        }
 
         currentAnimState = null;
         isAttacking = false;
         attackRoutine = null;
+        onAttackFinished?.Invoke();
     }
 
     private IEnumerator PostAttackSideStep()
@@ -253,7 +262,7 @@ public partial class AdvancedEnemyAI
         if (player == null)
             player = GameObject.FindGameObjectWithTag("Player")?.transform;
         if (player != null)
-            playerHealth = player.GetComponent<PlayerHealth>();
+            player.TryGetComponent(out playerHealth);
         return playerHealth;
     }
 

@@ -50,6 +50,11 @@ public class TankController : MonoBehaviour
     [SerializeField] private float rotationSmoothTime = 0.12f;
     [Header("Aim Feel")]
     [SerializeField] private float aimRotationSmoothTime = 0.07f;
+    [SerializeField] private bool strictCursorAimRotation = true;
+    [SerializeField] private float minTurnSpeed = 240f;
+    [SerializeField] private float minAimTurnSpeed = 720f;
+    [SerializeField] private float cursorAimMaxDistance = 300f;
+    [SerializeField] private LayerMask cursorAimMask = ~0;
     [SerializeField, Range(0.01f, 0.5f)] private float aimInputDeadZone = 0.12f;
     [SerializeField, Range(0.01f, 0.5f)] private float aimAxisDominanceBias = 0.2f;
     [SerializeField] private bool mouseRotationEnabled = true;
@@ -329,10 +334,27 @@ public class TankController : MonoBehaviour
         if (cameraMain == null) return;
 
         Ray mouseRay = cameraMain.ScreenPointToRay(Input.mousePosition);
-        Plane groundPlane = new Plane(Vector3.up, new Vector3(0f, transform.position.y, 0f));
-        if (!groundPlane.Raycast(mouseRay, out float hitDistance)) return;
+        Vector3 targetPoint;
+        int mask = cursorAimMask.value & ~(1 << gameObject.layer);
+        bool hasHit = Physics.Raycast(
+            mouseRay,
+            out RaycastHit hit,
+            Mathf.Max(1f, cursorAimMaxDistance),
+            mask,
+            QueryTriggerInteraction.Ignore
+        );
 
-        Vector3 targetPoint = mouseRay.GetPoint(hitDistance);
+        if (hasHit)
+        {
+            targetPoint = hit.point;
+        }
+        else
+        {
+            Plane groundPlane = new Plane(Vector3.up, new Vector3(0f, transform.position.y, 0f));
+            if (!groundPlane.Raycast(mouseRay, out float hitDistance)) return;
+            targetPoint = mouseRay.GetPoint(hitDistance);
+        }
+
         Vector3 direction = targetPoint - transform.position;
         direction.y = 0f;
         if (direction.sqrMagnitude < 0.001f) return;
@@ -349,10 +371,19 @@ public class TankController : MonoBehaviour
         if (!hasRotationTarget || rb == null)
             return;
 
+        if (isAiming && strictCursorAimRotation)
+        {
+            rotationVelocity = 0f;
+            rb.MoveRotation(targetRotation);
+            return;
+        }
+
         float smoothTime = isAiming ? aimRotationSmoothTime : rotationSmoothTime;
         float currentAngle = rb.rotation.eulerAngles.y;
         float targetAngle = targetRotation.eulerAngles.y;
-        float maxTurnSpeed = Mathf.Max(1f, rotateSpeed);
+        float configuredTurnSpeed = Mathf.Max(1f, rotateSpeed);
+        float minimumTurnSpeed = isAiming ? Mathf.Max(1f, minAimTurnSpeed) : Mathf.Max(1f, minTurnSpeed);
+        float maxTurnSpeed = Mathf.Max(configuredTurnSpeed, minimumTurnSpeed);
         float smoothedAngle = Mathf.SmoothDampAngle(
             currentAngle,
             targetAngle,

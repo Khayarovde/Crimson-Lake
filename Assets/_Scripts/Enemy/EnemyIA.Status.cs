@@ -10,60 +10,130 @@ public partial class AdvancedEnemyAI
 
     public void ApplyStun(float duration)
     {
-        if (isDead) return;
+        if (isDead || isPermanentlyDead)
+            return;
+
         isStunned = true;
         isWakingUp = false;
+        isAttacking = false;
+        SetState(EnemyState.Stunned);
+
         if (attackRoutine != null)
         {
             StopCoroutine(attackRoutine);
             attackRoutine = null;
         }
-        isAttacking = false;
+
         StopAgentMovement();
-        m_Animator.SetBool("IsStunned", true);
+
+        if (m_Animator != null)
+            m_Animator.SetBool("IsStunned", true);
 
         ForceStunAnimatorState();
         PlayStateWithFallback(stunStateName, stunAnimLayer);
 
-        m_Animator.SetLayerWeight(stunAnimLayer, 1f);
-        m_Animator.SetLayerWeight(baseAnimLayer, 0f);
-        StartCoroutine(RevertFromStun(duration));
+        if (m_Animator != null)
+        {
+            m_Animator.SetLayerWeight(stunAnimLayer, 1f);
+            m_Animator.SetLayerWeight(baseAnimLayer, 0f);
+        }
+
+        if (stunRoutine != null)
+            StopCoroutine(stunRoutine);
+
+        stunRoutine = StartCoroutine(RevertFromStun(Mathf.Max(0.1f, duration)));
+    }
+
+    public void ApplyDamage(float amount)
+    {
+        if (amount <= 0f || isDead || isPermanentlyDead)
+            return;
+
+        currentHealth = Mathf.Max(0f, currentHealth - amount);
+        if (currentHealth <= 0f)
+            Die();
+    }
+
+    public void KillDuringStun()
+    {
+        if (!CanBeFinished())
+            return;
+
+        Die();
+    }
+
+    public void Burn()
+    {
+        if (!isDead)
+            return;
+
+        isPermanentlyDead = true;
+
+        if (resurrectionRoutine != null)
+        {
+            StopCoroutine(resurrectionRoutine);
+            resurrectionRoutine = null;
+        }
+
+        if (destroyOnBurn)
+            Destroy(gameObject);
     }
 
     private IEnumerator RevertFromStun(float duration)
     {
         yield return new WaitForSeconds(duration);
-        if (isDead) yield break;
+        if (isDead || isPermanentlyDead)
+            yield break;
+
         isStunned = false;
         isWakingUp = true;
         PlayStateWithFallback(wakeUpStateName, wakeUpAnimLayer);
-        m_Animator.SetLayerWeight(baseAnimLayer, 0f);
-        m_Animator.SetLayerWeight(stunAnimLayer, 0f);
-        m_Animator.SetLayerWeight(wakeUpAnimLayer, 1f);
+
+        if (m_Animator != null)
+        {
+            m_Animator.SetLayerWeight(baseAnimLayer, 0f);
+            m_Animator.SetLayerWeight(stunAnimLayer, 0f);
+            m_Animator.SetLayerWeight(wakeUpAnimLayer, 1f);
+        }
 
         yield return new WaitForSeconds(Mathf.Max(0.1f, wakeUpDuration));
+        if (isDead || isPermanentlyDead)
+            yield break;
+
         isWakingUp = false;
         isAttacking = false;
+        SetState(EnemyState.Patrol);
         ResumeAgentMovement();
-        m_Animator.SetLayerWeight(wakeUpAnimLayer, 0f);
-        m_Animator.SetLayerWeight(baseAnimLayer, 1f);
-        m_Animator.SetBool("IsStunned", false);
+
+        if (m_Animator != null)
+        {
+            m_Animator.SetLayerWeight(wakeUpAnimLayer, 0f);
+            m_Animator.SetLayerWeight(baseAnimLayer, 1f);
+            m_Animator.SetBool("IsStunned", false);
+        }
+
+        stunRoutine = null;
     }
 
     private void ForceStunAnimatorState()
     {
-        if (m_Animator == null) return;
+        if (m_Animator == null)
+            return;
+
+        m_Animator.speed = baseAnimatorSpeed;
     }
 
-    public void KillDuringStun()
+    private void Die()
     {
-        if (!CanBeFinished()) return;
+        if (isDead || isPermanentlyDead)
+            return;
 
         isDead = true;
         isStunned = false;
         isWakingUp = false;
         isAttacking = false;
         caughtPlayer = false;
+        SetState(EnemyState.Dead);
 
         if (attackRoutine != null)
         {
@@ -71,40 +141,60 @@ public partial class AdvancedEnemyAI
             attackRoutine = null;
         }
 
-        StopAllCoroutines();
+        if (stunRoutine != null)
+        {
+            StopCoroutine(stunRoutine);
+            stunRoutine = null;
+        }
+
         StopAgentMovement();
+        SetPlayerCollisionIgnored(false);
+
+        if (enemyCollider != null)
+            enemyCollider.enabled = false;
+
+        if (navMeshAgent != null && navMeshAgent.enabled)
+            navMeshAgent.enabled = false;
 
         if (m_Animator != null)
         {
             m_Animator.SetBool("IsStunned", false);
+            m_Animator.speed = baseAnimatorSpeed;
             PlayStateWithFallback(deathStateName, baseAnimLayer);
         }
 
-        StartCoroutine(DeathAndMaybeReviveSequence());
+        if (resurrectionRoutine != null)
+            StopCoroutine(resurrectionRoutine);
+
+        if (reviveEnabled)
+            resurrectionRoutine = StartCoroutine(ResurrectionSequence());
     }
 
-    private IEnumerator DeathAndMaybeReviveSequence()
+    private IEnumerator ResurrectionSequence()
     {
         yield return new WaitForSeconds(Mathf.Max(0.1f, deathDuration));
 
-        if (m_Animator != null)
+        if (m_Animator != null && !string.IsNullOrEmpty(deathEndStateName))
             PlayStateWithFallback(deathEndStateName, baseAnimLayer);
 
         yield return new WaitForSeconds(Mathf.Max(0.1f, deathEndDuration));
 
-        if (m_Animator != null)
-            m_Animator.speed = 0f;
-
-        if (!reviveEnabled) yield break;
+        if (isPermanentlyDead)
+            yield break;
 
         float delay = Random.Range(Mathf.Min(reviveDelayMin, reviveDelayMax), Mathf.Max(reviveDelayMin, reviveDelayMax));
         yield return new WaitForSeconds(delay);
+
+        if (isPermanentlyDead)
+            yield break;
+
         Revive();
     }
 
     private void Revive()
     {
-        if (!isDead) return;
+        if (!isDead || isPermanentlyDead)
+            return;
 
         isDead = false;
         isStunned = false;
@@ -121,28 +211,32 @@ public partial class AdvancedEnemyAI
             minHp = maxHp;
             maxHp = tmp;
         }
+
         currentHealth = maxHealth * Random.Range(minHp, maxHp);
+
+        if (enemyCollider != null)
+            enemyCollider.enabled = true;
+
+        if (navMeshAgent != null && !navMeshAgent.enabled)
+            navMeshAgent.enabled = true;
+
+        if (navMeshAgent != null)
+        {
+            navMeshAgent.Warp(transform.position);
+            navMeshAgent.speed = Mathf.Max(0f, speedWalk);
+            navMeshAgent.stoppingDistance = Mathf.Max(navMeshAgent.stoppingDistance, stopBeforePlayerDistance);
+            navMeshAgent.isStopped = false;
+        }
 
         if (m_Animator != null)
         {
             m_Animator.speed = baseAnimatorSpeed;
             m_Animator.SetBool("IsStunned", false);
+            PlayStateWithFallback(idleStateName, baseAnimLayer);
         }
 
-        if (navMeshAgent != null)
-        {
-            if (IsMovementDisabled())
-            {
-                StopAgentMovement();
-            }
-            else
-            {
-                navMeshAgent.isStopped = false;
-            }
-        }
-
-        isPatrolling = true;
-        isChasing = false;
-        ResumeAgentMovementAndRepath();
+        SetState(EnemyState.Patrol);
+        BeginPatrol();
+        resurrectionRoutine = null;
     }
 }

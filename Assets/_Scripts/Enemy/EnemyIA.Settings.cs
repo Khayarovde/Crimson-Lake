@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.Events;
 
 public partial class AdvancedEnemyAI 
 {
@@ -10,8 +11,10 @@ public partial class AdvancedEnemyAI
     private bool disableMovement = false;
 
     [Header("Patrol")]
-    [SerializeField] private Transform[] waypoints;
-    [SerializeField] private bool useRandomPatrolWhenNoWaypoints = true;
+    [SerializeField, Tooltip("Список точек патруля. Если пусто, используется случайный патруль")]
+    private Transform[] waypoints;
+    [SerializeField] private bool loopPatrol = true;
+    [SerializeField] private float waypointPauseTime = 0.6f;
     [SerializeField] private float randomPatrolRadius = 10f;
     [SerializeField] private float randomPatrolPointTolerance = 0.8f;
     [SerializeField] private float randomPatrolWait = 0.6f;
@@ -19,12 +22,40 @@ public partial class AdvancedEnemyAI
     [Header("Detection")]
     [SerializeField] private float viewRadius = 15f;
     [SerializeField] private float viewAngle = 90f;
+    [SerializeField, Tooltip("Ближняя зона обнаружения (360 градусов при наличии прямой видимости)")]
+    private float closeAwarenessRadius = 3.5f;
+    [SerializeField, Tooltip("Широкая периферийная зона обнаружения")]
+    private float peripheralViewRadius = 9f;
+    [SerializeField, Range(1f, 360f), Tooltip("Угол периферийного зрения")]
+    private float peripheralViewAngle = 170f;
     [SerializeField, Tooltip("Маска для проверки прямой видимости")]
     private LayerMask lineOfSightMask = Physics.DefaultRaycastLayers;
+    [SerializeField, Tooltip("Маска поиска целей в зоне зрения")]
+    private LayerMask playerDetectionMask = ~0;
     [SerializeField] private Vector3 sightOriginOffset = new Vector3(0f, 1.4f, 0f);
     [SerializeField] private Vector3 sightTargetOffset = new Vector3(0f, 1.2f, 0f);
     [SerializeField, Tooltip("Дистанция остановки перед игроком, чтобы не толкать")]
     private float stopBeforePlayerDistance = 1.8f;
+
+    [Header("Alert / Scream")]
+    [SerializeField] private float alertDuration = 1.1f;
+    [SerializeField] private string screamStateName = "Scream";
+    [SerializeField] private AudioClip screamClip;
+
+    [Header("Chase")]
+    [SerializeField] private float speedChaseMin = 3.8f;
+    [SerializeField] private float speedChaseMax = 5.6f;
+    [SerializeField] private float chaseErraticChangeRate = 2.2f;
+
+    [Header("Hearing")]
+    [SerializeField, Tooltip("Базовый радиус слуха врага")]
+    private float hearingRadius = 18f;
+    [SerializeField, Tooltip("Как долго враг проверяет последнюю позицию выстрела")]
+    private float investigateShotDuration = 5f;
+    [SerializeField] private bool listenToPlayerRunNoise = true;
+    [SerializeField] private float playerRunSpeedThreshold = 3.2f;
+    [SerializeField] private float playerRunLoudness = 1f;
+    [SerializeField] private float runNoiseCheckInterval = 0.2f;
 
     [Header("Scan On Spawn")]
     [SerializeField] private bool scanOnSpawn = true;
@@ -78,7 +109,16 @@ public partial class AdvancedEnemyAI
     [SerializeField, Range(0f, 5f)] private float attack3Weight = 1f;
 
     [Header("Animation")]
+    [SerializeField] private string idleStateName = "Idle";
     [SerializeField] private string walkingStateName = "walking";
+    [SerializeField, Tooltip("Передавать в Animator bool 'isChasing' (для бега). По умолчанию выключено.")]
+    private bool useChaseAnimatorFlag = false;
+    [SerializeField, Tooltip("Порог скорости для включения walking")]
+    private float movementAnimStartSpeed = 0.2f;
+    [SerializeField, Tooltip("Порог скорости для возврата в idle")]
+    private float movementAnimStopSpeed = 0.08f;
+    [SerializeField, Tooltip("Минимальный интервал между переключениями idle/walking")]
+    private float movementAnimSwitchCooldown = 0.12f;
     [SerializeField] private string stunStateName = "Stun";
     [SerializeField] private string wakeUpStateName = "wakeUp_stun";
     [SerializeField] private string deathStateName = "death";
@@ -95,6 +135,11 @@ public partial class AdvancedEnemyAI
     [SerializeField, Tooltip("Длительность анимации death_end (сек)")]
     private float deathEndDuration = 1f;
 
+    [Header("Attack Events")]
+    [SerializeField] private UnityEvent onAttackStarted;
+    [SerializeField] private UnityEvent onAttackHit;
+    [SerializeField] private UnityEvent onAttackFinished;
+
     [Header("Hitbox")]
     [SerializeField, Tooltip("Радиус капсулы коллайдера врага (для более лёгкого попадания)")]
     private float enemyColliderRadius = 0.7f;
@@ -107,9 +152,14 @@ public partial class AdvancedEnemyAI
 
     [Header("Revive")]
     [SerializeField] private bool reviveEnabled = true;
-    [SerializeField] private float reviveDelayMin = 8f;
-    [SerializeField] private float reviveDelayMax = 12f;
-    [SerializeField, Range(0f, 1f)] private float reviveHealthPercentMin = 0.3f;
+    [SerializeField] private bool destroyOnBurn = false;
+    [SerializeField] private float reviveDelayMin = 60f;
+    [SerializeField] private float reviveDelayMax = 120f;
+    [SerializeField, Range(0f, 1f)] private float reviveHealthPercentMin = 0.5f;
     [SerializeField, Range(0f, 1f)] private float reviveHealthPercentMax = 0.5f;
     [SerializeField] private float maxHealth = 100f;
+    [SerializeField] private bool isPermanentlyDead = false;
+
+    [Header("Debug")]
+    [SerializeField] private EnemyState currentStateDebug = EnemyState.Patrol;
 }

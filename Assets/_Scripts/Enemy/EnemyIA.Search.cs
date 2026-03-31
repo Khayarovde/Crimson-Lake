@@ -6,6 +6,7 @@ public partial class AdvancedEnemyAI
     private void BeginScan()
     {
         isScanning = true;
+        SetState(EnemyState.Alert);
         scanEndTime = Time.time + Mathf.Max(0.1f, scanDuration);
         StopAgentMovement();
     }
@@ -18,7 +19,7 @@ public partial class AdvancedEnemyAI
         if (Time.time >= scanEndTime)
         {
             isScanning = false;
-            if (!isChasing)
+            if (!isChasing && !isDead)
                 BeginPatrol();
         }
     }
@@ -84,6 +85,9 @@ public partial class AdvancedEnemyAI
             StopAgentMovement();
             return;
         }
+
+        if (navMeshAgent == null || !navMeshAgent.enabled)
+            return;
 
         if (searchPoints == null || searchPoints.Length == 0)
         {
