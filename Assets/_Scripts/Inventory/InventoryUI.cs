@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using UIOutline = UnityEngine.UI.Outline;
 using System.Collections.Generic;
 using TMPro;
+using UnityEngine.Video;
 
 public class InventoryUI : MonoBehaviour
 {
@@ -33,6 +34,26 @@ public class InventoryUI : MonoBehaviour
     [Header("Подсветка")]
     public Color outlineColor = Color.green;
 
+    [Header("HP Видео (опционально)")]
+    [Tooltip("VideoPlayer, который выводит mp4 в RawImage")]
+    public VideoPlayer hpVideoPlayer;
+
+    [Tooltip("RawImage для отображения текстуры VideoPlayer (если VideoPlayer работает в API Only)")]
+    public RawImage hpVideoRawImage;
+
+    [Tooltip("Клип для HP <= 25")]
+    public VideoClip hp25Clip;
+
+    [Tooltip("Клип для HP <= 50")]
+    public VideoClip hp50Clip;
+
+    [Tooltip("Клип для HP > 50 (обычно 100 HP)")]
+    public VideoClip hp100Clip;
+
+    [SerializeField, Min(1)] private int lowHpThreshold = 25;
+    [SerializeField, Min(1)] private int midHpThreshold = 50;
+    [SerializeField] private bool loopHpVideo = true;
+
     [Header("Позиции кнопок в слотах")]
     [Tooltip("Локальная позиция кнопки Store в каждом слоте")]
     public Vector2 storeButtonPosition = new Vector2(30, -30);
@@ -48,6 +69,7 @@ public class InventoryUI : MonoBehaviour
     private Button[] destroyButtons;
     private UIOutline[] outlines;
     private PlayerInventory playerInventory;
+    private PlayerHealth playerHealth;
     private Chest currentChest;
     private bool wasInventoryOpenBeforeChest;
     private int lastClickedSlotIndex = -1;
@@ -59,6 +81,17 @@ public class InventoryUI : MonoBehaviour
     private Button[] chestTakeButtons;
     private Button[] chestDestroyButtons;
 
+    private enum HpVideoState
+    {
+        None,
+        Hp25,
+        Hp50,
+        Hp100
+    }
+
+    private HpVideoState currentHpVideoState = HpVideoState.None;
+    private VideoClip currentHpClip;
+
     private void Start()
     {
         playerInventory = FindFirstObjectByType<PlayerInventory>();
@@ -67,6 +100,10 @@ public class InventoryUI : MonoBehaviour
             Debug.LogError("[InventoryUI] PlayerInventory не найден!");
             return;
         }
+
+        playerHealth = playerInventory.GetComponent<PlayerHealth>();
+        if (playerHealth == null)
+            playerHealth = FindFirstObjectByType<PlayerHealth>();
 
         // Fallback: bind buttons by name if not assigned in inspector.
         if (toChestButton == null)
@@ -84,6 +121,8 @@ public class InventoryUI : MonoBehaviour
 
         InitializeInventorySlots();
         InitializeButtons();
+        InitializeHpVideoPlayer();
+        UpdateHpVideoByCurrentHealth(force: true);
         
         // В WebGL UI элементы инициализируются асинхронно
         // Инициализируем слоты сундука со стартовой задержкой
@@ -101,6 +140,8 @@ public class InventoryUI : MonoBehaviour
 
     private void Update()
     {
+        UpdateHpVideoByCurrentHealth();
+
         if (Input.GetKeyDown(KeyCode.Escape))
         {
             if (IsChestUIOpen())
@@ -401,6 +442,8 @@ public class InventoryUI : MonoBehaviour
     {
         if (inventoryData == null || slotIcons == null) return;
 
+        UpdateHpVideoByCurrentHealth();
+
         var slots = inventoryData.GetSlots();
         int activeIndex = playerInventory.activeItemIndex;
 
@@ -486,6 +529,104 @@ public class InventoryUI : MonoBehaviour
         {
             toChestButton.gameObject.SetActive(playerInventory.IsNearChest());
         }
+    }
+
+    private void InitializeHpVideoPlayer()
+    {
+        if (hpVideoPlayer == null)
+            return;
+
+        hpVideoPlayer.playOnAwake = false;
+        hpVideoPlayer.waitForFirstFrame = true;
+        hpVideoPlayer.isLooping = loopHpVideo;
+        hpVideoPlayer.source = VideoSource.VideoClip;
+
+        hpVideoPlayer.prepareCompleted -= OnHpVideoPrepared;
+        hpVideoPlayer.errorReceived -= OnHpVideoError;
+        hpVideoPlayer.prepareCompleted += OnHpVideoPrepared;
+        hpVideoPlayer.errorReceived += OnHpVideoError;
+    }
+
+    private void UpdateHpVideoByCurrentHealth(bool force = false)
+    {
+        if (hpVideoPlayer == null)
+            return;
+
+        if (playerHealth == null)
+            playerHealth = FindFirstObjectByType<PlayerHealth>();
+
+        if (playerHealth == null)
+            return;
+
+        int hp = Mathf.Clamp(playerHealth.CurrentHealth, 0, Mathf.Max(1, playerHealth.MaxHealth));
+
+        HpVideoState targetState;
+        VideoClip targetClip;
+
+        if (hp <= Mathf.Max(1, lowHpThreshold))
+        {
+            targetState = HpVideoState.Hp25;
+            targetClip = hp25Clip;
+        }
+        else if (hp <= Mathf.Max(lowHpThreshold + 1, midHpThreshold))
+        {
+            targetState = HpVideoState.Hp50;
+            targetClip = hp50Clip;
+        }
+        else
+        {
+            targetState = HpVideoState.Hp100;
+            targetClip = hp100Clip;
+        }
+
+        if (!force && targetState == currentHpVideoState)
+            return;
+
+        currentHpVideoState = targetState;
+
+        if (targetClip == null)
+        {
+            Debug.LogWarning($"[InventoryUI] Не назначен HP-клип для состояния {targetState}");
+            if (hpVideoPlayer.isPlaying)
+                hpVideoPlayer.Stop();
+            currentHpClip = null;
+            return;
+        }
+
+        if (!force && currentHpClip == targetClip)
+            return;
+
+        currentHpClip = targetClip;
+        hpVideoPlayer.isLooping = loopHpVideo;
+        hpVideoPlayer.source = VideoSource.VideoClip;
+        hpVideoPlayer.clip = targetClip;
+        hpVideoPlayer.Stop();
+        hpVideoPlayer.Prepare();
+    }
+
+    private void OnHpVideoPrepared(VideoPlayer source)
+    {
+        if (source == null)
+            return;
+
+        if (hpVideoRawImage != null)
+            hpVideoRawImage.texture = source.texture;
+
+        source.Play();
+    }
+
+    private void OnHpVideoError(VideoPlayer source, string message)
+    {
+        Debug.LogWarning($"[InventoryUI] Ошибка проигрывания HP-видео: {message}");
+    }
+
+    private void OnDestroy()
+    {
+        if (hpVideoPlayer == null)
+            return;
+
+        hpVideoPlayer.prepareCompleted -= OnHpVideoPrepared;
+        hpVideoPlayer.errorReceived -= OnHpVideoError;
     }
 
     private void UpdateChestUI()

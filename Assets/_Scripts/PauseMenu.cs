@@ -52,8 +52,8 @@ public class PauseMenu : MonoBehaviour
         SettingsManager.GetOrCreate();
         LoadSettings();
 
-        Debug.Log($"[PauseMenu] Музыка: {musicSources.Length} источников + {musicClips.Length} клипов | " +
-                  $"SFX: {sfxSources.Length} источников + {sfxClips.Length} клипов");
+        // Debug.Log($"[PauseMenu] Музыка: {musicSources.Length} источников + {musicClips.Length} клипов | " +
+        //           $"SFX: {sfxSources.Length} источников + {sfxClips.Length} клипов");
     }
 
     private void Update()

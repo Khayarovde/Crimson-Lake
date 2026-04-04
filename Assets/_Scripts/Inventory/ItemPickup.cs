@@ -21,7 +21,7 @@ public class ItemPickup : MonoBehaviour
     {
         if (isPlayerNearby && Input.GetKeyDown(KeyCode.E))
         {
-            Debug.Log($"[ItemPickup] Нажата клавиша E для объекта {gameObject.name}");
+            // Debug.Log($"[ItemPickup] Нажата клавиша E для объекта {gameObject.name}");
             TryPickup();
         }
     }
@@ -30,7 +30,7 @@ public class ItemPickup : MonoBehaviour
     {
         if (other.CompareTag("Player"))
         {
-            Debug.Log($"[ItemPickup] Игрок вошёл в триггер объекта {gameObject.name}");
+            // Debug.Log($"[ItemPickup] Игрок вошёл в триггер объекта {gameObject.name}");
             isPlayerNearby = true;
             player = other.transform;
         }
@@ -40,7 +40,7 @@ public class ItemPickup : MonoBehaviour
     {
         if (other.CompareTag("Player"))
         {
-            Debug.Log($"[ItemPickup] Игрок покинул триггер объекта {gameObject.name}");
+            // Debug.Log($"[ItemPickup] Игрок покинул триггер объекта {gameObject.name}");
             isPlayerNearby = false;
             player = null;
         }
@@ -50,15 +50,15 @@ public class ItemPickup : MonoBehaviour
     {
         if (player != null && Vector3.Distance(transform.position, player.position) <= interactionDistance)
         {
-            Debug.Log($"[ItemPickup] Проверка расстояния пройдена для объекта {gameObject.name}");
+            // Debug.Log($"[ItemPickup] Проверка расстояния пройдена для объекта {gameObject.name}");
             PlayerInventory playerInventory = player.GetComponent<PlayerInventory>();
             if (playerInventory != null)
             {
-                Debug.Log($"[ItemPickup] Найден PlayerInventory на игроке для объекта {gameObject.name}");
+                // Debug.Log($"[ItemPickup] Найден PlayerInventory на игроке для объекта {gameObject.name}");
                 bool added = playerInventory.AddItemToInventory(item);
                 if (added)
                 {
-                    Debug.Log($"[ItemPickup] Предмет {item.itemName} успешно подобран!");
+                    // Debug.Log($"[ItemPickup] Предмет {item.itemName} успешно подобран!");
                     Destroy(gameObject);
                 }
                 else

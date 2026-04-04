@@ -9,6 +9,7 @@ public class EnemyPickupInteraction : MonoBehaviour
 
     [Header("Враг")]
     [SerializeField] private AdvancedEnemyAI enemyAI;
+    [SerializeField] private Enemytest enemyTest;
     [SerializeField] private Transform enemySpawnPoint;
     [SerializeField] private bool spawnEnemyOnlyAfterPickup = true;
 
@@ -51,6 +52,8 @@ public class EnemyPickupInteraction : MonoBehaviour
         if (yarnInteractSource == null)
             yarnInteractSource = GetComponent<Interact>();
 
+        ResolveEnemyReferences();
+
         PrepareEnemyForDiskettePickup();
     }
 
@@ -66,8 +69,8 @@ public class EnemyPickupInteraction : MonoBehaviour
         if (triggerCollider != null && !triggerCollider.isTrigger)
             Debug.LogWarning($"[DiskettePickup] Коллайдер на {gameObject.name} не является триггером! Рекомендуется установить isTrigger = true.");
 
-        if (enemyAI == null)
-            enemyAI = FindFirstObjectByType<AdvancedEnemyAI>();
+        ResolveEnemyReferences();
+        PrepareEnemyForDiskettePickup();
 
         // Создаём независимый источник для chase-музыки
         if (chaseMusicClip != null)
@@ -96,10 +99,14 @@ public class EnemyPickupInteraction : MonoBehaviour
 
     private void PrepareEnemyForDiskettePickup()
     {
-        if (!spawnEnemyOnlyAfterPickup || enemyAI == null || alreadyPickedUp)
+        if (!spawnEnemyOnlyAfterPickup || alreadyPickedUp)
             return;
 
-        enemyAI.gameObject.SetActive(false);
+        if (enemyAI != null)
+            enemyAI.gameObject.SetActive(false);
+
+        if (enemyTest != null)
+            enemyTest.gameObject.SetActive(false);
     }
 
     private void OnEnable()
@@ -116,9 +123,13 @@ public class EnemyPickupInteraction : MonoBehaviour
 
     private void Update()
     {
-        if (spawnEnemyOnlyAfterPickup && !alreadyPickedUp && enemyAI != null && enemyAI.gameObject.activeSelf)
+        if (spawnEnemyOnlyAfterPickup && !alreadyPickedUp)
         {
-            enemyAI.gameObject.SetActive(false);
+            if (enemyAI != null && enemyAI.gameObject.activeSelf)
+                enemyAI.gameObject.SetActive(false);
+
+            if (enemyTest != null && enemyTest.gameObject.activeSelf)
+                enemyTest.gameObject.SetActive(false);
         }
 
         if (!alreadyPickedUp && isPlayerNearby && Input.GetKeyDown(KeyCode.E))
@@ -127,9 +138,9 @@ public class EnemyPickupInteraction : MonoBehaviour
         }
 
         // Проверка окончания погони (враг мёртв)
-        if (isChaseMusicActive && enemyAI != null)
+        if (isChaseMusicActive)
         {
-            bool enemyDead = !enemyAI.gameObject.activeInHierarchy;
+            bool enemyDead = IsTrackedEnemyDead();
             if (enemyDead && !isEndingChase)
             {
                 StartCoroutine(EndChaseCompletely());
@@ -150,7 +161,7 @@ public class EnemyPickupInteraction : MonoBehaviour
         {
             isPlayerNearby = true;
             player = other.transform;
-            Debug.Log($"[DiskettePickup] Игрок вошёл в зону подбора дискеты ({gameObject.name})");
+            // Debug.Log($"[DiskettePickup] Игрок вошёл в зону подбора дискеты ({gameObject.name})");
         }
     }
 
@@ -162,7 +173,7 @@ public class EnemyPickupInteraction : MonoBehaviour
         {
             isPlayerNearby = false;
             player = null;
-            Debug.Log($"[DiskettePickup] Игрок покинул зону подбора дискеты ({gameObject.name})");
+            // Debug.Log($"[DiskettePickup] Игрок покинул зону подбора дискеты ({gameObject.name})");
         }
     }
 
@@ -287,30 +298,50 @@ public class EnemyPickupInteraction : MonoBehaviour
 
     private void ActivateEnemyChase()
     {
-        if (enemyAI == null)
-            enemyAI = FindFirstObjectByType<AdvancedEnemyAI>();
+        ResolveEnemyReferences();
 
-        if (enemyAI == null)
+        if (enemyAI == null && enemyTest == null)
         {
-            Debug.LogError("Enemy AI не назначен!");
+            Debug.LogError("Enemy AI не назначен (AdvancedEnemyAI / Enemytest)!");
             return;
         }
 
-        if (spawnEnemyOnlyAfterPickup && !enemyAI.gameObject.activeSelf)
+        if (enemyAI != null)
         {
-            enemyAI.gameObject.SetActive(true);
+            if (spawnEnemyOnlyAfterPickup && !enemyAI.gameObject.activeSelf)
+                enemyAI.gameObject.SetActive(true);
+
+            enemyAI.enabled = true;
+
+            // Телепорт врага (если нужно)
+            if (enemySpawnPoint != null)
+            {
+                enemyAI.TeleportToPosition(enemySpawnPoint.position);
+                enemyAI.transform.rotation = enemySpawnPoint.rotation;
+            }
+
+            enemyAI.StartChasingAfterDiskette();
         }
-
-        enemyAI.enabled = true;
-
-        // Телепорт врага (если нужно)
-        if (enemySpawnPoint != null)
+        else if (enemyTest != null)
         {
-            enemyAI.TeleportToPosition(enemySpawnPoint.position);
-            enemyAI.transform.rotation = enemySpawnPoint.rotation;
-        }
+            if (spawnEnemyOnlyAfterPickup && !enemyTest.gameObject.activeSelf)
+                enemyTest.gameObject.SetActive(true);
 
-        enemyAI.StartChasingAfterDiskette();
+            enemyTest.enabled = true;
+
+            if (enemySpawnPoint != null)
+            {
+                if (enemyTest.navAgent != null && enemyTest.navAgent.isOnNavMesh)
+                    enemyTest.navAgent.Warp(enemySpawnPoint.position);
+                else
+                    enemyTest.transform.position = enemySpawnPoint.position;
+
+                enemyTest.transform.rotation = enemySpawnPoint.rotation;
+            }
+
+            Vector3 chaseNoisePos = player != null ? player.position : enemyTest.transform.position;
+            enemyTest.NotifyNoise(chaseNoisePos, 999f);
+        }
 
         // Красное освещение
         foreach (Light light in lightsToChangeColor)
@@ -334,6 +365,26 @@ public class EnemyPickupInteraction : MonoBehaviour
         }
 
         Debug.Log("Погоня активирована: chase-музыка играет только в зоне взятия дискеты.");
+    }
+
+    private void ResolveEnemyReferences()
+    {
+        if (enemyAI == null)
+            enemyAI = FindFirstObjectByType<AdvancedEnemyAI>();
+
+        if (enemyTest == null)
+            enemyTest = FindFirstObjectByType<Enemytest>();
+    }
+
+    private bool IsTrackedEnemyDead()
+    {
+        if (enemyAI != null)
+            return !enemyAI.gameObject.activeInHierarchy;
+
+        if (enemyTest != null)
+            return !enemyTest.gameObject.activeInHierarchy;
+
+        return false;
     }
 
     private MusicZoneTrigger FindCurrentActiveZone()

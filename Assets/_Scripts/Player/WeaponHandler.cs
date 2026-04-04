@@ -6,6 +6,42 @@ using TheDeveloperTrain.SciFiGuns;
 public class WeaponHandler : MonoBehaviour
 {
     public static event System.Action<Vector3, float> PlayerShotFired;
+    public bool IsAiming => isAiming;
+
+    private sealed class FinisherTarget
+    {
+        public AdvancedEnemyAI advancedEnemy;
+        public Enemytest enemyTest;
+
+        public Transform Transform
+        {
+            get
+            {
+                if (advancedEnemy != null)
+                    return advancedEnemy.transform;
+                if (enemyTest != null)
+                    return enemyTest.transform;
+                return null;
+            }
+        }
+
+        public bool CanBeFinished()
+        {
+            if (advancedEnemy != null)
+                return advancedEnemy.CanBeFinished();
+            if (enemyTest != null)
+                return enemyTest.CanBeFinished();
+            return false;
+        }
+
+        public void KillDuringStun()
+        {
+            if (advancedEnemy != null)
+                advancedEnemy.KillDuringStun();
+            else if (enemyTest != null)
+                enemyTest.KillDuringStun();
+        }
+    }
 
     [System.Serializable]
     private class WeaponGlowProfile
@@ -69,6 +105,10 @@ public class WeaponHandler : MonoBehaviour
     private float tracerMuzzleOffset = 0.08f;
     [SerializeField, Tooltip("Максимальная длина луча, если не попал во что-то")]
     private float maxTracerDistance = 300f;
+    [SerializeField, Tooltip("Стрелять строго по forward оружия (из дула), а не по направлению курсора")]
+    private bool shootByMuzzleForward = true;
+    [SerializeField, Tooltip("Базовый разброс одиночного выстрела вокруг forward дула (градусы)")]
+    private float muzzleForwardSpread = 0.1f;
     [SerializeField] private GameObject gunHitEffect;
     [SerializeField] private GameObject pistolHitEffect;
 
@@ -76,6 +116,8 @@ public class WeaponHandler : MonoBehaviour
     [SerializeField] private float aimWalkSpeed = 1.5f; 
     [SerializeField] private AimAssist aimAssist;
     [SerializeField] private LayerMask enemyLayerMask;
+    [SerializeField, Range(0f, 1f), Tooltip("Насколько сильно уменьшается разброс при полном удержании прицела на цели")]
+    private float lockOnSpreadReduction = 0.85f;
 
     [Header("=== Анимация и melee ===")]
     [SerializeField] public Animator playerAnimator;
@@ -110,6 +152,17 @@ public class WeaponHandler : MonoBehaviour
     private bool blockRightMouseNearStunnedEnemy = true;
     [SerializeField, Tooltip("Задержка перед запуском смерти врага (сек)")]
     private float finisherEnemyDeathDelay = 0.6f;
+    [SerializeField, Tooltip("Если строгие условия не прошли, автоматически ослаблять проверки (скорость), но не угол фронта")]
+    private bool finisherAutoRelaxConstraints = true;
+    [SerializeField, Tooltip("Дополнительный радиус поиска цели добивания при fallback")]
+    private float finisherFallbackExtraRange = 0.7f;
+    [SerializeField, Tooltip("Игнорировать enemyLayerMask при fallback-поиске цели добивания")]
+    private bool finisherFallbackIgnoreLayerMask = true;
+    [SerializeField, Tooltip("Запускать FinishingManager для переключения камеры и эффекта добивания")]
+    private bool useFinisherManagerCamera = true;
+    [SerializeField] private FinishingManager finisherManager;
+    [SerializeField, Tooltip("Игнорировать проверку " + nameof(FinishingManager.requireFrontSide) + " при старте от WeaponHandler")]
+    private bool ignoreFrontSideForFinisherManager = false;
 
     [Header("=== ОГЛУШЕНИЕ ВРАГОВ ===")]
     [SerializeField, Tooltip("Сколько попаданий из пистолета нужно для оглушения врага")]
@@ -117,6 +170,12 @@ public class WeaponHandler : MonoBehaviour
 
     [SerializeField, Tooltip("Сколько попаданий из лазерной винтовки нужно для оглушения врага")]
     private int gunHitsToStun = 3;
+
+    [Header("=== DAMAGE TO Enemytest ===")]
+    [SerializeField, Tooltip("Урон от пистолета по Enemytest")]
+    private float pistolDamageToEnemytest = 20f;
+    [SerializeField, Tooltip("Урон от выстрела лазерной винтовки по Enemytest")]
+    private float gunDamageToEnemytest = 30f;
 
     [Header("=== ТОЧНОСТЬ GUN ===")]
     [SerializeField, Tooltip("Радиус SphereCast для Gun, чтобы попадания регистрировались стабильнее")]
@@ -238,11 +297,22 @@ public class WeaponHandler : MonoBehaviour
         if (isFinisherInProgress) return false;
         if (!Input.GetMouseButtonDown(0)) return false;
 
-        if (requireLowSpeedForFinisher && tankController != null && tankController.CurrentPlanarSpeed > Mathf.Max(0.01f, finisherStartSpeedThreshold))
-            return false;
+        bool allowLowSpeedCheck = requireLowSpeedForFinisher;
+        bool allowFrontCheck = requireFrontForFinisher;
 
-        var enemy = FindClosestStunnedEnemy(finisherRange);
+        FinisherTarget enemy = FindClosestStunnedEnemy(finisherRange, allowFrontCheck, false);
+        if (enemy == null && finisherAutoRelaxConstraints)
+        {
+            allowLowSpeedCheck = false;
+            allowFrontCheck = true;
+            float relaxedRange = finisherRange + Mathf.Max(0f, finisherFallbackExtraRange);
+            enemy = FindClosestStunnedEnemy(relaxedRange, allowFrontCheck, finisherFallbackIgnoreLayerMask);
+        }
+
         if (enemy == null) return false;
+
+        if (allowLowSpeedCheck && tankController != null && tankController.CurrentPlanarSpeed > Mathf.Max(0.01f, finisherStartSpeedThreshold))
+            return false;
 
         if (isAiming)
             StopAiming();
@@ -261,7 +331,7 @@ public class WeaponHandler : MonoBehaviour
         return true;
     }
 
-    private IEnumerator BeginFinisherSequence(AdvancedEnemyAI enemy)
+    private IEnumerator BeginFinisherSequence(FinisherTarget enemy)
     {
         if (enemy == null || !enemy.CanBeFinished())
         {
@@ -272,7 +342,7 @@ public class WeaponHandler : MonoBehaviour
         }
 
         if (autoSnapToFinisherPosition)
-            yield return SnapToFinisherPosition(enemy.transform);
+            yield return SnapToFinisherPosition(enemy.Transform);
 
         if (enemy == null || !enemy.CanBeFinished())
         {
@@ -282,7 +352,9 @@ public class WeaponHandler : MonoBehaviour
             yield break;
         }
 
-        FaceEnemy(enemy.transform);
+        FaceEnemy(enemy.Transform);
+        TryStartFinisherManagerCamera(enemy.Transform);
+
         if (!PlayFinisherAnimation())
         {
             ReleaseFinisherAnimationLock();
@@ -295,6 +367,31 @@ public class WeaponHandler : MonoBehaviour
         finisherReturnCoroutine = StartCoroutine(ReturnToIdleAfterFinisher());
         finisherKillCoroutine = StartCoroutine(KillEnemyAfterFinisherAnimation(enemy));
         finisherSequenceCoroutine = null;
+    }
+
+    private void TryStartFinisherManagerCamera(Transform enemyTransform)
+    {
+        if (!useFinisherManagerCamera)
+            return;
+        if (enemyTransform == null)
+            return;
+
+        if (finisherManager == null)
+            finisherManager = FindFirstObjectByType<FinishingManager>();
+
+        if (finisherManager == null)
+            return;
+        if (finisherManager.IsFinishingActive)
+            return;
+
+        bool previousFrontRequirement = finisherManager.requireFrontSide;
+        if (ignoreFrontSideForFinisherManager)
+            finisherManager.requireFrontSide = false;
+
+        finisherManager.StartFinishingImmediate(transform, enemyTransform);
+
+        if (ignoreFrontSideForFinisherManager)
+            finisherManager.requireFrontSide = previousFrontRequirement;
     }
 
     private IEnumerator SnapToFinisherPosition(Transform enemyTransform)
@@ -447,31 +544,55 @@ public class WeaponHandler : MonoBehaviour
         if (!blockRightMouseNearStunnedEnemy)
             return false;
 
-        return FindClosestStunnedEnemy(finisherRange) != null;
+        return FindClosestStunnedEnemy(finisherRange, requireFrontForFinisher, false) != null;
     }
 
-    private AdvancedEnemyAI FindClosestStunnedEnemy(float range)
+    private FinisherTarget FindClosestStunnedEnemy(float range, bool requireFrontCheck, bool ignoreLayerMask)
     {
         float bestDist = float.MaxValue;
-        AdvancedEnemyAI best = null;
+        FinisherTarget best = null;
 
-        var hits = Physics.OverlapSphere(transform.position, range, enemyLayerMask);
+        int mask = ignoreLayerMask ? ~0 : enemyLayerMask.value;
+        var hits = Physics.OverlapSphere(transform.position, range, mask, QueryTriggerInteraction.Ignore);
         foreach (var h in hits)
         {
             if (h == null) continue;
-            var enemy = h.GetComponentInParent<AdvancedEnemyAI>();
-            if (enemy == null || !enemy.CanBeFinished()) continue;
-            if (requireFrontForFinisher && !IsPlayerInEnemyFront(enemy.transform)) continue;
+            FinisherTarget target = CreateFinisherTarget(h);
+            if (target == null || !target.CanBeFinished()) continue;
+            if (requireFrontCheck && !IsPlayerInEnemyFront(target.Transform)) continue;
 
-            float d = Vector3.Distance(transform.position, enemy.transform.position);
+            float d = Vector3.Distance(transform.position, target.Transform.position);
             if (d < bestDist)
             {
                 bestDist = d;
-                best = enemy;
+                best = target;
             }
         }
 
         return best;
+    }
+
+    private FinisherTarget CreateFinisherTarget(Collider hit)
+    {
+        AdvancedEnemyAI advanced = hit.GetComponentInParent<AdvancedEnemyAI>();
+        if (advanced != null)
+        {
+            return new FinisherTarget
+            {
+                advancedEnemy = advanced
+            };
+        }
+
+        Enemytest enemyTest = hit.GetComponentInParent<Enemytest>();
+        if (enemyTest != null)
+        {
+            return new FinisherTarget
+            {
+                enemyTest = enemyTest
+            };
+        }
+
+        return null;
     }
 
     private bool IsPlayerInEnemyFront(Transform enemyTransform)
@@ -504,7 +625,7 @@ public class WeaponHandler : MonoBehaviour
         return true;
     }
 
-    private IEnumerator KillEnemyAfterFinisherAnimation(AdvancedEnemyAI enemy)
+    private IEnumerator KillEnemyAfterFinisherAnimation(FinisherTarget enemy)
     {
         Animator anim = GetAnimator();
         if (anim == null)
@@ -620,7 +741,6 @@ public class WeaponHandler : MonoBehaviour
     private void StopAiming()
     {
         isAiming = false;
-        ForceDefaultIdle();
         UnequipWeapon();
         if (tankController)
             tankController.moveSpeed = originalWalkSpeed;
@@ -760,13 +880,7 @@ public class WeaponHandler : MonoBehaviour
             return;
         }
 
-        Vector3 direction = aimAssist.GetAimDirection();
-        float spread = aimAssist.GetSpread();
-        direction = Quaternion.Euler(
-            Random.Range(-spread, spread),
-            Random.Range(-spread, spread),
-            0
-        ) * direction;
+        Vector3 direction = GetShotDirectionFromMuzzle(Mathf.Max(0f, muzzleForwardSpread));
 
         Ray ray = new Ray(muzzlePoint.position, direction);
         bool hitSomething = Physics.Raycast(
@@ -799,6 +913,11 @@ public class WeaponHandler : MonoBehaviour
             }
         }
 
+        if (hitSomething)
+        {
+            TryDamageEnemytest(hit.collider, pistolDamageToEnemytest);
+        }
+
         // Искры от попадания
         if (pistolHitEffect != null && hitSomething)
         {
@@ -813,7 +932,7 @@ public class WeaponHandler : MonoBehaviour
 
     private void PerformShotgunShot()
     {
-        Vector3 baseDir = aimAssist.GetAimDirection();
+        Vector3 baseDir = GetShotDirectionFromMuzzle(0f);
         Vector3 origin = muzzlePoint.position;
 
         bool hitSomething = false;
@@ -821,15 +940,12 @@ public class WeaponHandler : MonoBehaviour
         float closestDistance = maxTracerDistance;
 
         AdvancedEnemyAI hitEnemy = null;
+        Enemytest hitTestEnemy = null;
 
         int pellets = Mathf.Max(1, gunPellets);
         for (int i = 0; i < pellets; i++)
         {
-            Vector3 dir = Quaternion.Euler(
-                Random.Range(-gunPelletSpread, gunPelletSpread),
-                Random.Range(-gunPelletSpread, gunPelletSpread),
-                0f
-            ) * baseDir;
+            Vector3 dir = ApplyAngularSpread(baseDir, gunPelletSpread);
 
             if (Physics.SphereCast(
                 origin,
@@ -849,6 +965,9 @@ public class WeaponHandler : MonoBehaviour
 
                 if (hitEnemy == null && hit.collider.TryGetComponent<AdvancedEnemyAI>(out var enemy))
                     hitEnemy = enemy;
+
+                if (hitTestEnemy == null)
+                    hitTestEnemy = hit.collider.GetComponentInParent<Enemytest>();
             }
         }
 
@@ -870,6 +989,11 @@ public class WeaponHandler : MonoBehaviour
             }
         }
 
+        if (hitTestEnemy != null)
+        {
+            hitTestEnemy.TakeWeaponDamage(gunDamageToEnemytest);
+        }
+
         if (gunHitEffect != null && hitSomething)
         {
             var fx = Instantiate(gunHitEffect, closestHit.point, Quaternion.LookRotation(closestHit.normal));
@@ -880,6 +1004,43 @@ public class WeaponHandler : MonoBehaviour
         CreateTracer(baseDir, distance);
     }
 
+    private Vector3 GetShotDirectionFromMuzzle(float spreadDegrees)
+    {
+        Transform muzzle = muzzlePoint != null ? muzzlePoint : transform;
+        Vector3 baseDirection;
+
+        if (shootByMuzzleForward)
+        {
+            baseDirection = muzzle.forward;
+        }
+        else
+        {
+            baseDirection = aimAssist != null ? aimAssist.GetAimDirection() : muzzle.forward;
+        }
+
+        float effectiveSpread = Mathf.Max(0f, spreadDegrees);
+        if (isAiming && aimAssist != null && effectiveSpread > 0.001f)
+        {
+            float lock01 = Mathf.Clamp01(aimAssist.GetLockAccuracy01());
+            float reduction = Mathf.Clamp01(lockOnSpreadReduction) * lock01;
+            effectiveSpread *= (1f - reduction);
+        }
+
+        if (effectiveSpread <= 0.001f)
+            return baseDirection.normalized;
+
+        return ApplyAngularSpread(baseDirection, effectiveSpread);
+    }
+
+    private Vector3 ApplyAngularSpread(Vector3 baseDirection, float spreadDegrees)
+    {
+        Transform muzzle = muzzlePoint != null ? muzzlePoint : transform;
+        float yaw = Random.Range(-spreadDegrees, spreadDegrees);
+        float pitch = Random.Range(-spreadDegrees, spreadDegrees);
+        Quaternion spreadRotation = Quaternion.AngleAxis(yaw, muzzle.up) * Quaternion.AngleAxis(pitch, muzzle.right);
+        return (spreadRotation * baseDirection).normalized;
+    }
+
     private void NotifyShotHeardByEnemies()
     {
         float loudness = currentWeaponType == InventoryItem.ItemType.Gun
@@ -888,6 +1049,18 @@ public class WeaponHandler : MonoBehaviour
 
         Vector3 origin = muzzlePoint != null ? muzzlePoint.position : transform.position;
         PlayerShotFired?.Invoke(origin, loudness);
+    }
+
+    private void TryDamageEnemytest(Collider hitCollider, float damageAmount)
+    {
+        if (hitCollider == null || damageAmount <= 0f)
+            return;
+
+        Enemytest testEnemy = hitCollider.GetComponentInParent<Enemytest>();
+        if (testEnemy == null)
+            return;
+
+        testEnemy.TakeWeaponDamage(damageAmount);
     }
 
     private void CreateTracer(Vector3 direction, float distance)

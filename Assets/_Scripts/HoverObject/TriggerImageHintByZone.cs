@@ -18,12 +18,17 @@ public class TriggerImageHintByZone : MonoBehaviour
 
     [Header("Enemy Condition")]
     [SerializeField] private string stunStateName = "Stun";
+    [SerializeField] private bool requireFrontAngleForHint = true;
+    [SerializeField, Range(1f, 179f)] private float finisherFrontMaxAngle = 85f;
 
     private Sequence clickSequence;
     private Vector3 baseScale;
     private bool hasBaseScale;
     private bool playerInside;
+    private Transform playerTransform;
     private bool isEnemyObject;
+    private AdvancedEnemyAI advancedEnemy;
+    private Enemytest enemyTest;
     private Animator enemyAnimator;
     private int stunStateHash;
 
@@ -41,12 +46,11 @@ public class TriggerImageHintByZone : MonoBehaviour
     {
         EnsureTriggerCollider();
 
-        var enemyAi = GetComponentInParent<AdvancedEnemyAI>();
-        isEnemyObject = enemyAi != null;
+        advancedEnemy = GetComponentInParent<AdvancedEnemyAI>();
+        enemyTest = GetComponentInParent<Enemytest>();
+        isEnemyObject = advancedEnemy != null || enemyTest != null;
         if (isEnemyObject)
-        {
             enemyAnimator = GetComponentInParent<Animator>();
-        }
 
         stunStateHash = Animator.StringToHash(stunStateName);
 
@@ -89,6 +93,7 @@ public class TriggerImageHintByZone : MonoBehaviour
         }
 
         playerInside = true;
+        playerTransform = other.transform;
 
         if (ShouldShowHint())
         {
@@ -104,6 +109,7 @@ public class TriggerImageHintByZone : MonoBehaviour
         }
 
         playerInside = false;
+        playerTransform = null;
         HideImage();
     }
 
@@ -119,6 +125,21 @@ public class TriggerImageHintByZone : MonoBehaviour
             return true;
         }
 
+        if (requireFrontAngleForHint && !IsPlayerInEnemyFront())
+        {
+            return false;
+        }
+
+        if (advancedEnemy != null)
+        {
+            return advancedEnemy.CanBeFinished();
+        }
+
+        if (enemyTest != null)
+        {
+            return enemyTest.CanBeFinished();
+        }
+
         if (enemyAnimator == null)
         {
             return false;
@@ -126,6 +147,31 @@ public class TriggerImageHintByZone : MonoBehaviour
 
         AnimatorStateInfo state = enemyAnimator.GetCurrentAnimatorStateInfo(0);
         return state.shortNameHash == stunStateHash || state.IsName($"Base Layer.{stunStateName}");
+    }
+
+    private bool IsPlayerInEnemyFront()
+    {
+        if (playerTransform == null)
+            return false;
+
+        Transform enemyRoot = null;
+        if (advancedEnemy != null)
+            enemyRoot = advancedEnemy.transform;
+        else if (enemyTest != null)
+            enemyRoot = enemyTest.transform;
+        else if (enemyAnimator != null)
+            enemyRoot = enemyAnimator.transform;
+
+        if (enemyRoot == null)
+            return false;
+
+        Vector3 toPlayer = playerTransform.position - enemyRoot.position;
+        toPlayer.y = 0f;
+        if (toPlayer.sqrMagnitude < 0.0001f)
+            return true;
+
+        float angle = Vector3.Angle(enemyRoot.forward, toPlayer.normalized);
+        return angle <= Mathf.Clamp(finisherFrontMaxAngle, 1f, 179f);
     }
 
     private void ShowImage()

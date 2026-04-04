@@ -369,14 +369,14 @@ GameObject:
   - component: {fileID: 5848680216247009145}
   - component: {fileID: 7694135491242773444}
   - component: {fileID: 5554049605435418204}
-  - component: {fileID: 6201022418951805543}
+  - component: {fileID: 7587713576651763202}
   m_Layer: 15
   m_Name: AmmoPistol
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &6592982426157864327
 Transform:
   m_ObjectHideFlags: 0
@@ -466,7 +466,7 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &6201022418951805543
+--- !u!114 &7587713576651763202
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -475,15 +475,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 2158839306415419089}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 57fc06447d06fac458ebaa6f3cdc09a5, type: 3}
+  m_Script: {fileID: 11500000, guid: ebd568e571bbfb24d826fc6ddb659404, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   interactKey: 101
-  startNode: medkit_pickup
-  medkitItem: {fileID: 0}
-  medkitProfile: {fileID: 0}
-  destroyObjectAfterPickup: 1
-  pickupEffect: {fileID: 0}
+  startNode: ammoPistol
+  triggerYarnOnPickup: 1
   interactionHint: {fileID: 0}
   hintScaleMultiplier: 1.1
   hintDuration: 0.55
@@ -491,6 +488,11 @@ MonoBehaviour:
   hintWorldOffset: {x: 0, y: 1.5, z: 0}
   hintMagnetSpeed: 12
   faceMainCamera: 0
+  ammoType: 7
+  amount: 14
+  pickupEffect: {fileID: 0}
+  addAmmoItemToInventory: 1
+  ammoInventoryItem: {fileID: 11400000, guid: e3597df95d44d6f46a6ac46fe1e4cbab, type: 2}
 --- !u!1 &2522322819015836676
 GameObject:
   m_ObjectHideFlags: 0
@@ -1609,7 +1611,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &7879384113140209140
 Transform:
   m_ObjectHideFlags: 0
@@ -3698,7 +3700,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 8.78, y: 5.92, z: 4.908103}
+  m_Size: {x: 5, y: 5.92, z: 4.908103}
   m_Center: {x: 0.1867287, y: 2.350721, z: 3.0000768}
 --- !u!65 &8168992121716234886
 BoxCollider:

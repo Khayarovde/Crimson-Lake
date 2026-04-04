@@ -213,7 +213,7 @@ public class MedkitPickup : MonoBehaviour
 
         cachedRunner.AddCommandHandler("pickup_current_medkit", PickupCurrentMedkitCommand);
         pickupCommandRegistered = true;
-        Debug.Log("[MedkitPickup] Yarn-команда 'pickup_current_medkit' зарегистрирована");
+        // Debug.Log("[MedkitPickup] Yarn-команда 'pickup_current_medkit' зарегистрирована");
     }
 
     private static DialogueRunner GetDialogueRunner()

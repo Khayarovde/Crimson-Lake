@@ -37,7 +37,7 @@ public class InventoryData : ScriptableObject
             if (items[i] == null || items[i].type == InventoryItem.ItemType.Empty)
             {
                 items[i] = item;
-                Debug.Log($"Added item: {item.itemName}, Slot: {i}");
+                // Debug.Log($"Added item: {item.itemName}, Slot: {i}");
                 return true;
             }
         }

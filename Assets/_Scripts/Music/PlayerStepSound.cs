@@ -31,21 +31,56 @@ public class PlayerStepSound : MonoBehaviour
     public float moveSpeedThreshold = 0.05f;
     public bool useInputFallback = true;
     public float inputThreshold = 0.1f;
+    [Tooltip("Выводить в консоль факт вызова Step_sound_play и причины блокировки")]
+    public bool logStepEvents = false;
     private Coroutine fadeRoutine;
+    private Vector3 lastPosition;
+    private float estimatedPlanarSpeed;
 
 
     private void Start()
     {
         audioSource = GetComponent<AudioSource>();
+        if (audioSource == null)
+            audioSource = GetComponentInChildren<AudioSource>();
+
         rb = GetComponent<Rigidbody>();
+        if (rb == null)
+            rb = GetComponentInParent<Rigidbody>();
+
+        lastPosition = transform.position;
+
+        if (audioSource == null)
+            Debug.LogWarning("PlayerStepSound: AudioSource не найден на объекте/детях.", this);
+
+        if (rb == null && requireMovement)
+            Debug.LogWarning("PlayerStepSound: Rigidbody не найден на объекте/родителях. Будет использоваться оценка движения по смещению Transform и Input fallback.", this);
+
         // Step_sound_play(); // Временный вызов для теста: звук проиграется при запуске сцены
+    }
+
+    private void Update()
+    {
+        Vector3 currentPos = transform.position;
+        Vector3 delta = currentPos - lastPosition;
+        delta.y = 0f;
+
+        float dt = Mathf.Max(Time.deltaTime, 0.0001f);
+        estimatedPlanarSpeed = delta.magnitude / dt;
+        lastPosition = currentPos;
     }
 
     public void Step_sound_play()
     {
+        if (logStepEvents)
+            Debug.Log("PlayerStepSound: Step_sound_play вызван", this);
 
         if (requireMovement && !IsMoving())
+        {
+            if (logStepEvents)
+                Debug.Log("PlayerStepSound: шаг заблокирован, персонаж считается неподвижным", this);
             return;
+        }
 
         SurfaceStepSounds surfaceSettings;
         AudioClip[] clipsToPlay = GetSurfaceClips(out surfaceSettings);
@@ -75,11 +110,18 @@ public class PlayerStepSound : MonoBehaviour
     {
         if (rb != null)
         {
+#if UNITY_6000_0_OR_NEWER
             Vector3 v = rb.linearVelocity;
+#else
+            Vector3 v = rb.velocity;
+#endif
             v.y = 0f;
             if (v.sqrMagnitude > moveSpeedThreshold * moveSpeedThreshold)
                 return true;
         }
+
+        if (estimatedPlanarSpeed > moveSpeedThreshold)
+            return true;
 
         if (useInputFallback)
         {

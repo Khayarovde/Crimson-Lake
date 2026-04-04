@@ -11,7 +11,11 @@ public class TankController : MonoBehaviour
     [SerializeField] private RuntimeAnimatorController animatorController;
     [SerializeField] private float animationTransition = 0.18f;
     [SerializeField] private float blendParameterDampTime = 0.12f;
+    [SerializeField, Tooltip("Множитель сглаживания blend-параметров в режиме прицеливания. Меньше = быстрее отклик")]
+    private float aimBlendDampMultiplier = 0.45f;
     [SerializeField] private float animationVelocitySmoothing = 14f;
+    [SerializeField, Tooltip("Выводить в консоль переключения состояний аниматора и смену режима прицеливания")]
+    private bool enableAnimationDebugLogs = false;
     [SerializeField] private string blendTreeWalkState = "Blend Tree_WALK"; // Blend Tree для движения
     [SerializeField] private string blendTreeAimWalkState = "Blend Tree_AIM_WALK";
     [SerializeField] private string blendTreeXParam = "v";
@@ -31,6 +35,7 @@ public class TankController : MonoBehaviour
     [SerializeField] private string hitAnimation = "Hit";
     [SerializeField] private string gameoverAnimation = "gameover_player";
     public float moveSpeed = 2.6f; // Forward-backward speed
+    [SerializeField] private float runMoveSpeed = 4.2f;
     [SerializeField] private float aimMoveSpeed = 1.25f;
     [Header("Movement Feel")]
     [SerializeField] private float acceleration = 8.5f;
@@ -51,6 +56,18 @@ public class TankController : MonoBehaviour
     [Header("Aim Feel")]
     [SerializeField] private float aimRotationSmoothTime = 0.07f;
     [SerializeField] private bool strictCursorAimRotation = true;
+    [SerializeField, Tooltip("Плавный доворот к курсору в Update для минимизации визуального лага")]
+    private bool updateDrivenAimRotation = false;
+    [SerializeField, Tooltip("Макс. скорость доворота к курсору в режиме прицеливания (град/с)")]
+    private float updateAimTurnSpeed = 1440f;
+    [SerializeField, Tooltip("Угол, при котором доворот защелкивается точно в курсор")]
+    private float aimSnapAngle = 0.35f;
+    [SerializeField, Tooltip("При расчёте поворота брать курсор с горизонтальной плоскости, чтобы убрать увод от коллизий")]
+    private bool preferCursorPlaneForRotation = true;
+    [SerializeField, Tooltip("Смещение высоты плоскости поворота относительно игрока")]
+    private float rotationCursorPlaneHeightOffset = 0f;
+    [SerializeField, Tooltip("Калибровка постоянного смещения прицела влево/вправо (градусы)")]
+    private float aimYawOffsetDegrees = 0f;
     [SerializeField] private float minTurnSpeed = 240f;
     [SerializeField] private float minAimTurnSpeed = 720f;
     [SerializeField] private float cursorAimMaxDistance = 300f;
@@ -82,6 +99,7 @@ public class TankController : MonoBehaviour
     private Camera cachedMainCamera;
     private Quaternion targetRotation;
     private bool hasRotationTarget;
+    private bool isRunning;
 
     public float CurrentPlanarSpeed => new Vector2(currentPlanarVelocity.x, currentPlanarVelocity.z).magnitude;
     public bool IsAnimationLocked => animationLockActive;
@@ -139,6 +157,8 @@ public class TankController : MonoBehaviour
 
         bool hasActiveWeapon = HasActiveWeaponSelected();
         isAiming = hasActiveWeapon && Input.GetMouseButton(1);
+        if (enableAnimationDebugLogs && isAiming != wasAiming)
+            Debug.Log($"TankController: Aim mode -> {(isAiming ? "ON" : "OFF")}", this);
         UpdateAnimationPlanarVelocity();
         ProcessMovement();
         bool isMoving = IsCharacterMoving();
@@ -156,7 +176,23 @@ public class TankController : MonoBehaviour
             UpdateRotationTargetByMovement(new Vector2(currentPlanarVelocity.x, currentPlanarVelocity.z));
         }
 
+        ApplyUpdateAimRotation();
+
         wasAiming = isAiming;
+    }
+
+    private void ApplyUpdateAimRotation()
+    {
+        if (!updateDrivenAimRotation || !isAiming || !strictCursorAimRotation || rb == null || !hasRotationTarget)
+            return;
+
+        float step = Mathf.Max(180f, updateAimTurnSpeed) * Time.deltaTime;
+        Quaternion nextRotation = Quaternion.RotateTowards(rb.rotation, targetRotation, step);
+
+        if (Quaternion.Angle(nextRotation, targetRotation) <= Mathf.Max(0.01f, aimSnapAngle))
+            nextRotation = targetRotation;
+
+        rb.rotation = nextRotation;
     }
 
     public void SetMouseRotationEnabled(bool isEnabled)
@@ -212,6 +248,9 @@ public class TankController : MonoBehaviour
         Vector2 movementInputWorld2D = new Vector2(desiredMoveDirectionWorld.x, desiredMoveDirectionWorld.z);
 
         bool hasMoveInput = Mathf.Abs(inputHorizontal) > 0.1f || Mathf.Abs(inputVertical) > 0.1f;
+        bool sprintHeld = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
+        bool rightMousePressed = Input.GetMouseButton(1);
+        isRunning = hasMoveInput && sprintHeld && !rightMousePressed;
 
         if (hasMoveInput)
         {
@@ -237,9 +276,17 @@ public class TankController : MonoBehaviour
 
         wasMoveInput = hasMoveInput;
 
-        Vector2 movementForAnimation = isAiming
-            ? GetAimRelativeInput(movementInputWorld2D)
-            : animationPlanarVelocity;
+        Vector2 movementForAnimation;
+        if (isAiming)
+        {
+            movementForAnimation = GetAimRelativeInput(movementInputWorld2D);
+        }
+        else
+        {
+            // При старте движения сразу после отпускания ПКМ скорость Rigidbody еще может быть почти нулевой.
+            // Используем raw input, чтобы не проваливаться в Idle на 1-2 кадра.
+            movementForAnimation = hasMoveInput ? movementInputWorld2D : animationPlanarVelocity;
+        }
 
         CheckAnimation(movementForAnimation, isAiming);
     }
@@ -252,7 +299,7 @@ public class TankController : MonoBehaviour
 
         Vector3 movement = input;
 
-        float targetSpeed = isAiming ? aimMoveSpeed : moveSpeed;
+        float targetSpeed = isAiming ? aimMoveSpeed : (isRunning ? runMoveSpeed : moveSpeed);
         Vector3 targetVelocity = movement * targetSpeed;
 
         bool hasMovementInput = input.sqrMagnitude > 0.001f;
@@ -335,24 +382,36 @@ public class TankController : MonoBehaviour
 
         Ray mouseRay = cameraMain.ScreenPointToRay(Input.mousePosition);
         Vector3 targetPoint;
-        int mask = cursorAimMask.value & ~(1 << gameObject.layer);
-        bool hasHit = Physics.Raycast(
-            mouseRay,
-            out RaycastHit hit,
-            Mathf.Max(1f, cursorAimMaxDistance),
-            mask,
-            QueryTriggerInteraction.Ignore
-        );
 
-        if (hasHit)
+        if (preferCursorPlaneForRotation)
         {
-            targetPoint = hit.point;
+            Plane aimPlane = new Plane(Vector3.up, new Vector3(0f, transform.position.y + rotationCursorPlaneHeightOffset, 0f));
+            if (!aimPlane.Raycast(mouseRay, out float hitDistance))
+                return;
+
+            targetPoint = mouseRay.GetPoint(hitDistance);
         }
         else
         {
-            Plane groundPlane = new Plane(Vector3.up, new Vector3(0f, transform.position.y, 0f));
-            if (!groundPlane.Raycast(mouseRay, out float hitDistance)) return;
-            targetPoint = mouseRay.GetPoint(hitDistance);
+            int mask = cursorAimMask.value & ~(1 << gameObject.layer);
+            bool hasHit = Physics.Raycast(
+                mouseRay,
+                out RaycastHit hit,
+                Mathf.Max(1f, cursorAimMaxDistance),
+                mask,
+                QueryTriggerInteraction.Ignore
+            );
+
+            if (hasHit)
+            {
+                targetPoint = hit.point;
+            }
+            else
+            {
+                Plane groundPlane = new Plane(Vector3.up, new Vector3(0f, transform.position.y + rotationCursorPlaneHeightOffset, 0f));
+                if (!groundPlane.Raycast(mouseRay, out float hitDistance)) return;
+                targetPoint = mouseRay.GetPoint(hitDistance);
+            }
         }
 
         Vector3 direction = targetPoint - transform.position;
@@ -362,6 +421,7 @@ public class TankController : MonoBehaviour
         aimForward = direction.normalized;
 
         float targetAngle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg;
+        targetAngle += aimYawOffsetDegrees;
         targetRotation = Quaternion.Euler(0f, targetAngle, 0f);
         hasRotationTarget = true;
     }
@@ -374,7 +434,12 @@ public class TankController : MonoBehaviour
         if (isAiming && strictCursorAimRotation)
         {
             rotationVelocity = 0f;
-            rb.MoveRotation(targetRotation);
+            float turnSpeed = Mathf.Max(1f, minAimTurnSpeed);
+            float step = turnSpeed * Time.fixedDeltaTime;
+            Quaternion next = Quaternion.RotateTowards(rb.rotation, targetRotation, step);
+            if (Quaternion.Angle(next, targetRotation) <= Mathf.Max(0.01f, aimSnapAngle))
+                next = targetRotation;
+            rb.MoveRotation(next);
             return;
         }
 
@@ -422,7 +487,7 @@ public class TankController : MonoBehaviour
 
         if (isAimMode)
         {
-            ChangeAnimation(baseIdleAnimation);
+            ChangeMovementAnimation(true);
             SetBlendVelocity(Vector2.zero);
         }
         else
@@ -507,8 +572,12 @@ public class TankController : MonoBehaviour
     {
         if (animator == null) return;
         float dampDeltaTime = Time.deltaTime;
-        animator.SetFloat(blendTreeXParam, direction.x, Mathf.Max(0f, blendParameterDampTime), dampDeltaTime);
-        animator.SetFloat(blendTreeYParam, direction.y, Mathf.Max(0f, blendParameterDampTime), dampDeltaTime);
+        float dampTime = Mathf.Max(0f, blendParameterDampTime);
+        if (isAiming)
+            dampTime *= Mathf.Clamp(aimBlendDampMultiplier, 0.05f, 2f);
+
+        animator.SetFloat(blendTreeXParam, direction.x, dampTime, dampDeltaTime);
+        animator.SetFloat(blendTreeYParam, direction.y, dampTime, dampDeltaTime);
     }
 
     private void ChangeMovementAnimation(bool isAimMode)
@@ -639,6 +708,8 @@ public class TankController : MonoBehaviour
         if (!HasState(stateName)) return false;
 
         animator.CrossFadeInFixedTime(stateName, animationTransition, 0);
+        if (enableAnimationDebugLogs)
+            Debug.Log($"TankController: Animation {currentState} -> {stateName}", this);
         currentState = stateName;
         return true;
     }
