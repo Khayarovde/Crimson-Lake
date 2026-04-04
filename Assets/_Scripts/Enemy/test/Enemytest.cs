@@ -1367,6 +1367,11 @@ public class Enemytest : MonoBehaviour
         return !isPermanentlyDead && state == EnemyState.Stagger && isKnockoutStunActive;
     }
 
+    public bool IsInDeathStateOrDead()
+    {
+        return isPermanentlyDead || state == EnemyState.FakeDeath;
+    }
+
     public void KillDuringStun()
     {
         if (!CanBeFinished() || isFinisherExecutionLocked)

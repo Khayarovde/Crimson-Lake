@@ -7,6 +7,8 @@ using System.Collections.Generic;
 
 public class PauseMenu : MonoBehaviour
 {
+    public static PauseMenu Instance { get; private set; }
+
     [Header("Панели")]
     [SerializeField] private GameObject pausePanel;
     [SerializeField] private GameObject settingsPanel;
@@ -29,17 +31,24 @@ public class PauseMenu : MonoBehaviour
     [Header("Pause Music Effect")]
     [SerializeField] private float pauseLowPassCutoff = 800f;
     [SerializeField] private float pauseLowPassFadeTime = 0.15f;
+    [SerializeField, Range(0f, 1f)] private float pauseMusicVolumeMultiplier = 0.45f;
 
     private readonly List<AudioLowPassFilter> pauseMusicFilters = new List<AudioLowPassFilter>();
     private readonly Dictionary<AudioLowPassFilter, Coroutine> filterFades = new Dictionary<AudioLowPassFilter, Coroutine>();
 
     private bool isPaused = false;
 
+    public static float CurrentMusicAttenuation =>
+        Instance != null && Instance.isPaused ? Mathf.Clamp01(Instance.pauseMusicVolumeMultiplier) : 1f;
+
     private const string MusicVolKey = "MusicVol";
     private const string SFXVolKey   = "SFXVol";
 
     private void Start()
     {
+        if (Instance == null)
+            Instance = this;
+
         if (pausePanel != null) pausePanel.SetActive(false);
         if (settingsPanel != null) settingsPanel.SetActive(false);
         if (exitWithoutSaveConfirmPanel != null) exitWithoutSaveConfirmPanel.SetActive(false);
@@ -54,6 +63,12 @@ public class PauseMenu : MonoBehaviour
 
         // Debug.Log($"[PauseMenu] Музыка: {musicSources.Length} источников + {musicClips.Length} клипов | " +
         //           $"SFX: {sfxSources.Length} источников + {sfxClips.Length} клипов");
+    }
+
+    private void OnDestroy()
+    {
+        if (Instance == this)
+            Instance = null;
     }
 
     private void Update()

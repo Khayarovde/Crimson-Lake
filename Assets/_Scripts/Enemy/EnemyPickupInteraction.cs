@@ -379,10 +379,13 @@ public class EnemyPickupInteraction : MonoBehaviour
     private bool IsTrackedEnemyDead()
     {
         if (enemyAI != null)
-            return !enemyAI.gameObject.activeInHierarchy;
+            return !enemyAI.gameObject.activeInHierarchy
+                   || enemyAI.IsDead
+                   || enemyAI.CurrentState == AdvancedEnemyAI.EnemyState.Dead;
 
         if (enemyTest != null)
-            return !enemyTest.gameObject.activeInHierarchy;
+            return !enemyTest.gameObject.activeInHierarchy
+                   || enemyTest.IsInDeathStateOrDead();
 
         return false;
     }
@@ -470,7 +473,11 @@ public class EnemyPickupInteraction : MonoBehaviour
             ? SettingsManager.Instance.GetMusicVolume()
             : PlayerPrefs.GetFloat("MusicVol", 0.8f);
 
-        chaseAudioSource.volume = Mathf.Clamp01(chaseLocalVolume) * Mathf.Clamp01(globalMusicVol);
+        float pauseAttenuation = PauseMenu.CurrentMusicAttenuation;
+
+        chaseAudioSource.volume = Mathf.Clamp01(chaseLocalVolume)
+                                * Mathf.Clamp01(globalMusicVol)
+                                * Mathf.Clamp01(pauseAttenuation);
     }
 
     private void HandleMusicVolumeChanged(float newVolume)

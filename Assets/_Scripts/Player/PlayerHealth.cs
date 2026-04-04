@@ -64,15 +64,6 @@ public class PlayerHealth : MonoBehaviour
 
         int enemyHitDamage = Mathf.CeilToInt((float)maxHealth / Mathf.Max(1, hitsToDie));
         ApplyDamage(enemyHitDamage, source);
-
-        if (!isDead)
-        {
-            var tankController = GetComponent<TankController>();
-            if (tankController != null)
-                tankController.PlayHit();
-
-            StartOverlayRoutine(FlashColor(new Color(1f, 0f, 0f, 1f), firstHitRedAlpha, firstHitFlashDuration));
-        }
     }
 
     public void ApplyDamage(int amount, AdvancedEnemyAI source = null)
@@ -84,7 +75,16 @@ public class PlayerHealth : MonoBehaviour
         Debug.Log($"[PlayerHealth] HP: {currentHealth}/{maxHealth}");
 
         if (currentHealth <= 0)
+        {
             Die(source);
+            return;
+        }
+
+        var tankController = GetComponent<TankController>();
+        if (tankController != null)
+            tankController.PlayHit();
+
+        StartOverlayRoutine(FlashColor(new Color(1f, 0f, 0f, 1f), firstHitRedAlpha, firstHitFlashDuration));
     }
 
     public void Heal(int amount)

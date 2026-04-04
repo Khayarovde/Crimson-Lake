@@ -87,6 +87,13 @@ public class VideoTrigger : MonoBehaviour
 
     void Update()
     {
+        // Скип катсцены по пробелу
+        if (isVideoActive && Input.GetKeyDown(KeyCode.Space))
+        {
+            SkipCutscene();
+            return;
+        }
+
         // Блокировка Tab во время видео
         if (isVideoActive && Input.GetKeyDown(KeyCode.Tab))
         {
@@ -221,6 +228,18 @@ public class VideoTrigger : MonoBehaviour
         Cursor.visible = initialCursorVisible;
 
         Debug.Log("Управление полностью восстановлено (движение, мышь, Tab)");
+    }
+
+    private void SkipCutscene()
+    {
+        if (!isVideoActive)
+            return;
+
+        TeleportPlayer();
+        teleported = true;
+
+        FullyRestoreControl();
+        HideEverything();
     }
 
     private void OnVideoEnd(VideoPlayer vp)

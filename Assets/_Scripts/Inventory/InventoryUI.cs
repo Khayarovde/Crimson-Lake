@@ -50,8 +50,6 @@ public class InventoryUI : MonoBehaviour
     [Tooltip("Клип для HP > 50 (обычно 100 HP)")]
     public VideoClip hp100Clip;
 
-    [SerializeField, Min(1)] private int lowHpThreshold = 25;
-    [SerializeField, Min(1)] private int midHpThreshold = 50;
     [SerializeField] private bool loopHpVideo = true;
 
     [Header("Позиции кнопок в слотах")]
@@ -563,24 +561,36 @@ public class InventoryUI : MonoBehaviour
         HpVideoState targetState;
         VideoClip targetClip;
 
-        if (hp <= Mathf.Max(1, lowHpThreshold))
+        // Фиксированные диапазоны: 100..51, 50..26, 25..0.
+        if (hp >= 51)
         {
-            targetState = HpVideoState.Hp25;
-            targetClip = hp25Clip;
+            targetState = HpVideoState.Hp100;
+            targetClip = hp100Clip;
         }
-        else if (hp <= Mathf.Max(lowHpThreshold + 1, midHpThreshold))
+        else if (hp >= 26)
         {
             targetState = HpVideoState.Hp50;
             targetClip = hp50Clip;
         }
         else
         {
-            targetState = HpVideoState.Hp100;
-            targetClip = hp100Clip;
+            targetState = HpVideoState.Hp25;
+            targetClip = hp25Clip;
         }
 
         if (!force && targetState == currentHpVideoState)
+        {
+            // Состояние не изменилось, но если плеер по какой-то причине не играет,
+            // пробуем восстановить воспроизведение текущего клипа.
+            if (hpVideoPlayer.clip == targetClip && targetClip != null && !hpVideoPlayer.isPlaying)
+            {
+                if (hpVideoPlayer.isPrepared)
+                    hpVideoPlayer.Play();
+                else
+                    hpVideoPlayer.Prepare();
+            }
             return;
+        }
 
         currentHpVideoState = targetState;
 
@@ -756,6 +766,7 @@ public class InventoryUI : MonoBehaviour
             {
                 playerInventory.AutoSelectActiveItem();
                 UpdateInventoryUI();
+                UpdateHpVideoByCurrentHealth(force: true);
                 // Cursor.lockState = CursorLockMode.None;
                 // Cursor.visible = true;
             }
@@ -840,6 +851,7 @@ public class InventoryUI : MonoBehaviour
         {
             inventoryCanvas.SetActive(true);
             UpdateInventoryUI();
+            UpdateHpVideoByCurrentHealth(force: true);
         }
         wasInventoryOpenBeforeChest = false;
     }
@@ -862,6 +874,7 @@ public class InventoryUI : MonoBehaviour
         {
             inventoryCanvas.SetActive(true);
             UpdateInventoryUI();
+            UpdateHpVideoByCurrentHealth(force: true);
         }
         else
         {
