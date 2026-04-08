@@ -369,14 +369,13 @@ GameObject:
   - component: {fileID: 5848680216247009145}
   - component: {fileID: 7694135491242773444}
   - component: {fileID: 5554049605435418204}
-  - component: {fileID: 7587713576651763202}
   m_Layer: 15
   m_Name: AmmoPistol
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &6592982426157864327
 Transform:
   m_ObjectHideFlags: 0
@@ -466,33 +465,6 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &7587713576651763202
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2158839306415419089}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ebd568e571bbfb24d826fc6ddb659404, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  interactKey: 101
-  startNode: ammoPistol
-  triggerYarnOnPickup: 1
-  interactionHint: {fileID: 0}
-  hintScaleMultiplier: 1.1
-  hintDuration: 0.55
-  hintMagnetToPickup: 1
-  hintWorldOffset: {x: 0, y: 1.5, z: 0}
-  hintMagnetSpeed: 12
-  faceMainCamera: 0
-  ammoType: 7
-  amount: 14
-  pickupEffect: {fileID: 0}
-  addAmmoItemToInventory: 1
-  ammoInventoryItem: {fileID: 11400000, guid: e3597df95d44d6f46a6ac46fe1e4cbab, type: 2}
 --- !u!1 &2522322819015836676
 GameObject:
   m_ObjectHideFlags: 0
@@ -1604,14 +1576,13 @@ GameObject:
   - component: {fileID: 1784405003566656064}
   - component: {fileID: 2407192796300286836}
   - component: {fileID: 3084078335890272475}
-  - component: {fileID: 7473303381663233645}
   m_Layer: 15
   m_Name: AmmoShotgun
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &7879384113140209140
 Transform:
   m_ObjectHideFlags: 0
@@ -1701,33 +1672,6 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &7473303381663233645
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5697032770113155109}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ebd568e571bbfb24d826fc6ddb659404, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  interactKey: 101
-  startNode: ammoShotgun
-  triggerYarnOnPickup: 1
-  interactionHint: {fileID: 0}
-  hintScaleMultiplier: 1.1
-  hintDuration: 0.55
-  hintMagnetToPickup: 1
-  hintWorldOffset: {x: 0, y: 1.5, z: 0}
-  hintMagnetSpeed: 12
-  faceMainCamera: 0
-  ammoType: 7
-  amount: 14
-  pickupEffect: {fileID: 0}
-  addAmmoItemToInventory: 1
-  ammoInventoryItem: {fileID: 11400000, guid: 1e5bd7e6c14684e4796a5b18e96d0e36, type: 2}
 --- !u!1 &5785246448340599758
 GameObject:
   m_ObjectHideFlags: 0
