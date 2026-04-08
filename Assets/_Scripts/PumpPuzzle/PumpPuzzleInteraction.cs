@@ -1,5 +1,4 @@
 using UnityEngine;
-using System.Reflection;
 
 [RequireComponent(typeof(Collider))]
 public class PumpPuzzleInteraction : MonoBehaviour
@@ -20,21 +19,27 @@ public class PumpPuzzleInteraction : MonoBehaviour
     [SerializeField] private bool autoCloseOnSolved = true;
     [SerializeField] private float autoCloseDelay = 1.25f;
 
-    [Header("Camera (Cinemachine)")]
-    [SerializeField] private MonoBehaviour gameplayCamera;
-    [SerializeField] private MonoBehaviour puzzleCamera;
-    [SerializeField] private int gameplayPriority = 10;
-    [SerializeField] private int puzzlePriority = 30;
+    [Header("Lighting")]
+    [SerializeField] private GameObject[] lightsToEnableOnSolved;
+    [SerializeField] private bool forceLightsOffOnStart = true;
 
     [Header("Input Lock")]
     [SerializeField] private bool unlockCursorWhileOpen = true;
-    [SerializeField] private MonoBehaviour[] disableWhileOpen;
+    [SerializeField] private bool autoFindPlayerControllers = true;
+    [SerializeField] private TankController movementController;
+    [SerializeField] private PlayerInventory inventoryController;
+    [SerializeField] private WeaponHandler weaponController;
+    [SerializeField] private Behaviour[] disableWhileOpen;
 
     private bool playerInRange;
     private bool isOpened;
     private bool solvedCloseTriggered;
     private bool previousCursorVisible;
     private CursorLockMode previousCursorLockMode;
+    private bool[] disabledByInteraction;
+    private bool movementWasEnabled;
+    private bool inventoryWasEnabled;
+    private bool weaponWasEnabled;
 
     private void Reset()
     {
@@ -56,13 +61,22 @@ public class PumpPuzzleInteraction : MonoBehaviour
             }
         }
 
+        if (autoFindPlayerControllers)
+        {
+            TryAutoAssignPlayerControllers();
+        }
+
         if (puzzleCanvasRoot != null)
         {
             puzzleCanvasRoot.SetActive(false);
         }
 
+        if (forceLightsOffOnStart)
+        {
+            SetSolvedLightsActive(false);
+        }
+
         SetHintVisible(false);
-        ApplyCameraState(false);
     }
 
     private void Update()
@@ -127,6 +141,7 @@ public class PumpPuzzleInteraction : MonoBehaviour
             return;
         }
 
+        SetSolvedLightsActive(true);
         solvedCloseTriggered = true;
         Invoke(nameof(ClosePuzzle), Mathf.Max(0f, autoCloseDelay));
     }
@@ -152,7 +167,6 @@ public class PumpPuzzleInteraction : MonoBehaviour
         }
 
         ApplyInputLock(true);
-        ApplyCameraState(true);
         SetHintVisible(false);
     }
 
@@ -168,7 +182,6 @@ public class PumpPuzzleInteraction : MonoBehaviour
         CancelInvoke(nameof(ClosePuzzle));
 
         ApplyInputLock(false);
-        ApplyCameraState(false);
 
         if (puzzleController != null && resetPuzzleOnClose)
         {
@@ -186,30 +199,19 @@ public class PumpPuzzleInteraction : MonoBehaviour
         }
     }
 
-    private void ApplyCameraState(bool puzzleActive)
+    private void SetSolvedLightsActive(bool isActive)
     {
-        SetCameraPriority(gameplayCamera, puzzleActive ? gameplayPriority : puzzlePriority);
-        SetCameraPriority(puzzleCamera, puzzleActive ? puzzlePriority : gameplayPriority);
-    }
-
-    private static void SetCameraPriority(MonoBehaviour cameraBehaviour, int value)
-    {
-        if (cameraBehaviour == null)
+        if (lightsToEnableOnSolved == null)
         {
             return;
         }
 
-        PropertyInfo priorityProperty = cameraBehaviour.GetType().GetProperty("Priority");
-        if (priorityProperty != null && priorityProperty.CanWrite)
+        for (int i = 0; i < lightsToEnableOnSolved.Length; i++)
         {
-            priorityProperty.SetValue(cameraBehaviour, value);
-            return;
-        }
-
-        FieldInfo priorityField = cameraBehaviour.GetType().GetField("m_Priority", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-        if (priorityField != null)
-        {
-            priorityField.SetValue(cameraBehaviour, value);
+            if (lightsToEnableOnSolved[i] != null)
+            {
+                lightsToEnableOnSolved[i].SetActive(isActive);
+            }
         }
     }
 
@@ -226,13 +228,42 @@ public class PumpPuzzleInteraction : MonoBehaviour
                 Cursor.lockState = CursorLockMode.None;
             }
 
+            if (movementController != null)
+            {
+                movementWasEnabled = movementController.enabled;
+                movementController.enabled = false;
+            }
+
+            if (inventoryController != null)
+            {
+                inventoryWasEnabled = inventoryController.enabled;
+                inventoryController.enabled = false;
+            }
+
+            if (weaponController != null)
+            {
+                weaponWasEnabled = weaponController.enabled;
+                weaponController.enabled = false;
+            }
+
             if (disableWhileOpen != null)
             {
+                if (disabledByInteraction == null || disabledByInteraction.Length != disableWhileOpen.Length)
+                {
+                    disabledByInteraction = new bool[disableWhileOpen.Length];
+                }
+
                 for (int i = 0; i < disableWhileOpen.Length; i++)
                 {
-                    if (disableWhileOpen[i] != null)
+                    Behaviour behaviour = disableWhileOpen[i];
+                    if (behaviour != null && behaviour.enabled)
                     {
-                        disableWhileOpen[i].enabled = false;
+                        behaviour.enabled = false;
+                        disabledByInteraction[i] = true;
+                    }
+                    else if (disabledByInteraction != null)
+                    {
+                        disabledByInteraction[i] = false;
                     }
                 }
             }
@@ -244,11 +275,32 @@ public class PumpPuzzleInteraction : MonoBehaviour
         {
             for (int i = 0; i < disableWhileOpen.Length; i++)
             {
-                if (disableWhileOpen[i] != null)
+                Behaviour behaviour = disableWhileOpen[i];
+                bool shouldRestore = disabledByInteraction != null && i < disabledByInteraction.Length && disabledByInteraction[i];
+                if (behaviour != null && shouldRestore)
                 {
-                    disableWhileOpen[i].enabled = true;
+                    behaviour.enabled = true;
+                    disabledByInteraction[i] = false;
                 }
             }
+        }
+
+        if (movementController != null && movementWasEnabled)
+        {
+            movementController.enabled = true;
+            movementWasEnabled = false;
+        }
+
+        if (inventoryController != null && inventoryWasEnabled)
+        {
+            inventoryController.enabled = true;
+            inventoryWasEnabled = false;
+        }
+
+        if (weaponController != null && weaponWasEnabled)
+        {
+            weaponController.enabled = true;
+            weaponWasEnabled = false;
         }
 
         if (unlockCursorWhileOpen)
@@ -256,6 +308,61 @@ public class PumpPuzzleInteraction : MonoBehaviour
             Cursor.visible = previousCursorVisible;
             Cursor.lockState = previousCursorLockMode;
         }
+    }
+
+    private void TryAutoAssignPlayerControllers()
+    {
+        Transform playerTransform = player;
+        if (playerTransform == null)
+        {
+            GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
+            if (playerObj != null)
+            {
+                playerTransform = playerObj.transform;
+            }
+        }
+
+        if (playerTransform == null)
+        {
+            return;
+        }
+
+        if (movementController == null)
+        {
+            movementController = FindOnPlayer<TankController>(playerTransform);
+        }
+
+        if (inventoryController == null)
+        {
+            inventoryController = FindOnPlayer<PlayerInventory>(playerTransform);
+        }
+
+        if (weaponController == null)
+        {
+            weaponController = FindOnPlayer<WeaponHandler>(playerTransform);
+        }
+    }
+
+    private static T FindOnPlayer<T>(Transform playerTransform) where T : Component
+    {
+        if (playerTransform == null)
+        {
+            return null;
+        }
+
+        T component = playerTransform.GetComponent<T>();
+        if (component != null)
+        {
+            return component;
+        }
+
+        component = playerTransform.GetComponentInParent<T>();
+        if (component != null)
+        {
+            return component;
+        }
+
+        return playerTransform.GetComponentInChildren<T>(true);
     }
 
     private void SetHintVisible(bool isVisible)

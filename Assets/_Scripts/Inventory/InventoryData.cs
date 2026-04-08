@@ -130,6 +130,36 @@ public class InventoryData : ScriptableObject
         return new List<InventoryItem>(items);
     }
 
+    public InventoryItem GetItemAt(int index)
+    {
+        EnsureInitialized();
+
+        if (index < 0 || index >= items.Count)
+            return null;
+
+        return items[index];
+    }
+
+    public void SetItemAt(int index, InventoryItem item)
+    {
+        EnsureInitialized();
+
+        if (index < 0 || index >= items.Count)
+            return;
+
+        items[index] = item != null ? item : GetEmptyItem();
+    }
+
+    public void ClearSlot(int index)
+    {
+        EnsureInitialized();
+
+        if (index < 0 || index >= items.Count)
+            return;
+
+        items[index] = GetEmptyItem();
+    }
+
   private InventoryItem GetEmptyItem() {
     InventoryItem empty = ScriptableObject.CreateInstance<InventoryItem>();
     empty.itemName = "Empty";
