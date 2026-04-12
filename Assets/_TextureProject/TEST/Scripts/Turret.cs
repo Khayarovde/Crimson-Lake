@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.Events;
 
 public class Turret : MonoBehaviour
 {
@@ -12,6 +13,21 @@ public class Turret : MonoBehaviour
     [SerializeField]
     private float _rotationSpeed;
     [SerializeField]
+    private float _scanRotationSpeed = 45f;
+    [SerializeField, Range(30f, 360f)]
+    [Tooltip("Scan arc around initial facing direction. Use < 360 to leave a safer route.")]
+    private float _scanArcAngle = 220f;
+    [SerializeField, Range(10f, 360f)]
+    [Tooltip("Turret view cone angle. Player is detected only inside this cone.")]
+    private float _viewAngle = 120f;
+    [SerializeField, Tooltip("Seconds of continuous visibility required before turret enters aggro mode.")]
+    private float _timeToAggro = 0.4f;
+    [SerializeField, Tooltip("Seconds turret stays in aggro after losing sight.")]
+    private float _loseSightGraceTime = 0.6f;
+    [SerializeField]
+    [Tooltip("Layers used for visibility check between turret and player.")]
+    private LayerMask _lineOfSightMask = ~0;
+    [SerializeField]
     [Tooltip("This is the object that should rotate")]
     private GameObject _turretRotationObject;
     [SerializeField]
@@ -23,20 +39,45 @@ public class Turret : MonoBehaviour
     [SerializeField]
     private float _delayBeforeNextTarget = 1f;
     [SerializeField]
-    [Min(1)]
-    private int _bulletsToKillPlayer = 2;
+    [Tooltip("Explicit player reference. Turret will only track and damage this target.")]
+    private PlayerHealth _playerTarget;
+    [SerializeField]
+    [Tooltip("Assign your sound action here (for example AudioSource.Play).")]
+    private UnityEvent _onShootSound;
+    [SerializeField]
+    [Tooltip("Optional stop action when muzzle flash is disabled (for example AudioSource.Stop).")]
+    private UnityEvent _onShootSoundStop;
+    [SerializeField]
+    [Tooltip("If assigned, sound will not be triggered while this AudioSource is already playing.")]
+    private AudioSource _shootAudioSource;
 
-    private GameObject _target;
+    private Transform _target;
     private Vector3[] _lineRendererPositions = new Vector3[2];
     private Animator _animator;
     private bool _delayingBeforeNextTarget = false;
     private float _timeSinceLastShot;
-    private int _playerHitCount;
+    private bool _hasLineOfSight;
+    private float _aggroProgress;
+    private float _lastSeenTime = -999f;
+    private Vector3 _lastSeenDirection = Vector3.forward;
+    private float _scanCenterYaw;
+    private float _scanOffset;
+    private float _scanDirection = 1f;
 
     private void Start()
     {
         _timeSinceLastShot = 0;
         _animator = GetComponent<Animator>();
+        if (_onShootSound == null)
+        {
+            _onShootSound = new UnityEvent();
+        }
+
+        if (_turretRotationObject != null)
+        {
+            _scanCenterYaw = _turretRotationObject.transform.eulerAngles.y;
+        }
+
         GetNextTarget();
     }
 
@@ -50,10 +91,27 @@ public class Turret : MonoBehaviour
 
     private void RotateTowardTarget()
     {
-        if(_target != null)
+        if (_turretRotationObject == null || _shootTransform == null)
         {
+            return;
+        }
+
+        if (_target == null)
+        {
+            _hasLineOfSight = false;
+            GetNextTarget();
+            ScanArea();
+            return;
+        }
+
+        if (CanSeeTarget(out Vector3 direction))
+        {
+            _hasLineOfSight = true;
+            _lastSeenDirection = direction;
+            _lastSeenTime = Time.time;
+            _aggroProgress = Mathf.MoveTowards(_aggroProgress, 1f, Time.deltaTime / Mathf.Max(0.01f, _timeToAggro));
+
             //Get direction from turret rotation object to the target.
-            Vector3 direction = _target.transform.position - _turretRotationObject.transform.position;
             //Get the interpolated rotation between the turret rotation object and the target.
             Quaternion rotation = Quaternion.Slerp(_turretRotationObject.transform.rotation, Quaternion.LookRotation(direction), _rotationSpeed * Time.deltaTime);
 
@@ -62,12 +120,50 @@ public class Turret : MonoBehaviour
         }
         else
         {
-            GetNextTarget();
+            _hasLineOfSight = false;
+            _aggroProgress = Mathf.MoveTowards(_aggroProgress, 0f, Time.deltaTime / Mathf.Max(0.01f, _timeToAggro));
+
+            if (IsStillAggro())
+            {
+                Quaternion rotation = Quaternion.Slerp(_turretRotationObject.transform.rotation, Quaternion.LookRotation(_lastSeenDirection), _rotationSpeed * Time.deltaTime);
+                _turretRotationObject.transform.rotation = rotation;
+                _turretRotationObject.transform.eulerAngles = new Vector3(0, _turretRotationObject.transform.eulerAngles.y, 0);
+            }
+            else
+            {
+                ScanArea();
+            }
         }
+    }
+
+    private void ScanArea()
+    {
+        float halfArc = Mathf.Clamp(_scanArcAngle * 0.5f, 15f, 180f);
+        _scanOffset += _scanDirection * _scanRotationSpeed * Time.deltaTime;
+
+        if (_scanOffset > halfArc)
+        {
+            _scanOffset = halfArc;
+            _scanDirection = -1f;
+        }
+        else if (_scanOffset < -halfArc)
+        {
+            _scanOffset = -halfArc;
+            _scanDirection = 1f;
+        }
+
+        Vector3 euler = _turretRotationObject.transform.eulerAngles;
+        euler.y = _scanCenterYaw + _scanOffset;
+        _turretRotationObject.transform.eulerAngles = euler;
     }
 
     private void SetLineRendererPoints()
     {
+        if (_lineRenderer == null || _shootTransform == null)
+        {
+            return;
+        }
+
         _lineRendererPositions[0] = _shootTransform.position;
 
         Vector3 endPoint;
@@ -89,6 +185,12 @@ public class Turret : MonoBehaviour
 
     private void ValidateShoot()
     {
+        if (!_hasLineOfSight || _aggroProgress < 1f)
+        {
+            _timeSinceLastShot = Mathf.Max(0, _timeSinceLastShot - Time.deltaTime);
+            return;
+        }
+
         if(_timeSinceLastShot <= 0)
         {
             Shoot();
@@ -102,42 +204,116 @@ public class Turret : MonoBehaviour
 
     private void Shoot()
     {
+        if (_playerTarget == null || !_hasLineOfSight || _aggroProgress < 1f)
+        {
+            GetNextTarget();
+            return;
+        }
+
         SetShootTrigger();
         DoMuzzleFlash();
+        _playerTarget.ApplyTurretDamage(1);
+    }
 
-        if (Physics.Raycast(_shootTransform.position, _shootTransform.forward, out RaycastHit hitInfo, _maxShootDistance))
+    private bool CanSeeTarget(out Vector3 direction)
+    {
+        direction = Vector3.zero;
+
+        if (_target == null || _playerTarget == null || _shootTransform == null)
         {
-            if (hitInfo.collider.CompareTag("Player"))
-            {
-                PlayerHealth playerHealth = hitInfo.collider.GetComponentInParent<PlayerHealth>();
-                if (playerHealth != null)
-                {
-                    _playerHitCount++;
-
-                    if (_playerHitCount >= _bulletsToKillPlayer)
-                    {
-                        while (!playerHealth.IsDead)
-                        {
-                            playerHealth.TakeEnemyHit();
-                        }
-
-                        _playerHitCount = 0;
-                    }
-                }
-            }
+            return false;
         }
+
+        Vector3 toTarget = _target.position - _shootTransform.position;
+        float distance = toTarget.magnitude;
+
+        if (distance > _maxShootDistance || distance <= 0.01f)
+        {
+            return false;
+        }
+
+        Vector3 viewForward = _turretRotationObject.transform.forward;
+        viewForward.y = 0f;
+        if (viewForward.sqrMagnitude <= 0.0001f)
+        {
+            return false;
+        }
+
+        Vector3 flatToTarget = toTarget;
+        flatToTarget.y = 0f;
+        if (flatToTarget.sqrMagnitude <= 0.0001f)
+        {
+            return true;
+        }
+
+        float angleToTarget = Vector3.Angle(viewForward.normalized, flatToTarget.normalized);
+        if (angleToTarget > _viewAngle * 0.5f)
+        {
+            return false;
+        }
+
+        Vector3 rayDirection = toTarget / distance;
+        if (!Physics.Raycast(_shootTransform.position, rayDirection, out RaycastHit hitInfo, distance, _lineOfSightMask, QueryTriggerInteraction.Ignore))
+        {
+            return false;
+        }
+
+        PlayerHealth hitPlayer = hitInfo.collider.GetComponentInParent<PlayerHealth>();
+        if (hitPlayer == null || hitPlayer != _playerTarget)
+        {
+            return false;
+        }
+
+        direction = toTarget;
+        return true;
+    }
+
+    private bool IsStillAggro()
+    {
+        return Time.time - _lastSeenTime <= Mathf.Max(0f, _loseSightGraceTime);
     }
 
     private void DoMuzzleFlash()
     {
+        if (_muzzleFlash == null)
+        {
+            return;
+        }
+
         _muzzleFlash.SetActive(true);
+        InvokeShootSound();
         StartCoroutine(DisableAfter(_muzzleFlash, _muzzleFlashActiveDuration));
+    }
+
+    private void InvokeShootSound()
+    {
+        if (_shootAudioSource != null && _shootAudioSource.isPlaying)
+        {
+            return;
+        }
+
+        _onShootSound?.Invoke();
     }
 
     private IEnumerator DisableAfter(GameObject objectToDisable, float delay)
     {
         yield return new WaitForSeconds(delay);
         objectToDisable.SetActive(false);
+
+        if (objectToDisable == _muzzleFlash)
+        {
+            StopShootSound();
+        }
+    }
+
+    private void StopShootSound()
+    {
+        if (_shootAudioSource != null && _shootAudioSource.isPlaying)
+        {
+            _shootAudioSource.Stop();
+        }
+
+        _onShootSoundStop?.Invoke();
     }
 
     private void GetNextTarget()
@@ -152,17 +328,29 @@ public class Turret : MonoBehaviour
     private IEnumerator FindTargetAfterDelay()
     {
         yield return new WaitForSeconds(_delayBeforeNextTarget);
-        _target = GameObject.FindGameObjectWithTag("Player");
+
+        if (_playerTarget == null)
+        {
+            _playerTarget = FindObjectOfType<PlayerHealth>();
+        }
+
+        _target = _playerTarget != null ? _playerTarget.transform : null;
         _delayingBeforeNextTarget = false;
     }
   
     private void SetShootTrigger()
     {
-        _animator.SetTrigger("Shoot");
+        if (_animator != null)
+        {
+            _animator.SetTrigger("Shoot");
+        }
     }
 
     private void ResetShootTrigger()
     {
-        _animator.ResetTrigger("Shoot");
+        if (_animator != null)
+        {
+            _animator.ResetTrigger("Shoot");
+        }
     }
 }
