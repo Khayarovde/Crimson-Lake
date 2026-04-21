@@ -1291,6 +1291,9 @@ public class WeaponHandler : MonoBehaviour
     private IEnumerator ReloadRoutine()
     {
         isReloading = true;
+        if (tankController != null)
+            tankController.PlayReloadAnimation(currentWeaponType, currentReloadTime);
+
         SyncCurrentReserveFromData();
         currentAmmoInMag = Mathf.Clamp(currentAmmoInMag, 0, currentMagazineSize);
         currentReserveAmmo = Mathf.Max(0, currentReserveAmmo);
