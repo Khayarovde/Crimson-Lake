@@ -18,9 +18,21 @@ public class TankController : MonoBehaviour
     private bool enableAnimationDebugLogs = false;
     [SerializeField] private string blendTreeWalkState = "Blend Tree_WALK"; // Blend Tree для движения
     [SerializeField] private string blendTreeAimWalkState = "Blend Tree_AIM_WALK";
-    [SerializeField] private string blendTreeXParam = "v";
-    [SerializeField] private string blendTreeYParam = "h";
+    [SerializeField] private string blendTreeXParam = "h";
+    [SerializeField] private string blendTreeYParam = "v";
+    [SerializeField, Tooltip("Разрешить выход blend-параметров выше 1 для достижения Running-клипа в Blend Tree_WALK")]
+    private bool allowRunBlendOvershoot = true;
+    [SerializeField, Range(1f, 3f), Tooltip("Ограничение максимальной амплитуды blend-параметров при беге")]
+    private float maxRunBlendMagnitude = 1.75f;
+    [SerializeField, Min(0.01f), Tooltip("Время плавного входа в беговой blend при нажатом Shift")]
+    private float runBlendInTime = 0.12f;
+    [SerializeField, Min(0.01f), Tooltip("Время плавного выхода из бегового blend после отпускания Shift")]
+    private float runBlendOutTime = 0.2f;
     [SerializeField] private string baseIdleAnimation = "Idle";
+    [SerializeField] private string runningAnimation = "Running";
+    [SerializeField] private string runningAnimationFullPath = "Base Layer.Running";
+    [SerializeField] private string gunReloadAnimation = "Reload_Gun";
+    [SerializeField] private string pistolReloadAnimation = "Reload_Pistol";
     [SerializeField] private string idleAnimation0 = "Idle_0";
     [SerializeField] private string idleAnimation1 = "Idle_1";
     [SerializeField] private string idleAnimation2 = "Idle_2";
@@ -100,6 +112,10 @@ public class TankController : MonoBehaviour
     private Quaternion targetRotation;
     private bool hasRotationTarget;
     private bool isRunning;
+    private float runBlendWeight;
+    private float moveInputMagnitude;
+    private bool reloadAnimationActive;
+    private float reloadAnimationEndTime;
 
     public float CurrentPlanarSpeed => new Vector2(currentPlanarVelocity.x, currentPlanarVelocity.z).magnitude;
     public bool IsAnimationLocked => animationLockActive;
@@ -119,6 +135,10 @@ public class TankController : MonoBehaviour
         lastMoveTime = Time.time;
         currentPlanarVelocity = Vector3.zero;
         animationPlanarVelocity = Vector2.zero;
+        runBlendWeight = 0f;
+        moveInputMagnitude = 0f;
+        reloadAnimationActive = false;
+        reloadAnimationEndTime = 0f;
         targetRotation = rb != null ? rb.rotation : transform.rotation;
         hasRotationTarget = true;
         ApplyAnimatorControllerForScene();
@@ -223,6 +243,10 @@ public class TankController : MonoBehaviour
             inputVertical = 0f;
             currentPlanarVelocity = Vector3.zero;
             animationPlanarVelocity = Vector2.zero;
+            runBlendWeight = 0f;
+            moveInputMagnitude = 0f;
+            reloadAnimationActive = false;
+            reloadAnimationEndTime = 0f;
             idleActive = false;
             idleSwitchScheduled = false;
             SetBlendVelocity(Vector2.zero);
@@ -234,8 +258,29 @@ public class TankController : MonoBehaviour
         }
 
         lastMoveTime = Time.time;
+        runBlendWeight = 0f;
+        moveInputMagnitude = 0f;
+        reloadAnimationActive = false;
+        reloadAnimationEndTime = 0f;
         idleActive = false;
         idleSwitchScheduled = false;
+        SetBlendVelocity(Vector2.zero);
+    }
+
+    public void PlayReloadAnimation(InventoryItem.ItemType weaponType, float reloadDuration)
+    {
+        if (animator == null)
+            return;
+
+        string reloadState = weaponType == InventoryItem.ItemType.Gun ? gunReloadAnimation : pistolReloadAnimation;
+        if (string.IsNullOrEmpty(reloadState))
+            return;
+
+        if (!TryChangeAnimation(reloadState))
+            return;
+
+        reloadAnimationActive = true;
+        reloadAnimationEndTime = Time.time + Mathf.Max(0.01f, reloadDuration);
         SetBlendVelocity(Vector2.zero);
     }
 
@@ -248,16 +293,17 @@ public class TankController : MonoBehaviour
         Vector2 movementInputWorld2D = new Vector2(desiredMoveDirectionWorld.x, desiredMoveDirectionWorld.z);
 
         bool hasMoveInput = Mathf.Abs(inputHorizontal) > 0.1f || Mathf.Abs(inputVertical) > 0.1f;
+        moveInputMagnitude = Mathf.Clamp01(new Vector2(inputHorizontal, inputVertical).magnitude);
         bool sprintHeld = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
         bool rightMousePressed = Input.GetMouseButton(1);
         isRunning = hasMoveInput && sprintHeld && !rightMousePressed;
+        UpdateRunBlendWeight(isRunning);
 
         if (hasMoveInput)
         {
             lastMoveTime = Time.time;
             idleActive = false;
             idleSwitchScheduled = false;
-            lastMoveDirection = movementInputWorld2D.sqrMagnitude > 0.0001f ? movementInputWorld2D.normalized : Vector2.zero;
         }
         else if (wasMoveInput)
         {
@@ -285,8 +331,11 @@ public class TankController : MonoBehaviour
         {
             // При старте движения сразу после отпускания ПКМ скорость Rigidbody еще может быть почти нулевой.
             // Используем raw input, чтобы не проваливаться в Idle на 1-2 кадра.
-            movementForAnimation = hasMoveInput ? movementInputWorld2D : animationPlanarVelocity;
+            movementForAnimation = hasMoveInput ? GetLocalMoveDirectionForAnimation(desiredMoveDirectionWorld) : animationPlanarVelocity;
         }
+
+        if (!isAiming && movementForAnimation.sqrMagnitude > 0.0001f)
+            lastMoveDirection = movementForAnimation.normalized;
 
         CheckAnimation(movementForAnimation, isAiming);
     }
@@ -468,6 +517,26 @@ public class TankController : MonoBehaviour
         bool hasActiveWeapon = HasActiveWeaponSelected();
         bool isAimMode = hasActiveWeapon && aiming;
 
+        if (reloadAnimationActive)
+        {
+            if (Time.time >= reloadAnimationEndTime)
+            {
+                reloadAnimationActive = false;
+            }
+            else
+            {
+                SetBlendVelocity(Vector2.zero);
+                return;
+            }
+        }
+
+        if (!isAimMode && isRunning && movement.sqrMagnitude > 0.01f)
+        {
+            TryPlayRunningOnly();
+            SetBlendVelocity(Vector2.zero);
+            return;
+        }
+
         if (movement.sqrMagnitude > 0.01f)
         {
             if (isAimMode)
@@ -553,6 +622,23 @@ public class TankController : MonoBehaviour
         return new Vector2(localX, localY);
     }
 
+    private Vector2 GetLocalMoveDirectionForAnimation(Vector3 worldDirection)
+    {
+        if (worldDirection.sqrMagnitude < 0.0001f)
+            return Vector2.zero;
+
+        Vector3 localMove = transform.InverseTransformDirection(worldDirection.normalized);
+        return new Vector2(localMove.x, localMove.z);
+    }
+
+    private void UpdateRunBlendWeight(bool running)
+    {
+        float target = running ? 1f : 0f;
+        float responseTime = running ? Mathf.Max(0.01f, runBlendInTime) : Mathf.Max(0.01f, runBlendOutTime);
+        float step = Time.deltaTime / responseTime;
+        runBlendWeight = Mathf.MoveTowards(runBlendWeight, target, step);
+    }
+
     private void UpdateAnimationPlanarVelocity()
     {
         Vector2 targetVelocity = new Vector2(currentPlanarVelocity.x, currentPlanarVelocity.z);
@@ -585,6 +671,27 @@ public class TankController : MonoBehaviour
         ChangeAnimation(isAimMode ? blendTreeAimWalkState : blendTreeWalkState);
     }
 
+    private void TryPlayRunningOnly()
+    {
+        if (animator == null)
+            return;
+
+        bool changed = TryChangeAnimation(runningAnimation);
+        if (!changed)
+            changed = TryChangeAnimation(runningAnimationFullPath);
+
+        if (!changed && !string.IsNullOrEmpty(runningAnimation))
+        {
+            // Жесткий fallback: пробуем запустить по short name даже если HasState вернул false.
+            animator.Play(runningAnimation, 0, 0f);
+            currentState = runningAnimation;
+            changed = true;
+        }
+
+        if (!changed && enableAnimationDebugLogs)
+            Debug.LogWarning($"TankController: Running state not found. Checked '{runningAnimation}' and '{runningAnimationFullPath}'.", this);
+    }
+
 
     private Vector2 GetStableDirection(Vector2 movement)
     {
@@ -594,10 +701,25 @@ public class TankController : MonoBehaviour
         if (Mathf.Abs(absX - absY) < 0.1f && lastMoveDirection.sqrMagnitude > 0.01f)
             direction = lastMoveDirection.normalized;
 
-        float speed01 = Mathf.Clamp01(animationPlanarVelocity.magnitude / Mathf.Max(0.01f, moveSpeed));
-        direction *= speed01;
+        float blendMagnitude = GetLocomotionBlendMagnitude();
+        direction *= blendMagnitude;
 
         return direction;
+    }
+
+    private float GetLocomotionBlendMagnitude()
+    {
+        float baseSpeed = Mathf.Max(0.01f, moveSpeed);
+        float speedRatio = animationPlanarVelocity.magnitude / baseSpeed;
+
+        if (!allowRunBlendOvershoot)
+            return Mathf.Clamp01(speedRatio);
+
+        float runRatio = runMoveSpeed > 0.01f ? runMoveSpeed / baseSpeed : 1f;
+        float runIntentMagnitude = moveInputMagnitude * Mathf.Lerp(1f, runRatio, runBlendWeight);
+        float targetMagnitude = Mathf.Max(speedRatio, runIntentMagnitude);
+        float maxMagnitude = Mathf.Max(1f, Mathf.Max(runRatio, maxRunBlendMagnitude));
+        return Mathf.Clamp(targetMagnitude, 0f, maxMagnitude);
     }
 
     private bool HasActiveWeaponSelected()

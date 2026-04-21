@@ -15,20 +15,20 @@ public class Turret : MonoBehaviour
     [SerializeField]
     private float _scanRotationSpeed = 45f;
     [SerializeField, Range(30f, 360f)]
-    [Tooltip("Scan arc around initial facing direction. Use < 360 to leave a safer route.")]
+    [Tooltip("Дуга сканирования вокруг стартового направления. Значение < 360 оставляет более безопасный маршрут.")]
     private float _scanArcAngle = 220f;
     [SerializeField, Range(10f, 360f)]
-    [Tooltip("Turret view cone angle. Player is detected only inside this cone.")]
+    [Tooltip("Угол конуса обзора турели. Игрок обнаруживается только внутри этого конуса.")]
     private float _viewAngle = 120f;
-    [SerializeField, Tooltip("Seconds of continuous visibility required before turret enters aggro mode.")]
+    [SerializeField, Tooltip("Сколько секунд турель должна непрерывно видеть игрока перед входом в режим агра.")]
     private float _timeToAggro = 0.4f;
-    [SerializeField, Tooltip("Seconds turret stays in aggro after losing sight.")]
+    [SerializeField, Tooltip("Сколько секунд турель остается в агре после потери видимости цели.")]
     private float _loseSightGraceTime = 0.6f;
     [SerializeField]
-    [Tooltip("Layers used for visibility check between turret and player.")]
+    [Tooltip("Слои, используемые для проверки видимости между турелью и игроком.")]
     private LayerMask _lineOfSightMask = ~0;
     [SerializeField]
-    [Tooltip("This is the object that should rotate")]
+    [Tooltip("Объект, который должен вращаться")]
     private GameObject _turretRotationObject;
     [SerializeField]
     private LineRenderer _lineRenderer;
@@ -39,16 +39,16 @@ public class Turret : MonoBehaviour
     [SerializeField]
     private float _delayBeforeNextTarget = 1f;
     [SerializeField]
-    [Tooltip("Explicit player reference. Turret will only track and damage this target.")]
+    [Tooltip("Явная ссылка на игрока. Турель будет отслеживать и наносить урон только этой цели.")]
     private PlayerHealth _playerTarget;
     [SerializeField]
-    [Tooltip("Assign your sound action here (for example AudioSource.Play).")]
+    [Tooltip("Назначьте здесь действие запуска звука (например, AudioSource.Play).")]
     private UnityEvent _onShootSound;
     [SerializeField]
-    [Tooltip("Optional stop action when muzzle flash is disabled (for example AudioSource.Stop).")]
+    [Tooltip("Опциональное действие остановки звука при выключении muzzle flash (например, AudioSource.Stop).")]
     private UnityEvent _onShootSoundStop;
     [SerializeField]
-    [Tooltip("If assigned, sound will not be triggered while this AudioSource is already playing.")]
+    [Tooltip("Если назначено, звук не будет запускаться повторно, пока этот AudioSource уже играет.")]
     private AudioSource _shootAudioSource;
 
     private Transform _target;
@@ -111,8 +111,8 @@ public class Turret : MonoBehaviour
             _lastSeenTime = Time.time;
             _aggroProgress = Mathf.MoveTowards(_aggroProgress, 1f, Time.deltaTime / Mathf.Max(0.01f, _timeToAggro));
 
-            //Get direction from turret rotation object to the target.
-            //Get the interpolated rotation between the turret rotation object and the target.
+            // Получаем направление от поворотной части турели к цели.
+            // Плавно поворачиваем турель в сторону цели.
             Quaternion rotation = Quaternion.Slerp(_turretRotationObject.transform.rotation, Quaternion.LookRotation(direction), _rotationSpeed * Time.deltaTime);
 
             _turretRotationObject.transform.rotation = rotation;
