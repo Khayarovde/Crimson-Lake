@@ -369,14 +369,14 @@ GameObject:
   - component: {fileID: 5848680216247009145}
   - component: {fileID: 7694135491242773444}
   - component: {fileID: 5554049605435418204}
-  - component: {fileID: 7587713576651763202}
+  - component: {fileID: 1480471053714100969}
   m_Layer: 15
   m_Name: AmmoPistol
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &6592982426157864327
 Transform:
   m_ObjectHideFlags: 0
@@ -466,7 +466,7 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &7587713576651763202
+--- !u!114 &1480471053714100969
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -475,24 +475,19 @@ MonoBehaviour:
   m_GameObject: {fileID: 2158839306415419089}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ebd568e571bbfb24d826fc6ddb659404, type: 3}
+  m_Script: {fileID: 11500000, guid: b388097eeb26e0d4db712ac91b402f69, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  interactKey: 101
-  startNode: ammoPistol
-  triggerYarnOnPickup: 1
+  startNode: item
+  itemToPickup: {fileID: 11400000, guid: e3597df95d44d6f46a6ac46fe1e4cbab, type: 2}
+  destroyObjectAfterPickup: 1
   interactionHint: {fileID: 0}
   hintScaleMultiplier: 1.1
   hintDuration: 0.55
-  hintMagnetToPickup: 1
+  hintMagnetToInteract: 1
   hintWorldOffset: {x: 0, y: 1.5, z: 0}
   hintMagnetSpeed: 12
   faceMainCamera: 0
-  ammoType: 7
-  amount: 14
-  pickupEffect: {fileID: 0}
-  addAmmoItemToInventory: 1
-  ammoInventoryItem: {fileID: 11400000, guid: e3597df95d44d6f46a6ac46fe1e4cbab, type: 2}
 --- !u!1 &2522322819015836676
 GameObject:
   m_ObjectHideFlags: 0
@@ -1604,14 +1599,14 @@ GameObject:
   - component: {fileID: 1784405003566656064}
   - component: {fileID: 2407192796300286836}
   - component: {fileID: 3084078335890272475}
-  - component: {fileID: 7473303381663233645}
+  - component: {fileID: 5637390828103209475}
   m_Layer: 15
   m_Name: AmmoShotgun
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &7879384113140209140
 Transform:
   m_ObjectHideFlags: 0
@@ -1701,7 +1696,7 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &7473303381663233645
+--- !u!114 &5637390828103209475
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1710,24 +1705,19 @@ MonoBehaviour:
   m_GameObject: {fileID: 5697032770113155109}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ebd568e571bbfb24d826fc6ddb659404, type: 3}
+  m_Script: {fileID: 11500000, guid: b388097eeb26e0d4db712ac91b402f69, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  interactKey: 101
-  startNode: ammoShotgun
-  triggerYarnOnPickup: 1
+  startNode: item
+  itemToPickup: {fileID: 11400000, guid: 1e5bd7e6c14684e4796a5b18e96d0e36, type: 2}
+  destroyObjectAfterPickup: 1
   interactionHint: {fileID: 0}
   hintScaleMultiplier: 1.1
   hintDuration: 0.55
-  hintMagnetToPickup: 1
+  hintMagnetToInteract: 1
   hintWorldOffset: {x: 0, y: 1.5, z: 0}
   hintMagnetSpeed: 12
   faceMainCamera: 0
-  ammoType: 7
-  amount: 14
-  pickupEffect: {fileID: 0}
-  addAmmoItemToInventory: 1
-  ammoInventoryItem: {fileID: 11400000, guid: 1e5bd7e6c14684e4796a5b18e96d0e36, type: 2}
 --- !u!1 &5785246448340599758
 GameObject:
   m_ObjectHideFlags: 0
@@ -3130,6 +3120,15 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 5678005075880140256, guid: f6008182cadd0874c9cfcbfb0049505b, type: 3}
       insertIndex: -1
       addedObject: {fileID: 2151920033086141906}
+    - targetCorrespondingSourceObject: {fileID: 5678005075880140256, guid: f6008182cadd0874c9cfcbfb0049505b, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 7827011697295142087}
+    - targetCorrespondingSourceObject: {fileID: 5678005075880140256, guid: f6008182cadd0874c9cfcbfb0049505b, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3894734666017906477}
+    - targetCorrespondingSourceObject: {fileID: 5678005075880140256, guid: f6008182cadd0874c9cfcbfb0049505b, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3702645208946937356}
   m_SourcePrefab: {fileID: 100100000, guid: f6008182cadd0874c9cfcbfb0049505b, type: 3}
 --- !u!1 &5922823764018524464 stripped
 GameObject:
@@ -3178,6 +3177,59 @@ MonoBehaviour:
   _overrideGroup: {fileID: 0}
   _positionMode: 0
   _delay: 0
+--- !u!135 &7827011697295142087
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5922823764018524464}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Radius: 0.8
+  m_Center: {x: 0.00000047830434, y: 0.16882388, z: 0.049229898}
+--- !u!114 &3894734666017906477
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5922823764018524464}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5fea29bb7c508c244a1f805a5fd3fc4d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  outlineMode: 0
+  outlineColor: {r: 1, g: 1, b: 1, a: 1}
+  outlineWidth: 2
+  precomputeOutline: 0
+  bakeKeys: []
+  bakeValues: []
+--- !u!114 &3702645208946937356
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5922823764018524464}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bdc2489b9291aab428580b3f2b8f2144, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  outlineColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  outlineWidth: 2
 --- !u!4 &6447404766311000970 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 5010117304973985626, guid: f6008182cadd0874c9cfcbfb0049505b, type: 3}
@@ -3278,13 +3330,80 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 5243138781545252105, guid: 785b08d6af4bd664788e9aef080ccfdf, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1794172323912627140}
+    - targetCorrespondingSourceObject: {fileID: 5243138781545252105, guid: 785b08d6af4bd664788e9aef080ccfdf, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4388257844580415432}
+    - targetCorrespondingSourceObject: {fileID: 5243138781545252105, guid: 785b08d6af4bd664788e9aef080ccfdf, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5816127572945021175}
   m_SourcePrefab: {fileID: 100100000, guid: 785b08d6af4bd664788e9aef080ccfdf, type: 3}
 --- !u!4 &7079630104431917546 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 5243138781545224489, guid: 785b08d6af4bd664788e9aef080ccfdf, type: 3}
   m_PrefabInstance: {fileID: 3097553930125615299}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &7079630104432010698 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5243138781545252105, guid: 785b08d6af4bd664788e9aef080ccfdf, type: 3}
+  m_PrefabInstance: {fileID: 3097553930125615299}
+  m_PrefabAsset: {fileID: 0}
+--- !u!135 &1794172323912627140
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7079630104432010698}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Radius: 2
+  m_Center: {x: 0.3200423, y: 0.29986447, z: 0.63720685}
+--- !u!114 &4388257844580415432
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7079630104432010698}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5fea29bb7c508c244a1f805a5fd3fc4d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  outlineMode: 0
+  outlineColor: {r: 1, g: 1, b: 1, a: 1}
+  outlineWidth: 2
+  precomputeOutline: 0
+  bakeKeys: []
+  bakeValues: []
+--- !u!114 &5816127572945021175
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7079630104432010698}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bdc2489b9291aab428580b3f2b8f2144, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  outlineColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  outlineWidth: 2
 --- !u!1001 &5110383445150424029
 PrefabInstance:
   m_ObjectHideFlags: 0

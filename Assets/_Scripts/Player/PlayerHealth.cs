@@ -30,9 +30,20 @@ public class PlayerHealth : MonoBehaviour
     [SerializeField] private float deathFadeDuration = 0.65f;
     [SerializeField, Tooltip("Задержка (в реальном времени) перед переходом в Menu после показа LoseScreen")]
     private float deathMenuDelay = 1.2f;
+    [SerializeField, Header("Turret FX"), Tooltip("Максимальная краснота экрана от удержания игрока под огнем турели")]
+    [Range(0f, 1f)]
+    private float turretMaxRedAlpha = 0.55f;
+    [SerializeField, Tooltip("Скорость нарастания красноты, пока турель держит игрока в прицеле")]
+    private float turretRedBuildSpeed = 1.25f;
+    [SerializeField, Tooltip("Скорость спада красноты после выхода из прицела турели")]
+    private float turretRedFadeSpeed = 1.6f;
+    [SerializeField, Tooltip("Сколько времени после последнего попадания считается, что урон все еще продолжается")]
+    private float turretDamageHoldTime = 0.3f;
 
     private bool isDead;
     private Coroutine overlayRoutine;
+    private float turretExposureLevel;
+    private float lastTurretDamageTime = -999f;
 
     public bool IsDead => isDead;
     public int MaxHealth => maxHealth;
@@ -49,6 +60,11 @@ public class PlayerHealth : MonoBehaviour
         if (loseScreenCanvas != null) loseScreenCanvas.SetActive(false);
 
         Debug.Log($"[PlayerHealth] HP: {currentHealth}/{maxHealth}");
+    }
+
+    private void Update()
+    {
+        UpdateTurretOverlay();
     }
 
     public void SetLoseCanvas(GameObject canvas)
@@ -87,6 +103,26 @@ public class PlayerHealth : MonoBehaviour
         StartOverlayRoutine(FlashColor(new Color(1f, 0f, 0f, 1f), firstHitRedAlpha, firstHitFlashDuration));
     }
 
+    public void ApplyTurretDamage(int amount)
+    {
+        if (isDead || amount <= 0)
+            return;
+
+        lastTurretDamageTime = Time.time;
+        currentHealth = Mathf.Max(0, currentHealth - amount);
+        Debug.Log($"[PlayerHealth] HP: {currentHealth}/{maxHealth}");
+
+        if (currentHealth <= 0)
+        {
+            Die(null);
+            return;
+        }
+
+        var tankController = GetComponent<TankController>();
+        if (tankController != null)
+            tankController.PlayHit();
+    }
+
     public void Heal(int amount)
     {
         if (isDead || amount <= 0)
@@ -101,6 +137,7 @@ public class PlayerHealth : MonoBehaviour
         if (isDead) return;
         isDead = true;
         currentHealth = 0;
+        turretExposureLevel = 0f;
         Debug.Log($"[PlayerHealth] HP: {currentHealth}/{maxHealth}");
 
         var tankController = GetComponent<TankController>();
@@ -123,7 +160,13 @@ public class PlayerHealth : MonoBehaviour
     {
         if (overlayRoutine != null)
             StopCoroutine(overlayRoutine);
-        overlayRoutine = StartCoroutine(routine);
+        overlayRoutine = StartCoroutine(RunOverlayRoutine(routine));
+    }
+
+    private IEnumerator RunOverlayRoutine(IEnumerator routine)
+    {
+        yield return StartCoroutine(routine);
+        overlayRoutine = null;
     }
 
     private IEnumerator FlashColor(Color color, float peakAlpha, float duration)
@@ -266,6 +309,32 @@ public class PlayerHealth : MonoBehaviour
         rect.offsetMax = Vector2.zero;
 
         overlayImage.color = new Color(0f, 0f, 0f, 0f);
+    }
+
+    private void UpdateTurretOverlay()
+    {
+        if (isDead)
+            return;
+
+        EnsureOverlay();
+        if (overlayImage == null)
+            return;
+
+        bool exposedByTurret = Time.time - lastTurretDamageTime <= Mathf.Max(0.01f, turretDamageHoldTime);
+        float target = exposedByTurret ? 1f : 0f;
+        float speed = exposedByTurret ? Mathf.Max(0.01f, turretRedBuildSpeed) : Mathf.Max(0.01f, turretRedFadeSpeed);
+        turretExposureLevel = Mathf.MoveTowards(turretExposureLevel, target, speed * Time.deltaTime);
+
+        float turretAlpha = turretExposureLevel * turretMaxRedAlpha;
+
+        if (overlayRoutine == null)
+        {
+            overlayImage.color = new Color(1f, 0f, 0f, turretAlpha);
+            return;
+        }
+
+        Color current = overlayImage.color;
+        overlayImage.color = new Color(1f, 0f, 0f, Mathf.Max(current.a, turretAlpha));
     }
 
     private void SetOverlayAlpha(float alpha)

@@ -4,9 +4,19 @@ using UIOutline = UnityEngine.UI.Outline;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine.Video;
+using UnityEngine.EventSystems;
+using DG.Tweening;
 
 public class InventoryUI : MonoBehaviour
 {
+    [System.Serializable]
+    public class ItemCombineRecipe
+    {
+        public InventoryItem firstItem;
+        public InventoryItem secondItem;
+        public InventoryItem resultItem;
+    }
+
     [Header("Основные ссылки")]
     public InventoryData inventoryData;
     public GameObject slotPrefab;
@@ -62,6 +72,18 @@ public class InventoryUI : MonoBehaviour
     [Tooltip("Локальная позиция кнопки Take в слотах сундука")]
     public Vector2 takeButtonPosition = new Vector2(30, 30);
 
+    [Header("Контекстное меню (ПКМ)")]
+    [Tooltip("Опционально: готовая панель контекстного меню. Если не задана, будет создана автоматически")]
+    public GameObject contextMenuPanel;
+    public Button contextSelectButton;
+    public Button contextCombineButton;
+    public Button contextDestroyButton;
+    public Button contextCancelButton;
+
+    [Header("Рецепты соединения")]
+    [Tooltip("Пара предметов -> результирующий предмет")]
+    public List<ItemCombineRecipe> combineRecipes = new List<ItemCombineRecipe>();
+
     private Image[] slotIcons;
     private Button[] storeButtons;
     private Button[] destroyButtons;
@@ -73,6 +95,14 @@ public class InventoryUI : MonoBehaviour
     private int lastClickedSlotIndex = -1;
     private float lastClickTime = -10f;
     [SerializeField] private float medkitDoubleClickThreshold = 0.3f;
+    [Header("Анимация текста (DOTween)")]
+    [SerializeField] private float craftFailShakeDistance = 20f;
+    [SerializeField] private float craftFailShakeDuration = 0.35f;
+    [SerializeField] private int craftFailShakeVibrato = 14;
+    private bool isCombineSelectionMode;
+    private int combineSourceSlotIndex = -1;
+    private int contextMenuSlotIndex = -1;
+    private Tween craftFailTextTween;
 
     // UI элементы сундука
     private Image[] chestSlotIcons;
@@ -119,6 +149,7 @@ public class InventoryUI : MonoBehaviour
 
         InitializeInventorySlots();
         InitializeButtons();
+        InitializeContextMenu();
         InitializeHpVideoPlayer();
         UpdateHpVideoByCurrentHealth(force: true);
         
@@ -139,6 +170,15 @@ public class InventoryUI : MonoBehaviour
     private void Update()
     {
         UpdateHpVideoByCurrentHealth();
+
+        if (contextMenuPanel != null && contextMenuPanel.activeSelf && Input.GetMouseButtonDown(0))
+        {
+            if (!RectTransformUtility.RectangleContainsScreenPoint(
+                    contextMenuPanel.GetComponent<RectTransform>(), Input.mousePosition, null))
+            {
+                HideContextMenu();
+            }
+        }
 
         if (Input.GetKeyDown(KeyCode.Escape))
         {
@@ -201,7 +241,13 @@ public class InventoryUI : MonoBehaviour
 
             slotButton.transition = Selectable.Transition.None;
             int slotIndex = i;
-            slotButton.onClick.AddListener(() => OnInventorySlotClicked(slotIndex));
+
+            InventorySlotPointerHandler pointerHandler = slot.GetComponent<InventorySlotPointerHandler>();
+            if (pointerHandler == null)
+                pointerHandler = slot.AddComponent<InventorySlotPointerHandler>();
+
+            pointerHandler.SlotIndex = slotIndex;
+            pointerHandler.OnSlotPointerClick = OnInventorySlotPointerClicked;
             
             Image icon = slot.transform.Find("ItemIcon")?.GetComponent<Image>();
             slotIcons[i] = icon;
@@ -254,6 +300,315 @@ public class InventoryUI : MonoBehaviour
         }
 
         UpdateInventoryUI();
+    }
+
+    private void InitializeContextMenu()
+    {
+        if (inventoryCanvas == null)
+            return;
+
+        if (contextMenuPanel == null)
+            contextMenuPanel = CreateRuntimeContextMenuPanel();
+
+        if (contextMenuPanel == null)
+            return;
+
+        if (contextSelectButton == null)
+            contextSelectButton = FindButtonInContextMenu("SelectButton");
+        if (contextCombineButton == null)
+            contextCombineButton = FindButtonInContextMenu("CombineButton");
+        if (contextDestroyButton == null)
+            contextDestroyButton = FindButtonInContextMenu("DestroyButton");
+        if (contextCancelButton == null)
+            contextCancelButton = FindButtonInContextMenu("CancelButton");
+
+        if (contextSelectButton != null)
+        {
+            contextSelectButton.onClick.RemoveAllListeners();
+            contextSelectButton.onClick.AddListener(OnContextSelectClicked);
+        }
+
+        if (contextCombineButton != null)
+        {
+            contextCombineButton.onClick.RemoveAllListeners();
+            contextCombineButton.onClick.AddListener(OnContextCombineClicked);
+        }
+
+        if (contextDestroyButton != null)
+        {
+            contextDestroyButton.onClick.RemoveAllListeners();
+            contextDestroyButton.onClick.AddListener(OnContextDestroyClicked);
+        }
+
+        if (contextCancelButton != null)
+        {
+            contextCancelButton.onClick.RemoveAllListeners();
+            contextCancelButton.onClick.AddListener(HideContextMenu);
+        }
+
+        contextMenuPanel.SetActive(false);
+    }
+
+    private GameObject CreateRuntimeContextMenuPanel()
+    {
+        GameObject panelObj = new GameObject("InventoryContextMenu");
+        panelObj.transform.SetParent(inventoryCanvas.transform, false);
+
+        Image panelImage = panelObj.AddComponent<Image>();
+        panelImage.color = new Color(0f, 0f, 0f, 0.85f);
+
+        VerticalLayoutGroup layout = panelObj.AddComponent<VerticalLayoutGroup>();
+        layout.childControlHeight = true;
+        layout.childControlWidth = true;
+        layout.childForceExpandHeight = false;
+        layout.childForceExpandWidth = true;
+        layout.padding = new RectOffset(8, 8, 8, 8);
+        layout.spacing = 6f;
+
+        ContentSizeFitter fitter = panelObj.AddComponent<ContentSizeFitter>();
+        fitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
+        fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+        RectTransform panelRect = panelObj.GetComponent<RectTransform>();
+        panelRect.anchorMin = new Vector2(0f, 1f);
+        panelRect.anchorMax = new Vector2(0f, 1f);
+        panelRect.pivot = new Vector2(0f, 1f);
+
+        contextSelectButton = CreateContextMenuButton(panelObj.transform, "SelectButton", "Выбрать");
+        contextCombineButton = CreateContextMenuButton(panelObj.transform, "CombineButton", "Соединить");
+        contextDestroyButton = CreateContextMenuButton(panelObj.transform, "DestroyButton", "Уничтожить");
+        contextCancelButton = CreateContextMenuButton(panelObj.transform, "CancelButton", "Отмена");
+
+        return panelObj;
+    }
+
+    private Button CreateContextMenuButton(Transform parent, string buttonName, string label)
+    {
+        GameObject buttonObj = new GameObject(buttonName);
+        buttonObj.transform.SetParent(parent, false);
+
+        Image buttonImage = buttonObj.AddComponent<Image>();
+        buttonImage.color = new Color(0.2f, 0.2f, 0.2f, 1f);
+
+        Button button = buttonObj.AddComponent<Button>();
+
+        LayoutElement element = buttonObj.AddComponent<LayoutElement>();
+        element.preferredWidth = 180f;
+        element.preferredHeight = 34f;
+
+        GameObject textObj = new GameObject("Text");
+        textObj.transform.SetParent(buttonObj.transform, false);
+
+        Text text = textObj.AddComponent<Text>();
+        text.text = label;
+        text.color = Color.white;
+        text.alignment = TextAnchor.MiddleCenter;
+        text.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
+
+        RectTransform textRect = textObj.GetComponent<RectTransform>();
+        textRect.anchorMin = Vector2.zero;
+        textRect.anchorMax = Vector2.one;
+        textRect.offsetMin = Vector2.zero;
+        textRect.offsetMax = Vector2.zero;
+
+        return button;
+    }
+
+    private Button FindButtonInContextMenu(string buttonName)
+    {
+        if (contextMenuPanel == null)
+            return null;
+
+        return contextMenuPanel.transform.Find(buttonName)?.GetComponent<Button>();
+    }
+
+    private void OnInventorySlotPointerClicked(int slotIndex, PointerEventData.InputButton mouseButton)
+    {
+        var slots = inventoryData != null ? inventoryData.GetSlots() : null;
+        if (slots == null || slotIndex < 0 || slotIndex >= slots.Count)
+            return;
+
+        InventoryItem clickedItem = slots[slotIndex];
+        bool hasItem = clickedItem != null && clickedItem.type != InventoryItem.ItemType.Empty;
+
+        if (isCombineSelectionMode)
+        {
+            if (mouseButton == PointerEventData.InputButton.Left || mouseButton == PointerEventData.InputButton.Right)
+            {
+                TryCombineWithSecondSlot(slotIndex);
+            }
+            return;
+        }
+
+        if (!hasItem)
+        {
+            HideContextMenu();
+            return;
+        }
+
+        if (mouseButton == PointerEventData.InputButton.Right)
+        {
+            ShowContextMenuForSlot(slotIndex);
+            return;
+        }
+
+        if (mouseButton == PointerEventData.InputButton.Left)
+        {
+            HideContextMenu();
+            OnInventorySlotClicked(slotIndex);
+        }
+    }
+
+    private void ShowContextMenuForSlot(int slotIndex)
+    {
+        if (contextMenuPanel == null)
+            return;
+
+        contextMenuSlotIndex = slotIndex;
+        contextMenuPanel.SetActive(true);
+
+        RectTransform panelRect = contextMenuPanel.GetComponent<RectTransform>();
+        if (panelRect != null)
+            panelRect.position = Input.mousePosition;
+    }
+
+    private void HideContextMenu()
+    {
+        if (contextMenuPanel != null)
+            contextMenuPanel.SetActive(false);
+
+        contextMenuSlotIndex = -1;
+    }
+
+    private void OnContextSelectClicked()
+    {
+        if (contextMenuSlotIndex < 0)
+            return;
+
+        OnInventorySlotClicked(contextMenuSlotIndex);
+        HideContextMenu();
+    }
+
+    private void OnContextCombineClicked()
+    {
+        if (contextMenuSlotIndex < 0)
+            return;
+
+        isCombineSelectionMode = true;
+        combineSourceSlotIndex = contextMenuSlotIndex;
+        HideContextMenu();
+
+        if (activeItemInfoText != null)
+            activeItemInfoText.text = "Режим соединения: выберите второй предмет";
+    }
+
+    private void OnContextDestroyClicked()
+    {
+        if (contextMenuSlotIndex < 0)
+            return;
+
+        OnDestroyButtonClicked(contextMenuSlotIndex);
+        HideContextMenu();
+    }
+
+    private void TryCombineWithSecondSlot(int secondSlotIndex)
+    {
+        if (!isCombineSelectionMode)
+            return;
+
+        int sourceSlot = combineSourceSlotIndex;
+        isCombineSelectionMode = false;
+        combineSourceSlotIndex = -1;
+
+        if (sourceSlot < 0 || secondSlotIndex < 0 || sourceSlot == secondSlotIndex)
+        {
+            if (activeItemInfoText != null)
+                activeItemInfoText.text = "Соединение отменено";
+            UpdateInventoryUI();
+            return;
+        }
+
+        if (inventoryData == null)
+            return;
+
+        InventoryItem firstItem = inventoryData.GetItemAt(sourceSlot);
+        InventoryItem secondItem = inventoryData.GetItemAt(secondSlotIndex);
+
+        if (firstItem == null || secondItem == null ||
+            firstItem.type == InventoryItem.ItemType.Empty || secondItem.type == InventoryItem.ItemType.Empty)
+        {
+            UpdateInventoryUI();
+            return;
+        }
+
+        ItemCombineRecipe recipe = FindCombineRecipe(firstItem, secondItem);
+        if (recipe == null || recipe.resultItem == null)
+        {
+            if (activeItemInfoText != null)
+                activeItemInfoText.text = $"Нельзя соединить: {firstItem.itemName} + {secondItem.itemName}";
+
+            AnimateCraftFailText();
+            return;
+        }
+
+        inventoryData.ClearSlot(sourceSlot);
+        inventoryData.ClearSlot(secondSlotIndex);
+        inventoryData.SetItemAt(sourceSlot, recipe.resultItem);
+
+        playerInventory.SetActiveItemByIndex(sourceSlot);
+        UpdateInventoryUI();
+
+        if (activeItemInfoText != null)
+            activeItemInfoText.text = $"Создано: {recipe.resultItem.itemName}";
+    }
+
+    private ItemCombineRecipe FindCombineRecipe(InventoryItem first, InventoryItem second)
+    {
+        if (combineRecipes == null)
+            return null;
+
+        for (int i = 0; i < combineRecipes.Count; i++)
+        {
+            ItemCombineRecipe recipe = combineRecipes[i];
+            if (recipe == null)
+                continue;
+
+            bool directMatch = recipe.firstItem == first && recipe.secondItem == second;
+            bool reverseMatch = recipe.firstItem == second && recipe.secondItem == first;
+
+            if (directMatch || reverseMatch)
+                return recipe;
+        }
+
+        return null;
+    }
+
+    private void AnimateCraftFailText()
+    {
+        if (activeItemInfoText == null)
+            return;
+
+        RectTransform textRect = activeItemInfoText.rectTransform;
+        if (textRect == null)
+            return;
+
+        if (craftFailTextTween != null && craftFailTextTween.IsActive())
+            craftFailTextTween.Kill();
+
+        textRect.DOKill();
+        Vector2 startPos = textRect.anchoredPosition;
+
+        craftFailTextTween = textRect
+            .DOShakeAnchorPos(
+                Mathf.Max(0.05f, craftFailShakeDuration),
+                new Vector2(Mathf.Max(1f, craftFailShakeDistance), 0f),
+                Mathf.Max(2, craftFailShakeVibrato),
+                90f,
+                false,
+                true)
+            .SetUpdate(true)
+            .OnComplete(() => textRect.anchoredPosition = startPos)
+            .OnKill(() => textRect.anchoredPosition = startPos);
     }
 
     public void SetOutlineColor(Color color)
@@ -632,6 +987,9 @@ public class InventoryUI : MonoBehaviour
 
     private void OnDestroy()
     {
+        if (craftFailTextTween != null && craftFailTextTween.IsActive())
+            craftFailTextTween.Kill();
+
         if (hpVideoPlayer == null)
             return;
 
@@ -767,11 +1125,17 @@ public class InventoryUI : MonoBehaviour
                 playerInventory.AutoSelectActiveItem();
                 UpdateInventoryUI();
                 UpdateHpVideoByCurrentHealth(force: true);
+                isCombineSelectionMode = false;
+                combineSourceSlotIndex = -1;
+                HideContextMenu();
                 // Cursor.lockState = CursorLockMode.None;
                 // Cursor.visible = true;
             }
             else
             {
+                isCombineSelectionMode = false;
+                combineSourceSlotIndex = -1;
+                HideContextMenu();
                 if (!IsChestUIOpen()) // Если сундук не открыт, сбрасываем флаг
                 {
                     // Cursor.lockState = CursorLockMode.Locked;
@@ -793,6 +1157,10 @@ public class InventoryUI : MonoBehaviour
         {
             CloseChestUI();
         }
+
+        isCombineSelectionMode = false;
+        combineSourceSlotIndex = -1;
+        HideContextMenu();
 
         wasInventoryOpenBeforeChest = IsInventoryOpen();
         if (inventoryCanvas != null && wasInventoryOpenBeforeChest)
@@ -853,6 +1221,11 @@ public class InventoryUI : MonoBehaviour
             UpdateInventoryUI();
             UpdateHpVideoByCurrentHealth(force: true);
         }
+
+        isCombineSelectionMode = false;
+        combineSourceSlotIndex = -1;
+        HideContextMenu();
+
         wasInventoryOpenBeforeChest = false;
     }
 
@@ -869,6 +1242,10 @@ public class InventoryUI : MonoBehaviour
         }
 
         currentChest = null;
+
+        isCombineSelectionMode = false;
+        combineSourceSlotIndex = -1;
+        HideContextMenu();
 
         if (inventoryCanvas != null && wasInventoryOpenBeforeChest)
         {
