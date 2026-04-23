@@ -3315,6 +3315,8 @@ GameObject:
   - component: {fileID: 4554953466321093911}
   - component: {fileID: 3986980438700928673}
   - component: {fileID: 5411561375280883311}
+  - component: {fileID: 8655006156354367528}
+  - component: {fileID: 2960849415920342043}
   m_Layer: 15
   m_Name: AmmoShotgunHoleRoom
   m_TagString: Untagged
@@ -3438,6 +3440,38 @@ MonoBehaviour:
   pickupEffect: {fileID: 0}
   addAmmoItemToInventory: 1
   ammoInventoryItem: {fileID: 11400000, guid: 1e5bd7e6c14684e4796a5b18e96d0e36, type: 2}
+--- !u!114 &8655006156354367528
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2854434107916476843}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bdc2489b9291aab428580b3f2b8f2144, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  outlineColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  outlineWidth: 2
+--- !u!114 &2960849415920342043
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2854434107916476843}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5fea29bb7c508c244a1f805a5fd3fc4d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  outlineMode: 0
+  outlineColor: {r: 1, g: 1, b: 1, a: 1}
+  outlineWidth: 2
+  precomputeOutline: 0
+  bakeKeys: []
+  bakeValues: []
 --- !u!1 &3062063126752656666
 GameObject:
   m_ObjectHideFlags: 0
@@ -7848,6 +7882,8 @@ GameObject:
   - component: {fileID: 3624210148432984754}
   - component: {fileID: 3968048765125458191}
   - component: {fileID: 795677633580594832}
+  - component: {fileID: 3817816501014074670}
+  - component: {fileID: 5713160831830322971}
   m_Layer: 16
   m_Name: PCcube
   m_TagString: Untagged
@@ -8017,6 +8053,38 @@ MonoBehaviour:
           m_BoolArgument: 0
         m_CallState: 2
   mouseOverButton: 0
+--- !u!114 &3817816501014074670
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8772660480393184523}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bdc2489b9291aab428580b3f2b8f2144, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  outlineColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  outlineWidth: 2
+--- !u!114 &5713160831830322971
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8772660480393184523}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5fea29bb7c508c244a1f805a5fd3fc4d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  outlineMode: 0
+  outlineColor: {r: 1, g: 1, b: 1, a: 1}
+  outlineWidth: 2
+  precomputeOutline: 0
+  bakeKeys: []
+  bakeValues: []
 --- !u!1 &9066702980316554177
 GameObject:
   m_ObjectHideFlags: 0
