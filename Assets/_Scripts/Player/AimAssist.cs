@@ -27,10 +27,10 @@ public class AimAssist : MonoBehaviour
     private bool showLockMarker = true;
     [SerializeField, Tooltip("Опциональный префаб индикатора. Если не задан, создается runtime-квадрат")]
     private GameObject lockMarkerPrefab;
-    [SerializeField] private Vector3 lockMarkerWorldOffset = new Vector3(0f, 1.2f, 0f);
     [SerializeField] private float lockMarkerMinScale = 0.2f;
     [SerializeField] private float lockMarkerMaxScale = 1f;
-    [SerializeField] private float lockMarkerLineWidth = 0.02f;
+    [SerializeField] private float lockMarkerCubeSize = 0.2f;
+    [SerializeField] private float lockMarkerEdgeThickness = 0.03f;
     [SerializeField] private Color lockMarkerColor = new Color(0.2f, 0.65f, 1f, 1f);
     [SerializeField] private Ease lockMarkerGrowthEase = Ease.OutSine;
 
@@ -43,7 +43,7 @@ public class AimAssist : MonoBehaviour
     private float targetLockTimer;
 
     private Transform lockMarkerTransform;
-    private LineRenderer runtimeLockMarkerLine;
+    private Material runtimeLockMarkerMaterial;
     private Tween lockMarkerScaleTween;
 
     public bool Enabled { get; private set; }
@@ -171,7 +171,9 @@ public class AimAssist : MonoBehaviour
             if (col == null)
                 continue;
 
-            Vector3 targetPos = col.bounds.center;
+            if (!TryResolveEnemyTarget(col, out Transform enemyRoot, out Vector3 targetPos))
+                continue;
+
             Vector3 toTarget = targetPos - muzzlePoint.position;
             float dist = toTarget.magnitude;
             if (dist <= 0.001f)
@@ -186,12 +188,58 @@ public class AimAssist : MonoBehaviour
             if (score < bestScore)
             {
                 bestScore = score;
-                best = col.transform;
+                best = enemyRoot;
                 lastKnownPosition = targetPos;
             }
         }
 
         currentTarget = best;
+    }
+
+    private static bool TryResolveEnemyTarget(Collider col, out Transform enemyRoot, out Vector3 targetPos)
+    {
+        enemyRoot = null;
+        targetPos = Vector3.zero;
+
+        AdvancedEnemyAI advancedEnemy = col.GetComponentInParent<AdvancedEnemyAI>();
+        if (advancedEnemy != null)
+        {
+            enemyRoot = advancedEnemy.transform;
+            targetPos = GetEnemyCenter(enemyRoot, col);
+            return true;
+        }
+
+        Enemytest testEnemy = col.GetComponentInParent<Enemytest>();
+        if (testEnemy != null)
+        {
+            enemyRoot = testEnemy.transform;
+            targetPos = GetEnemyCenter(enemyRoot, col);
+            return true;
+        }
+
+        return false;
+    }
+
+    private static Vector3 GetEnemyCenter(Transform enemyRoot, Collider fallbackCollider)
+    {
+        if (enemyRoot != null)
+        {
+            Renderer[] renderers = enemyRoot.GetComponentsInChildren<Renderer>();
+            if (renderers != null && renderers.Length > 0)
+            {
+                Bounds combined = renderers[0].bounds;
+                for (int i = 1; i < renderers.Length; i++)
+                    combined.Encapsulate(renderers[i].bounds);
+
+                return combined.center;
+            }
+
+            Collider rootCollider = enemyRoot.GetComponent<Collider>();
+            if (rootCollider != null)
+                return rootCollider.bounds.center;
+        }
+
+        return fallbackCollider != null ? fallbackCollider.bounds.center : Vector3.zero;
     }
 
     private void UpdateLockProgress()
@@ -265,16 +313,8 @@ public class AimAssist : MonoBehaviour
         if (!lockMarkerTransform.gameObject.activeSelf)
             lockMarkerTransform.gameObject.SetActive(true);
 
-        Vector3 markerPos = lastKnownPosition + lockMarkerWorldOffset;
+        Vector3 markerPos = lastKnownPosition;
         lockMarkerTransform.position = markerPos;
-
-        Camera cam = GetMainCamera();
-        if (cam != null)
-        {
-            Vector3 toCamera = markerPos - cam.transform.position;
-            if (toCamera.sqrMagnitude > 0.0001f)
-                lockMarkerTransform.rotation = Quaternion.LookRotation(toCamera.normalized, Vector3.up);
-        }
 
         if (lockMarkerScaleTween == null || !lockMarkerScaleTween.IsActive())
         {
@@ -295,7 +335,7 @@ public class AimAssist : MonoBehaviour
         }
         else
         {
-            markerObj = CreateRuntimeSquareMarker();
+            markerObj = CreateRuntimeCubeMarker();
         }
 
         if (markerObj == null)
@@ -307,31 +347,58 @@ public class AimAssist : MonoBehaviour
         lockMarkerTransform.gameObject.SetActive(false);
     }
 
-    private GameObject CreateRuntimeSquareMarker()
+    private GameObject CreateRuntimeCubeMarker()
     {
-        GameObject go = new GameObject("AimLockMarker_Runtime");
-        LineRenderer lr = go.AddComponent<LineRenderer>();
-        runtimeLockMarkerLine = lr;
+        GameObject go = new GameObject("AimLockMarker_RuntimeWireCube");
 
-        lr.loop = true;
-        lr.useWorldSpace = false;
-        lr.positionCount = 4;
-        lr.SetPosition(0, new Vector3(-0.5f, -0.5f, 0f));
-        lr.SetPosition(1, new Vector3(0.5f, -0.5f, 0f));
-        lr.SetPosition(2, new Vector3(0.5f, 0.5f, 0f));
-        lr.SetPosition(3, new Vector3(-0.5f, 0.5f, 0f));
+        Shader shader = Shader.Find("Unlit/Color");
+        if (shader == null)
+            shader = Shader.Find("Standard");
 
-        float width = Mathf.Max(0.001f, lockMarkerLineWidth);
-        lr.startWidth = width;
-        lr.endWidth = width;
-
-        Shader shader = Shader.Find("Sprites/Default");
         if (shader != null)
-            lr.material = new Material(shader);
+        {
+            runtimeLockMarkerMaterial = new Material(shader);
+            runtimeLockMarkerMaterial.color = lockMarkerColor;
+        }
 
-        lr.startColor = lockMarkerColor;
-        lr.endColor = lockMarkerColor;
+        float cubeSize = Mathf.Max(0.05f, lockMarkerCubeSize);
+        float edgeThickness = Mathf.Clamp(lockMarkerEdgeThickness, 0.005f, cubeSize * 0.4f);
+        float half = cubeSize * 0.5f;
+
+        CreateWireEdge(go.transform, "Edge_X_TopFront", new Vector3(0f, half, half), new Vector3(cubeSize, edgeThickness, edgeThickness));
+        CreateWireEdge(go.transform, "Edge_X_TopBack", new Vector3(0f, half, -half), new Vector3(cubeSize, edgeThickness, edgeThickness));
+        CreateWireEdge(go.transform, "Edge_X_BottomFront", new Vector3(0f, -half, half), new Vector3(cubeSize, edgeThickness, edgeThickness));
+        CreateWireEdge(go.transform, "Edge_X_BottomBack", new Vector3(0f, -half, -half), new Vector3(cubeSize, edgeThickness, edgeThickness));
+
+        CreateWireEdge(go.transform, "Edge_Y_LeftFront", new Vector3(-half, 0f, half), new Vector3(edgeThickness, cubeSize, edgeThickness));
+        CreateWireEdge(go.transform, "Edge_Y_RightFront", new Vector3(half, 0f, half), new Vector3(edgeThickness, cubeSize, edgeThickness));
+        CreateWireEdge(go.transform, "Edge_Y_LeftBack", new Vector3(-half, 0f, -half), new Vector3(edgeThickness, cubeSize, edgeThickness));
+        CreateWireEdge(go.transform, "Edge_Y_RightBack", new Vector3(half, 0f, -half), new Vector3(edgeThickness, cubeSize, edgeThickness));
+
+        CreateWireEdge(go.transform, "Edge_Z_LeftTop", new Vector3(-half, half, 0f), new Vector3(edgeThickness, edgeThickness, cubeSize));
+        CreateWireEdge(go.transform, "Edge_Z_RightTop", new Vector3(half, half, 0f), new Vector3(edgeThickness, edgeThickness, cubeSize));
+        CreateWireEdge(go.transform, "Edge_Z_LeftBottom", new Vector3(-half, -half, 0f), new Vector3(edgeThickness, edgeThickness, cubeSize));
+        CreateWireEdge(go.transform, "Edge_Z_RightBottom", new Vector3(half, -half, 0f), new Vector3(edgeThickness, edgeThickness, cubeSize));
+
         return go;
+    }
+
+    private void CreateWireEdge(Transform parent, string name, Vector3 localPosition, Vector3 localScale)
+    {
+        GameObject edge = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        edge.name = name;
+        edge.transform.SetParent(parent, false);
+        edge.transform.localPosition = localPosition;
+        edge.transform.localRotation = Quaternion.identity;
+        edge.transform.localScale = localScale;
+
+        Collider edgeCollider = edge.GetComponent<Collider>();
+        if (edgeCollider != null)
+            Destroy(edgeCollider);
+
+        Renderer edgeRenderer = edge.GetComponent<Renderer>();
+        if (edgeRenderer != null && runtimeLockMarkerMaterial != null)
+            edgeRenderer.material = runtimeLockMarkerMaterial;
     }
 
     private void RestartLockMarkerTween()
@@ -377,7 +444,7 @@ public class AimAssist : MonoBehaviour
         if (lockMarkerTransform != null)
             Destroy(lockMarkerTransform.gameObject);
 
-        if (runtimeLockMarkerLine != null && runtimeLockMarkerLine.material != null)
-            Destroy(runtimeLockMarkerLine.material);
+        if (runtimeLockMarkerMaterial != null)
+            Destroy(runtimeLockMarkerMaterial);
     }
 }
