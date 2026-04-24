@@ -401,6 +401,7 @@ Transform:
   - {fileID: 9128039850564234843}
   - {fileID: 8285555265723637527}
   - {fileID: 4738444503782562729}
+  - {fileID: 8453848356788412142}
   - {fileID: 4615605716960021558}
   - {fileID: 3131114046739672465}
   - {fileID: 9091063216379097639}
@@ -1505,7 +1506,7 @@ GameObject:
   - component: {fileID: 4584605635628381910}
   m_Layer: 13
   m_Name: Plane (14)
-  m_TagString: ElevatorRoom
+  m_TagString: osnovaRoom
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 2147483647
@@ -1520,7 +1521,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: -0.39, y: 0, z: -28.03}
-  m_LocalScale: {x: 0.5, y: 1, z: 0.5}
+  m_LocalScale: {x: 0.5, y: 1, z: 0.6282}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 3809845470990052507}
@@ -2397,9 +2398,9 @@ GameObject:
   - component: {fileID: 1502028208522282748}
   - component: {fileID: 5000908584979715489}
   - component: {fileID: 7481034201254458200}
-  - component: {fileID: 3862655152292521130}
+  - component: {fileID: 6983205761020130005}
   m_Layer: 13
-  m_Name: ExitTPmenu
+  m_Name: TpTheEndRoom
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2456,10 +2457,10 @@ MonoBehaviour:
   closedElevator: {fileID: 0}
   openElevator: {fileID: 8005960090734225710}
   hintText: {fileID: 450061673075007928}
-  closedHint: "\u0417\u0430\u043A\u0440\u044B\u0442\u043E"
+  closedHint: 
   hintShowDistance: 4
   player: {fileID: 0}
---- !u!114 &3862655152292521130
+--- !u!114 &6983205761020130005
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -2468,17 +2469,53 @@ MonoBehaviour:
   m_GameObject: {fileID: 4444315520426673711}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6761fc835c75bf148ad3d201d4d9ec99, type: 3}
+  m_Script: {fileID: 11500000, guid: 73d41f195dd8e22489185ff8adb743d6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  nextSceneName: Menu
-  delayBeforeFade: 1
-  fadeDuration: 2
-  fadeCanvas: {fileID: 0}
-  fadeCanvasGroup: {fileID: 0}
-  fadeText: {fileID: 0}
-  transitionMessage: "\u0417\u0430\u0433\u0440\u0443\u0437\u043A\u0430 \u0441\u043B\u0435\u0434\u0443\u044E\u0449\u0435\u0439
-    \u0441\u0446\u0435\u043D\u044B..."
+  doorState: 0
+  hasKey: 0
+  consumeKeyOnUse: 1
+  teleportTarget: {fileID: 0}
+  doorVisual: {fileID: 0}
+  doorOpenOffset: 4
+  doorOpenDuration: 0.1
+  doorOpenEase: 3
+  doorBlockColliders:
+  - {fileID: 0}
+  - {fileID: 0}
+  autoCloseDoor: 1
+  doorCloseDelay: 1.2
+  doorCloseDuration: 0.45
+  doorCloseEase: 2
+  audioSource: {fileID: 0}
+  doorOpenClip: {fileID: 0}
+  doorLockedClip: {fileID: 0}
+  enterPoint: {fileID: 0}
+  enterDuration: 1
+  enterEase: 1
+  exitPoint: {fileID: 0}
+  exitDuration: 0.35
+  exitEase: 1
+  playerAnimator: {fileID: 0}
+  interactAnimState: Interact_Door
+  interactAnimDuration: 0.75
+  walkAnimState: Blend Tree_WALK
+  idleAnimState: Idle
+  animCrossFade: 0.1
+  fadeImage: {fileID: 0}
+  fadeColor: {r: 0, g: 0, b: 0, a: 1}
+  fadeToDarkDuration: 0.6
+  fadeFromDarkDuration: 1
+  holdDarkDuration: 0.8
+  hintRoot: {fileID: 0}
+  hintStateImage: {fileID: 0}
+  spriteOpen: {fileID: 21300000, guid: 9e54857342f62ce449e6f5d48a097cc2, type: 3}
+  spriteLocked: {fileID: 21300000, guid: 8f894332dd1ec8e45a7e1f63dc22461b, type: 3}
+  spriteNeedKey: {fileID: 21300000, guid: e18f21fac57b48643915fad247f73ade, type: 3}
+  hintRevealDuration: 0.2
+  hintRevealEase: 27
+  playerTag: Player
+  interactKey: 101
 --- !u!1 &4455344037353274014
 GameObject:
   m_ObjectHideFlags: 0
@@ -4851,6 +4888,37 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!1 &7406377166667258068
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8453848356788412142}
+  m_Layer: 13
+  m_Name: TpIzTheEndInElevation
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8453848356788412142
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7406377166667258068}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -0, y: 0, z: -19.87}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3809845470990052507}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &7470837356166921642
 GameObject:
   m_ObjectHideFlags: 0

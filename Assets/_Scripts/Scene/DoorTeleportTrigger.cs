@@ -26,6 +26,9 @@ public class DoorTeleportTrigger : MonoBehaviour
     [SerializeField] private DoorState doorState = DoorState.Open;
     [SerializeField] private bool hasKey = false;
     [SerializeField] private bool consumeKeyOnUse = true;
+    
+    [Tooltip("Предмет из инвентаря, проверяемый при открытии двери (если 'LockedNeedKey').")]
+    [SerializeField] private InventoryItem requiredKeyItem;
 
     // ─── Телепорт ────────────────────────────────────────────────────────────
 
@@ -264,17 +267,45 @@ public class DoorTeleportTrigger : MonoBehaviour
                 yield break;
 
             case DoorState.LockedNeedKey:
-                if (!hasKey)
+                bool haveRequiredKey = false;
+                
+                // Проверяем, назначен ли конкретный ключ, и ищем ли его в инвентаре.
+                if (requiredKeyItem != null && _player != null)
+                {
+                    PlayerInventory pInv = _player.GetComponent<PlayerInventory>();
+                    if (pInv != null && pInv.inventoryData != null)
+                    {
+                        foreach (var itm in pInv.inventoryData.items)
+                        {
+                            if (itm == requiredKeyItem)
+                            {
+                                haveRequiredKey = true;
+                                if (consumeKeyOnUse)
+                                {
+                                    pInv.inventoryData.RemoveItem(itm);
+                                }
+                                break;
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    // Фолбэк на старую логику с bool hasKey
+                    haveRequiredKey = hasKey;
+                    if (haveRequiredKey && consumeKeyOnUse)
+                    {
+                        hasKey = false;
+                    }
+                }
+
+                if (!haveRequiredKey)
                 {
                     if (audioSource != null && doorLockedClip != null)
                         audioSource.PlayOneShot(doorLockedClip);
                     result(false);
                     yield break;
                 }
-
-                // Используем ключ (без анимации)
-                if (consumeKeyOnUse)
-                    hasKey = false;
 
                 doorState = DoorState.Open;
                 result(true);
@@ -484,13 +515,37 @@ public class DoorTeleportTrigger : MonoBehaviour
     {
         if (hintStateImage != null)
         {
-            hintStateImage.sprite = doorState switch
+            if (doorState == DoorState.LockedNeedKey)
             {
-                DoorState.Open          => spriteOpen,
-                DoorState.Locked        => spriteLocked,
-                DoorState.LockedNeedKey => hasKey ? spriteOpen : spriteNeedKey,
-                _                       => null
-            };
+                bool haveRequiredKey = hasKey;
+
+                if (requiredKeyItem != null && _player != null)
+                {
+                    PlayerInventory pInv = _player.GetComponent<PlayerInventory>();
+                    if (pInv != null && pInv.inventoryData != null)
+                    {
+                        foreach (var itm in pInv.inventoryData.items)
+                        {
+                            if (itm == requiredKeyItem)
+                            {
+                                haveRequiredKey = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                hintStateImage.sprite = haveRequiredKey ? spriteOpen : spriteNeedKey;
+            }
+            else
+            {
+                hintStateImage.sprite = doorState switch
+                {
+                    DoorState.Open => spriteOpen,
+                    DoorState.Locked => spriteLocked,
+                    _ => null
+                };
+            }
         }
 
         SetHintVisible(true);

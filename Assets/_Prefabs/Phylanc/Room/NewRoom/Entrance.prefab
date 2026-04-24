@@ -109,6 +109,37 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 10209, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &400829428913249620
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5731455519789813856}
+  m_Layer: 0
+  m_Name: IzCorridorIn3door
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5731455519789813856
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 400829428913249620}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -4.14, y: -1.02, z: 2.81}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8956656271316945869}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &607361862973666341
 GameObject:
   m_ObjectHideFlags: 0
@@ -3486,6 +3517,7 @@ MonoBehaviour:
   doorState: 0
   hasKey: 0
   consumeKeyOnUse: 1
+  requiredKeyItem: {fileID: 0}
   teleportTarget: {fileID: 5352674420184393868}
   doorVisual: {fileID: 4984131154546469331}
   doorOpenOffset: 1
@@ -3691,7 +3723,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 400006, guid: 1b74ff2139ba6ea47803d0c80ee0702a, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 14.45
+      value: 14.8
       objectReference: {fileID: 0}
     - target: {fileID: 400006, guid: 1b74ff2139ba6ea47803d0c80ee0702a, type: 3}
       propertyPath: m_LocalRotation.w
@@ -3791,6 +3823,7 @@ MonoBehaviour:
   doorState: 1
   hasKey: 0
   consumeKeyOnUse: 1
+  requiredKeyItem: {fileID: 0}
   teleportTarget: {fileID: 0}
   doorVisual: {fileID: 4986162690480196732}
   doorOpenOffset: 4
@@ -4195,6 +4228,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 400006, guid: 1b74ff2139ba6ea47803d0c80ee0702a, type: 3}
       insertIndex: -1
       addedObject: {fileID: 689759337187793594}
+    - targetCorrespondingSourceObject: {fileID: 400006, guid: 1b74ff2139ba6ea47803d0c80ee0702a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5731455519789813856}
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 100002, guid: 1b74ff2139ba6ea47803d0c80ee0702a, type: 3}
       insertIndex: -1
@@ -4250,8 +4286,9 @@ MonoBehaviour:
   doorState: 0
   hasKey: 0
   consumeKeyOnUse: 1
+  requiredKeyItem: {fileID: 0}
   teleportTarget: {fileID: 0}
-  doorVisual: {fileID: 8956656271316945865}
+  doorVisual: {fileID: 0}
   doorOpenOffset: 4
   doorOpenDuration: 0.1
   doorOpenEase: 3
@@ -4409,11 +4446,6 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
---- !u!4 &8956656271316945865 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 400002, guid: 1b74ff2139ba6ea47803d0c80ee0702a, type: 3}
-  m_PrefabInstance: {fileID: 8956656271316554059}
-  m_PrefabAsset: {fileID: 0}
 --- !u!4 &8956656271316945869 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 400006, guid: 1b74ff2139ba6ea47803d0c80ee0702a, type: 3}
