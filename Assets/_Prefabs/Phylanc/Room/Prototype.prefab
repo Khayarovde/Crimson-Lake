@@ -2638,8 +2638,13 @@ MonoBehaviour:
   resetPuzzleOnClose: 0
   autoCloseOnSolved: 1
   autoCloseDelay: 1.25
-  lightsToEnableOnSolved: []
-  forceLightsOffOnStart: 1
+  disableOnSolved:
+  - {fileID: 0}
+  isSolvedByDefault: 1
+  lightsToDisableOnSolved:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
   unlockCursorWhileOpen: 1
   autoFindPlayerControllers: 1
   movementController: {fileID: 0}

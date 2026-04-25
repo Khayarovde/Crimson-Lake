@@ -18811,15 +18811,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 290632965567463538, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -365.25
+      value: -432.1
       objectReference: {fileID: 0}
     - target: {fileID: 290632965567463538, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.43
+      value: -0.29
       objectReference: {fileID: 0}
     - target: {fileID: 290632965567463538, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 36.1
+      value: 36.3
       objectReference: {fileID: 0}
     - target: {fileID: 290632965567463538, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
       propertyPath: m_LocalRotation.w
@@ -18894,6 +18894,10 @@ PrefabInstance:
       value: 4294967295
       objectReference: {fileID: 0}
     - target: {fileID: 1988559161486194445, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
+      propertyPath: pistolDamageToEnemytest
+      value: 15
+      objectReference: {fileID: 0}
+    - target: {fileID: 1988559161486194445, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
       propertyPath: finisherEnterStateTimeout
       value: 0.45
       objectReference: {fileID: 0}
@@ -18919,7 +18923,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2406689343700059058, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
       propertyPath: surfaceClips.Array.size
-      value: 9
+      value: 11
       objectReference: {fileID: 0}
     - target: {fileID: 2406689343700059058, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
       propertyPath: surfaceClips.Array.data[5].maxPitch
@@ -18951,6 +18955,22 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2406689343700059058, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
       propertyPath: surfaceClips.Array.data[8].minPitch
+      value: 0.8
+      objectReference: {fileID: 0}
+    - target: {fileID: 2406689343700059058, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
+      propertyPath: surfaceClips.Array.data[9].maxPitch
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2406689343700059058, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
+      propertyPath: surfaceClips.Array.data[9].minPitch
+      value: 0.8
+      objectReference: {fileID: 0}
+    - target: {fileID: 2406689343700059058, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
+      propertyPath: surfaceClips.Array.data[10].maxPitch
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2406689343700059058, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
+      propertyPath: surfaceClips.Array.data[10].minPitch
       value: 0.8
       objectReference: {fileID: 0}
     - target: {fileID: 2406689343700059058, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
@@ -18986,20 +19006,48 @@ PrefabInstance:
       value: LabRoom
       objectReference: {fileID: 0}
     - target: {fileID: 2406689343700059058, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
+      propertyPath: surfaceClips.Array.data[9].baseVolume
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2406689343700059058, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
+      propertyPath: surfaceClips.Array.data[9].surfaceTag
+      value: TheEndRoom
+      objectReference: {fileID: 0}
+    - target: {fileID: 2406689343700059058, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
+      propertyPath: surfaceClips.Array.data[10].baseVolume
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2406689343700059058, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
+      propertyPath: surfaceClips.Array.data[10].surfaceTag
+      value: CorridorRoom
+      objectReference: {fileID: 0}
+    - target: {fileID: 2406689343700059058, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
+      propertyPath: surfaceClips.Array.data[0].fadeInDuration
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2406689343700059058, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
+      propertyPath: surfaceClips.Array.data[1].fadeInDuration
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2406689343700059058, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
+      propertyPath: surfaceClips.Array.data[4].fadeInDuration
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2406689343700059058, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
       propertyPath: surfaceClips.Array.data[5].fadeInDuration
-      value: 0.5
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2406689343700059058, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
       propertyPath: surfaceClips.Array.data[6].fadeInDuration
-      value: 0.5
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2406689343700059058, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
       propertyPath: surfaceClips.Array.data[7].fadeInDuration
-      value: 0.5
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2406689343700059058, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
       propertyPath: surfaceClips.Array.data[8].fadeInDuration
-      value: 0.2
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2406689343700059058, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
       propertyPath: surfaceClips.Array.data[0].clips.Array.size
@@ -19027,6 +19075,14 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2406689343700059058, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
       propertyPath: surfaceClips.Array.data[8].clips.Array.size
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 2406689343700059058, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
+      propertyPath: surfaceClips.Array.data[9].clips.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2406689343700059058, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
+      propertyPath: surfaceClips.Array.data[10].clips.Array.size
       value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 2406689343700059058, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
@@ -19169,6 +19225,22 @@ PrefabInstance:
       propertyPath: 'surfaceClips.Array.data[8].clips.Array.data[2]'
       value: 
       objectReference: {fileID: 8300000, guid: 159571a13b369b74f945d8a54b32cc0c, type: 3}
+    - target: {fileID: 2406689343700059058, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
+      propertyPath: 'surfaceClips.Array.data[9].clips.Array.data[0]'
+      value: 
+      objectReference: {fileID: 8300000, guid: adc29c7b7b0fccf4a9ce85444cfd5ee0, type: 3}
+    - target: {fileID: 2406689343700059058, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
+      propertyPath: 'surfaceClips.Array.data[10].clips.Array.data[0]'
+      value: 
+      objectReference: {fileID: 8300000, guid: adc29c7b7b0fccf4a9ce85444cfd5ee0, type: 3}
+    - target: {fileID: 2406689343700059058, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
+      propertyPath: 'surfaceClips.Array.data[10].clips.Array.data[1]'
+      value: 
+      objectReference: {fileID: 8300000, guid: d528db4c9d06a264cbb37328ab0840c7, type: 3}
+    - target: {fileID: 2406689343700059058, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
+      propertyPath: 'surfaceClips.Array.data[10].clips.Array.data[2]'
+      value: 
+      objectReference: {fileID: 8300000, guid: d528db4c9d06a264cbb37328ab0840c7, type: 3}
     - target: {fileID: 3348004520985068418, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0.1
