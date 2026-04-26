@@ -21,9 +21,12 @@ public class FinishingManager : MonoBehaviour
 
     [Header("Animation")]
     public string enemyAnimationState = "Stun";
+    public bool playEnemyAnimation = false;
     public string playerAttackTrigger = "death";
+    public string playerAnimationState = "attack_stun_enemy";
     [Range(0.05f, 0.95f)] public float effectStartNormalizedTime = 0.5f;
     public bool useAutomaticTiming = true;
+    public float customFinishingDuration = 2.5f; // Резервное время на случай, если длину анимации не удастся определить
 
     [Header("Visual")]
     public string finishingLayerName = "FinishingOnly";
@@ -72,6 +75,11 @@ public class FinishingManager : MonoBehaviour
             finishingCanvas.gameObject.SetActive(false);
         }
 
+        if (finishingRawImage != null)
+        {
+            finishingRawImage.gameObject.SetActive(false);
+        }
+
         ValidateSetup();
     }
 
@@ -81,15 +89,15 @@ public class FinishingManager : MonoBehaviour
 
     public void StartFinishing(Transform p, Transform e)
     {
-        StartFinishingInternal(p, e, true, false, true);
+        StartFinishingInternal(p, e, true, false);
     }
 
     public void StartFinishingImmediate(Transform p, Transform e)
     {
-        StartFinishingInternal(p, e, true, true, false);
+        StartFinishingInternal(p, e, true, true);
     }
 
-    private void StartFinishingInternal(Transform p, Transform e, bool startEffectImmediately, bool forceAutomaticSequence, bool replayEnemyAnimation)
+    private void StartFinishingInternal(Transform p, Transform e, bool startEffectImmediately, bool forceAutomaticSequence)
     {
         if (isFinishingActive)
         {
@@ -130,7 +138,7 @@ public class FinishingManager : MonoBehaviour
 
         PrepareFinishingCamera();
 
-        if (replayEnemyAnimation)
+        if (playEnemyAnimation)
         {
             enemyAnim.Play(enemyAnimationState, 0, 0f);
         }
@@ -150,10 +158,7 @@ public class FinishingManager : MonoBehaviour
 
         if (useAutomaticTiming || forceAutomaticSequence)
         {
-            float duration = replayEnemyAnimation
-                ? GetClipLength(enemyAnim, enemyAnimationState, 1f)
-                : GetCurrentStateRemainingTime(enemyAnim, 1f);
-            automaticSequenceRoutine = StartCoroutine(AutomaticSequence(duration, startEffectImmediately));
+            automaticSequenceRoutine = StartCoroutine(AutomaticSequence(startEffectImmediately));
         }
     }
 
@@ -187,6 +192,7 @@ public class FinishingManager : MonoBehaviour
         }
         if (finishingRawImage != null)
         {
+            finishingRawImage.gameObject.SetActive(true);
             finishingRawImage.color = Color.white;
         }
 
@@ -213,21 +219,68 @@ public class FinishingManager : MonoBehaviour
         Debug.Log("FinishingManager: Finishing effect OFF. Scene restored.");
     }
 
-    private IEnumerator AutomaticSequence(float enemyAnimationDuration, bool effectAlreadyStarted)
+    private IEnumerator AutomaticSequence(bool effectAlreadyStarted)
     {
+        // Небольшая пауза, чтобы Animator начал переход
+        yield return null;
+        yield return null;
+
+        float duration = customFinishingDuration;
+
+        if (useAutomaticTiming && playerAnim != null)
+        {
+            // Ждем, пока аниматор действительно перейдет в нужный стейт (до 1 секунды)
+            float waitTimer = 0f;
+            while (waitTimer < 1f)
+            {
+                AnimatorStateInfo currentInfo = playerAnim.GetCurrentAnimatorStateInfo(0);
+                if (currentInfo.IsName(playerAnimationState))
+                {
+                    break;
+                }
+                
+                AnimatorStateInfo nextInfo = playerAnim.GetNextAnimatorStateInfo(0);
+                if (nextInfo.IsName(playerAnimationState))
+                {
+                    break;
+                }
+
+                waitTimer += Time.unscaledDeltaTime;
+                yield return null;
+            }
+
+            // Пытаемся взять точную длину клипа по названию, иначе берем длину стейта
+            float clipLength = GetClipLength(playerAnim, playerAnimationState, -1f);
+            if (clipLength > 0f)
+            {
+                duration = clipLength;
+            }
+            else
+            {
+                AnimatorStateInfo stateInfo = playerAnim.GetCurrentAnimatorStateInfo(0);
+                duration = stateInfo.length;
+
+                // Если длина анимации слишком короткая (например стейт еще не сменился), берем дефолтное время
+                if (duration <= 0.1f)
+                {
+                    duration = customFinishingDuration;
+                }
+            }
+        }
+
         if (effectAlreadyStarted)
         {
-            if (enemyAnimationDuration > 0f)
+            if (duration > 0f)
             {
-                yield return new WaitForSeconds(enemyAnimationDuration);
+                yield return new WaitForSeconds(duration);
             }
 
             EndFinishingEffect();
             yield break;
         }
 
-        float firstPart = enemyAnimationDuration * effectStartNormalizedTime;
-        float secondPart = enemyAnimationDuration - firstPart;
+        float firstPart = duration * effectStartNormalizedTime;
+        float secondPart = duration - firstPart;
 
         if (firstPart > 0f)
         {
@@ -293,6 +346,11 @@ public class FinishingManager : MonoBehaviour
         if (finishingCanvas != null)
         {
             finishingCanvas.gameObject.SetActive(false);
+        }
+
+        if (finishingRawImage != null)
+        {
+            finishingRawImage.gameObject.SetActive(false);
         }
 
         if (usingTemporaryLayer)

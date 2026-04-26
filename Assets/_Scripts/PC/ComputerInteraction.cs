@@ -151,7 +151,7 @@ public class ComputerInteraction : MonoBehaviour
         {
             foreach (var item in activeInventoryData.items)
             {
-                if (item != null && item.type == InventoryItem.ItemType.Cassette)
+                if (item != null && (item.type == InventoryItem.ItemType.Cassette || item.type == InventoryItem.ItemType.Disketa))
                 {
                     hasDiskette = true;
                     disketteItem = item;

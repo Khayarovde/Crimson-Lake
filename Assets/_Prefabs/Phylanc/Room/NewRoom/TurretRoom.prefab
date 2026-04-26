@@ -3064,6 +3064,7 @@ MonoBehaviour:
   doorState: 0
   hasKey: 0
   consumeKeyOnUse: 1
+  requiredKeyItem: {fileID: 0}
   teleportTarget: {fileID: 1467841738692987729}
   doorVisual: {fileID: 2363868239124157646}
   doorOpenOffset: 4
@@ -3843,9 +3844,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 73d41f195dd8e22489185ff8adb743d6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  doorState: 0
+  doorState: 2
   hasKey: 0
   consumeKeyOnUse: 1
+  requiredKeyItem: {fileID: 0}
   teleportTarget: {fileID: 0}
   doorVisual: {fileID: 5890440221689466531}
   doorOpenOffset: 4
@@ -4253,6 +4255,11 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 400006, guid: 1b74ff2139ba6ea47803d0c80ee0702a, type: 3}
   m_PrefabInstance: {fileID: 9177591600670179014}
   m_PrefabAsset: {fileID: 0}
+--- !u!4 &9177591600670041156 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 400002, guid: 1b74ff2139ba6ea47803d0c80ee0702a, type: 3}
+  m_PrefabInstance: {fileID: 9177591600670179014}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &9177591600670079076 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100002, guid: 1b74ff2139ba6ea47803d0c80ee0702a, type: 3}
@@ -4412,8 +4419,9 @@ MonoBehaviour:
   doorState: 0
   hasKey: 0
   consumeKeyOnUse: 1
+  requiredKeyItem: {fileID: 0}
   teleportTarget: {fileID: 0}
-  doorVisual: {fileID: 0}
+  doorVisual: {fileID: 9177591600670041156}
   doorOpenOffset: 4
   doorOpenDuration: 0.1
   doorOpenEase: 3

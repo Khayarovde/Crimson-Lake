@@ -82,6 +82,15 @@ public class PlayerHealth : MonoBehaviour
         ApplyDamage(enemyHitDamage, source);
     }
 
+    public void SetHealth(int amount)
+    {
+        currentHealth = Mathf.Clamp(amount, 0, maxHealth);
+        if (currentHealth <= 0)
+        {
+            Die(null);
+        }
+    }
+
     public void ApplyDamage(int amount, AdvancedEnemyAI source = null)
     {
         if (isDead || amount <= 0)

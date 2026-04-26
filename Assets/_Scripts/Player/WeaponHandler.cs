@@ -127,6 +127,8 @@ public class WeaponHandler : MonoBehaviour
     [SerializeField] private float finisherReturnToIdleDelay = 0.8f;
     [SerializeField, Tooltip("Таймаут ожидания входа в state добивания")]
     private float finisherEnterStateTimeout = 0.35f;
+    [SerializeField, Tooltip("Максимальное ожидание окончания анимации добивания, чтобы не зависнуть при ошибочной конфигурации Animator")]
+    private float finisherMaxWaitForAnimationEnd = 3f;
     [SerializeField] private float finisherRange = 1.4f;
     [SerializeField, Tooltip("Автоподшаг к позиции добивания перед запуском анимации")]
     private bool autoSnapToFinisherPosition = true;
@@ -687,6 +689,14 @@ public class WeaponHandler : MonoBehaviour
     private IEnumerator ReturnToIdleAfterFinisher()
     {
         Animator anim = GetAnimator();
+        if (anim == null)
+        {
+            ReleaseFinisherAnimationLock();
+            isFinisherInProgress = false;
+            finisherReturnCoroutine = null;
+            yield break;
+        }
+
         float enterTimeout = Mathf.Max(0.05f, finisherEnterStateTimeout);
         float elapsed = 0f;
         int finisherHash = Animator.StringToHash(finisherAnimation);
@@ -709,11 +719,37 @@ public class WeaponHandler : MonoBehaviour
             yield return null;
         }
 
-        float delay = Mathf.Max(0.05f, finisherReturnToIdleDelay);
-        if (!finisherStarted)
-            delay = Mathf.Max(delay, finisherEnemyDeathDelay + 0.05f);
+        if (finisherStarted)
+        {
+            float waitEndTimeout = Mathf.Max(0.1f, finisherMaxWaitForAnimationEnd);
+            float waitElapsed = 0f;
 
-        yield return new WaitForSeconds(delay);
+            while (waitElapsed < waitEndTimeout)
+            {
+                if (anim == null)
+                    break;
+
+                AnimatorStateInfo currentState = anim.GetCurrentAnimatorStateInfo(0);
+                AnimatorStateInfo nextState = anim.GetNextAnimatorStateInfo(0);
+                bool isStillFinisher = currentState.shortNameHash == finisherHash || nextState.shortNameHash == finisherHash;
+
+                if (!isStillFinisher)
+                    break;
+
+                if (currentState.shortNameHash == finisherHash && currentState.normalizedTime >= 1f && !anim.IsInTransition(0))
+                    break;
+
+                waitElapsed += Time.deltaTime;
+                yield return null;
+            }
+        }
+        else
+        {
+            float delay = Mathf.Max(0.05f, finisherReturnToIdleDelay);
+            delay = Mathf.Max(delay, finisherEnemyDeathDelay + 0.05f);
+            yield return new WaitForSeconds(delay);
+        }
+
         ForceDefaultIdle();
         ReleaseFinisherAnimationLock();
         isFinisherInProgress = false;

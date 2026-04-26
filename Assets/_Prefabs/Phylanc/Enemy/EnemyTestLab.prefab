@@ -1234,10 +1234,6 @@ MonoBehaviour:
   permanentDeathDestroyDelay: 2
   keepBodyAfterPermanentDeath: 1
   knockoutsToPermanentDeath: 2
-  useFinalKnockoutStun: 1
-  instantWakeAfterKnockoutStun: 0
-  knockoutStunDuration: 0.35
-  knockoutMinVisibleStunDuration: 0.55
   debugDamageLogs: 1
   debugStateLogs: 0
   waypoints: []
@@ -1322,7 +1318,8 @@ MonoBehaviour:
   attackStateName: Attack
   attackRecoveryStateName: Idle
   screamStateName: Scream
-  fakeDeathStateName: death
+  deathFallStateName: death_padaet
+  deathEndStateName: death_end
   wakeUpStateName: wakeUp_stun
   staggerStateName: Stun
   staggerFallbackStateName: Hit
