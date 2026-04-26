@@ -36,6 +36,9 @@ public class Turret : MonoBehaviour
     private GameObject _muzzleFlash;
     [SerializeField]
     private float _muzzleFlashActiveDuration = 0.25f;
+    [SerializeField, Min(1)]
+    [Tooltip("Урон, который наносится игроку за один выстрел турели.")]
+    private int _damage = 1;
     [SerializeField]
     private float _delayBeforeNextTarget = 1f;
     [SerializeField]
@@ -212,7 +215,7 @@ public class Turret : MonoBehaviour
 
         SetShootTrigger();
         DoMuzzleFlash();
-        _playerTarget.ApplyTurretDamage(1);
+        _playerTarget.ApplyTurretDamage(_damage);
     }
 
     private bool CanSeeTarget(out Vector3 direction)

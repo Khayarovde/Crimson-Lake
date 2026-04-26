@@ -163,6 +163,7 @@ Transform:
   - {fileID: 2537179867134040211}
   - {fileID: 6770652659965971437}
   - {fileID: 5720569586904103385}
+  - {fileID: 4122418334440448949}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 90}
 --- !u!1 &254633320064851713
@@ -1246,6 +1247,81 @@ MonoBehaviour:
   m_LightCookieSize: {x: 1, y: 1}
   m_LightCookieOffset: {x: 0, y: 0}
   m_SoftShadowQuality: 0
+--- !u!1 &5565849450876139532
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4122418334440448949}
+  - component: {fileID: 1444462171086839332}
+  - component: {fileID: 1157728226598004428}
+  m_Layer: 0
+  m_Name: TriggerMusicGlassRoom
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4122418334440448949
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5565849450876139532}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.7071066, y: -0.707107, z: -0.00000028710042, w: 0.00000034272668}
+  m_LocalPosition: {x: -0.91993046, y: 18.701996, z: -0.059997585}
+  m_LocalScale: {x: 0.5, y: 2, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1689827216515662059}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &1444462171086839332
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5565849450876139532}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 33.97, y: 5.24, z: 15.4}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &1157728226598004428
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5565849450876139532}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 155deb94939d55b4e9cbed2b71c48d34, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  zoneMusic: {fileID: 0}
+  zoneVolume: 0.155
+  loopMusic: 1
+  playOnEnter: 1
+  stopOnExit: 0
+  fadePreviousOnEnter: 1
+  fadeInTime: 1.5
+  fadeOutTime: 1.5
+  zoneAudioSource: {fileID: 0}
 --- !u!1 &5606972581481065650
 GameObject:
   m_ObjectHideFlags: 0
