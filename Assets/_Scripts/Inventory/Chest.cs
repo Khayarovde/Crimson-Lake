@@ -205,13 +205,19 @@ public class Chest : MonoBehaviour
             chestData.maxSlots = maxSlots;
         }
 
-        chestData.items.Clear();
+        chestData.Clear(); // Используем метод Clear из InventoryData
         if (itemNames == null) return;
 
-        foreach (var itemName in itemNames)
+        for (int i = 0; i < itemNames.Count; i++)
         {
+            string itemName = itemNames[i];
+            if (string.IsNullOrEmpty(itemName) || itemName == "Empty")
+                continue;
+
             InventoryItem item = LoadItemFromResources(itemName);
-            if (item != null)
+            if (item != null && i < chestData.items.Count)
+                chestData.items[i] = item;
+            else if (item != null)
                 chestData.items.Add(item);
         }
     }

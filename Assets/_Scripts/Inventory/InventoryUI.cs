@@ -805,34 +805,41 @@ public class InventoryUI : MonoBehaviour
             if (activeIndex >= 0 && activeIndex < slots.Count && slots[activeIndex] != null && slots[activeIndex].type != InventoryItem.ItemType.Empty)
             {
                 var activeItem = slots[activeIndex];
-                switch (activeItem.type)
+                if (activeItem.useCustomDescription && !string.IsNullOrWhiteSpace(activeItem.customDescription))
                 {
-                    case InventoryItem.ItemType.Gun:
-                        activeItemInfoText.text = $"Тип: {activeItem.itemName}\nВинтовка, что использует патроны 10мм. Рабочая лошадка. Без модификаций.";
-                        break;
-                    case InventoryItem.ItemType.Pistol:
-                        activeItemInfoText.text = $"Тип: {activeItem.itemName}\nЛёгкий пистолет с патронами 9мм. Быстрая перезарядка, низкий урон.";
-                        break;
-                    case InventoryItem.ItemType.Disketa:
-                    case InventoryItem.ItemType.Cassette:
-                        activeItemInfoText.text = $"Тип: {activeItem.itemName}\nНоситель данных для терминалов и сюжетных взаимодействий.";
-                        break;
-                    case InventoryItem.ItemType.PistolAmmo:
-                        activeItemInfoText.text = $"Тип: {activeItem.itemName}\nБоеприпасы для пистолета. Доступно: <b>{PlayerAmmoData.pistolReserve}</b>.";
-                        break;
-                    case InventoryItem.ItemType.ShotgunAmmo:
-                        activeItemInfoText.text = $"Тип: {activeItem.itemName}\nБоеприпасы для дробовика. Доступно: <b>{PlayerAmmoData.gunReserve}</b>.";
-                        break;
-                    case InventoryItem.ItemType.Medkit:
-                        int healAmount = activeItem.medkitProfile != null ? activeItem.medkitProfile.HealAmount : 0;
-                        if (healAmount > 0)
-                            activeItemInfoText.text = $"Тип: {activeItem.itemName}\nАптечка. Восстанавливает <b>{healAmount}</b> HP.";
-                        else
-                            activeItemInfoText.text = $"Тип: {activeItem.itemName}\nАптечка. Профиль лечения не назначен.";
-                        break;
-                    default:
-                        activeItemInfoText.text = $"Активный предмет: {activeItem.itemName}\nТип: {activeItem.type}";
-                        break;
+                    activeItemInfoText.text = $"Тип: {activeItem.itemName}\n{activeItem.customDescription}";
+                }
+                else
+                {
+                    switch (activeItem.type)
+                    {
+                        case InventoryItem.ItemType.Gun:
+                            activeItemInfoText.text = $"Тип: {activeItem.itemName}\nВинтовка, что использует патроны 10мм. Рабочая лошадка. Без модификаций.";
+                            break;
+                        case InventoryItem.ItemType.Pistol:
+                            activeItemInfoText.text = $"Тип: {activeItem.itemName}\nЛёгкий пистолет с патронами 9мм. Быстрая перезарядка, низкий урон.";
+                            break;
+                        case InventoryItem.ItemType.Disketa:
+                        case InventoryItem.ItemType.Cassette:
+                            activeItemInfoText.text = $"Тип: {activeItem.itemName}\nНоситель данных для терминалов - самый большой компьютер в комплексе";
+                            break;
+                        case InventoryItem.ItemType.PistolAmmo:
+                            activeItemInfoText.text = $"Тип: {activeItem.itemName}\nБоеприпасы для пистолета. Доступно: <b>{PlayerAmmoData.pistolReserve}</b>.";
+                            break;
+                        case InventoryItem.ItemType.ShotgunAmmo:
+                            activeItemInfoText.text = $"Тип: {activeItem.itemName}\nБоеприпасы для дробовика. Доступно: <b>{PlayerAmmoData.gunReserve}</b>.";
+                            break;
+                        case InventoryItem.ItemType.Medkit:
+                            int healAmount = activeItem.medkitProfile != null ? activeItem.medkitProfile.HealAmount : 0;
+                            if (healAmount > 0)
+                                activeItemInfoText.text = $"Тип: {activeItem.itemName}\nАптечка. Восстанавливает <b>{healAmount}</b> HP.";
+                            else
+                                activeItemInfoText.text = $"Тип: {activeItem.itemName}\nАптечка. Профиль лечения не назначен.";
+                            break;
+                        default:
+                            activeItemInfoText.text = $"Активный предмет: {activeItem.itemName}\nТип: {activeItem.type}";
+                            break;
+                    }
                 }
             }
             else

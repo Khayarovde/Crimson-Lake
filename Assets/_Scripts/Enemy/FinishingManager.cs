@@ -24,9 +24,18 @@ public class FinishingManager : MonoBehaviour
     public bool playEnemyAnimation = false;
     public string playerAttackTrigger = "death";
     public string playerAnimationState = "attack_stun_enemy";
+    public bool interruptPlayerAnimationOnFinishingEnd = true;
+    public string playerAnimationInterruptState = "Idle";
+    [Range(0f, 0.5f)] public float playerInterruptTransitionDuration = 0.08f;
     [Range(0.05f, 0.95f)] public float effectStartNormalizedTime = 0.5f;
     public bool useAutomaticTiming = true;
     public float customFinishingDuration = 2.5f; // Резервное время на случай, если длину анимации не удастся определить
+
+    [Header("Покадрово для игрока")]
+    public bool useFrameBasedPlayerDuration = false;
+    [Min(1)] public int playerFinishingFrameCount = 60;
+    [Range(1f, 240f)] public float playerFinishingFrameRate = 60f;
+    public bool usePlayerClipFrameRate = true;
 
     [Header("Visual")]
     public string finishingLayerName = "FinishingOnly";
@@ -45,6 +54,14 @@ public class FinishingManager : MonoBehaviour
     public List<Behaviour> playerControlScripts = new List<Behaviour>();
     public bool disablePlayerCameraDuringFinishing = true;
 
+    [Header("Hit Effects & Audio")]
+    public Collider weaponCollider;
+    public GameObject weaponHitEffectPrefab;
+    [Range(1f, 10f)] public float particleScale = 3f;
+    public AudioSource hitAudioSource;
+    public AudioClip playerHitSound;
+    public AudioClip enemyHitSound;
+
     private Animator playerAnim;
     private Animator enemyAnim;
     private Coroutine automaticSequenceRoutine;
@@ -57,6 +74,7 @@ public class FinishingManager : MonoBehaviour
     private bool previousPlayerCameraEnabled;
     private readonly List<Behaviour> temporarilyDisabledControls = new List<Behaviour>();
     private RenderTexture runtimeFinishingTexture;
+    private FinishingHitDetector hitDetector;
 
     public bool IsFinishingActive => isFinishingActive;
 
@@ -78,6 +96,16 @@ public class FinishingManager : MonoBehaviour
         if (finishingRawImage != null)
         {
             finishingRawImage.gameObject.SetActive(false);
+        }
+
+        if (weaponCollider != null)
+        {
+            hitDetector = weaponCollider.GetComponent<FinishingHitDetector>();
+            if (hitDetector == null)
+            {
+                hitDetector = weaponCollider.gameObject.AddComponent<FinishingHitDetector>();
+            }
+            hitDetector.manager = this;
         }
 
         ValidateSetup();
@@ -138,6 +166,11 @@ public class FinishingManager : MonoBehaviour
 
         PrepareFinishingCamera();
 
+        if (hitDetector != null)
+        {
+            hitDetector.targetEnemy = enemy;
+        }
+
         if (playEnemyAnimation)
         {
             enemyAnim.Play(enemyAnimationState, 0, 0f);
@@ -156,7 +189,7 @@ public class FinishingManager : MonoBehaviour
             StartFinishingEffect();
         }
 
-        if (useAutomaticTiming || forceAutomaticSequence)
+        if (useAutomaticTiming || forceAutomaticSequence || useFrameBasedPlayerDuration)
         {
             automaticSequenceRoutine = StartCoroutine(AutomaticSequence(startEffectImmediately));
         }
@@ -227,7 +260,11 @@ public class FinishingManager : MonoBehaviour
 
         float duration = customFinishingDuration;
 
-        if (useAutomaticTiming && playerAnim != null)
+        if (useFrameBasedPlayerDuration)
+        {
+            duration = GetFrameBasedDuration(customFinishingDuration);
+        }
+        else if (useAutomaticTiming && playerAnim != null)
         {
             // Ждем, пока аниматор действительно перейдет в нужный стейт (до 1 секунды)
             float waitTimer = 0f;
@@ -333,6 +370,8 @@ public class FinishingManager : MonoBehaviour
 
     private void RestoreSceneState()
     {
+        bool wasFinishingActive = isFinishingActive;
+
         Time.timeScale = 1f;
 
         if (finishingCam != null)
@@ -360,6 +399,16 @@ public class FinishingManager : MonoBehaviour
 
         RestorePlayerControl();
         RestorePlayerCamera();
+
+        if (wasFinishingActive)
+        {
+            InterruptPlayerFinishingAnimation();
+        }
+
+        if (hitDetector != null)
+        {
+            hitDetector.targetEnemy = null;
+        }
 
         isFinishingActive = false;
     }
@@ -434,6 +483,103 @@ public class FinishingManager : MonoBehaviour
         }
 
         return fallback;
+    }
+
+    private float GetClipFrameRate(Animator animator, string clipName, float fallback)
+    {
+        if (animator == null || animator.runtimeAnimatorController == null)
+        {
+            return fallback;
+        }
+
+        AnimationClip[] clips = animator.runtimeAnimatorController.animationClips;
+        for (int i = 0; i < clips.Length; i++)
+        {
+            if (clips[i] != null && clips[i].name == clipName)
+            {
+                return clips[i].frameRate;
+            }
+        }
+
+        return fallback;
+    }
+
+    private float GetFrameBasedDuration(float fallback)
+    {
+        int frameCount = Mathf.Max(1, playerFinishingFrameCount);
+        float frameRate = playerFinishingFrameRate;
+
+        if (usePlayerClipFrameRate)
+        {
+            float clipFrameRate = GetClipFrameRate(playerAnim, playerAnimationState, -1f);
+            if (clipFrameRate > 0f)
+            {
+                frameRate = clipFrameRate;
+            }
+        }
+
+        frameRate = Mathf.Max(1f, frameRate);
+        float duration = frameCount / frameRate;
+
+        if (duration <= 0f)
+        {
+            return fallback;
+        }
+
+        return duration;
+    }
+
+    private void InterruptPlayerFinishingAnimation()
+    {
+        if (!interruptPlayerAnimationOnFinishingEnd || playerAnim == null)
+        {
+            return;
+        }
+
+        if (!string.IsNullOrEmpty(playerAttackTrigger))
+        {
+            playerAnim.ResetTrigger(playerAttackTrigger);
+        }
+
+        if (string.IsNullOrWhiteSpace(playerAnimationInterruptState))
+        {
+            return;
+        }
+
+        if (TryCrossFadeStateByName(playerAnim, playerAnimationInterruptState, playerInterruptTransitionDuration))
+        {
+            return;
+        }
+
+        Debug.LogWarning("FinishingManager: Interrupt state '" + playerAnimationInterruptState + "' not found on player Animator.");
+    }
+
+    private bool TryCrossFadeStateByName(Animator animator, string stateName, float transitionDuration)
+    {
+        if (animator == null || string.IsNullOrWhiteSpace(stateName))
+        {
+            return false;
+        }
+
+        int stateHash = Animator.StringToHash(stateName);
+        for (int layerIndex = 0; layerIndex < animator.layerCount; layerIndex++)
+        {
+            if (animator.HasState(layerIndex, stateHash))
+            {
+                animator.CrossFade(stateHash, Mathf.Max(0f, transitionDuration), layerIndex, 0f);
+                return true;
+            }
+
+            string layerQualifiedState = animator.GetLayerName(layerIndex) + "." + stateName;
+            int layerQualifiedHash = Animator.StringToHash(layerQualifiedState);
+            if (animator.HasState(layerIndex, layerQualifiedHash))
+            {
+                animator.CrossFade(layerQualifiedHash, Mathf.Max(0f, transitionDuration), layerIndex, 0f);
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private float GetCurrentStateRemainingTime(Animator animator, float fallback)
@@ -574,6 +720,11 @@ public class FinishingManager : MonoBehaviour
                 playerCamera = Camera.main;
             }
         }
+
+        if (useFrameBasedPlayerDuration && playerFinishingFrameCount < 1)
+        {
+            playerFinishingFrameCount = 1;
+        }
     }
 
     private void DisablePlayerControl()
@@ -702,6 +853,86 @@ public class FinishingManager : MonoBehaviour
             if (!playerControlScripts.Contains(behaviour))
             {
                 playerControlScripts.Add(behaviour);
+            }
+        }
+    }
+
+    public void OnWeaponHit(Vector3 hitPosition)
+    {
+        if (weaponHitEffectPrefab != null)
+        {
+            Vector3 spawnPosition;
+            if (weaponCollider != null)
+            {
+                spawnPosition = weaponCollider.bounds.center;
+            }
+            else
+            {
+                spawnPosition = hitPosition;
+            }
+            
+            // Создаем копию префаба (партикла)
+            GameObject effectInstance = Instantiate(weaponHitEffectPrefab, spawnPosition, Quaternion.LookRotation(Vector3.up));
+
+            // Задаем ему размер
+            effectInstance.transform.localScale = Vector3.one * particleScale;
+
+            // Переносим спавн-объект на нужный слой, чтобы камера добивания его видела
+            if (usingTemporaryLayer)
+            {
+                int tLayer = LayerMask.NameToLayer(finishingLayerName);
+                if (tLayer >= 0)
+                {
+                    CacheAndSetLayerRecursively(effectInstance.transform, tLayer);
+                }
+            }
+            else if (player != null)
+            {
+                effectInstance.layer = player.gameObject.layer;
+            }
+
+            // Уничтожаем объект после 3 секунд, чтобы не засорял сцену
+            Destroy(effectInstance, 3f);
+        }
+
+        if (hitAudioSource != null)
+        {
+            if (playerHitSound != null)
+            {
+                hitAudioSource.PlayOneShot(playerHitSound);
+            }
+
+            if (enemyHitSound != null)
+            {
+                hitAudioSource.PlayOneShot(enemyHitSound);
+            }
+        }
+    }
+}
+
+public class FinishingHitDetector : MonoBehaviour
+{
+    [HideInInspector] public Transform targetEnemy;
+    [HideInInspector] public FinishingManager manager;
+
+    private void OnTriggerEnter(Collider other)
+    {
+        CheckHit(other.transform, other.ClosestPoint(transform.position));
+    }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        CheckHit(collision.transform, collision.contacts[0].point);
+    }
+
+    private void CheckHit(Transform hitTransform, Vector3 hitPoint)
+    {
+        if (targetEnemy != null && manager != null && manager.IsFinishingActive)
+        {
+            if (hitTransform == targetEnemy || hitTransform.IsChildOf(targetEnemy))
+            {
+                manager.OnWeaponHit(hitPoint);
+                targetEnemy = null; // Сброс, чтобы не срабатывало несколько раз за одно добивание
             }
         }
     }

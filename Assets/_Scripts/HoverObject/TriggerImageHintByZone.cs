@@ -29,6 +29,7 @@ public class TriggerImageHintByZone : MonoBehaviour
     private bool isEnemyObject;
     private AdvancedEnemyAI advancedEnemy;
     private Enemytest enemyTest;
+    private BossEnemy bossEnemy;
     private Animator enemyAnimator;
     private int stunStateHash;
 
@@ -48,7 +49,8 @@ public class TriggerImageHintByZone : MonoBehaviour
 
         advancedEnemy = GetComponentInParent<AdvancedEnemyAI>();
         enemyTest = GetComponentInParent<Enemytest>();
-        isEnemyObject = advancedEnemy != null || enemyTest != null;
+        bossEnemy = GetComponentInParent<BossEnemy>();
+        isEnemyObject = advancedEnemy != null || enemyTest != null || bossEnemy != null;
         if (isEnemyObject)
             enemyAnimator = GetComponentInParent<Animator>();
 
@@ -135,6 +137,11 @@ public class TriggerImageHintByZone : MonoBehaviour
             return advancedEnemy.CanBeFinished();
         }
 
+        if (bossEnemy != null)
+        {
+            return bossEnemy.CanBeFinished();
+        }
+
         if (enemyTest != null)
         {
             return enemyTest.CanBeFinished();
@@ -157,6 +164,8 @@ public class TriggerImageHintByZone : MonoBehaviour
         Transform enemyRoot = null;
         if (advancedEnemy != null)
             enemyRoot = advancedEnemy.transform;
+        else if (bossEnemy != null)
+            enemyRoot = bossEnemy.transform;
         else if (enemyTest != null)
             enemyRoot = enemyTest.transform;
         else if (enemyAnimator != null)

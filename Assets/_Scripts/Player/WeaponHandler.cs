@@ -12,6 +12,7 @@ public class WeaponHandler : MonoBehaviour
     {
         public AdvancedEnemyAI advancedEnemy;
         public Enemytest enemyTest;
+        public BossEnemy bossEnemy;
 
         public Transform Transform
         {
@@ -21,6 +22,8 @@ public class WeaponHandler : MonoBehaviour
                     return advancedEnemy.transform;
                 if (enemyTest != null)
                     return enemyTest.transform;
+                if (bossEnemy != null)
+                    return bossEnemy.transform;
                 return null;
             }
         }
@@ -31,6 +34,8 @@ public class WeaponHandler : MonoBehaviour
                 return advancedEnemy.CanBeFinished();
             if (enemyTest != null)
                 return enemyTest.CanBeFinished();
+            if (bossEnemy != null)
+                return bossEnemy.CanBeFinished();
             return false;
         }
 
@@ -40,6 +45,8 @@ public class WeaponHandler : MonoBehaviour
                 advancedEnemy.KillDuringStun();
             else if (enemyTest != null)
                 enemyTest.KillDuringStun();
+            else if (bossEnemy != null)
+                bossEnemy.KillDuringStun();
         }
     }
 
@@ -576,6 +583,15 @@ public class WeaponHandler : MonoBehaviour
 
     private FinisherTarget CreateFinisherTarget(Collider hit)
     {
+        BossEnemy boss = hit.GetComponentInParent<BossEnemy>();
+        if (boss != null)
+        {
+            return new FinisherTarget
+            {
+                bossEnemy = boss
+            };
+        }
+
         AdvancedEnemyAI advanced = hit.GetComponentInParent<AdvancedEnemyAI>();
         if (advanced != null)
         {
@@ -977,6 +993,7 @@ public class WeaponHandler : MonoBehaviour
 
         AdvancedEnemyAI hitEnemy = null;
         Enemytest hitTestEnemy = null;
+        BossEnemy hitBossEnemy = null;
 
         int pellets = Mathf.Max(1, gunPellets);
         for (int i = 0; i < pellets; i++)
@@ -1004,6 +1021,9 @@ public class WeaponHandler : MonoBehaviour
 
                 if (hitTestEnemy == null)
                     hitTestEnemy = hit.collider.GetComponentInParent<Enemytest>();
+
+                if (hitBossEnemy == null)
+                    hitBossEnemy = hit.collider.GetComponentInParent<BossEnemy>();
             }
         }
 
@@ -1028,6 +1048,11 @@ public class WeaponHandler : MonoBehaviour
         if (hitTestEnemy != null)
         {
             hitTestEnemy.TakeWeaponDamage(gunDamageToEnemytest);
+        }
+
+        if (hitBossEnemy != null)
+        {
+            hitBossEnemy.TakeDamage(gunDamageToEnemytest);
         }
 
         if (gunHitEffect != null && hitSomething)
@@ -1093,10 +1118,18 @@ public class WeaponHandler : MonoBehaviour
             return;
 
         Enemytest testEnemy = hitCollider.GetComponentInParent<Enemytest>();
-        if (testEnemy == null)
+        if (testEnemy != null)
+        {
+            testEnemy.TakeWeaponDamage(damageAmount);
             return;
+        }
 
-        testEnemy.TakeWeaponDamage(damageAmount);
+        BossEnemy boss = hitCollider.GetComponentInParent<BossEnemy>();
+        if (boss != null)
+        {
+            boss.TakeDamage(damageAmount);
+            return;
+        }
     }
 
     private void CreateTracer(Vector3 direction, float distance)

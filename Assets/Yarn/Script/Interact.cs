@@ -2,6 +2,8 @@ using UnityEngine;
 using Yarn.Unity;
 using DG.Tweening;
 using System;
+using System.Collections.Generic;
+using UnityEngine.SceneManagement;
 
 public class Interact : MonoBehaviour {
     public static event Action<InventoryItem, PlayerInventory, Interact> ItemPickedUp;
@@ -28,8 +30,16 @@ public class Interact : MonoBehaviour {
     private bool isCollected;
 
     private static DialogueRunner cachedRunner;
-    private static bool pickupCommandRegistered;
     private static Interact activeInteract;
+    private static readonly HashSet<DialogueRunner> runnersWithPickupCommand = new HashSet<DialogueRunner>();
+
+    [Header("Yarn")]
+    [SerializeField] private DialogueRunner dialogueRunnerOverride;
+
+    private DialogueRunner activeRunner;
+    private Coroutine startDialogueRoutine;
+
+    private const float RunnerResolveTimeoutSeconds = 1.5f;
 
     private void Awake() {
         if (interactionHint != null) {
@@ -39,6 +49,15 @@ public class Interact : MonoBehaviour {
     }
 
     private void OnDisable() {
+        if (activeInteract == this) {
+            activeInteract = null;
+        }
+
+        if (startDialogueRoutine != null) {
+            StopCoroutine(startDialogueRoutine);
+            startDialogueRoutine = null;
+        }
+
         StopHintAnimation();
     }
 
@@ -62,12 +81,42 @@ public class Interact : MonoBehaviour {
             return;
         }
 
-        var runner = GetDialogueRunner();
-        if (runner != null && !runner.IsDialogueRunning) {
-            RegisterYarnCommands(runner);
-            activeInteract = this;
-            runner.StartDialogue(startNode);
+        if (startDialogueRoutine != null) {
+            StopCoroutine(startDialogueRoutine);
         }
+
+        startDialogueRoutine = StartCoroutine(StartDialogueWhenRunnerReady());
+    }
+
+    private System.Collections.IEnumerator StartDialogueWhenRunnerReady() {
+        float elapsed = 0f;
+
+        while (elapsed < RunnerResolveTimeoutSeconds) {
+            var runner = GetDialogueRunner();
+            if (runner != null) {
+                if (!runner.IsDialogueRunning) {
+                    RegisterYarnCommands(runner);
+                    activeInteract = this;
+                    activeRunner = runner;
+                    runner.StartDialogue(startNode);
+                }
+
+                startDialogueRoutine = null;
+                yield break;
+            }
+
+            elapsed += Time.unscaledDeltaTime;
+            yield return null;
+        }
+
+        // Fallback for build timing issues when DialogueRunner appears late or is absent.
+        bool pickupSucceeded = TryPickupAssignedItem();
+        activeRunner?.VariableStorage?.SetValue("$pickup_success", pickupSucceeded);
+        if (!pickupSucceeded) {
+            Debug.LogWarning($"[Interact] Не удалось запустить диалог и подобрать предмет на {gameObject.name}.");
+        }
+
+        startDialogueRoutine = null;
     }
 
     public void SetInteractionHintVisible(bool isVisible) {
@@ -147,14 +196,28 @@ public class Interact : MonoBehaviour {
     }
 
     private static void PickupCurrentItemCommand() {
-        if (activeInteract == null) {
+        Interact interact = activeInteract;
+        if (interact == null) {
             cachedRunner?.VariableStorage?.SetValue("$pickup_success", false);
             Debug.LogWarning("[Interact] Нет активного объекта взаимодействия для подбора предмета.");
             return;
         }
 
-        bool pickupSucceeded = activeInteract.TryPickupAssignedItem();
-        cachedRunner?.VariableStorage?.SetValue("$pickup_success", pickupSucceeded);
+        DialogueRunner runner = interact.activeRunner;
+        if (runner == null || !runner.isActiveAndEnabled) {
+            runner = interact.GetDialogueRunner();
+        }
+
+        bool pickupSucceeded = false;
+        try {
+            pickupSucceeded = interact.TryPickupAssignedItem();
+        }
+        catch (Exception ex) {
+            Debug.LogError($"[Interact] Ошибка при выполнении команды pickup_current_item: {ex}");
+            pickupSucceeded = false;
+        }
+
+        runner?.VariableStorage?.SetValue("$pickup_success", pickupSucceeded);
     }
 
     private bool TryPickupAssignedItem() {
@@ -193,20 +256,56 @@ public class Interact : MonoBehaviour {
     }
 
     private static void RegisterYarnCommands(DialogueRunner runner) {
-        if (pickupCommandRegistered && cachedRunner == runner) {
+        if (runner == null) {
             return;
         }
 
         cachedRunner = runner;
-        cachedRunner.AddCommandHandler("pickup_current_item", PickupCurrentItemCommand);
-        pickupCommandRegistered = true;
-    }
-
-    private static DialogueRunner GetDialogueRunner() {
-        if (cachedRunner == null) {
-            cachedRunner = UnityEngine.Object.FindFirstObjectByType<DialogueRunner>();
+        runnersWithPickupCommand.RemoveWhere(r => r == null);
+        if (runnersWithPickupCommand.Contains(cachedRunner)) {
+            return;
         }
 
-        return cachedRunner;
+        cachedRunner.AddCommandHandler("pickup_current_item", PickupCurrentItemCommand);
+        runnersWithPickupCommand.Add(cachedRunner);
+    }
+
+    private DialogueRunner GetDialogueRunner() {
+        if (dialogueRunnerOverride != null && dialogueRunnerOverride.isActiveAndEnabled) {
+            cachedRunner = dialogueRunnerOverride;
+            return cachedRunner;
+        }
+
+        if (cachedRunner != null && cachedRunner.isActiveAndEnabled) {
+            return cachedRunner;
+        }
+
+#if UNITY_2020_1_OR_NEWER
+        DialogueRunner[] runners = UnityEngine.Object.FindObjectsByType<DialogueRunner>(FindObjectsInactive.Exclude, FindObjectsSortMode.InstanceID);
+#else
+        DialogueRunner[] runners = UnityEngine.Object.FindObjectsOfType<DialogueRunner>();
+#endif
+
+        if (runners != null && runners.Length > 0) {
+            Scene activeScene = SceneManager.GetActiveScene();
+            for (int i = 0; i < runners.Length; i++) {
+                DialogueRunner candidate = runners[i];
+                if (candidate != null && candidate.isActiveAndEnabled && candidate.gameObject.scene == activeScene) {
+                    cachedRunner = candidate;
+                    return cachedRunner;
+                }
+            }
+
+            for (int i = 0; i < runners.Length; i++) {
+                DialogueRunner candidate = runners[i];
+                if (candidate != null && candidate.isActiveAndEnabled) {
+                    cachedRunner = candidate;
+                    return cachedRunner;
+                }
+            }
+        }
+
+        cachedRunner = null;
+        return null;
     }
 }

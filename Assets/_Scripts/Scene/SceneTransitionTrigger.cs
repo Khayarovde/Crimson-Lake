@@ -1,7 +1,6 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.UI;
-using TMPro;
+using UnityEngine.Video;
 using System.Collections;
 
 [RequireComponent(typeof(Collider))]
@@ -11,121 +10,204 @@ public class SceneTransitionTrigger : MonoBehaviour
     [Tooltip("Имя следующей сцены (должна быть добавлена в Build Settings!)")]
     public string nextSceneName = "NextScene";
 
-    [Header("Задержка и анимация")]
-    [Tooltip("Сколько секунд ждать после входа в триггер")]
-    public float delayBeforeFade = 3f;
+    [Header("Триггер")]
+    [SerializeField] private string playerTag = "Player";
+    [SerializeField] private Collider triggerZone;
 
-    [Tooltip("Длительность затемнения (секунды)")]
-    public float fadeDuration = 2f;
+    [Header("Видео перед переходом")]
+    [Tooltip("VideoPlayer для проигрывания ролика перед переходом")]
+    public VideoPlayer introVideo;
 
-    [Header("UI для затемнения (создай Canvas с чёрным Image и текстом)")]
-    [Tooltip("Canvas с чёрным фоном (Image color = black) — изначально SetActive(false)")]
-    public Canvas fadeCanvas;
+    [Tooltip("Объект/Canvas с VideoPlayer, который нужно включить на время проигрывания")]
+    public GameObject videoRoot;
 
-    [Tooltip("CanvasGroup на Canvas/Panel для плавного fade (или скрипт сам найдёт Image)")]
-    public CanvasGroup fadeCanvasGroup;
+    [Header("Black Screen")]
+    [Tooltip("Черный Image поверх видео (alpha = 1, изначально неактивен)")]
+    public GameObject blackScreenRoot;
 
-    [Tooltip("Текст по центру Canvas (TextMeshProUGUI)")]
-    public TextMeshProUGUI fadeText;
+    [Header("Отключение UI")]
+    [Tooltip("Canvas, которые нужно скрыть на время видео")]
+    public Canvas[] canvasesToDisable;
 
-    [Tooltip("Текст, который покажется во время fade")]
-    public string transitionMessage = "Загрузка следующей сцены...";
+    [Tooltip("Поставить игру на паузу на время видео")]
+    public bool pauseGameWhilePlaying = true;
 
     private bool triggered = false; // Чтобы срабатывало только раз
+    private float previousTimeScale = 1f;
+    private bool videoEnded;
+    private AsyncOperation loadOperation;
+
+    private void Awake()
+    {
+        if (triggerZone == null)
+            triggerZone = GetComponent<Collider>();
+
+        if (videoRoot != null)
+            videoRoot.SetActive(false);
+
+        if (introVideo != null)
+        {
+            introVideo.playOnAwake = false;
+            introVideo.Stop();
+        }
+
+        if (blackScreenRoot != null)
+            blackScreenRoot.SetActive(false);
+
+    }
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Player") && !triggered && !string.IsNullOrEmpty(nextSceneName))
+        if (other.CompareTag(playerTag) && !triggered && !string.IsNullOrEmpty(nextSceneName))
         {
             triggered = true;
+            if (triggerZone != null)
+                triggerZone.enabled = false;
+
             StartCoroutine(TransitionSequence());
         }
     }
 
     private IEnumerator TransitionSequence()
     {
-        // Ждём 3 секунды
-        yield return new WaitForSeconds(delayBeforeFade);
-
-        // Активируем Canvas
-        if (fadeCanvas != null)
-        {
-            fadeCanvas.gameObject.SetActive(true);
-        }
-
-        // Устанавливаем текст
-        if (fadeText != null)
-        {
-            fadeText.text = transitionMessage;
-            fadeText.gameObject.SetActive(true);
-        }
-
-        // Плавное затемнение
-        yield return StartCoroutine(FadeToBlack(fadeDuration));
-
-        // Загружаем новую сцену
-        SceneManager.LoadScene(nextSceneName);
+        // Проигрываем видео, если назначено
+        yield return StartCoroutine(PlayIntroVideo());
     }
 
-    private IEnumerator FadeToBlack(float duration)
+    private IEnumerator PlayIntroVideo()
     {
-        // Если CanvasGroup назначен — используем его (проще)
-        if (fadeCanvasGroup != null)
+        if (introVideo == null)
         {
-            fadeCanvasGroup.alpha = 0f;
-            float elapsed = 0f;
-            while (elapsed < duration)
-            {
-                elapsed += Time.unscaledDeltaTime;
-                fadeCanvasGroup.alpha = Mathf.Lerp(0f, 1f, elapsed / duration);
-                yield return null;
-            }
-            fadeCanvasGroup.alpha = 1f;
+            SceneManager.LoadScene(nextSceneName);
+            yield break;
+        }
+
+        if (videoRoot != null)
+        {
+            videoRoot.SetActive(true);
+        }
+
+        SetCanvasesActive(false);
+
+        DontDestroyOnLoad(gameObject);
+        if (blackScreenRoot != null)
+            DontDestroyOnLoad(blackScreenRoot);
+
+        if (pauseGameWhilePlaying)
+        {
+            previousTimeScale = Time.timeScale;
+            Time.timeScale = 0f;
+        }
+
+        introVideo.playOnAwake = false;
+        introVideo.Prepare();
+        while (!introVideo.isPrepared)
+        {
+            yield return null;
+        }
+
+        introVideo.loopPointReached += OnVideoFinished;
+        introVideo.errorReceived += OnVideoError;
+
+        videoEnded = false;
+
+        introVideo.time = 0d;
+        introVideo.Play();
+
+        // Ждём старта воспроизведения
+        while (!introVideo.isPlaying && introVideo.frame <= 0)
+        {
+            yield return null;
+        }
+
+        double length = introVideo.length;
+        if (length > 0d)
+        {
+            float timeToBlack = Mathf.Max(0f, (float)length - 1f);
+            if (timeToBlack > 0f)
+                yield return new WaitForSecondsRealtime(timeToBlack);
         }
         else
         {
-            // Альтернатива: ищем Image в Canvas и fade alpha
-            Image fadeImage = GetFadeImage();
-            if (fadeImage != null)
-            {
-                Color color = fadeImage.color;
-                color.a = 0f;
-                fadeImage.color = color;
-
-                float elapsed = 0f;
-                while (elapsed < duration)
-                {
-                    elapsed += Time.unscaledDeltaTime;
-                    color.a = Mathf.Lerp(0f, 1f, elapsed / duration);
-                    fadeImage.color = color;
-                    yield return null;
-                }
-                color.a = 1f;
-                fadeImage.color = color;
-            }
+            while (!videoEnded)
+                yield return null;
         }
+
+        if (blackScreenRoot != null)
+            blackScreenRoot.SetActive(true);
+
+        loadOperation = SceneManager.LoadSceneAsync(nextSceneName);
+        if (loadOperation != null)
+            loadOperation.allowSceneActivation = true;
+
+        if (loadOperation != null)
+        {
+            while (!loadOperation.isDone)
+                yield return null;
+        }
+
+        yield return new WaitForSecondsRealtime(2f);
+
+        CleanupAfterVideo();
     }
 
-    private Image GetFadeImage()
+    private void OnVideoFinished(VideoPlayer source)
     {
-        if (fadeCanvas == null) return null;
-        Image[] images = fadeCanvas.GetComponentsInChildren<Image>();
-        foreach (var img in images)
+        videoEnded = true;
+    }
+
+    private void OnVideoError(VideoPlayer source, string message)
+    {
+        Debug.LogWarning($"[SceneTransitionTrigger] Ошибка проигрывания видео: {message}");
+        videoEnded = true;
+    }
+
+    private void CleanupAfterVideo()
+    {
+        if (introVideo != null)
         {
-            if (img.color == Color.black || img.name.Contains("Fade") || img.name.Contains("Black"))
-                return img;
+            introVideo.loopPointReached -= OnVideoFinished;
+            introVideo.errorReceived -= OnVideoError;
+
+            if (introVideo.isPlaying)
+                introVideo.Stop();
         }
-        return fadeCanvas.GetComponent<Image>();
+
+        if (videoRoot != null)
+            videoRoot.SetActive(false);
+
+        if (pauseGameWhilePlaying)
+            Time.timeScale = previousTimeScale;
+
+        if (blackScreenRoot != null)
+            blackScreenRoot.SetActive(false);
+
+        SetCanvasesActive(true);
+
+        SetCanvasesActive(true);
+
+        Destroy(gameObject);
+    }
+
+    private void SetCanvasesActive(bool active)
+    {
+        if (canvasesToDisable == null)
+            return;
+
+        for (int i = 0; i < canvasesToDisable.Length; i++)
+        {
+            Canvas canvas = canvasesToDisable[i];
+            if (canvas != null)
+                canvas.gameObject.SetActive(active);
+        }
     }
 
     // Автонастройка в редакторе
     private void Reset()
     {
-        Collider col = GetComponent<Collider>();
-        if (col != null)
-        {
-            col.isTrigger = true;
-        }
+        triggerZone = GetComponent<Collider>();
+        if (triggerZone != null)
+            triggerZone.isTrigger = true;
     }
 
     // Проверки в редакторе
@@ -135,5 +217,8 @@ public class SceneTransitionTrigger : MonoBehaviour
         {
             Debug.LogWarning("Назначь имя следующей сцены в 'Next Scene Name'!", this);
         }
+
+        if (triggerZone == null)
+            triggerZone = GetComponent<Collider>();
     }
 }

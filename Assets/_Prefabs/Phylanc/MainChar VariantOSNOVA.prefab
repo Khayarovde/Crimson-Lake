@@ -18811,15 +18811,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 290632965567463538, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -363.05
+      value: -210.8
       objectReference: {fileID: 0}
     - target: {fileID: 290632965567463538, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.1
+      value: 6.46
       objectReference: {fileID: 0}
     - target: {fileID: 290632965567463538, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 35.68
+      value: 242.2
       objectReference: {fileID: 0}
     - target: {fileID: 290632965567463538, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
       propertyPath: m_LocalRotation.w
@@ -19421,6 +19421,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 2308958626575937540, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
       insertIndex: -1
       addedObject: {fileID: 9088604346388668586}
+    - targetCorrespondingSourceObject: {fileID: 2308958626575937540, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 7932342954922118391}
   m_SourcePrefab: {fileID: 100100000, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
 --- !u!1 &658693994858614075 stripped
 GameObject:
@@ -19483,6 +19486,47 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 4294967295
   startupTriggerInteraction: 2
+--- !u!114 &7932342954922118391
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 658693994858614075}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d647fc0ca9d06d440bd567ceb66a5bf1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  teleportPoints:
+  - pointName: osnova
+    target: {fileID: 0}
+  - pointName: lab
+    target: {fileID: 0}
+  - pointName: safe
+    target: {fileID: 0}
+  - pointName: glass
+    target: {fileID: 0}
+  - pointName: hole
+    target: {fileID: 0}
+  - pointName: elevator
+    target: {fileID: 0}
+  - pointName: snow
+    target: {fileID: 0}
+  - pointName: tualet
+    target: {fileID: 0}
+  - pointName: 3door
+    target: {fileID: 0}
+  - pointName: turel
+    target: {fileID: 0}
+  - pointName: end
+    target: {fileID: 0}
+  - pointName: end
+    target: {fileID: 0}
+  openUIKey: 114
+  modifierKey1: 306
+  modifierKey2: 308
+  teleportRoot: {fileID: 3253778392951045453}
 --- !u!95 &2448681510951377980 stripped
 Animator:
   m_CorrespondingSourceObject: {fileID: 636205799131586819, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}

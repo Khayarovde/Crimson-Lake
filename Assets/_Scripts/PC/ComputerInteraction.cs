@@ -49,7 +49,7 @@ public class ComputerInteraction : MonoBehaviour
     private float failureTimer = 0f;
     private bool insertSuccess = false;
 
-    [HideInInspector] public bool mouseOverButton = false;
+    [HideInInspector] public bool isInsertHeld = false;
 
     void Start()
     {
@@ -79,7 +79,7 @@ public class ComputerInteraction : MonoBehaviour
 
         if (inserting && isOn && !insertSuccess)
         {
-            if (mouseOverButton && Input.GetMouseButton(0))
+            if (isInsertHeld)
             {
                 if (!holding)
                 {
@@ -127,7 +127,7 @@ public class ComputerInteraction : MonoBehaviour
     {
         interacting = true;
         computerCanvas.gameObject.SetActive(true);
-        InventoryData activeInventoryData = ResolveInventoryData();
+        RefreshDisketteState();
 
         // Звук открытия интерфейса (подход к ПК)
         if (openInterfaceSound != null) audioSource.PlayOneShot(openInterfaceSound);
@@ -145,20 +145,7 @@ public class ComputerInteraction : MonoBehaviour
         pcImage.sprite = pcOffSprite;
         powerButton.gameObject.SetActive(true);
 
-        hasDiskette = false;
-        disketteItem = null;
-        if (activeInventoryData != null)
-        {
-            foreach (var item in activeInventoryData.items)
-            {
-                if (item != null && (item.type == InventoryItem.ItemType.Cassette || item.type == InventoryItem.ItemType.Disketa))
-                {
-                    hasDiskette = true;
-                    disketteItem = item;
-                    break;
-                }
-            }
-        }
+        isInsertHeld = false;
 
         if (disketteIcon != null)
         {
@@ -171,6 +158,7 @@ public class ComputerInteraction : MonoBehaviour
         interacting = false;
         computerCanvas.gameObject.SetActive(false);
         audioSource.Stop();
+        isInsertHeld = false;
 
         if (inserting && !insertSuccess)
         {
@@ -191,6 +179,7 @@ public class ComputerInteraction : MonoBehaviour
             // Звук включения ПК
             if (powerOnSound != null) audioSource.PlayOneShot(powerOnSound);
 
+            RefreshDisketteState();
             if (hasDiskette)
             {
                 insertButton.gameObject.SetActive(true);
@@ -206,6 +195,18 @@ public class ComputerInteraction : MonoBehaviour
             progressBar.gameObject.SetActive(true);
             statusText.text = "Нажмите и удерживайте (Вставить)";
         }
+    }
+
+    public void BeginInsertHold()
+    {
+        isInsertHeld = true;
+        if (isOn && hasDiskette && !inserting)
+            StartInserting();
+    }
+
+    public void EndInsertHold()
+    {
+        isInsertHeld = false;
     }
 
     private void InsertSuccess()
@@ -248,7 +249,7 @@ public class ComputerInteraction : MonoBehaviour
     {
         if (player != null)
         {
-            PlayerInventory playerInventory = player.GetComponent<PlayerInventory>();
+            PlayerInventory playerInventory = player.GetComponentInParent<PlayerInventory>();
             if (playerInventory != null && playerInventory.inventoryData != null)
                 return playerInventory.inventoryData;
         }
@@ -258,5 +259,29 @@ public class ComputerInteraction : MonoBehaviour
             return fallbackPlayerInventory.inventoryData;
 
         return inventoryData;
+    }
+
+    private void RefreshDisketteState()
+    {
+        InventoryData activeInventoryData = ResolveInventoryData();
+        hasDiskette = false;
+        disketteItem = null;
+
+        if (activeInventoryData == null)
+            return;
+
+        var slots = activeInventoryData.GetSlots();
+        foreach (var item in slots)
+        {
+            if (item == null || item.type == InventoryItem.ItemType.Empty)
+                continue;
+
+            if (item.type == InventoryItem.ItemType.Cassette || item.type == InventoryItem.ItemType.Disketa)
+            {
+                hasDiskette = true;
+                disketteItem = item;
+                break;
+            }
+        }
     }
 }

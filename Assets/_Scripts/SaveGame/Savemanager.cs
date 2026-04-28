@@ -437,11 +437,15 @@ public class SaveManager : MonoBehaviour
             inventory.inventoryData.Clear();
             if (data.inventoryItemNames != null)
             {
-                foreach (string itemName in data.inventoryItemNames)
+                for (int i = 0; i < data.inventoryItemNames.Count; i++)
                 {
+                    string itemName = data.inventoryItemNames[i];
+                    if (string.IsNullOrEmpty(itemName) || itemName == "Empty")
+                        continue;
+
                     InventoryItem item = LoadItemFromResources(itemName);
-                    if (item != null)
-                        inventory.inventoryData.items.Add(item);
+                    if (item != null && i < inventory.inventoryData.items.Count)
+                        inventory.inventoryData.items[i] = item;
                 }
             }
             inventory.activeItemIndex = data.activeItemIndex;

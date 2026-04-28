@@ -209,7 +209,8 @@ public class PlayerInventory : MonoBehaviour
         if (added)
         {
             Debug.Log($"[PlayerInventory] Предмет {item.itemName} добавлен.");
-            inventoryUI.UpdateInventoryUI();
+            if (inventoryUI != null)
+                inventoryUI.UpdateInventoryUI();
             AutoSelectActiveItem();
             return true;
         }
@@ -288,7 +289,8 @@ public class PlayerInventory : MonoBehaviour
                 break;
             }
         }
-        inventoryUI.UpdateInventoryUI();
+        if (inventoryUI != null)
+            inventoryUI.UpdateInventoryUI();
     }
 
     public void SwitchActiveItem(int direction)

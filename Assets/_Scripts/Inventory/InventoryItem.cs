@@ -8,6 +8,12 @@ public class InventoryItem : ScriptableObject
     public ItemType type;  // Тип: Gun, Disketa/Cassette, Character, Ammo и т.д.
     public MedkitProfile medkitProfile; // Профиль аптечки (используется, если type == Medkit)
 
+    [Header("Описание")]
+    [Tooltip("Если включено, в UI будет показываться текст из поля customDescription")]
+    public bool useCustomDescription;
+    [TextArea(2, 6)]
+    public string customDescription;
+
     public enum ItemType
     {
         Gun = 0,
