@@ -1,60 +1,20 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
-#if UNITY_EDITOR
-using UnityEditor;
-#endif
 
 public class TankController : MonoBehaviour
 {
-    [Header("Animation")]
-    [SerializeField] private Animator animator; // Animator component
-    [SerializeField] private RuntimeAnimatorController animatorController;
-    [SerializeField] private float animationTransition = 0.18f;
-    [SerializeField] private float blendParameterDampTime = 0.12f;
-    [SerializeField, Tooltip("Множитель сглаживания blend-параметров в режиме прицеливания. Меньше = быстрее отклик")]
-    private float aimBlendDampMultiplier = 0.45f;
-    [SerializeField] private float animationVelocitySmoothing = 14f;
-    [SerializeField, Tooltip("Выводить в консоль переключения состояний аниматора и смену режима прицеливания")]
-    private bool enableAnimationDebugLogs = false;
-    [SerializeField] private string blendTreeWalkState = "Blend Tree_WALK"; // Blend Tree для движения
-    [SerializeField] private string blendTreeAimWalkState = "Blend Tree_AIM_WALK";
-    [SerializeField] private string blendTreeXParam = "h";
-    [SerializeField] private string blendTreeYParam = "v";
-    [SerializeField, Tooltip("Разрешить выход blend-параметров выше 1 для достижения Running-клипа в Blend Tree_WALK")]
-    private bool allowRunBlendOvershoot = true;
-    [SerializeField, Range(1f, 3f), Tooltip("Ограничение максимальной амплитуды blend-параметров при беге")]
-    private float maxRunBlendMagnitude = 1.75f;
-    [SerializeField, Min(0.01f), Tooltip("Время плавного входа в беговой blend при нажатом Shift")]
-    private float runBlendInTime = 0.12f;
-    [SerializeField, Min(0.01f), Tooltip("Время плавного выхода из бегового blend после отпускания Shift")]
-    private float runBlendOutTime = 0.2f;
-    [SerializeField] private string baseIdleAnimation = "Idle";
-    [SerializeField] private string runningAnimation = "Running";
-    [SerializeField] private string runningAnimationFullPath = "Base Layer.Running";
-    [SerializeField] private string gunReloadAnimation = "Reload_Gun";
-    [SerializeField] private string pistolReloadAnimation = "Reload_Pistol";
-    [SerializeField] private string idleAnimation0 = "Idle_0";
-    [SerializeField] private string idleAnimation1 = "Idle_1";
-    [SerializeField] private string idleAnimation2 = "Idle_2";
-    [SerializeField] private string idleAnimation3 = "Idle_3";
-    [SerializeField] private string idleAnimation4 = "Idle_4";
-    [SerializeField, Range(0, 4)] private int currentIdle = 0;
-    [SerializeField] private float idleSwitchInterval = 3f;
-    [SerializeField] private bool cycleIdles = true;
-    [SerializeField] private bool randomizeIdles = true;
-    [SerializeField] private float idleStartDelay = 10f;
-    [SerializeField] private float idleSwitchDelayAfterComplete = 2f;
-    [SerializeField] private string hitAnimation = "Hit";
-    [SerializeField] private string gameoverAnimation = "gameover_player";
-    public float moveSpeed = 2.6f; // Forward-backward speed
+    [Header("Movement")]
+    public float moveSpeed = 2.6f;
     [SerializeField] private float runMoveSpeed = 4.2f;
     [SerializeField] private float aimMoveSpeed = 1.25f;
+
     [Header("Movement Feel")]
     [SerializeField] private float acceleration = 8.5f;
     [SerializeField] private float deceleration = 11.5f;
     [SerializeField] private float aimAcceleration = 6.5f;
     [SerializeField] private float aimDeceleration = 13.5f;
     [SerializeField] private float movingVelocityThreshold = 0.08f;
+
     [Header("Rigidbody Setup")]
     [SerializeField] private bool autoConfigureRigidbody = true;
     [SerializeField] private float rigidbodyMass = 75f;
@@ -63,124 +23,91 @@ public class TankController : MonoBehaviour
 #else
     [SerializeField] private float rigidbodyDrag = 4f;
 #endif
-    public float rotateSpeed = 10f; // Rotation damping
+    public float rotateSpeed = 10f;
     [SerializeField] private float rotationSmoothTime = 0.12f;
+
     [Header("Aim Feel")]
     [SerializeField] private float aimRotationSmoothTime = 0.07f;
     [SerializeField] private bool strictCursorAimRotation = true;
-    [SerializeField, Tooltip("Плавный доворот к курсору в Update для минимизации визуального лага")]
-    private bool updateDrivenAimRotation = false;
-    [SerializeField, Tooltip("Макс. скорость доворота к курсору в режиме прицеливания (град/с)")]
-    private float updateAimTurnSpeed = 1440f;
-    [SerializeField, Tooltip("Угол, при котором доворот защелкивается точно в курсор")]
-    private float aimSnapAngle = 0.35f;
-    [SerializeField, Tooltip("При расчёте поворота брать курсор с горизонтальной плоскости, чтобы убрать увод от коллизий")]
-    private bool preferCursorPlaneForRotation = true;
-    [SerializeField, Tooltip("Смещение высоты плоскости поворота относительно игрока")]
-    private float rotationCursorPlaneHeightOffset = 0f;
-    [SerializeField, Tooltip("Калибровка постоянного смещения прицела влево/вправо (градусы)")]
-    private float aimYawOffsetDegrees = 0f;
+    [SerializeField] private bool updateDrivenAimRotation = false;
+    [SerializeField] private float updateAimTurnSpeed = 1440f;
+    [SerializeField] private float aimSnapAngle = 0.35f;
+    [SerializeField] private bool preferCursorPlaneForRotation = true;
+    [SerializeField] private float rotationCursorPlaneHeightOffset = 0f;
+    [SerializeField] private float aimYawOffsetDegrees = 0f;
     [SerializeField] private float minTurnSpeed = 240f;
     [SerializeField] private float minAimTurnSpeed = 720f;
     [SerializeField] private float cursorAimMaxDistance = 300f;
     [SerializeField] private LayerMask cursorAimMask = ~0;
-    [SerializeField, Range(0.01f, 0.5f)] private float aimInputDeadZone = 0.12f;
-    [SerializeField, Range(0.01f, 0.5f)] private float aimAxisDominanceBias = 0.2f;
     [SerializeField] private bool mouseRotationEnabled = true;
     [SerializeField] private bool cameraRelativeMovement = true;
-    private Rigidbody rb;
+
     [SerializeField] private PlayerInventory playerInventory;
-    private float inputHorizontal;
-    private float inputVertical;
-    private string currentState;
-    private float nextIdleSwitchTime;
-    private bool isAiming;
-    private bool wasAiming;
-    private float lastMoveTime;
-    private bool idleActive;
-    private bool idleSwitchScheduled;
-    private bool wasMoveInput;
+
+    private Rigidbody rb;
+    public float inputHorizontal;
+    public float inputVertical;
     private float rotationVelocity;
-    private Vector2 lastMoveDirection;
-    private Vector3 aimForward = Vector3.forward;
-    private Vector3 currentPlanarVelocity;
-    private Vector2 animationPlanarVelocity;
-    private bool animationLockActive;
-    private string lockedAnimationState;
     private Vector3 desiredMoveDirectionWorld;
-    private Camera cachedMainCamera;
+    private Vector3 currentPlanarVelocity;
+    private Vector3 aimForward = Vector3.forward;
     private Quaternion targetRotation;
     private bool hasRotationTarget;
+    private Camera cachedMainCamera;
+
+    private bool isAiming;
     private bool isRunning;
-    private float runBlendWeight;
     private float moveInputMagnitude;
-    private bool reloadAnimationActive;
-    private float reloadAnimationEndTime;
+    private bool movementLocked;
 
+    // Public read-only state (used by PlayerAnimationCon)
     public float CurrentPlanarSpeed => new Vector2(currentPlanarVelocity.x, currentPlanarVelocity.z).magnitude;
-    public bool IsAnimationLocked => animationLockActive;
-
-    private const string GameAnimatorControllerPath = "Assets/Animate/Phylanc/Player_GameScene";
+    public bool IsAiming => isAiming;
+    public bool IsRunning => isRunning;
+    public float MoveInputMagnitude => moveInputMagnitude;
+    public Vector3 AimForward => aimForward;
+    public Vector3 CurrentPlanarVelocity => currentPlanarVelocity;
 
     void Start()
     {
         rb = GetComponent<Rigidbody>();
-        if (animator == null)
-            animator = GetComponent<Animator>();
         if (playerInventory == null)
             playerInventory = GetComponent<PlayerInventory>();
 
         ConfigureRigidbody();
 
-        lastMoveTime = Time.time;
         currentPlanarVelocity = Vector3.zero;
-        animationPlanarVelocity = Vector2.zero;
-        runBlendWeight = 0f;
-        moveInputMagnitude = 0f;
-        reloadAnimationActive = false;
-        reloadAnimationEndTime = 0f;
         targetRotation = rb != null ? rb.rotation : transform.rotation;
         hasRotationTarget = true;
-        ApplyAnimatorControllerForScene();
-
-        if (animator != null)
-        {
-            animator.updateMode = AnimatorUpdateMode.Normal;
-            animator.applyRootMotion = false;
-        }
     }
 
     private Camera GetMainCameraCached()
     {
-        if (cachedMainCamera != null)
-        {
-            return cachedMainCamera;
-        }
-
+        if (cachedMainCamera != null) return cachedMainCamera;
         cachedMainCamera = Camera.main;
         return cachedMainCamera;
     }
 
+    /// <summary>Блокирует/разблокирует движение (вызывается из PlayerAnimationCon).</summary>
+    public void SetMovementLock(bool locked)
+    {
+        movementLocked = locked;
+        if (locked)
+        {
+            desiredMoveDirectionWorld = Vector3.zero;
+            currentPlanarVelocity = Vector3.zero;
+        }
+    }
+
     void Update()
     {
-        if (animationLockActive)
-        {
-            inputHorizontal = 0f;
-            inputVertical = 0f;
-            SetBlendVelocity(Vector2.zero);
-
-            if (!string.IsNullOrEmpty(lockedAnimationState))
-                TryChangeAnimation(lockedAnimationState);
-
-            return;
-        }
+        if (movementLocked) return;
 
         bool hasActiveWeapon = HasActiveWeaponSelected();
         isAiming = hasActiveWeapon && Input.GetMouseButton(1);
-        if (enableAnimationDebugLogs && isAiming != wasAiming)
-            Debug.Log($"TankController: Aim mode -> {(isAiming ? "ON" : "OFF")}", this);
-        UpdateAnimationPlanarVelocity();
+
         ProcessMovement();
+
         bool isMoving = IsCharacterMoving();
         if (mouseRotationEnabled)
         {
@@ -197,8 +124,13 @@ public class TankController : MonoBehaviour
         }
 
         ApplyUpdateAimRotation();
+    }
 
-        wasAiming = isAiming;
+    private void FixedUpdate()
+    {
+        if (movementLocked) return;
+        ApplyMovement();
+        ApplyRotation();
     }
 
     private void ApplyUpdateAimRotation()
@@ -220,136 +152,27 @@ public class TankController : MonoBehaviour
         mouseRotationEnabled = isEnabled;
     }
 
-    private void FixedUpdate()
-    {
-        if (animationLockActive)
-        {
-            currentPlanarVelocity = Vector3.zero;
-            return;
-        }
-
-        ApplyMovement();
-        ApplyRotation();
-    }
-
-    public void SetAnimationLock(bool isLocked, string animationState = null)
-    {
-        animationLockActive = isLocked;
-        lockedAnimationState = isLocked ? animationState : null;
-
-        if (isLocked)
-        {
-            inputHorizontal = 0f;
-            inputVertical = 0f;
-            currentPlanarVelocity = Vector3.zero;
-            animationPlanarVelocity = Vector2.zero;
-            runBlendWeight = 0f;
-            moveInputMagnitude = 0f;
-            reloadAnimationActive = false;
-            reloadAnimationEndTime = 0f;
-            idleActive = false;
-            idleSwitchScheduled = false;
-            SetBlendVelocity(Vector2.zero);
-
-            if (!string.IsNullOrEmpty(lockedAnimationState))
-                TryChangeAnimation(lockedAnimationState);
-
-            return;
-        }
-
-        lastMoveTime = Time.time;
-        runBlendWeight = 0f;
-        moveInputMagnitude = 0f;
-        reloadAnimationActive = false;
-        reloadAnimationEndTime = 0f;
-        idleActive = false;
-        idleSwitchScheduled = false;
-        SetBlendVelocity(Vector2.zero);
-    }
-
-    public void PlayReloadAnimation(InventoryItem.ItemType weaponType, float reloadDuration)
-    {
-        if (animator == null)
-            return;
-
-        string reloadState = weaponType == InventoryItem.ItemType.Gun ? gunReloadAnimation : pistolReloadAnimation;
-        if (string.IsNullOrEmpty(reloadState))
-            return;
-
-        if (!TryChangeAnimation(reloadState))
-            return;
-
-        reloadAnimationActive = true;
-        reloadAnimationEndTime = Time.time + Mathf.Max(0.01f, reloadDuration);
-        SetBlendVelocity(Vector2.zero);
-    }
-
     void ProcessMovement()
     {
         inputHorizontal = Input.GetAxisRaw("Horizontal");
         inputVertical = Input.GetAxisRaw("Vertical");
 
         desiredMoveDirectionWorld = GetMovementDirectionWorld(inputHorizontal, inputVertical);
-        Vector2 movementInputWorld2D = new Vector2(desiredMoveDirectionWorld.x, desiredMoveDirectionWorld.z);
 
         bool hasMoveInput = Mathf.Abs(inputHorizontal) > 0.1f || Mathf.Abs(inputVertical) > 0.1f;
         moveInputMagnitude = Mathf.Clamp01(new Vector2(inputHorizontal, inputVertical).magnitude);
+
         bool sprintHeld = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
-        bool rightMousePressed = Input.GetMouseButton(1);
-        isRunning = hasMoveInput && sprintHeld && !rightMousePressed;
-        UpdateRunBlendWeight(isRunning);
-
-        if (hasMoveInput)
-        {
-            lastMoveTime = Time.time;
-            idleActive = false;
-            idleSwitchScheduled = false;
-        }
-        else if (wasMoveInput)
-        {
-            lastMoveTime = Time.time;
-            idleActive = false;
-            idleSwitchScheduled = false;
-            ChangeAnimation(baseIdleAnimation);
-        }
-        else if (!isAiming && wasAiming)
-        {
-            lastMoveTime = Time.time;
-            idleActive = false;
-            idleSwitchScheduled = false;
-            ChangeAnimation(baseIdleAnimation);
-        }
-
-        wasMoveInput = hasMoveInput;
-
-        Vector2 movementForAnimation;
-        if (isAiming)
-        {
-            movementForAnimation = GetAimRelativeInput(movementInputWorld2D);
-        }
-        else
-        {
-            // При старте движения сразу после отпускания ПКМ скорость Rigidbody еще может быть почти нулевой.
-            // Используем raw input, чтобы не проваливаться в Idle на 1-2 кадра.
-            movementForAnimation = hasMoveInput ? GetLocalMoveDirectionForAnimation(desiredMoveDirectionWorld) : animationPlanarVelocity;
-        }
-
-        if (!isAiming && movementForAnimation.sqrMagnitude > 0.0001f)
-            lastMoveDirection = movementForAnimation.normalized;
-
-        CheckAnimation(movementForAnimation, isAiming);
+        isRunning = hasMoveInput && sprintHeld && !Input.GetMouseButton(1);
     }
 
     void ApplyMovement()
     {
         Vector3 input = desiredMoveDirectionWorld;
-        if (input.sqrMagnitude > 1f)
-            input.Normalize();
-
-        Vector3 movement = input;
+        if (input.sqrMagnitude > 1f) input.Normalize();
 
         float targetSpeed = isAiming ? aimMoveSpeed : (isRunning ? runMoveSpeed : moveSpeed);
-        Vector3 targetVelocity = movement * targetSpeed;
+        Vector3 targetVelocity = input * targetSpeed;
 
         bool hasMovementInput = input.sqrMagnitude > 0.001f;
         float accel = isAiming ? aimAcceleration : acceleration;
@@ -363,21 +186,12 @@ public class TankController : MonoBehaviour
     private Vector3 GetMovementDirectionWorld(float horizontal, float vertical)
     {
         Vector3 rawInput = new Vector3(horizontal, 0f, vertical);
-        if (rawInput.sqrMagnitude < 0.0001f)
-        {
-            return Vector3.zero;
-        }
+        if (rawInput.sqrMagnitude < 0.0001f) return Vector3.zero;
 
-        if (!cameraRelativeMovement)
-        {
-            return rawInput.normalized;
-        }
+        if (!cameraRelativeMovement) return rawInput.normalized;
 
         Camera mainCamera = GetMainCameraCached();
-        if (mainCamera == null)
-        {
-            return rawInput.normalized;
-        }
+        if (mainCamera == null) return rawInput.normalized;
 
         Vector3 camForward = mainCamera.transform.forward;
         Vector3 camRight = mainCamera.transform.right;
@@ -385,9 +199,7 @@ public class TankController : MonoBehaviour
         camRight.y = 0f;
 
         if (camForward.sqrMagnitude < 0.0001f || camRight.sqrMagnitude < 0.0001f)
-        {
             return rawInput.normalized;
-        }
 
         camForward.Normalize();
         camRight.Normalize();
@@ -401,20 +213,20 @@ public class TankController : MonoBehaviour
         return currentPlanarVelocity.sqrMagnitude > movingVelocityThreshold * movingVelocityThreshold;
     }
 
-        private void ConfigureRigidbody()
-        {
+    private void ConfigureRigidbody()
+    {
         if (!autoConfigureRigidbody || rb == null) return;
 
         rb.mass = Mathf.Max(1f, rigidbodyMass);
-    #if UNITY_6000_0_OR_NEWER
+#if UNITY_6000_0_OR_NEWER
         rb.linearDamping = Mathf.Max(0f, rigidbodyLinearDamping);
-    #else
+#else
         rb.drag = Mathf.Max(0f, rigidbodyDrag);
-    #endif
+#endif
         rb.interpolation = RigidbodyInterpolation.Interpolate;
         rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
         rb.constraints |= RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
-        }
+    }
 
     void UpdateRotationTargetByMovement(Vector2 movement)
     {
@@ -430,30 +242,25 @@ public class TankController : MonoBehaviour
         if (cameraMain == null) return;
 
         Ray mouseRay = cameraMain.ScreenPointToRay(Input.mousePosition);
-        Vector3 targetPoint;
+        Vector3 targetPoint = Vector3.zero;
+        bool hitFound = false;
 
         if (preferCursorPlaneForRotation)
         {
-            Plane aimPlane = new Plane(Vector3.up, new Vector3(0f, transform.position.y + rotationCursorPlaneHeightOffset, 0f));
-            if (!aimPlane.Raycast(mouseRay, out float hitDistance))
-                return;
-
-            targetPoint = mouseRay.GetPoint(hitDistance);
+            Plane groundPlane = new Plane(Vector3.up, new Vector3(0f, transform.position.y + rotationCursorPlaneHeightOffset, 0f));
+            if (groundPlane.Raycast(mouseRay, out float hitDistance))
+            {
+                targetPoint = mouseRay.GetPoint(hitDistance);
+                hitFound = true;
+            }
         }
-        else
-        {
-            int mask = cursorAimMask.value & ~(1 << gameObject.layer);
-            bool hasHit = Physics.Raycast(
-                mouseRay,
-                out RaycastHit hit,
-                Mathf.Max(1f, cursorAimMaxDistance),
-                mask,
-                QueryTriggerInteraction.Ignore
-            );
 
-            if (hasHit)
+        if (!hitFound)
+        {
+            if (Physics.Raycast(mouseRay, out RaycastHit hit, cursorAimMaxDistance, cursorAimMask))
             {
                 targetPoint = hit.point;
+                hitFound = true;
             }
             else
             {
@@ -477,14 +284,12 @@ public class TankController : MonoBehaviour
 
     private void ApplyRotation()
     {
-        if (!hasRotationTarget || rb == null)
-            return;
+        if (!hasRotationTarget || rb == null) return;
 
         if (isAiming && strictCursorAimRotation)
         {
             rotationVelocity = 0f;
-            float turnSpeed = Mathf.Max(1f, minAimTurnSpeed);
-            float step = turnSpeed * Time.fixedDeltaTime;
+            float step = Mathf.Max(1f, minAimTurnSpeed) * Time.fixedDeltaTime;
             Quaternion next = Quaternion.RotateTowards(rb.rotation, targetRotation, step);
             if (Quaternion.Angle(next, targetRotation) <= Mathf.Max(0.01f, aimSnapAngle))
                 next = targetRotation;
@@ -495,231 +300,14 @@ public class TankController : MonoBehaviour
         float smoothTime = isAiming ? aimRotationSmoothTime : rotationSmoothTime;
         float currentAngle = rb.rotation.eulerAngles.y;
         float targetAngle = targetRotation.eulerAngles.y;
-        float configuredTurnSpeed = Mathf.Max(1f, rotateSpeed);
-        float minimumTurnSpeed = isAiming ? Mathf.Max(1f, minAimTurnSpeed) : Mathf.Max(1f, minTurnSpeed);
-        float maxTurnSpeed = Mathf.Max(configuredTurnSpeed, minimumTurnSpeed);
+        float maxTurnSpeed = Mathf.Max(Mathf.Max(1f, rotateSpeed), isAiming ? Mathf.Max(1f, minAimTurnSpeed) : Mathf.Max(1f, minTurnSpeed));
+
         float smoothedAngle = Mathf.SmoothDampAngle(
-            currentAngle,
-            targetAngle,
-            ref rotationVelocity,
-            Mathf.Max(0.001f, smoothTime),
-            maxTurnSpeed,
-            Time.fixedDeltaTime
+            currentAngle, targetAngle, ref rotationVelocity,
+            Mathf.Max(0.001f, smoothTime), maxTurnSpeed, Time.fixedDeltaTime
         );
 
-        Quaternion nextRotation = Quaternion.Euler(0f, smoothedAngle, 0f);
-        rb.MoveRotation(nextRotation);
-    }
-
-    private void CheckAnimation(Vector2 movement, bool aiming)
-    {
-        if (animator == null) return;
-        bool hasActiveWeapon = HasActiveWeaponSelected();
-        bool isAimMode = hasActiveWeapon && aiming;
-
-        if (reloadAnimationActive)
-        {
-            if (Time.time >= reloadAnimationEndTime)
-            {
-                reloadAnimationActive = false;
-            }
-            else
-            {
-                SetBlendVelocity(Vector2.zero);
-                return;
-            }
-        }
-
-        if (!isAimMode && isRunning && movement.sqrMagnitude > 0.01f)
-        {
-            TryPlayRunningOnly();
-            SetBlendVelocity(Vector2.zero);
-            return;
-        }
-
-        if (movement.sqrMagnitude > 0.01f)
-        {
-            if (isAimMode)
-            {
-                Vector2 direction = GetAimDirection(movement);
-                ChangeMovementAnimation(true);
-                SetBlendVelocity(direction);
-            }
-            else
-            {
-                Vector2 direction = GetStableDirection(movement);
-                ChangeMovementAnimation(false);
-                SetBlendVelocity(direction);
-            }
-            return;
-        }
-
-        if (isAimMode)
-        {
-            ChangeMovementAnimation(true);
-            SetBlendVelocity(Vector2.zero);
-        }
-        else
-        {
-            bool canPlayIdleVariants = Time.time >= lastMoveTime + Mathf.Max(0f, idleStartDelay);
-            if (canPlayIdleVariants)
-                CheckIdle();
-            else
-            {
-                idleActive = false;
-                idleSwitchScheduled = false;
-                ChangeAnimation(baseIdleAnimation);
-            }
-            SetBlendVelocity(Vector2.zero);
-        }
-
-        if (!isAimMode && aiming)
-            ChangeAnimation(baseIdleAnimation);
-    }
-
-    private Vector2 GetAimDirection(Vector2 movement)
-    {
-        float deadZone = Mathf.Clamp(aimInputDeadZone, 0.01f, 0.5f);
-        if (movement.sqrMagnitude < deadZone * deadZone)
-            return Vector2.zero;
-
-        Vector2 normalized = movement.normalized;
-        float absX = Mathf.Abs(normalized.x);
-        float absY = Mathf.Abs(normalized.y);
-        float dominance = Mathf.Clamp(aimAxisDominanceBias, 0.01f, 0.5f);
-
-        if (Mathf.Abs(absX - absY) > dominance)
-        {
-            if (absX > absY)
-                return new Vector2(Mathf.Sign(normalized.x), 0f);
-
-            return new Vector2(0f, Mathf.Sign(normalized.y));
-        }
-
-        float snappedX = Mathf.Sign(normalized.x);
-        float snappedY = Mathf.Sign(normalized.y);
-        return new Vector2(snappedX, snappedY);
-    }
-
-    private Vector2 GetAimRelativeInput(Vector2 worldInput)
-    {
-        if (worldInput.sqrMagnitude > 1f)
-            worldInput.Normalize();
-
-        Vector3 worldMove = new Vector3(worldInput.x, 0f, worldInput.y);
-        if (worldMove.sqrMagnitude < 0.0001f)
-            return Vector2.zero;
-
-        Vector3 flatAimForward = new Vector3(aimForward.x, 0f, aimForward.z);
-        if (flatAimForward.sqrMagnitude < 0.0001f)
-            flatAimForward = transform.forward;
-
-        flatAimForward.Normalize();
-        Vector3 aimRight = Vector3.Cross(Vector3.up, flatAimForward).normalized;
-        float localX = Vector3.Dot(worldMove, aimRight);
-        float localY = Vector3.Dot(worldMove, flatAimForward);
-
-        return new Vector2(localX, localY);
-    }
-
-    private Vector2 GetLocalMoveDirectionForAnimation(Vector3 worldDirection)
-    {
-        if (worldDirection.sqrMagnitude < 0.0001f)
-            return Vector2.zero;
-
-        Vector3 localMove = transform.InverseTransformDirection(worldDirection.normalized);
-        return new Vector2(localMove.x, localMove.z);
-    }
-
-    private void UpdateRunBlendWeight(bool running)
-    {
-        float target = running ? 1f : 0f;
-        float responseTime = running ? Mathf.Max(0.01f, runBlendInTime) : Mathf.Max(0.01f, runBlendOutTime);
-        float step = Time.deltaTime / responseTime;
-        runBlendWeight = Mathf.MoveTowards(runBlendWeight, target, step);
-    }
-
-    private void UpdateAnimationPlanarVelocity()
-    {
-        Vector2 targetVelocity = new Vector2(currentPlanarVelocity.x, currentPlanarVelocity.z);
-        float smoothing = Mathf.Max(0f, animationVelocitySmoothing);
-
-        if (smoothing <= 0f)
-        {
-            animationPlanarVelocity = targetVelocity;
-            return;
-        }
-
-        float factor = 1f - Mathf.Exp(-smoothing * Time.deltaTime);
-        animationPlanarVelocity = Vector2.Lerp(animationPlanarVelocity, targetVelocity, factor);
-    }
-
-    private void SetBlendVelocity(Vector2 direction)
-    {
-        if (animator == null) return;
-        float dampDeltaTime = Time.deltaTime;
-        float dampTime = Mathf.Max(0f, blendParameterDampTime);
-        if (isAiming)
-            dampTime *= Mathf.Clamp(aimBlendDampMultiplier, 0.05f, 2f);
-
-        animator.SetFloat(blendTreeXParam, direction.x, dampTime, dampDeltaTime);
-        animator.SetFloat(blendTreeYParam, direction.y, dampTime, dampDeltaTime);
-    }
-
-    private void ChangeMovementAnimation(bool isAimMode)
-    {
-        ChangeAnimation(isAimMode ? blendTreeAimWalkState : blendTreeWalkState);
-    }
-
-    private void TryPlayRunningOnly()
-    {
-        if (animator == null)
-            return;
-
-        bool changed = TryChangeAnimation(runningAnimation);
-        if (!changed)
-            changed = TryChangeAnimation(runningAnimationFullPath);
-
-        if (!changed && !string.IsNullOrEmpty(runningAnimation))
-        {
-            // Жесткий fallback: пробуем запустить по short name даже если HasState вернул false.
-            animator.Play(runningAnimation, 0, 0f);
-            currentState = runningAnimation;
-            changed = true;
-        }
-
-        if (!changed && enableAnimationDebugLogs)
-            Debug.LogWarning($"TankController: Running state not found. Checked '{runningAnimation}' and '{runningAnimationFullPath}'.", this);
-    }
-
-
-    private Vector2 GetStableDirection(Vector2 movement)
-    {
-        Vector2 direction = movement.normalized;
-        float absX = Mathf.Abs(direction.x);
-        float absY = Mathf.Abs(direction.y);
-        if (Mathf.Abs(absX - absY) < 0.1f && lastMoveDirection.sqrMagnitude > 0.01f)
-            direction = lastMoveDirection.normalized;
-
-        float blendMagnitude = GetLocomotionBlendMagnitude();
-        direction *= blendMagnitude;
-
-        return direction;
-    }
-
-    private float GetLocomotionBlendMagnitude()
-    {
-        float baseSpeed = Mathf.Max(0.01f, moveSpeed);
-        float speedRatio = animationPlanarVelocity.magnitude / baseSpeed;
-
-        if (!allowRunBlendOvershoot)
-            return Mathf.Clamp01(speedRatio);
-
-        float runRatio = runMoveSpeed > 0.01f ? runMoveSpeed / baseSpeed : 1f;
-        float runIntentMagnitude = moveInputMagnitude * Mathf.Lerp(1f, runRatio, runBlendWeight);
-        float targetMagnitude = Mathf.Max(speedRatio, runIntentMagnitude);
-        float maxMagnitude = Mathf.Max(1f, Mathf.Max(runRatio, maxRunBlendMagnitude));
-        return Mathf.Clamp(targetMagnitude, 0f, maxMagnitude);
+        rb.MoveRotation(Quaternion.Euler(0f, smoothedAngle, 0f));
     }
 
     private bool HasActiveWeaponSelected()
@@ -736,153 +324,4 @@ public class TankController : MonoBehaviour
 
         return item.type == InventoryItem.ItemType.Gun || item.type == InventoryItem.ItemType.Pistol;
     }
-
-    private void CheckIdle()
-    {
-        if (!idleActive)
-        {
-            idleActive = true;
-            SelectRandomIdle();
-            nextIdleSwitchTime = Time.time + Mathf.Max(0.1f, idleSwitchInterval);
-            idleSwitchScheduled = false;
-        }
-        else if (cycleIdles && CanAdvanceIdle() && !idleSwitchScheduled)
-        {
-            nextIdleSwitchTime = Time.time + Mathf.Max(0.1f, idleSwitchDelayAfterComplete);
-            idleSwitchScheduled = true;
-        }
-        else if (cycleIdles && idleSwitchScheduled && Time.time >= nextIdleSwitchTime)
-        {
-            AdvanceIdle();
-            idleSwitchScheduled = false;
-        }
-
-        switch (currentIdle)
-        {
-            case 0:
-                ChangeAnimation(idleAnimation0);
-                break;
-            case 1:
-                ChangeAnimation(idleAnimation1);
-                break;
-            case 2:
-                ChangeAnimation(idleAnimation2);
-                break;
-            case 3:
-                ChangeAnimation(idleAnimation3);
-                break;
-            case 4:
-                ChangeAnimation(idleAnimation4);
-                break;
-        }
-    }
-
-    private void AdvanceIdle()
-    {
-        nextIdleSwitchTime = Time.time + Mathf.Max(0.1f, idleSwitchInterval);
-        if (randomizeIdles)
-        {
-            SelectRandomIdle();
-            return;
-        }
-
-        currentIdle = (currentIdle + 1) % 5;
-    }
-
-    private void SelectRandomIdle()
-    {
-        int next = Random.Range(0, 5);
-        if (next == currentIdle)
-            next = (next + 1) % 5;
-        currentIdle = next;
-    }
-
-    private bool CanAdvanceIdle()
-    {
-        if (animator == null) return false;
-        if (animator.IsInTransition(0)) return false;
-
-        var info = animator.GetCurrentAnimatorStateInfo(0);
-        if (!IsIdleState(currentState)) return false;
-
-        return info.normalizedTime >= 1f;
-    }
-
-    private bool IsIdleState(string stateName)
-    {
-        if (string.IsNullOrEmpty(stateName)) return false;
-        return stateName == idleAnimation0 ||
-               stateName == idleAnimation1 ||
-               stateName == idleAnimation2 ||
-               stateName == idleAnimation3 ||
-               stateName == idleAnimation4;
-    }
-
-    private void ChangeAnimation(string stateName)
-    {
-        TryChangeAnimation(stateName);
-    }
-
-    private bool TryChangeAnimation(string stateName)
-    {
-        if (string.IsNullOrEmpty(stateName)) return false;
-        if (stateName == currentState) return true;
-        if (!HasState(stateName)) return false;
-
-        animator.CrossFadeInFixedTime(stateName, animationTransition, 0);
-        if (enableAnimationDebugLogs)
-            Debug.Log($"TankController: Animation {currentState} -> {stateName}", this);
-        currentState = stateName;
-        return true;
-    }
-
-
-
-    private bool HasState(string stateName)
-    {
-        if (animator == null || string.IsNullOrEmpty(stateName)) return false;
-        return animator.HasState(0, Animator.StringToHash(stateName));
-    }
-
-    private void ApplyAnimatorControllerForScene()
-    {
-        int sceneIndex = SceneManager.GetActiveScene().buildIndex;
-        if (sceneIndex == 0)
-            return;
-
-        ApplyAnimatorController(animatorController);
-    }
-
-    private void ApplyAnimatorController(RuntimeAnimatorController controller)
-    {
-        if (animator == null) return;
-        if (controller == null) return;
-        if (animator.runtimeAnimatorController == controller) return;
-
-        animator.runtimeAnimatorController = controller;
-    }
-
-    public void PlayHit()
-    {
-        if (animator == null) return;
-        if (!HasState(hitAnimation)) return;
-        ChangeAnimation(hitAnimation);
-    }
-
-    public void PlayGameOver()
-    {
-        if (animator == null) return;
-        if (!HasState(gameoverAnimation)) return;
-        ChangeAnimation(gameoverAnimation);
-    }
-
-#if UNITY_EDITOR
-    private void OnValidate()
-    {
-        if (animatorController == null)
-            animatorController = AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>(GameAnimatorControllerPath);
-
-        ApplyAnimatorControllerForScene();
-    }
-#endif
 }

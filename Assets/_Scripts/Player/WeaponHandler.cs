@@ -198,6 +198,7 @@ public class WeaponHandler : MonoBehaviour
     private Transform muzzlePoint;
     private PlayerInventory playerInventory;
     private TankController tankController;
+    private PlayerAnimationCon animCon;
     private float originalWalkSpeed = 5f;
     private bool isAiming = false;
     private bool isReloading = false;
@@ -242,6 +243,7 @@ public class WeaponHandler : MonoBehaviour
         playerCapsule = GetComponent<CapsuleCollider>();
         playerInventory = GetComponent<PlayerInventory>();
         tankController = GetComponent<TankController>();
+        animCon = GetComponent<PlayerAnimationCon>();
         if (tankController) originalWalkSpeed = tankController.moveSpeed;
         muzzlePoint = defaultMuzzlePoint;
 
@@ -816,7 +818,7 @@ public class WeaponHandler : MonoBehaviour
         if (tankController == null)
             return;
 
-        tankController.SetAnimationLock(true, finisherAnimation);
+        animCon?.SetAnimationLock(true, finisherAnimation);
     }
 
     private void ApplyFinisherMovementLock()
@@ -824,7 +826,7 @@ public class WeaponHandler : MonoBehaviour
         if (tankController == null)
             return;
 
-        tankController.SetAnimationLock(true);
+        animCon?.SetAnimationLock(true);
     }
 
     private void ReleaseFinisherAnimationLock()
@@ -832,7 +834,7 @@ public class WeaponHandler : MonoBehaviour
         if (tankController == null)
             return;
 
-        tankController.SetAnimationLock(false);
+        animCon?.SetAnimationLock(false);
     }
 
     private void OnDisable()
@@ -1361,7 +1363,7 @@ public class WeaponHandler : MonoBehaviour
     {
         isReloading = true;
         if (tankController != null)
-            tankController.PlayReloadAnimation(currentWeaponType, currentReloadTime);
+            animCon?.PlayReloadAnimation(currentWeaponType, currentReloadTime);
 
         SyncCurrentReserveFromData();
         currentAmmoInMag = Mathf.Clamp(currentAmmoInMag, 0, currentMagazineSize);

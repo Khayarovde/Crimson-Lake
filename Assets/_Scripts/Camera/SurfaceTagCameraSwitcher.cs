@@ -54,6 +54,12 @@ public class SurfaceTagCameraSwitcher : MonoBehaviour
     [SerializeField] private LayerMask startupSurfaceLayers = ~0;
     [SerializeField] private QueryTriggerInteraction startupTriggerInteraction = QueryTriggerInteraction.Collide;
 
+
+    [Header("Stabilization")]
+    [SerializeField] private float defaultCameraDelay = 0.2f; // Задержка перед сбросом камеры
+    private Coroutine defaultCameraCoroutine;
+
+
     private readonly List<Collider> activeSurfaceContacts = new List<Collider>();
     private Behaviour currentActiveCamera;
     private Coroutine startupEvaluateCoroutine;
@@ -92,6 +98,13 @@ public class SurfaceTagCameraSwitcher : MonoBehaviour
         {
             StopCoroutine(fadeSwitchCoroutine);
             fadeSwitchCoroutine = null;
+        }
+
+        // Добавляем остановку таймера задержки
+        if (defaultCameraCoroutine != null)
+        {
+            StopCoroutine(defaultCameraCoroutine);
+            defaultCameraCoroutine = null;
         }
 
         pendingTargetCamera = null;
@@ -250,24 +263,18 @@ public class SurfaceTagCameraSwitcher : MonoBehaviour
 
     private void RegisterContact(Collider surfaceCollider)
     {
-        if (surfaceCollider == null)
-        {
-            return;
-        }
+      if (surfaceCollider == null)
+          {
+              return;
+          }
 
-        int existingIndex = activeSurfaceContacts.IndexOf(surfaceCollider);
-        if (existingIndex >= 0)
-        {
-            if (existingIndex == activeSurfaceContacts.Count - 1)
-            {
-                return;
-            }
-
-            activeSurfaceContacts.RemoveAt(existingIndex);
-        }
-
-        activeSurfaceContacts.Add(surfaceCollider);
-        EvaluateAndApplyCamera();
+          // Если коллайдер уже в списке, просто игнорируем. 
+          
+          if (!activeSurfaceContacts.Contains(surfaceCollider))
+          {
+              activeSurfaceContacts.Add(surfaceCollider);
+              EvaluateAndApplyCamera();
+          }
     }
 
     private void UnregisterContact(Collider surfaceCollider)
@@ -290,7 +297,9 @@ public class SurfaceTagCameraSwitcher : MonoBehaviour
         CleanupDestroyedContacts();
 
         bool hasAnySurfaceContact = false;
+        Behaviour targetCameraToApply = null;
 
+        // Ищем камеру, начиная с самых свежих контактов
         for (int i = activeSurfaceContacts.Count - 1; i >= 0; i--)
         {
             Collider contact = activeSurfaceContacts[i];
@@ -301,15 +310,38 @@ public class SurfaceTagCameraSwitcher : MonoBehaviour
 
             if (TryGetCameraForCollider(contact, out Behaviour targetCamera))
             {
-                SetActiveCamera(targetCamera);
-                return;
+                targetCameraToApply = targetCamera;
+                break; // Нужная камера найдена, прерываем цикл
             }
         }
 
-        if (hasAnySurfaceContact && useDefaultCameraWhenNoTaggedSurface && defaultCamera != null)
+        if (targetCameraToApply != null)
         {
-            SetActiveCamera(defaultCamera);
+            // Если нашли поверхность с тегом, отменяем таймер сброса (если он был запущен)
+            if (defaultCameraCoroutine != null)
+            {
+                StopCoroutine(defaultCameraCoroutine);
+                defaultCameraCoroutine = null;
+            }
+            SetActiveCamera(targetCameraToApply);
         }
+        else if (hasAnySurfaceContact && useDefaultCameraWhenNoTaggedSurface && defaultCamera != null)
+        {
+            // Если стоим на поверхности БЕЗ тега, не переключаемся моментально.
+            // Даем игроку "задержку" на случай, если он переступает шов.
+            if (defaultCameraCoroutine == null && isActiveAndEnabled && gameObject.activeInHierarchy)
+            {
+                defaultCameraCoroutine = StartCoroutine(SwitchToDefaultWithDelay());
+            }
+        }
+    }
+
+    // Новая корутина для задержки
+    private IEnumerator SwitchToDefaultWithDelay()
+    {
+        yield return new WaitForSeconds(defaultCameraDelay);
+        SetActiveCamera(defaultCamera);
+        defaultCameraCoroutine = null;
     }
 
     private void CleanupDestroyedContacts()
