@@ -1035,7 +1035,7 @@ NavMeshAgent:
   m_Enabled: 1
   m_AgentTypeID: 0
   m_Radius: 0.5
-  m_Speed: 1
+  m_Speed: 1.5
   m_Acceleration: 3
   avoidancePriority: 50
   m_AngularSpeed: 220
@@ -1164,7 +1164,7 @@ MonoBehaviour:
   autoFindEnemyRadius: 3.5
   enemyLayerMask:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 512
 --- !u!65 &8456330821761300287
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1234,10 +1234,6 @@ MonoBehaviour:
   permanentDeathDestroyDelay: 2
   keepBodyAfterPermanentDeath: 1
   knockoutsToPermanentDeath: 2
-  useFinalKnockoutStun: 1
-  instantWakeAfterKnockoutStun: 0
-  knockoutStunDuration: 0.35
-  knockoutMinVisibleStunDuration: 0.55
   debugDamageLogs: 1
   debugStateLogs: 0
   waypoints: []
@@ -1247,13 +1243,13 @@ MonoBehaviour:
   waypointStopDistance: 0.8
   waypointPauseTime: 0.6
   sightRange: 14
-  viewAngle: 90
+  viewAngle: 100
   hearingRadiusRun: 8
   hearingRadiusShot: 16
   hearingInvestigateSpeed: 1.8
   investigateWaitTime: 2
   runNoiseSpeedThreshold: 3.2
-  chaseSpeed: 3.8
+  chaseSpeed: 5
   chaseCloseSpeed: 0.8
   chaseCloseCatchupSpeed: 1.35
   chaseVisibleCatchupBonus: 0.45
@@ -1314,7 +1310,7 @@ MonoBehaviour:
   finisherKnockbackDuration: 0.12
   finisherKnockbackArcHeight: 0.08
   animator: {fileID: 6841113284867591844}
-  hitEffect: {fileID: 0}
+  hitEffect: {fileID: 5695414746742444045, guid: dcb1872eab724fa46bea206ee2f46860, type: 3}
   audioSource: {fileID: 2281530390227439824}
   screamClip: {fileID: 8300000, guid: 669702c38b1c8504f9d40fa40509b937, type: 3}
   idleStateName: Idle
@@ -1322,7 +1318,8 @@ MonoBehaviour:
   attackStateName: Attack
   attackRecoveryStateName: Idle
   screamStateName: Scream
-  fakeDeathStateName: death
+  deathFallStateName: death_padaet
+  deathEndStateName: death_end
   wakeUpStateName: wakeUp_stun
   staggerStateName: Stun
   staggerFallbackStateName: Hit

@@ -14,6 +14,7 @@ public class FinishingAnimationEventRelay : MonoBehaviour
 
     private AdvancedEnemyAI advancedEnemy;
     private Enemytest enemyTest;
+    private BossEnemy bossEnemy;
 
     private void Awake()
     {
@@ -117,6 +118,13 @@ public class FinishingAnimationEventRelay : MonoBehaviour
                 if (enemyTest != null)
                     enemy = enemyTest.transform;
             }
+
+            if (enemy == null)
+            {
+                bossEnemy = GetComponentInParent<BossEnemy>();
+                if (bossEnemy != null)
+                    enemy = bossEnemy.transform;
+            }
         }
 
         RefreshEnemyCaches();
@@ -154,6 +162,7 @@ public class FinishingAnimationEventRelay : MonoBehaviour
         Transform enemyRoot = enemy != null ? enemy : transform;
         advancedEnemy = enemyRoot.GetComponentInParent<AdvancedEnemyAI>();
         enemyTest = enemyRoot.GetComponentInParent<Enemytest>();
+        bossEnemy = enemyRoot.GetComponentInParent<BossEnemy>();
     }
 
     private bool CanFinishCurrentEnemy()
@@ -165,6 +174,9 @@ public class FinishingAnimationEventRelay : MonoBehaviour
 
         if (enemyTest != null)
             return enemyTest.CanBeFinished();
+
+        if (bossEnemy != null)
+            return bossEnemy.CanBeFinished();
 
         return true;
     }
@@ -198,14 +210,33 @@ public class FinishingAnimationEventRelay : MonoBehaviour
             }
 
             Enemytest test = hit.GetComponentInParent<Enemytest>();
-            if (test == null || !test.CanBeFinished())
-                continue;
-
-            float testDistance = Vector3.Distance(origin, test.transform.position);
-            if (testDistance < bestDistance)
+            if (test != null)
             {
-                bestDistance = testDistance;
-                best = test.transform;
+                if (!test.CanBeFinished())
+                    continue;
+
+                float testDistance = Vector3.Distance(origin, test.transform.position);
+                if (testDistance < bestDistance)
+                {
+                    bestDistance = testDistance;
+                    best = test.transform;
+                }
+
+                continue;
+            }
+
+            BossEnemy boss = hit.GetComponentInParent<BossEnemy>();
+            if (boss != null)
+            {
+                if (!boss.CanBeFinished())
+                    continue;
+
+                float bossDistance = Vector3.Distance(origin, boss.transform.position);
+                if (bossDistance < bestDistance)
+                {
+                    bestDistance = bossDistance;
+                    best = boss.transform;
+                }
             }
         }
 

@@ -12,6 +12,7 @@ public class WeaponHandler : MonoBehaviour
     {
         public AdvancedEnemyAI advancedEnemy;
         public Enemytest enemyTest;
+        public BossEnemy bossEnemy;
 
         public Transform Transform
         {
@@ -21,6 +22,8 @@ public class WeaponHandler : MonoBehaviour
                     return advancedEnemy.transform;
                 if (enemyTest != null)
                     return enemyTest.transform;
+                if (bossEnemy != null)
+                    return bossEnemy.transform;
                 return null;
             }
         }
@@ -31,6 +34,8 @@ public class WeaponHandler : MonoBehaviour
                 return advancedEnemy.CanBeFinished();
             if (enemyTest != null)
                 return enemyTest.CanBeFinished();
+            if (bossEnemy != null)
+                return bossEnemy.CanBeFinished();
             return false;
         }
 
@@ -40,6 +45,8 @@ public class WeaponHandler : MonoBehaviour
                 advancedEnemy.KillDuringStun();
             else if (enemyTest != null)
                 enemyTest.KillDuringStun();
+            else if (bossEnemy != null)
+                bossEnemy.KillDuringStun();
         }
     }
 
@@ -127,6 +134,8 @@ public class WeaponHandler : MonoBehaviour
     [SerializeField] private float finisherReturnToIdleDelay = 0.8f;
     [SerializeField, Tooltip("Таймаут ожидания входа в state добивания")]
     private float finisherEnterStateTimeout = 0.35f;
+    [SerializeField, Tooltip("Максимальное ожидание окончания анимации добивания, чтобы не зависнуть при ошибочной конфигурации Animator")]
+    private float finisherMaxWaitForAnimationEnd = 3f;
     [SerializeField] private float finisherRange = 1.4f;
     [SerializeField, Tooltip("Автоподшаг к позиции добивания перед запуском анимации")]
     private bool autoSnapToFinisherPosition = true;
@@ -189,6 +198,7 @@ public class WeaponHandler : MonoBehaviour
     private Transform muzzlePoint;
     private PlayerInventory playerInventory;
     private TankController tankController;
+    private PlayerAnimationCon animCon;
     private float originalWalkSpeed = 5f;
     private bool isAiming = false;
     private bool isReloading = false;
@@ -233,6 +243,7 @@ public class WeaponHandler : MonoBehaviour
         playerCapsule = GetComponent<CapsuleCollider>();
         playerInventory = GetComponent<PlayerInventory>();
         tankController = GetComponent<TankController>();
+        animCon = GetComponent<PlayerAnimationCon>();
         if (tankController) originalWalkSpeed = tankController.moveSpeed;
         muzzlePoint = defaultMuzzlePoint;
 
@@ -574,6 +585,15 @@ public class WeaponHandler : MonoBehaviour
 
     private FinisherTarget CreateFinisherTarget(Collider hit)
     {
+        BossEnemy boss = hit.GetComponentInParent<BossEnemy>();
+        if (boss != null)
+        {
+            return new FinisherTarget
+            {
+                bossEnemy = boss
+            };
+        }
+
         AdvancedEnemyAI advanced = hit.GetComponentInParent<AdvancedEnemyAI>();
         if (advanced != null)
         {
@@ -687,6 +707,14 @@ public class WeaponHandler : MonoBehaviour
     private IEnumerator ReturnToIdleAfterFinisher()
     {
         Animator anim = GetAnimator();
+        if (anim == null)
+        {
+            ReleaseFinisherAnimationLock();
+            isFinisherInProgress = false;
+            finisherReturnCoroutine = null;
+            yield break;
+        }
+
         float enterTimeout = Mathf.Max(0.05f, finisherEnterStateTimeout);
         float elapsed = 0f;
         int finisherHash = Animator.StringToHash(finisherAnimation);
@@ -709,11 +737,37 @@ public class WeaponHandler : MonoBehaviour
             yield return null;
         }
 
-        float delay = Mathf.Max(0.05f, finisherReturnToIdleDelay);
-        if (!finisherStarted)
-            delay = Mathf.Max(delay, finisherEnemyDeathDelay + 0.05f);
+        if (finisherStarted)
+        {
+            float waitEndTimeout = Mathf.Max(0.1f, finisherMaxWaitForAnimationEnd);
+            float waitElapsed = 0f;
 
-        yield return new WaitForSeconds(delay);
+            while (waitElapsed < waitEndTimeout)
+            {
+                if (anim == null)
+                    break;
+
+                AnimatorStateInfo currentState = anim.GetCurrentAnimatorStateInfo(0);
+                AnimatorStateInfo nextState = anim.GetNextAnimatorStateInfo(0);
+                bool isStillFinisher = currentState.shortNameHash == finisherHash || nextState.shortNameHash == finisherHash;
+
+                if (!isStillFinisher)
+                    break;
+
+                if (currentState.shortNameHash == finisherHash && currentState.normalizedTime >= 1f && !anim.IsInTransition(0))
+                    break;
+
+                waitElapsed += Time.deltaTime;
+                yield return null;
+            }
+        }
+        else
+        {
+            float delay = Mathf.Max(0.05f, finisherReturnToIdleDelay);
+            delay = Mathf.Max(delay, finisherEnemyDeathDelay + 0.05f);
+            yield return new WaitForSeconds(delay);
+        }
+
         ForceDefaultIdle();
         ReleaseFinisherAnimationLock();
         isFinisherInProgress = false;
@@ -764,7 +818,7 @@ public class WeaponHandler : MonoBehaviour
         if (tankController == null)
             return;
 
-        tankController.SetAnimationLock(true, finisherAnimation);
+        animCon?.SetAnimationLock(true, finisherAnimation);
     }
 
     private void ApplyFinisherMovementLock()
@@ -772,7 +826,7 @@ public class WeaponHandler : MonoBehaviour
         if (tankController == null)
             return;
 
-        tankController.SetAnimationLock(true);
+        animCon?.SetAnimationLock(true);
     }
 
     private void ReleaseFinisherAnimationLock()
@@ -780,7 +834,7 @@ public class WeaponHandler : MonoBehaviour
         if (tankController == null)
             return;
 
-        tankController.SetAnimationLock(false);
+        animCon?.SetAnimationLock(false);
     }
 
     private void OnDisable()
@@ -941,6 +995,7 @@ public class WeaponHandler : MonoBehaviour
 
         AdvancedEnemyAI hitEnemy = null;
         Enemytest hitTestEnemy = null;
+        BossEnemy hitBossEnemy = null;
 
         int pellets = Mathf.Max(1, gunPellets);
         for (int i = 0; i < pellets; i++)
@@ -968,6 +1023,9 @@ public class WeaponHandler : MonoBehaviour
 
                 if (hitTestEnemy == null)
                     hitTestEnemy = hit.collider.GetComponentInParent<Enemytest>();
+
+                if (hitBossEnemy == null)
+                    hitBossEnemy = hit.collider.GetComponentInParent<BossEnemy>();
             }
         }
 
@@ -992,6 +1050,11 @@ public class WeaponHandler : MonoBehaviour
         if (hitTestEnemy != null)
         {
             hitTestEnemy.TakeWeaponDamage(gunDamageToEnemytest);
+        }
+
+        if (hitBossEnemy != null)
+        {
+            hitBossEnemy.TakeDamage(gunDamageToEnemytest);
         }
 
         if (gunHitEffect != null && hitSomething)
@@ -1057,10 +1120,18 @@ public class WeaponHandler : MonoBehaviour
             return;
 
         Enemytest testEnemy = hitCollider.GetComponentInParent<Enemytest>();
-        if (testEnemy == null)
+        if (testEnemy != null)
+        {
+            testEnemy.TakeWeaponDamage(damageAmount);
             return;
+        }
 
-        testEnemy.TakeWeaponDamage(damageAmount);
+        BossEnemy boss = hitCollider.GetComponentInParent<BossEnemy>();
+        if (boss != null)
+        {
+            boss.TakeDamage(damageAmount);
+            return;
+        }
     }
 
     private void CreateTracer(Vector3 direction, float distance)
@@ -1292,7 +1363,7 @@ public class WeaponHandler : MonoBehaviour
     {
         isReloading = true;
         if (tankController != null)
-            tankController.PlayReloadAnimation(currentWeaponType, currentReloadTime);
+            animCon?.PlayReloadAnimation(currentWeaponType, currentReloadTime);
 
         SyncCurrentReserveFromData();
         currentAmmoInMag = Mathf.Clamp(currentAmmoInMag, 0, currentMagazineSize);

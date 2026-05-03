@@ -78,6 +78,17 @@ public class TutorialManager : MonoBehaviour
         }
     }
 
+    public bool IsHintIconVisible()
+    {
+        return isHintIconVisible;
+    }
+
+    public void SetHintIconVisibleFromSave(bool visible)
+    {
+        isHintIconVisible = visible;
+        UpdateHintIconVisibility();
+    }
+
     private void OpenTutorial()
     {
         if (isTutorialOpen) return;

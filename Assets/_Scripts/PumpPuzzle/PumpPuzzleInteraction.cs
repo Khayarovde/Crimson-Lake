@@ -1,5 +1,6 @@
 using UnityEngine;
 
+//решение пазла a-b(6 раз) a-c(1) full a (4) 
 [RequireComponent(typeof(Collider))]
 public class PumpPuzzleInteraction : MonoBehaviour
 {
@@ -19,9 +20,14 @@ public class PumpPuzzleInteraction : MonoBehaviour
     [SerializeField] private bool autoCloseOnSolved = true;
     [SerializeField] private float autoCloseDelay = 1.25f;
 
+    [Header("Completion Actions")]
+    [SerializeField] private MonoBehaviour[] disableOnSolved;
+
+    [Header("Solver State")]
+    [SerializeField] private bool isSolvedByDefault = false;
+
     [Header("Lighting")]
-    [SerializeField] private GameObject[] lightsToEnableOnSolved;
-    [SerializeField] private bool forceLightsOffOnStart = true;
+    [SerializeField] private GameObject[] lightsToDisableOnSolved;
 
     [Header("Input Lock")]
     [SerializeField] private bool unlockCursorWhileOpen = true;
@@ -71,9 +77,9 @@ public class PumpPuzzleInteraction : MonoBehaviour
             puzzleCanvasRoot.SetActive(false);
         }
 
-        if (forceLightsOffOnStart)
+        if (isSolvedByDefault)
         {
-            SetSolvedLightsActive(false);
+            ApplyCompletedState();
         }
 
         SetHintVisible(false);
@@ -81,6 +87,8 @@ public class PumpPuzzleInteraction : MonoBehaviour
 
     private void Update()
     {
+        if (isSolvedByDefault) return;
+
         if (!playerInRange)
         {
             if (!isOpened)
@@ -136,14 +144,45 @@ public class PumpPuzzleInteraction : MonoBehaviour
 
     public void OnPuzzleSolved()
     {
-        if (!isOpened || !autoCloseOnSolved || solvedCloseTriggered)
+        if (solvedCloseTriggered) return;
+        
+        isSolvedByDefault = true;
+        ApplyCompletedState();
+
+        if (isOpened && autoCloseOnSolved)
         {
-            return;
+            solvedCloseTriggered = true;
+            Invoke(nameof(ClosePuzzle), Mathf.Max(0f, autoCloseDelay));
+        }
+    }
+
+    private void ApplyCompletedState()
+    {
+        if (lightsToDisableOnSolved != null)
+        {
+            for (int i = 0; i < lightsToDisableOnSolved.Length; i++)
+            {
+                if (lightsToDisableOnSolved[i] != null)
+                {
+                    lightsToDisableOnSolved[i].SetActive(false);
+                }
+            }
         }
 
-        SetSolvedLightsActive(true);
-        solvedCloseTriggered = true;
-        Invoke(nameof(ClosePuzzle), Mathf.Max(0f, autoCloseDelay));
+        if (disableOnSolved != null)
+        {
+            for (int i = 0; i < disableOnSolved.Length; i++)
+            {
+                if (disableOnSolved[i] != null)
+                {
+                    disableOnSolved[i].enabled = false;
+                }
+            }
+        }
+        
+        Collider col = GetComponent<Collider>();
+        if (col != null) col.enabled = false;
+        SetHintVisible(false);
     }
 
     public void OpenPuzzle()
@@ -196,22 +235,6 @@ public class PumpPuzzleInteraction : MonoBehaviour
         if (playerInRange)
         {
             SetHintVisible(true);
-        }
-    }
-
-    private void SetSolvedLightsActive(bool isActive)
-    {
-        if (lightsToEnableOnSolved == null)
-        {
-            return;
-        }
-
-        for (int i = 0; i < lightsToEnableOnSolved.Length; i++)
-        {
-            if (lightsToEnableOnSolved[i] != null)
-            {
-                lightsToEnableOnSolved[i].SetActive(isActive);
-            }
         }
     }
 

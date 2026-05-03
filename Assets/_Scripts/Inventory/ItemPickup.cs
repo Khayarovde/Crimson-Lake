@@ -6,6 +6,7 @@ public class ItemPickup : MonoBehaviour
     public float interactionDistance = 2f; // Дистанция для подбора
     private bool isPlayerNearby = false;
     private Transform player;
+    private PlayerInventory playerInventory;
 
     private void Start()
     {
@@ -33,6 +34,11 @@ public class ItemPickup : MonoBehaviour
             // Debug.Log($"[ItemPickup] Игрок вошёл в триггер объекта {gameObject.name}");
             isPlayerNearby = true;
             player = other.transform;
+            playerInventory = other.GetComponentInParent<PlayerInventory>();
+            if (playerInventory == null)
+            {
+                playerInventory = other.GetComponentInChildren<PlayerInventory>();
+            }
         }
     }
 
@@ -43,15 +49,21 @@ public class ItemPickup : MonoBehaviour
             // Debug.Log($"[ItemPickup] Игрок покинул триггер объекта {gameObject.name}");
             isPlayerNearby = false;
             player = null;
+            playerInventory = null;
         }
     }
 
     private void TryPickup()
     {
+        if (item == null)
+        {
+            Debug.LogError($"[ItemPickup] Предмет не назначен на объекте {gameObject.name}!");
+            return;
+        }
+
         if (player != null && Vector3.Distance(transform.position, player.position) <= interactionDistance)
         {
             // Debug.Log($"[ItemPickup] Проверка расстояния пройдена для объекта {gameObject.name}");
-            PlayerInventory playerInventory = player.GetComponent<PlayerInventory>();
             if (playerInventory != null)
             {
                 // Debug.Log($"[ItemPickup] Найден PlayerInventory на игроке для объекта {gameObject.name}");
@@ -68,7 +80,7 @@ public class ItemPickup : MonoBehaviour
             }
             else
             {
-                Debug.LogError($"[ItemPickup] PlayerInventory не найден на игроке для объекта {gameObject.name}!");
+                Debug.LogError($"[ItemPickup] PlayerInventory не найден в иерархии игрока для объекта {gameObject.name}!");
             }
         }
         else

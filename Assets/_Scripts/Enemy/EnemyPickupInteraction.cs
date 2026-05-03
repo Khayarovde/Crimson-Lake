@@ -181,10 +181,13 @@ public class EnemyPickupInteraction : MonoBehaviour
     {
         if (player == null) return;
 
-        PlayerInventory playerInventory = player.GetComponent<PlayerInventory>();
+        PlayerInventory playerInventory = player.GetComponentInParent<PlayerInventory>();
+        if (playerInventory == null)
+            playerInventory = FindFirstObjectByType<PlayerInventory>();
+
         if (playerInventory == null)
         {
-            Debug.LogError("[DiskettePickup] PlayerInventory не найден на игроке!");
+            Debug.LogError("[DiskettePickup] PlayerInventory не найден на игроке или в сцене!");
             return;
         }
 

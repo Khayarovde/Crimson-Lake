@@ -32,12 +32,6 @@ public class Enemytest : MonoBehaviour
     public float permanentDeathDestroyDelay = 2f;
     public bool keepBodyAfterPermanentDeath = true;
     public int knockoutsToPermanentDeath = 2;
-    [Tooltip("Если включено, после последнего нокдауна враг падает в Stagger для добивания, а не в fake death.")]
-    public bool useFinalKnockoutStun = true;
-    [Tooltip("Если включено, после нокдаун-стана враг встает сразу (без фазы fake death ожидания).")]
-    public bool instantWakeAfterKnockoutStun = false;
-    public float knockoutStunDuration = 0.35f;
-    public float knockoutMinVisibleStunDuration = 0.55f;
     public bool debugDamageLogs = true;
     public bool debugStateLogs = true;
 
@@ -156,7 +150,8 @@ public class Enemytest : MonoBehaviour
     [SerializeField] private string attackStateName = "Attack";
     [SerializeField] private string attackRecoveryStateName = "Idle";
     [SerializeField] private string screamStateName = "Scream";
-    [SerializeField] private string fakeDeathStateName = "death";
+    [SerializeField] private string deathFallStateName = "death_padaet";
+    [SerializeField] private string deathEndStateName = "death_end";
     [SerializeField] private string wakeUpStateName = "wakeUp_stun";
     [SerializeField] private string staggerStateName = "Stun";
     [SerializeField] private string staggerFallbackStateName = "Hit";
@@ -272,8 +267,6 @@ public class Enemytest : MonoBehaviour
         health = Mathf.Clamp(health, 0f, maxHealth);
         permanentDeathDestroyDelay = Mathf.Clamp(permanentDeathDestroyDelay, 0.1f, 10f);
         knockoutsToPermanentDeath = Mathf.Clamp(knockoutsToPermanentDeath, 1, 10);
-        knockoutStunDuration = Mathf.Clamp(knockoutStunDuration, 0.05f, 3f);
-        knockoutMinVisibleStunDuration = Mathf.Clamp(knockoutMinVisibleStunDuration, 0.1f, 3f);
         patrolSpeed = Mathf.Clamp(patrolSpeed, 0.1f, 3f);
         chaseSpeed = Mathf.Clamp(chaseSpeed, patrolSpeed + 0.2f, 6f);
         chaseCloseSpeed = Mathf.Clamp(chaseCloseSpeed, 0.1f, chaseSpeed);
@@ -1083,42 +1076,30 @@ public class Enemytest : MonoBehaviour
 
     private void TakeDamageInternal(float incomingDamage)
     {
-        if (isFinisherExecutionLocked)
+        if (isFinisherExecutionLocked || isPermanentlyDead || state == EnemyState.FakeDeath)
         {
-            LogDamage($"blocked: finisher lock active, incoming={incomingDamage:0.##}");
+            LogDamage($"blocked: cannot receive damage in current state");
             return;
         }
 
-        if (isPermanentlyDead || state == EnemyState.FakeDeath)
-        {
-            LogDamage($"blocked: state={state}, isPermanentlyDead={isPermanentlyDead}, incoming={incomingDamage:0.##}");
-            return;
-        }
-
-        if (state == EnemyState.Stagger && isKnockoutStunActive && health <= 0f)
-        {
-            LogDamage($"blocked: already in finisher stun, incoming={incomingDamage:0.##}");
-            return;
-        }
-
-        if (!canBeKilled)
-        {
-            LogDamage($"blocked: canBeKilled=false, incoming={incomingDamage:0.##}");
-            return;
-        }
-
-        if (incomingDamage <= 0f)
-        {
-            LogDamage($"blocked: non-positive incoming damage={incomingDamage:0.##}");
-            return;
-        }
+        if (incomingDamage <= 0f) return;
 
         if (processingWeaponDamage && oneShotKillFromWeapon)
-            incomingDamage = Mathf.Max(incomingDamage, health);
+        {
+            incomingDamage = health; // Just enough to kill
+        }
 
         float healthBefore = health;
         health -= incomingDamage;
+
+        // "Can Be Killed" logic: enemies react to damage, but never reach 0.
+        if (!canBeKilled && health <= 0f)
+        {
+            health = 1f;
+        }
+
         health = Mathf.Max(0f, health);
+        
         LogDamage($"passed: -{incomingDamage:0.##}, hp {healthBefore:0.##} -> {health:0.##}");
 
         if (hitEffect != null)
@@ -1127,19 +1108,16 @@ public class Enemytest : MonoBehaviour
         if (health <= 0f)
         {
             knockoutCount++;
+            
+            // "Use Fake Death" logic: check if we should do fake or permanent
             if (useFakeDeath && knockoutCount < knockoutsToPermanentDeath)
             {
-                LogDamage($"result: knockout {knockoutCount}/{knockoutsToPermanentDeath} -> fake death + revive");
+                LogDamage("result: fake death + revive");
                 EnterFakeDeath();
-            }
-            else if (useFinalKnockoutStun)
-            {
-                LogDamage($"result: knockout {knockoutCount}/{knockoutsToPermanentDeath} -> final finisher stun");
-                EnterFinalKnockoutStun();
             }
             else
             {
-                LogDamage($"result: knockout {knockoutCount}/{knockoutsToPermanentDeath} -> permanent death");
+                LogDamage("result: permanent death");
                 EnterPermanentDeath();
             }
             return;
@@ -1243,31 +1221,32 @@ public class Enemytest : MonoBehaviour
 
     private IEnumerator KnockoutFlowRoutine(bool permanentAfterKnockout)
     {
-        SetState(EnemyState.Stagger);
-        isKnockoutStunActive = true;
-        StopAgentMovementHard();
-        PlayStaggerState();
-
-        float stunWait = Mathf.Max(0.05f, knockoutStunDuration, knockoutMinVisibleStunDuration);
-        yield return new WaitForSeconds(stunWait);
-
-        if (!permanentAfterKnockout && instantWakeAfterKnockoutStun)
-        {
-            isKnockoutStunActive = false;
-            health = Mathf.Max(1f, maxHealth * Mathf.Clamp01(reviveHealthPercent));
-            PlayState(wakeUpStateName, baseAnimLayer);
-            yield return new WaitForSeconds(0.05f);
-            SetState(EnemyState.Patrol);
-            knockoutRoutine = null;
-            yield break;
-        }
-
-        isKnockoutStunActive = false;
         SetState(EnemyState.FakeDeath);
         health = 0f;
+        isKnockoutStunActive = false;
+        StopAgentMovementHard();
         navAgent.isStopped = true;
         navAgent.ResetPath();
-        PlayState(fakeDeathStateName, baseAnimLayer);
+
+        // Play the falling animation
+        PlayState(deathFallStateName, baseAnimLayer);
+
+        // Wait completely for it to finish (or wait for transition)
+        // Since we don't know the exact length, we can grab it if needed, or just wait for the current state to be deathFallStateName
+        yield return null; // wait a frame for animator to transition
+        AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(baseAnimLayer);
+        if (stateInfo.IsName(deathFallStateName))
+        {
+            yield return new WaitForSeconds(stateInfo.length);
+        }
+        else
+        {
+            // fallback if it didn't transition
+            yield return new WaitForSeconds(1.0f);
+        }
+
+        PlayState(deathEndStateName, baseAnimLayer);
+        isKnockoutStunActive = true; // Enemy is now finishable on the ground
 
         if (permanentAfterKnockout)
         {
@@ -1288,40 +1267,6 @@ public class Enemytest : MonoBehaviour
         StartKnockoutFlow(true);
     }
 
-    private void EnterFinalKnockoutStun()
-    {
-        if (knockoutRoutine != null)
-        {
-            StopCoroutine(knockoutRoutine);
-            knockoutRoutine = null;
-        }
-
-        if (attackRoutine != null)
-        {
-            StopCoroutine(attackRoutine);
-            attackRoutine = null;
-        }
-
-        if (fakeDeathRoutine != null)
-        {
-            StopCoroutine(fakeDeathRoutine);
-            fakeDeathRoutine = null;
-        }
-
-        if (staggerRoutine != null)
-        {
-            StopCoroutine(staggerRoutine);
-            staggerRoutine = null;
-        }
-
-        health = 0f;
-        SetState(EnemyState.Stagger);
-        isKnockoutStunActive = true;
-        AttackHitboxOff();
-        StopAgentMovementHard();
-        PlayStaggerState();
-    }
-
     private IEnumerator FakeDeathRoutine()
     {
         float reviveDelay = Random.Range(Mathf.Min(fakeDeathReviveMin, fakeDeathReviveMax), Mathf.Max(fakeDeathReviveMin, fakeDeathReviveMax));
@@ -1331,6 +1276,7 @@ public class Enemytest : MonoBehaviour
             yield break;
 
         health = Mathf.Max(1f, maxHealth * Mathf.Clamp01(reviveHealthPercent));
+        isKnockoutStunActive = false;
         PlayState(wakeUpStateName, baseAnimLayer);
         yield return new WaitForSeconds(1.1f);
 
@@ -1364,7 +1310,7 @@ public class Enemytest : MonoBehaviour
 
     public bool CanBeFinished()
     {
-        return !isPermanentlyDead && state == EnemyState.Stagger && isKnockoutStunActive;
+        return state == EnemyState.FakeDeath && isKnockoutStunActive;
     }
 
     public bool IsInDeathStateOrDead()
@@ -1450,7 +1396,7 @@ public class Enemytest : MonoBehaviour
             navAgent.nextPosition = transform.position;
 
         SetState(EnemyState.FakeDeath);
-        PlayState(fakeDeathStateName, baseAnimLayer);
+        PlayState(deathEndStateName, baseAnimLayer);
 
         if (!keepBodyAfterPermanentDeath)
             Destroy(gameObject, permanentDeathDestroyDelay);

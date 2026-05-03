@@ -7,6 +7,10 @@ public class SaveManager : MonoBehaviour
 {
     public static SaveManager Instance;
     private static readonly HashSet<string> seenEventIds = new HashSet<string>();
+    private static readonly HashSet<string> solvedPuzzles = new HashSet<string>();
+    private static readonly HashSet<string> unlockedDoors = new HashSet<string>();
+    private static readonly HashSet<string> deadEnemies = new HashSet<string>();
+    private static readonly HashSet<string> pickedUpItems = new HashSet<string>();
 
     private const string SaveSlotFilePrefix = "save_slot_";
     private const string PendingWarningKey = "PendingSaveWarning";
@@ -183,6 +187,10 @@ public class SaveManager : MonoBehaviour
         sessionPlaySeconds = 0f;
         hasUnsavedChanges = false;
         seenEventIds.Clear();
+        solvedPuzzles.Clear();
+        unlockedDoors.Clear();
+        deadEnemies.Clear();
+        pickedUpItems.Clear();
 
         hasPendingLoad = false;
         pendingLoadData = null;
@@ -224,6 +232,20 @@ public class SaveManager : MonoBehaviour
         if (seenEventIds.Add(eventId))
             Instance?.MarkUnsaved();
     }
+
+    #region New Tracking Methods
+    public static bool HasPuzzleSolved(string puzzleId) => !string.IsNullOrEmpty(puzzleId) && solvedPuzzles.Contains(puzzleId);
+    public static void MarkPuzzleSolved(string puzzleId) { if (!string.IsNullOrEmpty(puzzleId) && solvedPuzzles.Add(puzzleId)) Instance?.MarkUnsaved(); }
+
+    public static bool HasDoorUnlocked(string doorId) => !string.IsNullOrEmpty(doorId) && unlockedDoors.Contains(doorId);
+    public static void MarkDoorUnlocked(string doorId) { if (!string.IsNullOrEmpty(doorId) && unlockedDoors.Add(doorId)) Instance?.MarkUnsaved(); }
+
+    public static bool IsEnemyDead(string enemyId) => !string.IsNullOrEmpty(enemyId) && deadEnemies.Contains(enemyId);
+    public static void MarkEnemyDead(string enemyId) { if (!string.IsNullOrEmpty(enemyId) && deadEnemies.Add(enemyId)) Instance?.MarkUnsaved(); }
+
+    public static bool HasPickedUpItem(string itemId) => !string.IsNullOrEmpty(itemId) && pickedUpItems.Contains(itemId);
+    public static void MarkItemPickedUp(string itemId) { if (!string.IsNullOrEmpty(itemId) && pickedUpItems.Add(itemId)) Instance?.MarkUnsaved(); }
+    #endregion
 
     public void RequestWarningOnNextScene(string message)
     {
@@ -273,7 +295,25 @@ public class SaveManager : MonoBehaviour
             playerRotationEuler = SerializableVector3.FromVector3(playerTransform.rotation.eulerAngles),
             savedAt = System.DateTime.Now.ToString("yyyy-MM-dd HH:mm"),
             playSeconds = Mathf.FloorToInt(sessionPlaySeconds),
-            seenEventIds = new List<string>(seenEventIds)
+            seenEventIds = new List<string>(seenEventIds),
+            solvedPuzzles = new List<string>(solvedPuzzles),
+            unlockedDoors = new List<string>(unlockedDoors),
+            deadEnemies = new List<string>(deadEnemies),
+            pickedUpItems = new List<string>(pickedUpItems)
+        };
+
+        TutorialManager tutorialManager = FindFirstObjectByType<TutorialManager>();
+        if (tutorialManager != null)
+            data.isHintIconVisible = tutorialManager.IsHintIconVisible();
+
+        PlayerHealth playerHealth = playerTransform.GetComponent<PlayerHealth>();
+        if (playerHealth != null)
+            data.playerHealth = playerHealth.CurrentHealth;
+
+        data.weapons = new List<WeaponSaveData>
+        {
+            new WeaponSaveData { weaponId = "gun", currentAmmoCount = PlayerAmmoData.gunInMag, reserveAmmoCount = PlayerAmmoData.gunReserve, isUnlocked = true },
+            new WeaponSaveData { weaponId = "pistol", currentAmmoCount = PlayerAmmoData.pistolInMag, reserveAmmoCount = PlayerAmmoData.pistolReserve, isUnlocked = true }
         };
 
         Chest[] allChests = FindObjectsByType<Chest>(FindObjectsSortMode.InstanceID);
@@ -323,6 +363,34 @@ public class SaveManager : MonoBehaviour
             }
         }
 
+        solvedPuzzles.Clear();
+        if (data.solvedPuzzles != null)
+        {
+            foreach (var id in data.solvedPuzzles)
+                if (!string.IsNullOrWhiteSpace(id)) solvedPuzzles.Add(id);
+        }
+
+        unlockedDoors.Clear();
+        if (data.unlockedDoors != null)
+        {
+            foreach (var id in data.unlockedDoors)
+                if (!string.IsNullOrWhiteSpace(id)) unlockedDoors.Add(id);
+        }
+
+        deadEnemies.Clear();
+        if (data.deadEnemies != null)
+        {
+            foreach (var id in data.deadEnemies)
+                if (!string.IsNullOrWhiteSpace(id)) deadEnemies.Add(id);
+        }
+
+        pickedUpItems.Clear();
+        if (data.pickedUpItems != null)
+        {
+            foreach (var id in data.pickedUpItems)
+                if (!string.IsNullOrWhiteSpace(id)) pickedUpItems.Add(id);
+        }
+
         Transform playerTransform = ResolvePlayerTransform();
         if (playerTransform == null)
         {
@@ -336,6 +404,30 @@ public class SaveManager : MonoBehaviour
         ApplyPlayerTransform(playerTransform, savedPosition, savedRotation);
         StartPostLoadStabilization(playerTransform, savedPosition, savedRotation);
 
+        PlayerHealth playerHealth = playerTransform.GetComponent<PlayerHealth>();
+        if (playerHealth != null && data.playerHealth >= 0f)
+        {
+            playerHealth.SetHealth(Mathf.FloorToInt(data.playerHealth));
+        }
+
+        if (data.weapons != null)
+        {
+            foreach (var w in data.weapons)
+            {
+                if (w.weaponId == "gun")
+                {
+                    PlayerAmmoData.gunInMag = w.currentAmmoCount;
+                    PlayerAmmoData.gunReserve = w.reserveAmmoCount;
+                }
+                else if (w.weaponId == "pistol")
+                {
+                    PlayerAmmoData.pistolInMag = w.currentAmmoCount;
+                    PlayerAmmoData.pistolReserve = w.reserveAmmoCount;
+                }
+            }
+            PlayerAmmoData.initialized = true; // чтобы при старте сцены другие скрипты не перезаписали значения патронов
+        }
+
         PlayerInventory inventory = playerTransform != null
             ? playerTransform.GetComponent<PlayerInventory>()
             : FindFirstObjectByType<PlayerInventory>();
@@ -345,11 +437,15 @@ public class SaveManager : MonoBehaviour
             inventory.inventoryData.Clear();
             if (data.inventoryItemNames != null)
             {
-                foreach (string itemName in data.inventoryItemNames)
+                for (int i = 0; i < data.inventoryItemNames.Count; i++)
                 {
+                    string itemName = data.inventoryItemNames[i];
+                    if (string.IsNullOrEmpty(itemName) || itemName == "Empty")
+                        continue;
+
                     InventoryItem item = LoadItemFromResources(itemName);
-                    if (item != null)
-                        inventory.inventoryData.items.Add(item);
+                    if (item != null && i < inventory.inventoryData.items.Count)
+                        inventory.inventoryData.items[i] = item;
                 }
             }
             inventory.activeItemIndex = data.activeItemIndex;
@@ -379,6 +475,10 @@ public class SaveManager : MonoBehaviour
                     chest.ApplyChestItemNamesSnapshot(savedChest.itemNames);
             }
         }
+
+        TutorialManager tutorialManager = FindFirstObjectByType<TutorialManager>();
+        if (tutorialManager != null)
+            tutorialManager.SetHintIconVisibleFromSave(data.isHintIconVisible);
 
         hasUnsavedChanges = false;
         Debug.Log("[SaveManager] Сохранение применено");
@@ -632,12 +732,35 @@ public class GameSaveData
     public string sceneName;
     public SerializableVector3 playerPosition;
     public SerializableVector3 playerRotationEuler;
+
+    [Header("Player Data")]
+    public float playerHealth = -1f; // -1 означает что значение не сохранялось
+    public List<WeaponSaveData> weapons = new List<WeaponSaveData>();
+
     public List<string> inventoryItemNames;
     public List<ChestSlotData> chests;
     public int activeItemIndex = -1;
     public string savedAt;
     public int playSeconds;
     public List<string> seenEventIds;
+
+    [Header("World State")]
+    public List<string> solvedPuzzles = new List<string>();
+    public List<string> unlockedDoors = new List<string>();
+    public List<string> deadEnemies = new List<string>();
+    public List<string> pickedUpItems = new List<string>();
+
+    [Header("UI State")]
+    public bool isHintIconVisible = true;
+}
+
+[System.Serializable]
+public class WeaponSaveData
+{
+    public string weaponId;
+    public int currentAmmoCount;
+    public int reserveAmmoCount;
+    public bool isUnlocked;
 }
 
 [System.Serializable]

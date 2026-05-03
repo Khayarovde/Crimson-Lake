@@ -82,6 +82,15 @@ public class PlayerHealth : MonoBehaviour
         ApplyDamage(enemyHitDamage, source);
     }
 
+    public void SetHealth(int amount)
+    {
+        currentHealth = Mathf.Clamp(amount, 0, maxHealth);
+        if (currentHealth <= 0)
+        {
+            Die(null);
+        }
+    }
+
     public void ApplyDamage(int amount, AdvancedEnemyAI source = null)
     {
         if (isDead || amount <= 0)
@@ -96,9 +105,9 @@ public class PlayerHealth : MonoBehaviour
             return;
         }
 
-        var tankController = GetComponent<TankController>();
-        if (tankController != null)
-            tankController.PlayHit();
+        var animCon = GetComponent<PlayerAnimationCon>();
+        if (animCon != null)
+            animCon.PlayHit();
 
         StartOverlayRoutine(FlashColor(new Color(1f, 0f, 0f, 1f), firstHitRedAlpha, firstHitFlashDuration));
     }
@@ -118,9 +127,9 @@ public class PlayerHealth : MonoBehaviour
             return;
         }
 
-        var tankController = GetComponent<TankController>();
-        if (tankController != null)
-            tankController.PlayHit();
+        var animCon = GetComponent<PlayerAnimationCon>();
+        if (animCon != null)
+            animCon.PlayHit();
     }
 
     public void Heal(int amount)
@@ -140,14 +149,15 @@ public class PlayerHealth : MonoBehaviour
         turretExposureLevel = 0f;
         Debug.Log($"[PlayerHealth] HP: {currentHealth}/{maxHealth}");
 
-        var tankController = GetComponent<TankController>();
-        if (tankController != null)
-            tankController.PlayGameOver();
+        var animCon = GetComponent<PlayerAnimationCon>();
+        if (animCon != null)
+            animCon.PlayGameOver();
 
         // Отключаем управление/оружие, чтобы игрок "умер".
         var weapon = GetComponent<WeaponHandler>();
         if (weapon != null) weapon.enabled = false;
 
+        var tankController = GetComponent<TankController>();
         if (tankController != null) tankController.enabled = false;
 
         var movement = GetComponent<CharacterMovement>();
