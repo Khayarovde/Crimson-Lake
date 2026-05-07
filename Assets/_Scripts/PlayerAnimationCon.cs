@@ -5,6 +5,11 @@ public class PlayerAnimationCon : MonoBehaviour
     // Legs удалён — слои теперь:
     private const int LayerVseTelo = 0;
     private const int LayerRuka    = 1;
+    private static readonly int IsWalkingParam = Animator.StringToHash("IsWalking");
+    private static readonly int IsRunningParam = Animator.StringToHash("IsRunning");
+    private static readonly int IsAimingParam = Animator.StringToHash("IsAiming");
+    private static readonly int HParam = Animator.StringToHash("H");
+    private static readonly int VParam = Animator.StringToHash("V");
 
     private Animator anim;
     private TankController controller;
@@ -24,17 +29,17 @@ public class PlayerAnimationCon : MonoBehaviour
     {
         // ── VseTelo: движение ──────────────────────────────────────
         bool isMoving = controller.MoveInputMagnitude > 0.1f;
-        anim.SetBool("IsWalking", isMoving);
-        anim.SetBool("IsRunning", controller.IsRunning);
+        anim.SetBool(IsWalkingParam, isMoving);
+        anim.SetBool(IsRunningParam, controller.IsRunning);
 
         Vector3 localVelocity = transform.InverseTransformDirection(controller.CurrentPlanarVelocity);
         float speed = controller.CurrentPlanarSpeed;
-        anim.SetFloat("H", speed > 0.01f ? localVelocity.x / speed : 0f, 0.1f, Time.deltaTime);
-        anim.SetFloat("V", speed > 0.01f ? localVelocity.z / speed : 0f, 0.1f, Time.deltaTime);
+        anim.SetFloat(HParam, speed > 0.01f ? localVelocity.x / speed : 0f, 0.1f, Time.deltaTime);
+        anim.SetFloat(VParam, speed > 0.01f ? localVelocity.z / speed : 0f, 0.1f, Time.deltaTime);
 
         // ── Ruka: прицеливание (читаем из WeaponHandler) ───────────
         bool aiming = weaponHandler != null ? weaponHandler.IsAiming : controller.IsAiming;
-        anim.SetBool("IsAiming", aiming);
+        anim.SetBool(IsAimingParam, aiming);
 
         if (aiming && !wasAiming)
             UpdateAimingLayer();
@@ -95,11 +100,10 @@ public class PlayerAnimationCon : MonoBehaviour
     {
         if (playerInventory == null || playerInventory.inventoryData == null) return;
 
-        var slots = playerInventory.inventoryData.GetSlots();
         int idx = playerInventory.activeItemIndex;
-        if (idx < 0 || idx >= slots.Count) return;
+        if (idx < 0 || idx >= playerInventory.inventoryData.GetSlotCount()) return;
 
-        var item = slots[idx];
+        var item = playerInventory.inventoryData.GetItemAt(idx);
         if (item == null) return;
 
         if (item.type == InventoryItem.ItemType.Pistol)

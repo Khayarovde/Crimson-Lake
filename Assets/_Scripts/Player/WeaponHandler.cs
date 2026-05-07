@@ -63,6 +63,8 @@ public class WeaponHandler : MonoBehaviour
 
     [Header("=== Точки ===")]
     [SerializeField] private Transform weaponHoldPoint;
+    [SerializeField] private Transform pistolHoldPoint;
+    [SerializeField] private Transform shotgunHoldPoint;
     [SerializeField] private Transform defaultMuzzlePoint;
 
     [Header("=== Модели оружия ===")]
@@ -207,6 +209,8 @@ public class WeaponHandler : MonoBehaviour
     private GunStats currentWeaponStats;
     private RecoilProfile currentRecoilProfile;
     private WeaponGlowProfile currentGlowProfile;
+    private Renderer currentWeaponRenderer;
+    private Material currentGlowMaterial;
     private float currentShotInterval;
     private float currentShootDelay;
     private FireMode currentFireMode = FireMode.Single;
@@ -234,6 +238,7 @@ public class WeaponHandler : MonoBehaviour
     private Color currentGlowBaseColor = Color.white;
     private bool hasGlowBaseColor;
     private float nextEmptyMagSoundTime;
+    private static readonly int EmissionColorId = Shader.PropertyToID("_EmissionColor");
     // Словарь для отслеживания количества попаданий по каждому врагу
     private Dictionary<AdvancedEnemyAI, int> enemyHitCount = new Dictionary<AdvancedEnemyAI, int>();
 
@@ -294,10 +299,9 @@ public class WeaponHandler : MonoBehaviour
         int index = playerInventory.activeItemIndex;
         if (index < 0) return false;
 
-        var slots = playerInventory.inventoryData.GetSlots();
-        if (index >= slots.Count) return false;
+        if (index >= playerInventory.inventoryData.GetSlotCount()) return false;
 
-        var item = slots[index];
+        var item = playerInventory.inventoryData.GetItemAt(index);
         if (item == null) return false;
 
         return item.type == InventoryItem.ItemType.Gun || item.type == InventoryItem.ItemType.Pistol;
@@ -795,7 +799,7 @@ public class WeaponHandler : MonoBehaviour
     private void StopAiming()
     {
         isAiming = false;
-        UnequipWeapon();
+        UnequipWeapon(true);
         if (tankController)
             tankController.moveSpeed = originalWalkSpeed;
         aimAssist.SetAiming(false, null);
@@ -1218,14 +1222,19 @@ public class WeaponHandler : MonoBehaviour
         if (playerInventory == null) return;
 
         int idx = playerInventory.activeItemIndex;
-        var slots = playerInventory.inventoryData?.GetSlots();
-        if (idx < 0 || idx >= slots?.Count || slots[idx] == null)
+        if (idx < 0 || playerInventory.inventoryData == null) return;
+        if (idx >= playerInventory.inventoryData.GetSlotCount())
         {
             currentWeaponType = InventoryItem.ItemType.Empty;
             return;
         }
 
-        var item = slots[idx];
+        var item = playerInventory.inventoryData.GetItemAt(idx);
+        if (item == null)
+        {
+            currentWeaponType = InventoryItem.ItemType.Empty;
+            return;
+        }
         currentWeaponType = item.type;
 
         if (item.type == InventoryItem.ItemType.Gun)
@@ -1280,35 +1289,48 @@ public class WeaponHandler : MonoBehaviour
 
     private void CreateWeaponModelIfNeeded()
     {
-        if (!isAiming) return;
-
         int idx = playerInventory.activeItemIndex;
-        var slots = playerInventory.inventoryData?.GetSlots();
-        if (idx < 0 || idx >= slots?.Count || slots[idx] == null) return;
+        if (idx < 0 || playerInventory.inventoryData == null) return;
+        if (idx >= playerInventory.inventoryData.GetSlotCount()) return;
 
-        var item = slots[idx];
+        var item = playerInventory.inventoryData.GetItemAt(idx);
+        if (item == null)
+        {
+            UnequipWeapon();
+            return;
+        }
+
         GameObject prefab = item.type == InventoryItem.ItemType.Gun ? gunPrefab : pistolPrefab;
         Vector3 scale = item.type == InventoryItem.ItemType.Gun ? gunScale : pistolScale;
+        Transform holdPoint = item.type == InventoryItem.ItemType.Gun ? shotgunHoldPoint : pistolHoldPoint;
+        if (holdPoint == null)
+            holdPoint = weaponHoldPoint;
 
         if (currentWeaponModel) Destroy(currentWeaponModel);
 
         if (prefab != null)
         {
-            currentWeaponModel = Instantiate(prefab, weaponHoldPoint, false);
+            currentWeaponModel = Instantiate(prefab, holdPoint, false);
             currentWeaponModel.transform.localScale = scale;
             weaponModelBaseLocalPos = currentWeaponModel.transform.localPosition;
             weaponModelBaseLocalRot = currentWeaponModel.transform.localRotation;
+            currentWeaponRenderer = currentWeaponModel.GetComponentInChildren<Renderer>();
             CaptureGlowBaseColor();
         }
     }
 
-    private void UnequipWeapon()
+    private void UnequipWeapon(bool destroyModel = true)
     {
         SaveCurrentAmmo();
-        if (currentWeaponModel)
+        if (destroyModel && currentWeaponModel)
             Destroy(currentWeaponModel);
-        currentWeaponModel = null;
-        hasGlowBaseColor = false;
+        if (destroyModel)
+        {
+            currentWeaponModel = null;
+            currentWeaponRenderer = null;
+            currentGlowMaterial = null;
+            hasGlowBaseColor = false;
+        }
 
         if (firingCoroutine != null)
         {
@@ -1501,52 +1523,39 @@ public class WeaponHandler : MonoBehaviour
     {
         hasGlowBaseColor = false;
 
-        if (currentWeaponModel == null || currentGlowProfile == null)
+        if (currentWeaponRenderer == null || currentGlowProfile == null)
             return;
 
-        var renderer = currentWeaponModel.GetComponentInChildren<Renderer>();
-        if (renderer == null)
-            return;
-
-        Material[] materials = renderer.materials;
+        Material[] materials = currentWeaponRenderer.materials;
         if (materials == null || materials.Length == 0)
             return;
 
         int idx = Mathf.Clamp(currentGlowProfile.materialIndex, 0, materials.Length - 1);
         Material mat = materials[idx];
-        if (mat == null || !mat.HasProperty("_EmissionColor"))
+        if (mat == null || !mat.HasProperty(EmissionColorId))
             return;
 
-        currentGlowBaseColor = mat.GetColor("_EmissionColor");
+        currentGlowMaterial = mat;
+        currentGlowBaseColor = mat.GetColor(EmissionColorId);
         hasGlowBaseColor = true;
     }
 
     private void SetGlowIntensity(float intensity)
     {
-        if (currentWeaponModel == null || currentGlowProfile == null)
+        if (currentGlowMaterial == null || currentGlowProfile == null)
             return;
 
-        var renderer = currentWeaponModel.GetComponentInChildren<Renderer>();
-        if (renderer == null)
-            return;
-
-        Material[] materials = renderer.materials;
-        if (materials == null || materials.Length == 0)
-            return;
-
-        int idx = Mathf.Clamp(currentGlowProfile.materialIndex, 0, materials.Length - 1);
-        Material mat = materials[idx];
-        if (mat == null || !mat.HasProperty("_EmissionColor"))
+        if (!currentGlowMaterial.HasProperty(EmissionColorId))
             return;
 
         if (!hasGlowBaseColor)
         {
-            currentGlowBaseColor = mat.GetColor("_EmissionColor");
+            currentGlowBaseColor = currentGlowMaterial.GetColor(EmissionColorId);
             hasGlowBaseColor = true;
         }
 
-        mat.EnableKeyword("_EMISSION");
-        mat.SetColor("_EmissionColor", currentGlowBaseColor * Mathf.Max(0f, intensity));
+        currentGlowMaterial.EnableKeyword("_EMISSION");
+        currentGlowMaterial.SetColor(EmissionColorId, currentGlowBaseColor * Mathf.Max(0f, intensity));
     }
 
     private void TryManualReload()
@@ -1583,12 +1592,22 @@ public class WeaponHandler : MonoBehaviour
     public void OnActiveItemChanged()
     {
         SetCurrentWeaponStats();
+        if (currentWeaponType == InventoryItem.ItemType.Empty)
+        {
+            UnequipWeapon();
+            return;
+        }
+
         if (isAiming)
         {
             CreateWeaponModelIfNeeded();
             var muzzle = currentWeaponModel?.transform.Find("Muzzle");
             muzzlePoint = muzzle != null ? muzzle : defaultMuzzlePoint;
             aimAssist.SetAiming(true, muzzlePoint);
+        }
+        else
+        {
+            UnequipWeapon();
         }
     }
 

@@ -57,7 +57,9 @@ public class FinishingManager : MonoBehaviour
     [Header("Hit Effects & Audio")]
     public Collider weaponCollider;
     public GameObject weaponHitEffectPrefab;
-    [Range(1f, 10f)] public float particleScale = 3f;
+    public Transform particleSpawnPoint;
+    [Range(0.1f, 10f)] public float particleScale = 3f;
+    public bool normalizeParticleVelocityCurves = true;
     public AudioSource hitAudioSource;
     public AudioClip playerHitSound;
     public AudioClip enemyHitSound;
@@ -862,7 +864,11 @@ public class FinishingManager : MonoBehaviour
         if (weaponHitEffectPrefab != null)
         {
             Vector3 spawnPosition;
-            if (weaponCollider != null)
+            if (particleSpawnPoint != null)
+            {
+                spawnPosition = particleSpawnPoint.position;
+            }
+            else if (weaponCollider != null)
             {
                 spawnPosition = weaponCollider.bounds.center;
             }
@@ -876,6 +882,11 @@ public class FinishingManager : MonoBehaviour
 
             // Задаем ему размер
             effectInstance.transform.localScale = Vector3.one * particleScale;
+
+            if (normalizeParticleVelocityCurves)
+            {
+                NormalizeVelocityCurves(effectInstance);
+            }
 
             // Переносим спавн-объект на нужный слой, чтобы камера добивания его видела
             if (usingTemporaryLayer)
@@ -908,6 +919,40 @@ public class FinishingManager : MonoBehaviour
             }
         }
     }
+
+    private void NormalizeVelocityCurves(GameObject effectInstance)
+    {
+        if (effectInstance == null)
+        {
+            return;
+        }
+
+        ParticleSystem[] systems = effectInstance.GetComponentsInChildren<ParticleSystem>(true);
+        for (int i = 0; i < systems.Length; i++)
+        {
+            ParticleSystem system = systems[i];
+            if (system == null)
+            {
+                continue;
+            }
+
+            var velocity = system.velocityOverLifetime;
+            if (!velocity.enabled)
+            {
+                continue;
+            }
+
+            ParticleSystem.MinMaxCurve x = velocity.x;
+            ParticleSystem.MinMaxCurve y = velocity.y;
+            ParticleSystem.MinMaxCurve z = velocity.z;
+
+            if (x.mode != y.mode || x.mode != z.mode)
+            {
+                velocity.y = x;
+                velocity.z = x;
+            }
+        }
+    }
 }
 
 public class FinishingHitDetector : MonoBehaviour
@@ -917,7 +962,7 @@ public class FinishingHitDetector : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        CheckHit(other.transform, other.ClosestPoint(transform.position));
+//        CheckHit(other.transform, other.ClosestPoint(transform.position));
     }
 
     private void OnCollisionEnter(Collision collision)
