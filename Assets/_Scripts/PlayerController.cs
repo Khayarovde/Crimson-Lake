@@ -316,10 +316,9 @@ public class TankController : MonoBehaviour
         int index = playerInventory.activeItemIndex;
         if (index < 0) return false;
 
-        var slots = playerInventory.inventoryData.GetSlots();
-        if (index >= slots.Count) return false;
+        if (index >= playerInventory.inventoryData.GetSlotCount()) return false;
 
-        var item = slots[index];
+        var item = playerInventory.inventoryData.GetItemAt(index);
         if (item == null) return false;
 
         return item.type == InventoryItem.ItemType.Gun || item.type == InventoryItem.ItemType.Pistol;

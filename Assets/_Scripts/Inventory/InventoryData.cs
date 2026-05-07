@@ -130,6 +130,12 @@ public class InventoryData : ScriptableObject
         return new List<InventoryItem>(items);
     }
 
+    public int GetSlotCount()
+    {
+        EnsureInitialized();
+        return items.Count;
+    }
+
     public InventoryItem GetItemAt(int index)
     {
         EnsureInitialized();

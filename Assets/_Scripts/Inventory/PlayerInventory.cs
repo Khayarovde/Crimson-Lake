@@ -24,10 +24,10 @@ public class PlayerInventory : MonoBehaviour
 
     public void UseMedkitFromInventory()
     {
-        if (activeItemIndex < 0 || activeItemIndex >= inventoryData.GetSlots().Count)
+        if (activeItemIndex < 0 || activeItemIndex >= inventoryData.GetSlotCount())
             return;
 
-        InventoryItem activeItem = inventoryData.GetSlots()[activeItemIndex];
+        InventoryItem activeItem = inventoryData.GetItemAt(activeItemIndex);
         if (activeItem == null || activeItem.type != InventoryItem.ItemType.Medkit)
         {
             Debug.LogWarning("[PlayerInventory] Активный предмет не является аптечкой.");
@@ -222,11 +222,10 @@ public class PlayerInventory : MonoBehaviour
         if (inventoryData == null)
             return;
 
-        var slots = inventoryData.GetSlots();
-        if (index < 0 || index >= slots.Count)
+        if (index < 0 || index >= inventoryData.GetSlotCount())
             return;
 
-        var item = slots[index];
+        var item = inventoryData.GetItemAt(index);
         if (item == null || item.type == InventoryItem.ItemType.Empty)
             return;
 

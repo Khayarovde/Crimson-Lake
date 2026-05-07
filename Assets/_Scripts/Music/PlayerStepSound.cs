@@ -102,7 +102,7 @@ public class PlayerStepSound : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning("Нет звуков в массиве или AudioSource не найден!");
+//            Debug.LogWarning("Нет звуков в массиве или AudioSource не найден!");
         }
     }
 
@@ -142,7 +142,7 @@ public class PlayerStepSound : MonoBehaviour
         {
             string tag = hit.collider.tag;
             if (logSurfaceHit)
-                Debug.Log("Surface hit: " + hit.collider.name + " tag=" + tag);
+//                Debug.Log("Surface hit: " + hit.collider.name + " tag=" + tag);
             for (int i = 0; i < surfaceClips.Length; i++)
             {
                 if (surfaceClips[i].surfaceTag == tag && surfaceClips[i].clips != null)
