@@ -33,7 +33,7 @@ RenderSettings:
   m_HaloTexture: {fileID: 0}
   m_SpotCookie: {fileID: 10001, guid: 0000000000000000e000000000000000, type: 0}
   m_DefaultReflectionMode: 0
-  m_DefaultReflectionResolution: 128
+  m_DefaultReflectionResolution: 256
   m_ReflectionBounces: 1
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
@@ -295,6 +295,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: SnowRoom
       objectReference: {fileID: 0}
+    - target: {fileID: 1755106292929051864, guid: 9cf033eaa07884c49b8c4f93ab1c6bdf, type: 3}
+      propertyPath: m_Lightmapping
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 1755106292929051864, guid: 9cf033eaa07884c49b8c4f93ab1c6bdf, type: 3}
+      propertyPath: m_Shadows.m_Type
+      value: 2
+      objectReference: {fileID: 0}
     - target: {fileID: 1770817672587844151, guid: 9cf033eaa07884c49b8c4f93ab1c6bdf, type: 3}
       propertyPath: m_LocalPosition.x
       value: -445.9
@@ -333,6 +341,14 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1770817672587844151, guid: 9cf033eaa07884c49b8c4f93ab1c6bdf, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2125979480915982788, guid: 9cf033eaa07884c49b8c4f93ab1c6bdf, type: 3}
+      propertyPath: m_Lightmapping
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 5765653758028190808, guid: 9cf033eaa07884c49b8c4f93ab1c6bdf, type: 3}
+      propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8039430628562978192, guid: 9cf033eaa07884c49b8c4f93ab1c6bdf, type: 3}
@@ -1370,6 +1386,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1797593715906023921, guid: e33ede25ed40768488c7f6fef0712667, type: 3}
+      propertyPath: m_Lightmapping
+      value: 2
+      objectReference: {fileID: 0}
     - target: {fileID: 2309960520535389654, guid: e33ede25ed40768488c7f6fef0712667, type: 3}
       propertyPath: m_LocalPosition.x
       value: -310.1
@@ -1430,6 +1450,10 @@ PrefabInstance:
       propertyPath: playerAnimator
       value: 
       objectReference: {fileID: 1834082573}
+    - target: {fileID: 4090348138438631711, guid: e33ede25ed40768488c7f6fef0712667, type: 3}
+      propertyPath: m_Lightmapping
+      value: 2
+      objectReference: {fileID: 0}
     - target: {fileID: 4780128667913875374, guid: e33ede25ed40768488c7f6fef0712667, type: 3}
       propertyPath: hintRoot
       value: 
@@ -3530,11 +3554,11 @@ Camera:
     y: 0
     width: 1
     height: 1
-  near clip plane: 0.1
-  far clip plane: 100
-  field of view: 46.767483
+  near clip plane: 0.01
+  far clip plane: 30.9
+  field of view: 48.90176
   orthographic: 1
-  orthographic size: 6
+  orthographic size: 2
   m_Depth: 99
   m_CullingMask:
     serializedVersion: 2
@@ -3558,8 +3582,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 963194225}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.27059808, y: -0.65328145, z: 0.27059802, w: 0.65328157}
-  m_LocalPosition: {x: -240.04, y: 24.83, z: 30.6}
+  m_LocalRotation: {x: 0.2588186, y: -0.0000014969154, z: -0.0000004010965, w: 0.965926}
+  m_LocalPosition: {x: -520.70496, y: 5.070878, z: 471.91583}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -4192,6 +4216,18 @@ PrefabInstance:
     - target: {fileID: 2005896372980761930, guid: 946d36e6f064e0940918250bac33d540, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5383704069262704584, guid: 946d36e6f064e0940918250bac33d540, type: 3}
+      propertyPath: m_Lightmapping
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6531135290386683151, guid: 946d36e6f064e0940918250bac33d540, type: 3}
+      propertyPath: m_Lightmapping
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 9104101859292847072, guid: 946d36e6f064e0940918250bac33d540, type: 3}
+      propertyPath: m_Lightmapping
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -5894,6 +5930,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2689495199579701849, guid: b689b1820e5e5d24c8be81d1ff6752d9, type: 3}
+      propertyPath: m_Lightmapping
+      value: 2
+      objectReference: {fileID: 0}
     - target: {fileID: 6034219334920203970, guid: b689b1820e5e5d24c8be81d1ff6752d9, type: 3}
       propertyPath: hintImage
       value: 
@@ -5906,6 +5946,10 @@ PrefabInstance:
       propertyPath: dialogueRunnerOverride
       value: 
       objectReference: {fileID: 967213777}
+    - target: {fileID: 6245260025090976359, guid: b689b1820e5e5d24c8be81d1ff6752d9, type: 3}
+      propertyPath: m_Lightmapping
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 7209219590329055232, guid: b689b1820e5e5d24c8be81d1ff6752d9, type: 3}
       propertyPath: hintRoot
       value: 
@@ -5922,6 +5966,14 @@ PrefabInstance:
       propertyPath: playerAnimator
       value: 
       objectReference: {fileID: 1834082573}
+    - target: {fileID: 7392844853483752860, guid: b689b1820e5e5d24c8be81d1ff6752d9, type: 3}
+      propertyPath: m_Lightmapping
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 7535968798026541216, guid: b689b1820e5e5d24c8be81d1ff6752d9, type: 3}
+      propertyPath: m_Lightmapping
+      value: 2
+      objectReference: {fileID: 0}
     - target: {fileID: 7838183674111921102, guid: b689b1820e5e5d24c8be81d1ff6752d9, type: 3}
       propertyPath: m_Name
       value: RestRoom
