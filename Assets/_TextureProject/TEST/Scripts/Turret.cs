@@ -66,6 +66,7 @@ public class Turret : MonoBehaviour
     private float _scanCenterYaw;
     private float _scanOffset;
     private float _scanDirection = 1f;
+    private float _muzzleFlashTimer;
 
     private void Start()
     {
@@ -86,10 +87,10 @@ public class Turret : MonoBehaviour
 
     private void Update()
     {
-        ResetShootTrigger();
         RotateTowardTarget();
         SetLineRendererPoints();
         ValidateShoot();
+        UpdateMuzzleFlashAndSound();
     }
 
     private void RotateTowardTarget()
@@ -227,7 +228,9 @@ public class Turret : MonoBehaviour
             return false;
         }
 
-        Vector3 toTarget = _target.position - _shootTransform.position;
+        // Целимся немного выше ног игрока (в центр туловища), чтобы луч не цеплял пол при движении
+        Vector3 targetCenter = _target.position + Vector3.up * 1.0f; 
+        Vector3 toTarget = targetCenter - _shootTransform.position;
         float distance = toTarget.magnitude;
 
         if (distance > _maxShootDistance || distance <= 0.01f)
@@ -256,7 +259,8 @@ public class Turret : MonoBehaviour
         }
 
         Vector3 rayDirection = toTarget / distance;
-        if (!Physics.Raycast(_shootTransform.position, rayDirection, out RaycastHit hitInfo, distance, _lineOfSightMask, QueryTriggerInteraction.Ignore))
+        // Добавляем запас дистанции (distance + 0.5f) на случай, если центр коллайдера чуть дальше
+        if (!Physics.Raycast(_shootTransform.position, rayDirection, out RaycastHit hitInfo, distance + 0.5f, _lineOfSightMask, QueryTriggerInteraction.Ignore))
         {
             return false;
         }
@@ -276,16 +280,33 @@ public class Turret : MonoBehaviour
         return Time.time - _lastSeenTime <= Mathf.Max(0f, _loseSightGraceTime);
     }
 
+    private void UpdateMuzzleFlashAndSound()
+    {
+        if (_muzzleFlashTimer > 0f)
+        {
+            _muzzleFlashTimer -= Time.deltaTime;
+            if (_muzzleFlashTimer <= 0f)
+            {
+                if (_muzzleFlash != null)
+                {
+                    _muzzleFlash.SetActive(false);
+                }
+                StopShootSound();
+                ResetShootTrigger(); // Сбрасываем триггер только тогда, когда турель перестает стрелять
+            }
+        }
+    }
+
     private void DoMuzzleFlash()
     {
-        if (_muzzleFlash == null)
+        if (_muzzleFlash != null)
         {
-            return;
+            _muzzleFlash.SetActive(true);
         }
 
-        _muzzleFlash.SetActive(true);
         InvokeShootSound();
-        StartCoroutine(DisableAfter(_muzzleFlash, _muzzleFlashActiveDuration));
+        // При каждом выстреле обновляем таймер, чтобы звук и вспышка не прерывались, пока турель активно стреляет
+        _muzzleFlashTimer = _muzzleFlashActiveDuration;
     }
 
     private void InvokeShootSound()
@@ -296,17 +317,6 @@ public class Turret : MonoBehaviour
         }
 
         _onShootSound?.Invoke();
-    }
-
-    private IEnumerator DisableAfter(GameObject objectToDisable, float delay)
-    {
-        yield return new WaitForSeconds(delay);
-        objectToDisable.SetActive(false);
-
-        if (objectToDisable == _muzzleFlash)
-        {
-            StopShootSound();
-        }
     }
 
     private void StopShootSound()

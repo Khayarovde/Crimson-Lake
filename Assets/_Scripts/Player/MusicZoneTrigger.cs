@@ -5,6 +5,7 @@ using System.Collections;
 public class MusicZoneTrigger : MonoBehaviour
 {
     private const float PlayerInsideGraceSeconds = 0.2f;
+    private static readonly System.Collections.Generic.List<MusicZoneTrigger> Zones = new System.Collections.Generic.List<MusicZoneTrigger>(64);
 
     [Header("Музыка для этой зоны")]
     public AudioClip zoneMusic;             // Какой трек играть в этой зоне
@@ -34,9 +35,12 @@ public class MusicZoneTrigger : MonoBehaviour
     private void Awake()
     {
         // Создаём отдельный AudioSource для этой зоны
-        GameObject audioObj = new GameObject("ZoneMusic_" + gameObject.name);
-        audioObj.transform.parent = transform;
-        zoneAudioSource = audioObj.AddComponent<AudioSource>();
+        if (zoneAudioSource == null)
+        {
+            GameObject audioObj = new GameObject("ZoneMusic_" + gameObject.name);
+            audioObj.transform.parent = transform;
+            zoneAudioSource = audioObj.AddComponent<AudioSource>();
+        }
         zoneAudioSource.playOnAwake = false;
         zoneAudioSource.loop = loopMusic;
         currentLocalVolume = 0f;
@@ -45,6 +49,12 @@ public class MusicZoneTrigger : MonoBehaviour
         lastPlayerTouchTime = -999f;
         isFadingBecausePlayerOutsideZones = false;
         ApplyCurrentVolume();
+    }
+
+    private void OnEnable()
+    {
+        if (!Zones.Contains(this))
+            Zones.Add(this);
     }
 
     private void Update()
@@ -211,12 +221,10 @@ public class MusicZoneTrigger : MonoBehaviour
     {
         if (IsAnySilentZoneContainingPlayer())
             return null;
-
-        MusicZoneTrigger[] allZones = FindObjectsByType<MusicZoneTrigger>(FindObjectsSortMode.InstanceID);
         MusicZoneTrigger bestZone = null;
         float latestEnterTime = float.MinValue;
 
-        foreach (var zone in allZones)
+        foreach (var zone in Zones)
         {
             if (zone == null || zone == excludeZone)
                 continue;
@@ -247,8 +255,7 @@ public class MusicZoneTrigger : MonoBehaviour
 
     private static bool IsAnySilentZoneContainingPlayer()
     {
-        var allZones = FindObjectsByType<MusicZoneTrigger>(FindObjectsSortMode.InstanceID);
-        foreach (var zone in allZones)
+        foreach (var zone in Zones)
         {
             if (zone == null || !zone.isActiveAndEnabled)
                 continue;
@@ -265,8 +272,7 @@ public class MusicZoneTrigger : MonoBehaviour
 
     private static void FadeOutAllZoneMusicForSilentZone()
     {
-        var allZones = FindObjectsByType<MusicZoneTrigger>(FindObjectsSortMode.InstanceID);
-        foreach (var zone in allZones)
+        foreach (var zone in Zones)
         {
             if (zone == null || zone.zoneAudioSource == null || !zone.zoneAudioSource.isPlaying)
                 continue;
@@ -294,6 +300,13 @@ public class MusicZoneTrigger : MonoBehaviour
 
     public IEnumerator FadeIn(float targetVolume, float duration)
     {
+        if (duration <= 0f)
+        {
+            currentLocalVolume = targetVolume;
+            ApplyCurrentVolume();
+            yield break;
+        }
+
         float currentTime = 0f;
         float startLocal = currentLocalVolume;
 
@@ -310,6 +323,13 @@ public class MusicZoneTrigger : MonoBehaviour
 
     public IEnumerator FadeOut(float duration)
     {
+        if (duration <= 0f)
+        {
+            currentLocalVolume = 0f;
+            ApplyCurrentVolume();
+            yield break;
+        }
+
         float currentTime = 0f;
         float startLocal = currentLocalVolume;
 
@@ -344,16 +364,14 @@ public class MusicZoneTrigger : MonoBehaviour
 
     public static void RefreshAllZoneVolumes()
     {
-        var zones = FindObjectsByType<MusicZoneTrigger>(FindObjectsSortMode.InstanceID);
-        foreach (var z in zones)
+        foreach (var z in Zones)
             z.ApplyCurrentVolume();
     }
 
     // Останавливаем музыку во всех других зонах
     private void StopAllOtherZoneMusic()
     {
-        MusicZoneTrigger[] allZones = FindObjectsByType<MusicZoneTrigger>(FindObjectsSortMode.InstanceID);
-        foreach (var zone in allZones)
+        foreach (var zone in Zones)
         {
             if (zone != this && zone.zoneAudioSource != null && zone.zoneAudioSource.isPlaying)
             {
@@ -397,6 +415,7 @@ public class MusicZoneTrigger : MonoBehaviour
 
     private void OnDisable()
     {
+        Zones.Remove(this);
         if (currentActiveZone == this)
             currentActiveZone = null;
     }

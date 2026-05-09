@@ -1248,7 +1248,7 @@ AudioSource:
   m_PlayOnAwake: 1
   m_Volume: 1
   m_Pitch: 1
-  Loop: 0
+  Loop: 1
   Mute: 0
   Spatialize: 0
   SpatializePostEffects: 0
@@ -1350,7 +1350,7 @@ MonoBehaviour:
   fadePreviousOnEnter: 1
   fadeInTime: 1.5
   fadeOutTime: 1.5
-  zoneAudioSource: {fileID: 0}
+  zoneAudioSource: {fileID: 1000154680877627561}
 --- !u!1 &582006149373748714
 GameObject:
   m_ObjectHideFlags: 0
@@ -5583,6 +5583,7 @@ Transform:
   - {fileID: 5325001131446352931}
   - {fileID: 7238178915235609329}
   - {fileID: 2379891579608135972}
+  - {fileID: 5096418193082108308}
   - {fileID: 7460430589607750304}
   - {fileID: 2144950742835375243}
   - {fileID: 1999948603800757883}
@@ -8988,6 +8989,62 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!1 &8473399045821496957
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5096418193082108308}
+  - component: {fileID: 8132765307064146821}
+  m_Layer: 16
+  m_Name: Audio Reverb Zone
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5096418193082108308
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8473399045821496957}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 14.02, y: 0, z: -0.24}
+  m_LocalScale: {x: 1, y: 1, z: 0.5755575}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1671114621416791096}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!167 &8132765307064146821
+AudioReverbZone:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8473399045821496957}
+  m_Enabled: 1
+  m_MinDistance: 10
+  m_MaxDistance: 25
+  m_ReverbPreset: 1
+  m_Room: -1000
+  m_RoomHF: -100
+  m_DecayTime: 1.49
+  m_DecayHFRatio: 0.83
+  m_Reflections: -2602
+  m_ReflectionsDelay: 0.007
+  m_Reverb: 200
+  m_ReverbDelay: 0.011
+  m_HFReference: 5000
+  m_Diffusion: 100
+  m_Density: 100
+  m_LFReference: 250
+  m_RoomLF: 0
 --- !u!1 &8539593936173148888
 GameObject:
   m_ObjectHideFlags: 0
