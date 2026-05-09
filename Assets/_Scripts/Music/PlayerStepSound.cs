@@ -1,4 +1,3 @@
-using System.Collections;
 using UnityEngine;
 
 public class PlayerStepSound : MonoBehaviour
@@ -10,8 +9,6 @@ public class PlayerStepSound : MonoBehaviour
     {
         public string surfaceTag;
         public AudioClip[] clips;
-        [Header("Soft Playback")]
-        public float fadeInDuration;
         public float baseVolume;
         public float minPitch;
         public float maxPitch;
@@ -23,6 +20,8 @@ public class PlayerStepSound : MonoBehaviour
     public float surfaceCheckDistance = 1.5f;
     public float surfaceCheckStartOffset = 0.2f;
     public bool logSurfaceHit = false;
+    [Header("Surface Cache")]
+    public float surfaceCacheInterval = 0.3f;
     private AudioSource audioSource;
     private Rigidbody rb;
 
@@ -33,9 +32,11 @@ public class PlayerStepSound : MonoBehaviour
     public float inputThreshold = 0.1f;
     [Tooltip("Выводить в консоль факт вызова Step_sound_play и причины блокировки")]
     public bool logStepEvents = false;
-    private Coroutine fadeRoutine;
     private Vector3 lastPosition;
     private float estimatedPlanarSpeed;
+    private float lastSurfaceCheckTime = -Mathf.Infinity;
+    private AudioClip[] cachedSurfaceClips = EmptyClips;
+    private SurfaceStepSounds cachedSurfaceSettings;
 
 
     private void Start()
@@ -89,13 +90,8 @@ public class PlayerStepSound : MonoBehaviour
         {
             AudioClip clip = clipsToPlay[Random.Range(0, clipsToPlay.Length)];
             audioSource.pitch = Random.Range(surfaceSettings.minPitch, surfaceSettings.maxPitch);
-            audioSource.clip = clip;
-            audioSource.volume = 0f;
-            audioSource.Play();
-
-            if (fadeRoutine != null)
-                StopCoroutine(fadeRoutine);
-            fadeRoutine = StartCoroutine(FadeInAudio(surfaceSettings.baseVolume, surfaceSettings.fadeInDuration));
+            audioSource.volume = surfaceSettings.baseVolume;
+            audioSource.PlayOneShot(clip);
 
             // Debug.Log("Событие шага сработало"); // Для отладки: смотрите в консоль Unity
             // print("Звук шага"); // Ваш оригинальный print
@@ -135,7 +131,16 @@ public class PlayerStepSound : MonoBehaviour
 
     private AudioClip[] GetSurfaceClips(out SurfaceStepSounds settings)
     {
+        if (Time.time - lastSurfaceCheckTime <= surfaceCacheInterval)
+        {
+            settings = cachedSurfaceSettings;
+            return cachedSurfaceClips;
+        }
+
+        lastSurfaceCheckTime = Time.time;
         settings = default;
+        cachedSurfaceSettings = default;
+        cachedSurfaceClips = EmptyClips;
         // Raycast вниз, чтобы понять, какая поверхность под ногами
         Vector3 origin = transform.position + Vector3.up * surfaceCheckStartOffset;
         if (Physics.Raycast(origin, Vector3.down, out RaycastHit hit, surfaceCheckDistance, surfaceMask, QueryTriggerInteraction.Ignore))
@@ -148,30 +153,13 @@ public class PlayerStepSound : MonoBehaviour
                 if (surfaceClips[i].surfaceTag == tag && surfaceClips[i].clips != null)
                 {
                     settings = surfaceClips[i];
-                    return surfaceClips[i].clips;
+                    cachedSurfaceSettings = settings;
+                    cachedSurfaceClips = surfaceClips[i].clips;
+                    return cachedSurfaceClips;
                 }
             }
         }
 
         return EmptyClips;
-    }
-
-    private IEnumerator FadeInAudio(float targetVolume, float duration)
-    {
-        if (duration <= 0f)
-        {
-            audioSource.volume = targetVolume;
-            yield break;
-        }
-
-        float t = 0f;
-        while (t < duration)
-        {
-            t += Time.deltaTime;
-            audioSource.volume = Mathf.Lerp(0f, targetVolume, t / duration);
-            yield return null;
-        }
-
-        audioSource.volume = targetVolume;
     }
 }

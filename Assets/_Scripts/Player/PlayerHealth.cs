@@ -59,7 +59,7 @@ public class PlayerHealth : MonoBehaviour
         TryResolveLoseCanvasIfMissing();
         if (loseScreenCanvas != null) loseScreenCanvas.SetActive(false);
 
-        Debug.Log($"[PlayerHealth] HP: {currentHealth}/{maxHealth}");
+//        Debug.Log($"[PlayerHealth] HP: {currentHealth}/{maxHealth}");
     }
 
     private void Update()
