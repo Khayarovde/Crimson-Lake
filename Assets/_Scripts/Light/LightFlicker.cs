@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class LightFlicker : MonoBehaviour
 {
-    public Light lightSource;
+    public Light[] lightSources;
 
     [Header("Flicker Settings")]
     public float minFlickerSpeed = 0.05f;    // минимальная задержка между морганиями
@@ -28,8 +28,8 @@ public class LightFlicker : MonoBehaviour
 
     void Update()
     {
-        // Условие: если источник света не указан в инспекторе, ничего не делать (не мигать всеми источниками)
-        if (lightSource == null)
+        // Условие: если массив источников света не указан или пуст, ничего не делать
+        if (lightSources == null || lightSources.Length == 0)
             return;
 
         timer -= Time.deltaTime;
@@ -38,7 +38,11 @@ public class LightFlicker : MonoBehaviour
         {
             if (timer <= 0)
             {
-                lightSource.enabled = !lightSource.enabled;
+                foreach (var ls in lightSources)
+                {
+                    if (ls != null)
+                        ls.enabled = !ls.enabled;
+                }
                 timer = currentFlickerSpeed;  // Используем фиксированную скорость для периода мигания (исправление бага)
             }
 
@@ -49,7 +53,11 @@ public class LightFlicker : MonoBehaviour
             {
                 // Завершили фазу мигания
                 isFlickering = false;
-                lightSource.enabled = true;
+                foreach (var ls in lightSources)
+                {
+                    if (ls != null)
+                        ls.enabled = true;
+                }
                 timer = currentOffTime;
             }
         }
