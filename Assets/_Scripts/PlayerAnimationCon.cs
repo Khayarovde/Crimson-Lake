@@ -16,6 +16,8 @@ public class PlayerAnimationCon : MonoBehaviour
     private WeaponHandler weaponHandler;
     private PlayerInventory playerInventory;
     private bool wasAiming;
+    [SerializeField, Min(0f)] private float hitReturnDelay = 0.25f;
+    private Coroutine hitReturnRoutine;
 
     void Start()
     {
@@ -55,13 +57,16 @@ public class PlayerAnimationCon : MonoBehaviour
     public void PlayHit()
     {
         if (anim == null) return;
-        Play("hit", LayerVseTelo);
+        Play("hit", LayerRuka);
+        if (hitReturnRoutine != null)
+            StopCoroutine(hitReturnRoutine);
+        hitReturnRoutine = StartCoroutine(ReturnFromHit());
     }
 
     public void PlayGameOver()
     {
         if (anim == null) return;
-        // Play("GameOver", LayerVseTelo);
+        Play("gameover_player", LayerVseTelo);
     }
 
     public void PlayReloadAnimation(InventoryItem.ItemType weaponType, float reloadDuration)
@@ -110,6 +115,14 @@ public class PlayerAnimationCon : MonoBehaviour
             Play("PistolAiming", LayerRuka);
         else if (item.type == InventoryItem.ItemType.Gun)
             Play("ShotgunAiming", LayerRuka);
+    }
+
+    private System.Collections.IEnumerator ReturnFromHit()
+    {
+        if (hitReturnDelay > 0f)
+            yield return new WaitForSeconds(hitReturnDelay);
+        Play("New State", LayerRuka);
+        hitReturnRoutine = null;
     }
 
     private void Play(string stateName, int layer, float transitionDuration = 0.15f)

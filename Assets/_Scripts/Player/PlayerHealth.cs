@@ -158,7 +158,12 @@ public class PlayerHealth : MonoBehaviour
         if (weapon != null) weapon.enabled = false;
 
         var tankController = GetComponent<TankController>();
-        if (tankController != null) tankController.enabled = false;
+        if (tankController != null)
+        {
+            tankController.SetMovementLock(true);
+            tankController.SetMouseRotationEnabled(false);
+            tankController.enabled = false;
+        }
 
         var movement = GetComponent<CharacterMovement>();
         if (movement != null) movement.enabled = false;

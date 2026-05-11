@@ -3,18 +3,23 @@ using UnityEngine;
 using UnityEngine.AI;
 
 /// <summary>
-/// Босс с двумя фазами поведения.
+/// Босс с двумя фазами поведения и "ломаемой" полосой.
 ///
 /// Фаза 1 (BossPhase.Phase1):
 ///   — Постоянно преследует игрока через NavMesh.
-///   — Периодически делает ТАРАН: разгоняется, бьёт при контакте.
+///   — Периодически делает ТАРАН (Attack на слое Ruka).
 ///   — Во время прицеливания перед тараном тормозит.
 ///
 /// Фаза 2 (BossPhase.Phase2, активируется при HP <= phase2HealthThreshold):
 ///   — Все механики фазы 1 остаются.
 ///   — Добавляется способность СПАВНИТЬ ЛЕСКИ: перед собой и за собой.
-///   — При получении урона: с вероятностью slowOnHitChance — теряет скорость,
-///     иначе — игнорирует замедление.
+///   — При получении урона: с вероятностью slowOnHitChance — теряет скорость.
+///
+/// Получение урона:
+///   — Урон копится, но основное HP уменьшается только после серии:
+///     GetDown -> Tryaska(1/2) -> (HP-).
+///   — Если HP остаётся, босс делает wakeUp_stun и возвращается к walking.
+///   — Если HP <= 0, переходит в death_end.
 /// </summary>
 [RequireComponent(typeof(NavMeshAgent))]
 [DisallowMultipleComponent]
@@ -39,6 +44,18 @@ public class BossEnemy : MonoBehaviour
     [SerializeField] private bool autoFinishableOnLowHealth = true;
     [SerializeField, Range(0f, 1f)] private float finishableHealthPercent = 0.2f;
     [SerializeField] private bool requirePhase2ForFinisher = true;
+
+    // ─── Стан/ломаемая полоска ───────────────────────────────────────────────
+
+    [Header("Stun / Break Sequence")]
+    [Tooltip("Суммарный урон, после которого запускается GetDown -> Tryaska.")]
+    public float stunDamageThreshold = 60f;
+    [Tooltip("Длительность анимации GetDown (сек).")]
+    public float getDownDuration = 0.7f;
+    [Tooltip("Длительность анимации Tryaska1/Tryaska2 (сек).")]
+    public float tryaskaDuration = 5.0f;
+    [Tooltip("Длительность анимации wakeUp_stun (сек).")]
+    public float wakeUpDuration = 0.8f;
 
     // ─── Движение ─────────────────────────────────────────────────────────────
 
@@ -66,10 +83,24 @@ public class BossEnemy : MonoBehaviour
     public float ramHitRadius = 1.2f;
 
     [Header("Attack Hitbox (Animation Event)")]
-    public bool useAttackHitEvent = false;
+    public bool useAttackHitEvent = true;
     public int attackEventDamage = 15;
     public float attackEventRadius = 1.1f;
     public float attackEventCooldown = 0.08f;
+
+    [Header("Attack Hitboxes")]
+    public Transform headHitPoint;
+    public Transform leftHandHitPoint;
+    public Transform rightHandHitPoint;
+
+    [Header("Close Attack (Ruka Attack2)")]
+    [Tooltip("Если игрок слишком близко, проигрывается Attack2 на слое Ruka.")]
+    public float closeAttackDistance = 1.6f;
+    [Tooltip("Кулдаун между близкими атаками.")]
+    public float closeAttackCooldown = 1.1f;
+
+    [Header("Hit Detection")]
+    [SerializeField, Range(1, 32)] private int maxHitColliders = 8;
 
     // ─── Замедление при уроне (фаза 2) ────────────────────────────────────────
 
@@ -107,16 +138,27 @@ public class BossEnemy : MonoBehaviour
 
     // ─── Анимация ─────────────────────────────────────────────────────────────
 
-    [Header("Animations")]
-    [SerializeField] private string idleAnim = "Idle";
-    [SerializeField] private string walkAnim = "walking";
-    [SerializeField] private string ramAimAnim = "Scream";
-    [SerializeField] private string ramChargeAnim = "Attack";
-    [SerializeField] private string hitAnim = "Hit";
-    [SerializeField] private string leskaSpawnAnim = "Scream";
-    [SerializeField] private string deathAnim = "death_padaet";
+    [Header("Animations - Base Layer")]
+    [SerializeField] private string baseLayerName = "Base Layer";
+    [SerializeField] private string baseWalkAnim = "walking";
+    [SerializeField] private string baseGetDownAnim = "GetDown";
+    [SerializeField] private string baseTryaska1Anim = "Tryaska1";
+    [SerializeField] private string baseTryaska2Anim = "Tryaska2";
+    [SerializeField] private string baseWakeUpAnim = "wakeUp_stun";
+    [SerializeField] private string baseDeathAnim = "death_end";
+    [Tooltip("Опционально. Если пусто, во время спавна лески анимация не меняется.")]
+    [SerializeField] private string baseLeskaSpawnAnim = "";
+
+    [Header("Animations - Ruka Layer")]
+    [SerializeField] private string rukaLayerName = "Ruka";
+    [SerializeField] private string rukaRamAnim = "Attack";
+    [SerializeField] private string rukaCloseAnim = "Attack2";
+    [SerializeField] private string rukaHitAnim = "hit";
+
+    [Header("Animation Settings")]
     [SerializeField] private float animCrossFade = 0.12f;
-    [SerializeField] private int animLayer = 0;
+    [SerializeField] private int baseLayerIndex = 0;
+    [SerializeField] private int rukaLayerIndex = 1;
 
     // ─── Ссылки ───────────────────────────────────────────────────────────────
 
@@ -137,16 +179,27 @@ public class BossEnemy : MonoBehaviour
     private BossPhase currentPhase = BossPhase.Phase1;
     private bool isDead;
     private bool isSlow;
+    private bool isStunSequence;
 
     private float nextRamTime;
     private float nextLeskaTime;
     private float nextRepathTime;
-    private float nextAttackEventTime;
+    private float nextCloseAttackTime;
 
     private bool isDoingRam;
     private bool isSpawningLeska;
 
-    private string currentAnimState;
+    private float pendingDamage;
+    private float accumulatedStunDamage;
+
+    private string currentBaseAnimState;
+    private string currentRukaAnimState;
+
+    private Collider[] attackHitResults;
+
+    private float nextHeadHitTime;
+    private float nextLeftHitTime;
+    private float nextRightHitTime;
 
     // ─────────────────────────────────────────────────────────────────────────
     // Инициализация
@@ -171,12 +224,19 @@ public class BossEnemy : MonoBehaviour
         }
 
         health = maxHealth;
+        pendingDamage = 0f;
+        accumulatedStunDamage = 0f;
 
         ApplyNavTuning();
         SetAgentSpeed(chaseSpeed);
 
         if (animator != null)
+        {
             animator.applyRootMotion = false;
+            ResolveAnimatorLayers();
+        }
+
+        PrepareHitBuffers();
     }
 
     public bool CanBeFinished()
@@ -208,14 +268,31 @@ public class BossEnemy : MonoBehaviour
 
     public void AttackHitboxOn()
     {
+        AttackHitboxOnHead();
+    }
+
+    public void AttackHitboxOnHead()
+    {
         if (!useAttackHitEvent)
             return;
 
-        if (Time.time < nextAttackEventTime)
+        TryDealHit(headHitPoint, ramHitRadius, ramDamage, ref nextHeadHitTime);
+    }
+
+    public void AttackHitboxOnLeftHand()
+    {
+        if (!useAttackHitEvent)
             return;
 
-        nextAttackEventTime = Time.time + Mathf.Max(0f, attackEventCooldown);
-        DealAttackEventDamage();
+        TryDealHit(leftHandHitPoint, attackEventRadius, attackEventDamage, ref nextLeftHitTime);
+    }
+
+    public void AttackHitboxOnRightHand()
+    {
+        if (!useAttackHitEvent)
+            return;
+
+        TryDealHit(rightHandHitPoint, attackEventRadius, attackEventDamage, ref nextRightHitTime);
     }
 
     public void AttackHitboxOff()
@@ -233,8 +310,8 @@ public class BossEnemy : MonoBehaviour
 
         CheckPhaseTransition();
 
-        // Во время тарана или спавна лесок — управление передано корутине
-        if (isDoingRam || isSpawningLeska)
+        // Во время тарана, стана или спавна лесок — управление передано корутине
+        if (isDoingRam || isSpawningLeska || isStunSequence)
             return;
 
         // Фаза 2: периодический спавн лесок
@@ -265,10 +342,15 @@ public class BossEnemy : MonoBehaviour
     /// </summary>
     private void Phase1Update()
     {
-        float dist = Vector3.Distance(transform.position, player.position);
+        Vector3 toPlayer = player.position - transform.position;
+        float distSqr = toPlayer.sqrMagnitude;
+
+        // Ближняя атака (Attack2 на слое Ruka)
+        bool didCloseAttack = TryCloseAttack(distSqr);
 
         // Попытка тарана
-        if (Time.time >= nextRamTime && dist <= ramTriggerDistance)
+        float ramTriggerDistSqr = ramTriggerDistance * ramTriggerDistance;
+        if (!didCloseAttack && Time.time >= nextRamTime && distSqr <= ramTriggerDistSqr)
         {
             StartCoroutine(RamRoutine());
             return;
@@ -302,7 +384,24 @@ public class BossEnemy : MonoBehaviour
             navAgent.SetDestination(player.position);
         }
 
-        PlayAnim(walkAnim);
+        PlayBaseAnim(baseWalkAnim);
+    }
+
+    private bool TryCloseAttack(float distSqr)
+    {
+        if (closeAttackDistance <= 0f)
+            return false;
+
+        if (Time.time < nextCloseAttackTime)
+            return false;
+
+        float closeDistSqr = closeAttackDistance * closeAttackDistance;
+        if (distSqr > closeDistSqr)
+            return false;
+
+        PlayRukaAnim(rukaCloseAnim);
+        nextCloseAttackTime = Time.time + Mathf.Max(0f, closeAttackCooldown);
+        return true;
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -321,11 +420,14 @@ public class BossEnemy : MonoBehaviour
         isDoingRam = true;
         nextRamTime = Time.time + ramCooldown;
 
+        // Запуск атаки сразу при начале тарана
+        PlayRukaAnim(rukaRamAnim);
+
         // — Прицеливание —
         SetAgentSpeed(aimingSpeed);
         navAgent.isStopped = false;
         navAgent.SetDestination(player.position);
-        PlayAnim(ramAimAnim);
+        PlayBaseAnim(baseWalkAnim);
 
         if (audioSource != null && ramRoarClip != null)
             audioSource.PlayOneShot(ramRoarClip);
@@ -345,75 +447,61 @@ public class BossEnemy : MonoBehaviour
 
         // — Рывок —
         StopAgentHard();
-        PlayAnim(ramChargeAnim);
         Vector3 ramDir = player.position - transform.position;
         ramDir.y = 0f;
         if (ramDir.sqrMagnitude < 0.0001f)
             ramDir = transform.forward;
         ramDir.Normalize();
 
-        bool hit = false;
         float ramEnd = Time.time + ramDuration;
         while (Time.time < ramEnd)
         {
             navAgent.Move(ramDir * ramSpeed * Time.deltaTime);
-            if (!hit)
-            {
-                hit = TryDealRamDamage();
-            }
             yield return null;
         }
 
         // — Возврат к преследованию —
         navAgent.isStopped = false;
         SetAgentSpeed(isSlow ? chaseSpeed * slowSpeedMultiplier : chaseSpeed);
-        PlayAnim(walkAnim);
+        PlayBaseAnim(baseWalkAnim);
 
         isDoingRam = false;
     }
 
-    /// <summary>
-    /// Наносит урон от тарана через OverlapSphere.
-    /// </summary>
-    private bool TryDealRamDamage()
+    private void TryDealHit(Transform hitPoint, float hitRadius, int damage, ref float nextHitTime)
     {
-        Collider[] hits = Physics.OverlapSphere(transform.position, ramHitRadius, playerLayer, QueryTriggerInteraction.Collide);
-        foreach (Collider c in hits)
-        {
-            PlayerHealth ph = c.transform.root.GetComponent<PlayerHealth>();
-            if (ph != null && !ph.IsDead)
-            {
-                ph.ApplyDamage(ramDamage);
-                return true;
-            }
-        }
-
-        if (playerHealth != null && !playerHealth.IsDead)
-        {
-            float dist = Vector3.Distance(transform.position, player.position);
-            if (dist <= ramHitRadius)
-            {
-                playerHealth.ApplyDamage(ramDamage);
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private void DealAttackEventDamage()
-    {
-        if (attackEventDamage <= 0)
+        if (damage <= 0)
             return;
 
-        float radius = Mathf.Max(0.1f, attackEventRadius);
-        Collider[] hits = Physics.OverlapSphere(transform.position, radius, playerLayer, QueryTriggerInteraction.Collide);
-        foreach (Collider c in hits)
+        if (hitPoint == null)
+            return;
+
+        if (Time.time < nextHitTime)
+            return;
+
+        nextHitTime = Time.time + Mathf.Max(0f, attackEventCooldown);
+
+        if (attackHitResults == null || attackHitResults.Length == 0)
+            PrepareHitBuffers();
+
+        float radius = Mathf.Max(0.1f, hitRadius);
+        int hitCount = Physics.OverlapSphereNonAlloc(
+            hitPoint.position,
+            radius,
+            attackHitResults,
+            playerLayer,
+            QueryTriggerInteraction.Collide);
+
+        for (int i = 0; i < hitCount; i++)
         {
+            Collider c = attackHitResults[i];
+            if (c == null)
+                continue;
+
             PlayerHealth ph = c.transform.root.GetComponent<PlayerHealth>();
             if (ph != null && !ph.IsDead)
             {
-                ph.ApplyDamage(attackEventDamage);
+                ph.ApplyDamage(damage);
                 break;
             }
         }
@@ -435,7 +523,7 @@ public class BossEnemy : MonoBehaviour
         nextLeskaTime = Time.time + leskaCooldown;
 
         StopAgentHard();
-        PlayAnim(leskaSpawnAnim);
+        PlayBaseAnim(baseLeskaSpawnAnim);
 
         if (audioSource != null && leskaSpawnClip != null)
             audioSource.PlayOneShot(leskaSpawnClip);
@@ -446,7 +534,7 @@ public class BossEnemy : MonoBehaviour
         SpawnLeska(transform.position - transform.forward * leskaSpawnOffset);
 
         navAgent.isStopped = false;
-        PlayAnim(walkAnim);
+        PlayBaseAnim(baseWalkAnim);
         isSpawningLeska = false;
     }
 
@@ -476,28 +564,36 @@ public class BossEnemy : MonoBehaviour
     {
         if (isDead || incomingDamage <= 0f) return;
 
-        health -= incomingDamage;
-        health = Mathf.Max(0f, health);
-
         if (hitEffect != null)
             hitEffect.Play();
 
-        // Реакция на урон — анимация хита (только если не делаем таран)
-        if (!isDoingRam)
-            PlayAnim(hitAnim);
+        // Реакция на урон — hit на слое Ruka (только если не таран/стан)
+        if (!isDoingRam && !isStunSequence)
+            PlayRukaAnim(rukaHitAnim);
 
-        // Замедление при уроне — шанс сработать в обеих фазах
-        TryApplySlow();
+        pendingDamage += incomingDamage;
 
-        if (health <= 0f)
+        if (stunDamageThreshold > 0f)
         {
-            Die();
-            return;
+            accumulatedStunDamage += incomingDamage;
+            if (!isStunSequence && accumulatedStunDamage >= stunDamageThreshold)
+            {
+                accumulatedStunDamage = 0f;
+                StartCoroutine(StunBreakRoutine());
+            }
         }
+        else
+        {
+            ApplyPendingDamage();
+        }
+
+        // Замедление при уроне — только в фазе 2
+        if (currentPhase == BossPhase.Phase2)
+            TryApplySlow();
     }
 
     /// <summary>
-    /// С вероятностью slowOnHitChance применяет временное замедление.
+    /// С вероятностью slowOnHitChance применяет временное замедление (фаза 2).
     /// </summary>
     private void TryApplySlow()
     {
@@ -519,12 +615,60 @@ public class BossEnemy : MonoBehaviour
             SetAgentSpeed(chaseSpeed);
     }
 
+    private IEnumerator StunBreakRoutine()
+    {
+        isStunSequence = true;
+        StopAgentHard();
+
+        PlayBaseAnim(baseGetDownAnim);
+        if (getDownDuration > 0f)
+            yield return new WaitForSeconds(getDownDuration);
+
+        string tryaskaAnim = (Random.value < 0.5f) ? baseTryaska1Anim : baseTryaska2Anim;
+        PlayBaseAnim(tryaskaAnim);
+        if (tryaskaDuration > 0f)
+            yield return new WaitForSeconds(tryaskaDuration);
+
+        if (ApplyPendingDamage())
+            yield break;
+
+        PlayBaseAnim(baseWakeUpAnim);
+        if (wakeUpDuration > 0f)
+            yield return new WaitForSeconds(wakeUpDuration);
+
+        navAgent.isStopped = false;
+        SetAgentSpeed(isSlow ? chaseSpeed * slowSpeedMultiplier : chaseSpeed);
+        PlayBaseAnim(baseWalkAnim);
+        isStunSequence = false;
+    }
+
+    private bool ApplyPendingDamage()
+    {
+        if (pendingDamage <= 0f)
+            return false;
+
+        health -= pendingDamage;
+        pendingDamage = 0f;
+        health = Mathf.Max(0f, health);
+
+        CheckPhaseTransition();
+
+        if (health <= 0f)
+        {
+            Die();
+            return true;
+        }
+
+        return false;
+    }
+
     private void Die()
     {
         isDead = true;
+        isStunSequence = false;
         StopAllCoroutines();
         StopAgentHard();
-        PlayAnim(deathAnim);
+        PlayBaseAnim(baseDeathAnim);
         Debug.Log("[BossEnemy] Босс умер.");
         // Здесь можно добавить: выдать лут, отыграть музыку победы, и т.д.
     }
@@ -548,6 +692,37 @@ public class BossEnemy : MonoBehaviour
         navAgent.autoBraking = false;
     }
 
+    private void ResolveAnimatorLayers()
+    {
+        if (animator == null)
+            return;
+
+        if (!string.IsNullOrEmpty(baseLayerName))
+        {
+            int baseIndex = animator.GetLayerIndex(baseLayerName);
+            if (baseIndex >= 0)
+                baseLayerIndex = baseIndex;
+        }
+
+        if (!string.IsNullOrEmpty(rukaLayerName))
+        {
+            int rukaIndex = animator.GetLayerIndex(rukaLayerName);
+            if (rukaIndex >= 0)
+                rukaLayerIndex = rukaIndex;
+        }
+
+        if (rukaLayerIndex >= 0 && rukaLayerIndex < animator.layerCount)
+            animator.SetLayerWeight(rukaLayerIndex, 1f);
+    }
+
+    private void PrepareHitBuffers()
+    {
+        int size = Mathf.Max(1, maxHitColliders);
+
+        if (attackHitResults == null || attackHitResults.Length != size)
+            attackHitResults = new Collider[size];
+    }
+
     private void StopAgentHard()
     {
         if (navAgent == null || !navAgent.isOnNavMesh) return;
@@ -567,14 +742,32 @@ public class BossEnemy : MonoBehaviour
         transform.rotation = Quaternion.RotateTowards(transform.rotation, target, degreesPerSecond * Time.deltaTime);
     }
 
-    private void PlayAnim(string stateName)
+    private void PlayBaseAnim(string stateName)
     {
-        if (animator == null || string.IsNullOrEmpty(stateName)) return;
-        if (stateName == currentAnimState) return;
-        if (!animator.HasState(animLayer, Animator.StringToHash(stateName))) return;
+        PlayAnimOnLayer(stateName, baseLayerIndex, ref currentBaseAnimState);
+    }
 
-        animator.CrossFadeInFixedTime(stateName, animCrossFade, animLayer);
-        currentAnimState = stateName;
+    private void PlayRukaAnim(string stateName)
+    {
+        PlayAnimOnLayer(stateName, rukaLayerIndex, ref currentRukaAnimState);
+    }
+
+    private void PlayAnimOnLayer(string stateName, int layer, ref string currentState)
+    {
+        if (animator == null || string.IsNullOrEmpty(stateName))
+            return;
+
+        if (layer < 0 || layer >= animator.layerCount)
+            return;
+
+        if (stateName == currentState)
+            return;
+
+        if (!animator.HasState(layer, Animator.StringToHash(stateName)))
+            return;
+
+        animator.CrossFadeInFixedTime(stateName, animCrossFade, layer);
+        currentState = stateName;
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -590,6 +783,10 @@ public class BossEnemy : MonoBehaviour
         // Хитбокс тарана
         Gizmos.color = new Color(1f, 0.3f, 0.3f, 0.5f);
         Gizmos.DrawWireSphere(transform.position, ramHitRadius);
+
+        // Ближняя атака
+        Gizmos.color = new Color(1f, 0.6f, 0.2f, 0.5f);
+        Gizmos.DrawWireSphere(transform.position, closeAttackDistance);
 
         // Точки спавна лесок
         Gizmos.color = Color.cyan;
