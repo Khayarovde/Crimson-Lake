@@ -3369,6 +3369,10 @@ PlayableDirector:
     value: {fileID: 4312694285157970178}
   - key: {fileID: -6392484998093176466, guid: 259fc74b18f9ce745b2ac0bfe0761acb, type: 2}
     value: {fileID: 7382025283945050562}
+  - key: {fileID: 179473726067436128, guid: 259fc74b18f9ce745b2ac0bfe0761acb, type: 2}
+    value: {fileID: 1149488655814879463}
+  - key: {fileID: 5170043653115044354, guid: 259fc74b18f9ce745b2ac0bfe0761acb, type: 2}
+    value: {fileID: 4312694285157970178}
   m_ExposedReferences:
     m_References:
     - 3a87b2f65db38434eb2d39105d914415: {fileID: 6531699090958346902}
@@ -3486,7 +3490,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 94d4fae8dde4a6346b40dd059dad60f2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bossObject: {fileID: 1165557995517003137}
+  bossObject: {fileID: 7382025283945050562}
   bossPrefab: {fileID: 1165557995517003137}
   spawnPoint: {fileID: 8887079896939907514}
   bossEnemy: {fileID: 1867600520234544938}
@@ -6822,19 +6826,19 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1753413471848257301, guid: e53b62566a261084aa6cdd2f8f05633f, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -0.0000038146973
+      value: 0.0000019073486
       objectReference: {fileID: 0}
     - target: {fileID: 1753413471848257301, guid: e53b62566a261084aa6cdd2f8f05633f, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0.03364563
+      value: 0.033638
       objectReference: {fileID: 0}
     - target: {fileID: 1753413471848257301, guid: e53b62566a261084aa6cdd2f8f05633f, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 0.70710677
+      value: 0.7071067
       objectReference: {fileID: 0}
     - target: {fileID: 1753413471848257301, guid: e53b62566a261084aa6cdd2f8f05633f, type: 3}
       propertyPath: m_LocalRotation.x
-      value: -0.7071069
+      value: -0.7071068
       objectReference: {fileID: 0}
     - target: {fileID: 1753413471848257301, guid: e53b62566a261084aa6cdd2f8f05633f, type: 3}
       propertyPath: m_LocalRotation.y
@@ -6922,6 +6926,7 @@ MonoBehaviour:
     m_Signals:
     - {fileID: 11400000, guid: dd38c38349cf1c343952f10ae4107f08, type: 2}
     - {fileID: 11400000, guid: fc78191ada92233429cc2abed0683bd6, type: 2}
+    - {fileID: 11400000, guid: 9c31e7d2fae99fa4299a5ba9e71864b9, type: 2}
     m_Events:
     - m_PersistentCalls:
         m_Calls:
@@ -6941,7 +6946,21 @@ MonoBehaviour:
         m_Calls:
         - m_Target: {fileID: 8693217274397586855}
           m_TargetAssemblyTypeName: CustEnemy, Assembly-CSharp
-          m_MethodName: SpawnBoss
+          m_MethodName: HideBoss
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+    - m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 8693217274397586855}
+          m_TargetAssemblyTypeName: CustEnemy, Assembly-CSharp
+          m_MethodName: HideBoss
           m_Mode: 1
           m_Arguments:
             m_ObjectArgument: {fileID: 0}
