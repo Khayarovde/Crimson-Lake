@@ -68,7 +68,7 @@ GameObject:
   - component: {fileID: 5746262917947657559}
   m_Layer: 0
   m_Name: Cube
-  m_TagString: Untagged
+  m_TagString: SnowRoom
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -358,8 +358,8 @@ Transform:
   m_GameObject: {fileID: 2961941475100826475}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 48.84, y: 5.55, z: 4.81}
-  m_LocalScale: {x: 10, y: 1, z: 1.2}
+  m_LocalPosition: {x: 48.84, y: 3.14, z: 14.9}
+  m_LocalScale: {x: 10, y: 2.006, z: 1.2}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1770817672587844151}
@@ -1603,8 +1603,8 @@ Transform:
   m_GameObject: {fileID: 7675776836661920682}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 51.01, y: 5.8, z: -13.8}
-  m_LocalScale: {x: 10, y: 1, z: 1.2}
+  m_LocalPosition: {x: 51.01, y: 5.8, z: -18.98}
+  m_LocalScale: {x: 10, y: 7.6429, z: 1.2}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1770817672587844151}
@@ -1744,7 +1744,7 @@ GameObject:
   - component: {fileID: 1832867227119726156}
   m_Layer: 18
   m_Name: PointDoorPosle_Snow (1)
-  m_TagString: Untagged
+  m_TagString: SnowRoom
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1775,7 +1775,7 @@ GameObject:
   - component: {fileID: 8930486931526592832}
   m_Layer: 18
   m_Name: PointDoorSnow (1)
-  m_TagString: Untagged
+  m_TagString: SnowRoom
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -2053,6 +2053,10 @@ PrefabInstance:
     - target: {fileID: 387364091424724237, guid: aedebdaeae12a6743b39120d2f5156b0, type: 3}
       propertyPath: m_Name
       value: Crate Short
+      objectReference: {fileID: 0}
+    - target: {fileID: 387364091424724237, guid: aedebdaeae12a6743b39120d2f5156b0, type: 3}
+      propertyPath: m_TagString
+      value: SnowRoom
       objectReference: {fileID: 0}
     - target: {fileID: 3691659005178554142, guid: aedebdaeae12a6743b39120d2f5156b0, type: 3}
       propertyPath: m_LocalScale.x
@@ -2346,13 +2350,29 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1770817672587844151}
     m_Modifications:
+    - target: {fileID: 100000, guid: 1b74ff2139ba6ea47803d0c80ee0702a, type: 3}
+      propertyPath: m_TagString
+      value: SnowRoom
+      objectReference: {fileID: 0}
+    - target: {fileID: 100002, guid: 1b74ff2139ba6ea47803d0c80ee0702a, type: 3}
+      propertyPath: m_TagString
+      value: SnowRoom
+      objectReference: {fileID: 0}
     - target: {fileID: 100004, guid: 1b74ff2139ba6ea47803d0c80ee0702a, type: 3}
       propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 100004, guid: 1b74ff2139ba6ea47803d0c80ee0702a, type: 3}
+      propertyPath: m_TagString
+      value: SnowRoom
+      objectReference: {fileID: 0}
     - target: {fileID: 100006, guid: 1b74ff2139ba6ea47803d0c80ee0702a, type: 3}
       propertyPath: m_Name
       value: SafeRoomDoor_Right (1)
+      objectReference: {fileID: 0}
+    - target: {fileID: 100006, guid: 1b74ff2139ba6ea47803d0c80ee0702a, type: 3}
+      propertyPath: m_TagString
+      value: SnowRoom
       objectReference: {fileID: 0}
     - target: {fileID: 400002, guid: 1b74ff2139ba6ea47803d0c80ee0702a, type: 3}
       propertyPath: m_LocalPosition.y
@@ -2701,7 +2721,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6276243829735543018, guid: d54a08a6fe0fbb145bfcc7bd3564cbed, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 21.18
+      value: 12.01
       objectReference: {fileID: 0}
     - target: {fileID: 6276243829735543018, guid: d54a08a6fe0fbb145bfcc7bd3564cbed, type: 3}
       propertyPath: m_LocalPosition.z

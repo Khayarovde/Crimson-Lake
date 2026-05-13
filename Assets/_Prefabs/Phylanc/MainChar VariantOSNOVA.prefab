@@ -4661,7 +4661,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 290632965567463538, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -168.954
+      value: -379
       objectReference: {fileID: 0}
     - target: {fileID: 290632965567463538, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
       propertyPath: m_LocalPosition.y
@@ -4669,7 +4669,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 290632965567463538, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -21.05
+      value: 35.5
       objectReference: {fileID: 0}
     - target: {fileID: 290632965567463538, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
       propertyPath: m_LocalRotation.w
@@ -5364,14 +5364,14 @@ PrefabInstance:
       addedObject: {fileID: 1760975805826355771}
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 2308958626575937540, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
-      insertIndex: 3
-      addedObject: {fileID: 3730555517082249061}
-    - targetCorrespondingSourceObject: {fileID: 2308958626575937540, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
       insertIndex: -1
       addedObject: {fileID: 9088604346388668586}
     - targetCorrespondingSourceObject: {fileID: 2308958626575937540, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
       insertIndex: -1
       addedObject: {fileID: 7932342954922118391}
+    - targetCorrespondingSourceObject: {fileID: 2308958626575937540, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8232734089885571591}
   m_SourcePrefab: {fileID: 100100000, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
 --- !u!4 &529655978617831101 stripped
 Transform:
@@ -5383,27 +5383,6 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 2308958626575937540, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
   m_PrefabInstance: {fileID: 2967651229793713471}
   m_PrefabAsset: {fileID: 0}
---- !u!65 &3730555517082249061
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 658693994858614075}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 1
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 1, z: 0}
 --- !u!114 &9088604346388668586
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5443,6 +5422,7 @@ MonoBehaviour:
     virtualCamera: {fileID: 0}
   defaultCamera: {fileID: 0}
   useDefaultCameraWhenNoTaggedSurface: 1
+  keepLastTaggedCameraWhenNoTaggedSurface: 1
   instantSwitchWithoutBlend: 1
   allowCinemachineBrainTargets: 0
   useFadeTransition: 0
@@ -5454,8 +5434,8 @@ MonoBehaviour:
   mouseLookControllers: []
   useCollisionContacts: 1
   useTriggerContacts: 1
-  forceDeterministicStartupCamera: 1
-  evaluateSurfaceOnStartup: 1
+  forceDeterministicStartupCamera: 0
+  evaluateSurfaceOnStartup: 0
   startupRaycastDistance: 3
   startupRaycastHeight: 0.2
   startupSurfaceLayers:
@@ -5514,6 +5494,27 @@ MonoBehaviour:
   noTargetMessage: "\u0423 \u0442\u043E\u0447\u043A\u0438 \u043D\u0435\u0442 \u0446\u0435\u043B\u0438"
   teleportFailedMessage: "\u0422\u0435\u043B\u0435\u043F\u043E\u0440\u0442 \u043D\u0435
     \u0443\u0434\u0430\u043B\u0441\u044F"
+--- !u!135 &8232734089885571591
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 658693994858614075}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Radius: 1.01
+  m_Center: {x: 0, y: 0.75, z: 0}
 --- !u!95 &2448681510951377980 stripped
 Animator:
   m_CorrespondingSourceObject: {fileID: 636205799131586819, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}

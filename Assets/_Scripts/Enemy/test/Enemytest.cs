@@ -23,40 +23,68 @@ public class Enemytest : MonoBehaviour
     public LayerMask playerLayer;
 
     [Header("Health")]
+    [Tooltip("Максимальное здоровье врага при спавне.")]
     public float maxHealth = 100f;
+    [Tooltip("Текущее здоровье врага. При достижении 0 враг падает.")]
     public float health = 100f;
+    [Tooltip("Если отключено, враг не может быть убит обычным способом (только через финишер).")]
     public bool canBeKilled = true;
     [Tooltip("Если включено, любой урон от оружия убивает врага с одного попадания (игнорируя обычный порог HP).")]
     public bool oneShotKillFromWeapon = false;
+    [Tooltip("Если включено, враг будет притворяться мёртвым перед окончательной смертью, затем воскреснет.")]
     public bool useFakeDeath = true;
+    [Tooltip("Время перед окончательным уничтожением объекта врага после смерти (в секундах).")]
     public float permanentDeathDestroyDelay = 2f;
+    [Tooltip("Если включено, тело врага остаётся на сцене. Если отключено, объект удаляется.")]
     public bool keepBodyAfterPermanentDeath = true;
+    [Tooltip("Количество нокаутов, после которых враг умирает окончательно (вместо возрождения).")]
     public int knockoutsToPermanentDeath = 2;
+    [Tooltip("Выводить ли в консоль детали урона для отладки.")]
     public bool debugDamageLogs = true;
+    [Tooltip("Выводить ли в консоль смену состояний врага для отладки.")]
     public bool debugStateLogs = true;
 
     [Header("Patrol")]
+    [Tooltip("Массив точек патрулирования. Враг будет идти от точки к точке по порядку.")]
     public Transform[] waypoints;
+    [Tooltip("Если включено, враг вернётся к первой точке после последней. Если отключено, остановится на последней.")]
     public bool loopPatrol = true;
+    [Tooltip("Радиус поиска случайной точки прогулки, если точек патрулирования нет.")]
     public float walkPointRange = 8f;
+    [Tooltip("Скорость передвижения при патрулировании.")]
     public float patrolSpeed = 0.55f;
+    [Tooltip("Расстояние, при котором враг считается достигшим точки маршрута.")]
     public float waypointStopDistance = 0.8f;
+    [Tooltip("Время ожидания врага на каждой точке маршрута (в секундах).")]
     public float waypointPauseTime = 1.4f;
 
     [Header("Detection")]
+    [Tooltip("Максимальное расстояние, на котором враг может видеть игрока.")]
     public float sightRange = 10f;
-    [Range(10f, 360f)] public float viewAngle = 90f;
+    [Range(10f, 360f)]
+    [Tooltip("Угол зрения враага в градусах (180 = полный вид спереди). Проверяется только на плоскости Y.")]
+    public float viewAngle = 90f;
+    [Tooltip("Радиус, в котором враг слышит бег игрока при патрулировании.")]
     public float hearingRadiusRun = 8f;
+    [Tooltip("Радиус, в котором враг слышит выстрелы (текущий код не использует, для будущего расширения).")]
     public float hearingRadiusShot = 16f;
+    [Tooltip("Скорость приближения к источнику звука при исследовании неизвестного источника.")]
     public float hearingInvestigateSpeed = 0.8f;
+    [Tooltip("Время, в течение которого враг ждёт на месте происшествия перед возвратом к патрулю (в секундах).")]
     public float investigateWaitTime = 2f;
+    [Tooltip("Скорость игрока, выше которой враг слышит его бег (в единицах/сек).")]
     public float runNoiseSpeedThreshold = 3.2f;
 
     [Header("Chase")]
+    [Tooltip("Базовая скорость преследования игрока.")]
     public float chaseSpeed = 1.15f;
+    [Tooltip("Скорость преследования, когда враг очень близко к игроку (в диапазоне closeChaseDistance).")]
     public float chaseCloseSpeed = 0.8f;
+    [Tooltip("Максимальная скорость при близком преследовании для перехвата игрока.")]
     public float chaseCloseCatchupSpeed = 1.65f;
+    [Tooltip("Бонус к скорости, когда враг видит игрока (добавляется к расчётной скорости).")]
     public float chaseVisibleCatchupBonus = 0.45f;
+    [Tooltip("Скорость преследования, если прямая скорость игрока не отслеживается.")]
     public float chaseFallbackPlayerSpeed = 1.35f;
     [Tooltip("Доп. бонус скорости, когда игрок целится (ПКМ).")]
     public float chaseAimExtraBonus = 0.7f;
@@ -66,45 +94,76 @@ public class Enemytest : MonoBehaviour
     public float chaseAimMinPursuitSpeed = 2.1f;
     [Tooltip("Гарантированная прибавка к скорости относительно игрока во время ПКМ (чуток быстрее).")]
     public float chaseAimGuaranteedLead = 0.18f;
-    [Tooltip("Множитель частоты репаса во время ПКМ игрока (меньше = чаще).")]
+    [Tooltip("Множитель частоты репаса во время ПКМ игрока (меньше = чаще пересчитывается маршрут).")]
     public float chaseAimRepathMultiplier = 0.6f;
+    [Tooltip("Время, в течение которого враг сохраняет ускорение после потери видимости (в секундах).")]
     public float chaseLostSightCatchupTime = 1.1f;
+    [Tooltip("Скорость, которую враг развивает после потери видимости игрока (для ускоренного преследования).")]
     public float chaseLostSightCatchupSpeed = 1.85f;
+    [Tooltip("Расстояние, в пределах которого враг применяет ускорение после потери видимости.")]
     public float chaseLostSightCatchupDistance = 3.4f;
+    [Tooltip("Расстояние, ближе которого враг переходит на медленную скорость преследования.")]
     public float closeChaseDistance = 2.4f;
+    [Tooltip("Радиус NavMesh сэмплирования при расчёте целевой позиции для маршрута.")]
     public float chaseSampleRadius = 1.5f;
+    [Tooltip("Интервал пересчёта маршрута NavMesh при преследовании (в секундах).")]
     public float pathRecalcInterval = 0.22f;
+    [Tooltip("Минимальное расстояние, на котором враг обновляет целевую позицию при преследовании.")]
     public float destinationUpdateThreshold = 0.35f;
+    [Tooltip("Время, в течение которого враг ждёт у последней известной позиции игрока перед возвратом к патрулю.")]
     public float lastKnownHoldTime = 5f;
 
     [Header("NavMesh Agent Tuning")]
+    [Tooltip("Ускорение NavMeshAgent (как быстро враг набирает скорость).")]
     public float navAcceleration = 2.2f;
+    [Tooltip("Угловая скорость поворота NavMeshAgent (в градусах/сек).")]
     public float navAngularSpeed = 130f;
+    [Tooltip("Расстояние остановки NavMeshAgent от целевой позиции.")]
     public float navStoppingDistance = 0.65f;
+    [Tooltip("Если включено, NavMeshAgent автоматически замедляется при приближении к цели.")]
     public bool navAutoBraking = true;
 
     [Header("Attack")]
+    [Tooltip("Расстояние, на котором враг может атаковать игрока.")]
     public float attackRange = 1.5f;
     [Tooltip("Запас дистанции для входа в атаку, чтобы враг не застревал на границе range.")]
     public float attackEnterRangePadding = 0.25f;
+    [Tooltip("Скорость поворота враага к игроку при атаке (в градусах/сек).")]
     public float attackTurnSpeed = 300f;
+    [Tooltip("Время подготовки атаки перед нанесением удара (в секундах).")]
     public float attackWindup = 0.3f;
+    [Tooltip("Задержка между началом анимации атаки и нанесением урона (в секундах).")]
     public float attackHitDelayAfterAnimStart = 0.18f;
+    [Tooltip("Длительность окна, в течение которого враг может попасть по игроку (в секундах).")]
     public float attackActiveWindow = 0.12f;
+    [Tooltip("Время ожидания перед следующей возможной атакой (в секундах).")]
     public float attackCooldown = 1.15f;
+    [Tooltip("Время восстановления после промаха (в секундах).")]
     public float attackMissRecovery = 0.5f;
+    [Tooltip("Скорость движения врага во время атаки (рывка).")]
     public float attackLungeSpeed = 1.25f;
+    [Tooltip("Длительность блокировки врага после успешного попадания (в секундах).")]
     public float attackHitLockDuration = 0.28f;
+    [Tooltip("Время восстановления после успешной атаки (в секундах).")]
     public float postAttackRecovery = 0.35f;
+    [Tooltip("Время ожидания перед началом атаки (в секундах).")]
     public float attackStartCooldown = 1.1f;
+    [Tooltip("Если включено, используются Animation Events для активации hitbox-а. Если отключено, код напрямую управляет hitbox-ом.")]
     public bool useAnimationEventsForHitbox = true;
+    [Tooltip("Если включено, враг будет сайдстепить перед атакой.")]
     public bool usePreAttackStrafe = true;
-    [Range(0f, 1f)] public float preAttackStrafeChance = 0.65f;
+    [Range(0f, 1f)]
+    [Tooltip("Вероятность сайдстепа перед атакой (0 = никогда, 1 = всегда).")]
+    public float preAttackStrafeChance = 0.65f;
+    [Tooltip("Расстояние, на которое враг смещается во время сайдстепа.")]
     public float preAttackStrafeDistance = 0.9f;
+    [Tooltip("Длительность сайдстепа (в секундах).")]
     public float preAttackStrafeDuration = 0.45f;
+    [Tooltip("Минимальное время между сайдстепами (в секундах).")]
     public float preAttackStrafeCooldown = 1.25f;
+    [Tooltip("Скорость движения врага при сайдстепе.")]
     public float preAttackStrafeSpeed = 1.55f;
-    [Tooltip("Множитель шанса сайдстепа, когда игрок в ПКМ. 0 = почти без сайдстепа.")]
+    [Tooltip("Множитель шанса сайдстепа, когда игрок в ПКМ (целится). 0 = почти без сайдстепа.")]
     public float preAttackStrafeAimChanceMultiplier = 0.25f;
     [Tooltip("Если игрок уже очень близко, сайдстеп пропускается и враг сразу бьет.")]
     public float preAttackStrafeSkipDistance = 1.2f;
@@ -112,16 +171,28 @@ public class Enemytest : MonoBehaviour
     public float preAttackStrafeAbortDistance = 1.05f;
     [Tooltip("После промаха на это время отключается сайдстеп, чтобы быстрее повторить прямую атаку.")]
     public float preAttackNoStrafeAfterMissTime = 1.1f;
+    [Tooltip("Количество ударов в комбо за одну активацию атаки.")]
     public int attackComboHits = 1;
+    [Tooltip("Время между ударами в комбо (в секундах).")]
     public float attackComboHitInterval = 0.18f;
+    [Tooltip("Урон, наносимый каждой атакой.")]
     public int damage = 15;
+    [Tooltip("Полуразмеры hitbox-а (расстояние от центра во всех направлениях).")]
     public Vector3 attackHitboxHalfExtents = new Vector3(0.45f, 0.6f, 0.55f);
+    [Tooltip("Смещение hitbox-а вперёд относительно положения врага.")]
     public float attackHitboxForwardOffset = 0.6f;
-    [Range(0f, 180f)] public float attackMaxHitAngle = 55f;
-    [SerializeField] private float attackMinEventDelay = 0.14f;
-    [SerializeField] private EnemyKnifeHitbox knifeHitbox;
+    [Range(0f, 180f)]
+    [Tooltip("Максимальный угол от направления атаки, в пределах которого враг может попасть по игроку.")]
+    public float attackMaxHitAngle = 55f;
+    [SerializeField]
+    [Tooltip("Минимальная задержка перед активацией hitbox-а через Animation Event.")]
+    private float attackMinEventDelay = 0.14f;
+    [SerializeField]
+    [Tooltip("Ссылка на компонент hitbox-а ножа для обработки столкновений.")]
+    private EnemyKnifeHitbox knifeHitbox;
 
     [Header("Stagger")]
+    [Tooltip("Длительность состояния оглушения враага от попадания (в секундах).")]
     public float staggerDuration = 0.35f;
 
     [Header("Fake Death")]
@@ -129,34 +200,64 @@ public class Enemytest : MonoBehaviour
     public float fakeDeathReviveMin = 60f;
     [Tooltip("Через сколько максимум секунд враг встает после fake death.")]
     public float fakeDeathReviveMax = 180f;
-    [Range(0f, 1f)] public float reviveHealthPercent = 0.5f;
+    [Range(0f, 1f)]
+    [Tooltip("Процент здоровья, восстанавливаемый при воскрешении из fake death (0.5 = 50%).")]
+    public float reviveHealthPercent = 0.5f;
 
     [Header("Finisher Reaction")]
     [Tooltip("Насколько враг отлетает от пинка во время добивания.")]
     public float finisherKnockbackDistance = 0.55f;
-    [Tooltip("Длительность отлета при добивании.")]
+    [Tooltip("Длительность отлета при добивании (в секундах).")]
     public float finisherKnockbackDuration = 0.12f;
-    [Tooltip("Небольшой подброс по дуге во время отлета.")]
+    [Tooltip("Небольшой подброс по дуге во время отлета (высота дуги).")]
     public float finisherKnockbackArcHeight = 0.08f;
 
+    [Tooltip("Компонент Animator для управления анимациями враждебных существ.")]
     public Animator animator;
+    [Tooltip("Система частиц, которая воспроизводится при получении урона.")]
     public ParticleSystem hitEffect;
+    [Tooltip("Источник звука для воспроизведения звуков врага.")]
     public AudioSource audioSource;
+    [Tooltip("Звуковой клип, воспроизводимый когда враг замечает игрока.")]
     public AudioClip screamClip;
 
     [Header("Animation")]
-    [SerializeField] private string idleStateName = "Idle";
-    [SerializeField] private string walkingStateName = "walking";
-    [SerializeField] private string attackStateName = "Attack";
-    [SerializeField] private string attackRecoveryStateName = "Idle";
-    [SerializeField] private string screamStateName = "Scream";
-    [SerializeField] private string deathFallStateName = "death_padaet";
-    [SerializeField] private string deathEndStateName = "death_end";
-    [SerializeField] private string wakeUpStateName = "wakeUp_stun";
-    [SerializeField] private string staggerStateName = "Stun";
-    [SerializeField] private string staggerFallbackStateName = "Hit";
-    [SerializeField] private float animTransition = 0.15f;
-    [SerializeField] private int baseAnimLayer = 0;
+    [SerializeField]
+    [Tooltip("Имя состояния анимации для простоя.")]
+    private string idleStateName = "Idle";
+    [SerializeField]
+    [Tooltip("Имя состояния анимации для ходьбы.")]
+    private string walkingStateName = "walking";
+    [SerializeField]
+    [Tooltip("Имя состояния анимации для атаки.")]
+    private string attackStateName = "Attack";
+    [SerializeField]
+    [Tooltip("Имя состояния анимации для восстановления после атаки.")]
+    private string attackRecoveryStateName = "Idle";
+    [SerializeField]
+    [Tooltip("Имя состояния анимации для крика оповещения.")]
+    private string screamStateName = "Scream";
+    [SerializeField]
+    [Tooltip("Имя состояния анимации для падения при смерти.")]
+    private string deathFallStateName = "death_padaet";
+    [SerializeField]
+    [Tooltip("Имя состояния анимации для конечной позиции смерти.")]
+    private string deathEndStateName = "death_end";
+    [SerializeField]
+    [Tooltip("Имя состояния анимации для пробуждения после оглушения.")]
+    private string wakeUpStateName = "wakeUp_stun";
+    [SerializeField]
+    [Tooltip("Имя состояния анимации для оглушения.")]
+    private string staggerStateName = "Stun";
+    [SerializeField]
+    [Tooltip("Альтернативное имя состояния для оглушения (если основное недоступно).")]
+    private string staggerFallbackStateName = "Hit";
+    [SerializeField]
+    [Tooltip("Длительность переходов между состояниями анимации.")]
+    private float animTransition = 0.15f;
+    [SerializeField]
+    [Tooltip("Индекс слоя анимации, который использовать (обычно 0 для базового слоя).")]
+    private int baseAnimLayer = 0;
 
     private Vector3 walkPoint;
     private bool walkPointSet;

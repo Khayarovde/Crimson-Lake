@@ -7,59 +7,85 @@ using UnityEngine.UI;
 [Serializable]
 public class SurfaceTagCameraBinding
 {
+    [Tooltip("Тег поверхности, при контакте с которой активируется соответствующая камера.")]
     public string surfaceTag;
+    [Tooltip("Камера (или любой Behaviour камеры), которую нужно включить для этого тега.")]
     public Behaviour virtualCamera;
 }
 
 [RequireComponent(typeof(Collider))]
 public class SurfaceTagCameraSwitcher : MonoBehaviour
 {
-    private static readonly HashSet<Behaviour> RegisteredCameras = new HashSet<Behaviour>();
+    private readonly HashSet<Behaviour> registeredCameras = new HashSet<Behaviour>();
 
     [Header("Tag -> Camera")]
+    [Tooltip("Список соответствий тегов поверхности и камер.")]
     [SerializeField] private List<SurfaceTagCameraBinding> tagCameraBindings = new List<SurfaceTagCameraBinding>();
 
     [Header("Default")]
+    [Tooltip("Камера по умолчанию, используемая при отсутствии подходящего тега.")]
     [SerializeField] private Behaviour defaultCamera;
+    [Tooltip("Если включено, при контакте с поверхностью без тега будет активирована камера по умолчанию.")]
     [SerializeField] private bool useDefaultCameraWhenNoTaggedSurface = true;
+    [Tooltip("Если включено, при отсутствии тега сохраняется последняя камера, назначенная по тегу.")]
+    [SerializeField] private bool keepLastTaggedCameraWhenNoTaggedSurface = true;
 
     [Header("Switch")]
+    [Tooltip("Если включено, переключение происходит мгновенно без blending/плавного перехода.")]
     [SerializeField] private bool instantSwitchWithoutBlend = true;
 
     [Header("Cinemachine")]
+    [Tooltip("Если включено, разрешает управлять объектами с CinemachineBrain.")]
     [SerializeField] private bool allowCinemachineBrainTargets = false;
 
     [Header("Fade Transition")]
+    [Tooltip("Если включено, переключение камеры выполняется через fade-оверлей.")]
     [SerializeField] private bool useFadeTransition = true;
+    [Tooltip("Длительность затемнения перед переключением камеры (сек).")]
     [SerializeField, Min(0f)] private float fadeOutDuration = 0.2f;
+    [Tooltip("Длительность проявления после переключения камеры (сек).")]
     [SerializeField, Min(0f)] private float fadeInDuration = 0.2f;
+    [Tooltip("Цвет fade-оверлея.")]
     [SerializeField] private Color fadeColor = Color.black;
+    [Tooltip("Порядок сортировки Canvas для fade-оверлея (чем больше, тем выше).")]
     [SerializeField] private int fadeCanvasSortOrder = 10000;
 
     [Header("Cursor Camera Rotation")]
+    [Tooltip("Если включено, отключает вращение камеры мышью и освобождает курсор.")]
     [SerializeField] private bool disableCameraRotationByCursor;
 
     [Header("Camera Rotation Controllers")]
+    [Tooltip("Компоненты, управляющие вращением камеры мышью.")]
     [SerializeField] private List<Behaviour> mouseLookControllers = new List<Behaviour>();
 
     [Header("Detection")]
+    [Tooltip("Если включено, учитываются физические коллизии (Collision).")]
     [SerializeField] private bool useCollisionContacts = true;
+    [Tooltip("Если включено, учитываются триггеры (Trigger).")]
     [SerializeField] private bool useTriggerContacts = true;
 
     [Header("Startup")]
+    [Tooltip("Если включено, при запуске строго задает стартовую камеру.")]
     [SerializeField] private bool forceDeterministicStartupCamera = true;
+    [Tooltip("Если включено, выполняется проверка поверхности на следующем кадре после старта.")]
     [SerializeField] private bool evaluateSurfaceOnStartup = true;
+    [Tooltip("Дистанция луча для поиска поверхности под объектом при старте.")]
     [SerializeField] private float startupRaycastDistance = 3f;
+    [Tooltip("Смещение вверх для старта луча относительно центра коллайдера/позиции.")]
     [SerializeField] private float startupRaycastHeight = 0.2f;
+    [Tooltip("Слои, по которым выполняется стартовый Raycast.")]
     [SerializeField] private LayerMask startupSurfaceLayers = ~0;
+    [Tooltip("Как учитывать триггеры при стартовом Raycast.")]
     [SerializeField] private QueryTriggerInteraction startupTriggerInteraction = QueryTriggerInteraction.Collide;
 
 
     [Header("Stabilization")]
-    [SerializeField] private float defaultCameraDelay = 0.2f; // Задержка перед сбросом камеры
+    [Tooltip("Задержка перед переключением на камеру по умолчанию (сек).")]
+    [SerializeField] private float defaultCameraDelay = 0.2f;
     private Coroutine defaultCameraCoroutine;
 
 
+    private static readonly RaycastHit[] StartupHitsBuffer = new RaycastHit[16];
     private readonly List<Collider> activeSurfaceContacts = new List<Collider>();
     private Behaviour currentActiveCamera;
     private Coroutine startupEvaluateCoroutine;
@@ -142,24 +168,26 @@ public class SurfaceTagCameraSwitcher : MonoBehaviour
             origin = ownCollider.bounds.center + Vector3.up * (ownCollider.bounds.extents.y + Mathf.Max(0f, startupRaycastHeight));
         }
 
-        RaycastHit[] hits = Physics.RaycastAll(
+        float maxDistance = Mathf.Max(0.01f, startupRaycastDistance);
+        int hitCount = Physics.RaycastNonAlloc(
             origin,
             Vector3.down,
-            Mathf.Max(0.01f, startupRaycastDistance),
+            StartupHitsBuffer,
+            maxDistance,
             startupSurfaceLayers,
             startupTriggerInteraction);
 
-        if (hits == null || hits.Length == 0)
+        if (hitCount == 0)
         {
             return false;
         }
 
-        Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
-
         Transform selfRoot = transform.root;
-        for (int i = 0; i < hits.Length; i++)
+        float bestDistance = float.MaxValue;
+
+        for (int i = 0; i < hitCount; i++)
         {
-            Collider hitCollider = hits[i].collider;
+            Collider hitCollider = StartupHitsBuffer[i].collider;
             if (hitCollider == null)
             {
                 continue;
@@ -171,11 +199,47 @@ public class SurfaceTagCameraSwitcher : MonoBehaviour
                 continue;
             }
 
-            startupSurface = hitCollider;
-            return true;
+            float distance = StartupHitsBuffer[i].distance;
+            if (distance < bestDistance)
+            {
+                bestDistance = distance;
+                startupSurface = hitCollider;
+            }
         }
 
-        return false;
+        if (startupSurface == null && hitCount == StartupHitsBuffer.Length)
+        {
+            RaycastHit[] hits = Physics.RaycastAll(
+                origin,
+                Vector3.down,
+                maxDistance,
+                startupSurfaceLayers,
+                startupTriggerInteraction);
+
+            if (hits != null && hits.Length > 0)
+            {
+                Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
+                for (int i = 0; i < hits.Length; i++)
+                {
+                    Collider hitCollider = hits[i].collider;
+                    if (hitCollider == null)
+                    {
+                        continue;
+                    }
+
+                    Transform hitRoot = hitCollider.transform.root;
+                    if (hitRoot == selfRoot)
+                    {
+                        continue;
+                    }
+
+                    startupSurface = hitCollider;
+                    break;
+                }
+            }
+        }
+
+        return startupSurface != null;
     }
 
     private void ForceStartupCamera()
@@ -263,18 +327,25 @@ public class SurfaceTagCameraSwitcher : MonoBehaviour
 
     private void RegisterContact(Collider surfaceCollider)
     {
-      if (surfaceCollider == null)
-          {
-              return;
-          }
+        if (surfaceCollider == null)
+        {
+            return;
+        }
 
-          // Если коллайдер уже в списке, просто игнорируем. 
-          
-          if (!activeSurfaceContacts.Contains(surfaceCollider))
-          {
-              activeSurfaceContacts.Add(surfaceCollider);
-              EvaluateAndApplyCamera();
-          }
+        int index = activeSurfaceContacts.IndexOf(surfaceCollider);
+        if (index < 0)
+        {
+            activeSurfaceContacts.Add(surfaceCollider);
+            EvaluateAndApplyCamera();
+            return;
+        }
+
+        if (index != activeSurfaceContacts.Count - 1)
+        {
+            activeSurfaceContacts.RemoveAt(index);
+            activeSurfaceContacts.Add(surfaceCollider);
+            EvaluateAndApplyCamera();
+        }
     }
 
     private void UnregisterContact(Collider surfaceCollider)
@@ -334,9 +405,16 @@ public class SurfaceTagCameraSwitcher : MonoBehaviour
                 defaultCameraCoroutine = StartCoroutine(SwitchToDefaultWithDelay());
             }
         }
+        else if (!hasAnySurfaceContact || keepLastTaggedCameraWhenNoTaggedSurface)
+        {
+            if (defaultCameraCoroutine != null)
+            {
+                StopCoroutine(defaultCameraCoroutine);
+                defaultCameraCoroutine = null;
+            }
+        }
     }
 
-    // Новая корутина для задержки
     private IEnumerator SwitchToDefaultWithDelay()
     {
         yield return new WaitForSeconds(defaultCameraDelay);
@@ -449,7 +527,7 @@ public class SurfaceTagCameraSwitcher : MonoBehaviour
             return;
         }
 
-        foreach (Behaviour camera in RegisteredCameras)
+        foreach (Behaviour camera in registeredCameras)
         {
             if (camera == null)
             {
@@ -591,7 +669,7 @@ public class SurfaceTagCameraSwitcher : MonoBehaviour
 
     private void DisableAllRegisteredCameras()
     {
-        foreach (Behaviour camera in RegisteredCameras)
+        foreach (Behaviour camera in registeredCameras)
         {
             if (camera == null)
             {
@@ -632,7 +710,7 @@ public class SurfaceTagCameraSwitcher : MonoBehaviour
             return;
         }
 
-        foreach (Behaviour camera in RegisteredCameras)
+        foreach (Behaviour camera in registeredCameras)
         {
             if (camera != null && camera.enabled)
             {
@@ -664,7 +742,7 @@ public class SurfaceTagCameraSwitcher : MonoBehaviour
     {
         if (CanManageCamera(defaultCamera))
         {
-            RegisteredCameras.Add(defaultCamera);
+            registeredCameras.Add(defaultCamera);
         }
 
         for (int i = 0; i < tagCameraBindings.Count; i++)
@@ -677,7 +755,7 @@ public class SurfaceTagCameraSwitcher : MonoBehaviour
 
             if (CanManageCamera(binding.virtualCamera))
             {
-                RegisteredCameras.Add(binding.virtualCamera);
+                registeredCameras.Add(binding.virtualCamera);
             }
         }
     }
@@ -686,7 +764,7 @@ public class SurfaceTagCameraSwitcher : MonoBehaviour
     {
         if (defaultCamera != null)
         {
-            RegisteredCameras.Remove(defaultCamera);
+            registeredCameras.Remove(defaultCamera);
         }
 
         for (int i = 0; i < tagCameraBindings.Count; i++)
@@ -697,7 +775,7 @@ public class SurfaceTagCameraSwitcher : MonoBehaviour
                 continue;
             }
 
-            RegisteredCameras.Remove(binding.virtualCamera);
+            registeredCameras.Remove(binding.virtualCamera);
         }
     }
 
