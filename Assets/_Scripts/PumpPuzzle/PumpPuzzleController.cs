@@ -33,6 +33,13 @@ public class PumpPuzzleController : MonoBehaviour
     [SerializeField] private RectTransform[] tankLiquidScaleTargets = new RectTransform[3];
     [SerializeField] private bool useScaleVisualFallback = true;
 
+    [Header("Tank State Sprites (A, B, C)")]
+    [SerializeField] private Image[] tankStateLow = new Image[3];
+    [SerializeField] private Image[] tankStateMid = new Image[3];
+    [SerializeField] private Image[] tankStateHigh = new Image[3];
+    [SerializeField] private float stateMidThreshold = 0.376f;
+    [SerializeField] private float stateHighThreshold = 0.76f;
+
     [Header("Bubble FX (optional)")]
     [SerializeField] private RectTransform[] bubbleRects;
     [SerializeField] private float bubbleRise = 24f;
@@ -304,6 +311,7 @@ public class PumpPuzzleController : MonoBehaviour
         }
 
         ApplyScaleFallbackVisual(index, value, animate);
+        UpdateTankStateSprites(index, value);
     }
 
     private void ValidateAndPrepareTankImages()
@@ -331,9 +339,28 @@ public class PumpPuzzleController : MonoBehaviour
             if (i < tankLiquidScaleTargets.Length && tankLiquidScaleTargets[i] != null)
             {
                 tankBaseScales[i] = tankLiquidScaleTargets[i].localScale;
+                EnsureBottomGrowthPivot(tankLiquidScaleTargets[i]);
                 LogDebug($"ScaleFallback: база масштаба для {TankName(i)} = {tankBaseScales[i]}");
             }
         }
+    }
+
+    private static void EnsureBottomGrowthPivot(RectTransform target)
+    {
+        if (target == null)
+        {
+            return;
+        }
+
+        Vector2 pivot = target.pivot;
+        if (Mathf.Approximately(pivot.y, 0f))
+        {
+            return;
+        }
+
+        float height = target.rect.height;
+        target.pivot = new Vector2(pivot.x, 0f);
+        target.anchoredPosition += new Vector2(0f, -pivot.y * height);
     }
 
     private void ApplyScaleFallbackVisual(int index, float value, bool animate)
@@ -462,6 +489,40 @@ public class PumpPuzzleController : MonoBehaviour
         if (index == 1) return "B";
         if (index == 2) return "C";
         return $"{index}";
+    }
+
+    private void UpdateTankStateSprites(int index, float value)
+    {
+        if (!IsTankIndexValid(index))
+        {
+            return;
+        }
+
+        bool showLow = value <= stateMidThreshold;
+        bool showMid = value > stateMidThreshold && value < stateHighThreshold;
+        bool showHigh = value >= stateHighThreshold;
+
+        SetStateSpriteActive(tankStateLow, index, showLow);
+        SetStateSpriteActive(tankStateMid, index, showMid);
+        SetStateSpriteActive(tankStateHigh, index, showHigh);
+    }
+
+    private bool IsTankIndexValid(int index)
+    {
+        return index >= 0 && index < 3;
+    }
+
+    private static void SetStateSpriteActive(Image[] targets, int index, bool isActive)
+    {
+        if (targets == null || index < 0 || index >= targets.Length)
+        {
+            return;
+        }
+
+        if (targets[index] != null)
+        {
+            targets[index].gameObject.SetActive(isActive);
+        }
     }
 
     private void PlayBubbles()
