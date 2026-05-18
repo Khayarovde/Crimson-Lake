@@ -85,6 +85,7 @@ public class InventoryUI : MonoBehaviour
     public List<ItemCombineRecipe> combineRecipes = new List<ItemCombineRecipe>();
 
     private Image[] slotIcons;
+    private GameObject[] slotObjects;
     private Button[] storeButtons;
     private Button[] destroyButtons;
     private UIOutline[] outlines;
@@ -104,6 +105,11 @@ public class InventoryUI : MonoBehaviour
     private int contextMenuSlotIndex = -1;
     private Tween craftFailTextTween;
 
+    [Header("Пагинация инвентаря")]
+    [SerializeField] private bool useInventoryPagination = true;
+    [SerializeField] private int slotsPerPage = 3;
+    private int currentInventoryPage;
+
     // UI элементы сундука
     private Image[] chestSlotIcons;
     private Button[] chestTakeButtons;
@@ -119,6 +125,10 @@ public class InventoryUI : MonoBehaviour
 
     private HpVideoState currentHpVideoState = HpVideoState.None;
     private VideoClip currentHpClip;
+
+    private string lastActiveItemInfoText;
+    private int lastActiveItemIndex = -1;
+    private bool lastNearChest;
 
     private void Start()
     {
@@ -169,7 +179,15 @@ public class InventoryUI : MonoBehaviour
 
     private void Update()
     {
-        UpdateHpVideoByCurrentHealth();
+        if (IsInventoryOpen())
+            UpdateHpVideoByCurrentHealth();
+
+        if (IsInventoryOpen() && !isCombineSelectionMode)
+        {
+            float scroll = Input.mouseScrollDelta.y;
+            if (Mathf.Abs(scroll) > 0.01f)
+                SelectNextInventoryItem(scroll > 0f ? -1 : 1);
+        }
 
         if (contextMenuPanel != null && contextMenuPanel.activeSelf && Input.GetMouseButtonDown(0))
         {
@@ -226,6 +244,7 @@ public class InventoryUI : MonoBehaviour
         }
 
         slotIcons = new Image[inventoryData.maxSlots];
+        slotObjects = new GameObject[inventoryData.maxSlots];
         storeButtons = new Button[inventoryData.maxSlots];
         destroyButtons = new Button[inventoryData.maxSlots];
         outlines = new UIOutline[inventoryData.maxSlots];
@@ -234,6 +253,7 @@ public class InventoryUI : MonoBehaviour
         {
             GameObject slot = Instantiate(slotPrefab, gridTransform);
             slot.name = $"Slot_{i}";
+            slotObjects[i] = slot;
 
             Button slotButton = slot.GetComponent<Button>();
             if (slotButton == null)
@@ -753,11 +773,13 @@ public class InventoryUI : MonoBehaviour
     {
         if (leftArrowButton != null)
         {
-            leftArrowButton.gameObject.SetActive(false);
+            leftArrowButton.onClick.RemoveAllListeners();
+            leftArrowButton.onClick.AddListener(PreviousInventoryPage);
         }
         if (rightArrowButton != null)
         {
-            rightArrowButton.gameObject.SetActive(false);
+            rightArrowButton.onClick.RemoveAllListeners();
+            rightArrowButton.onClick.AddListener(NextInventoryPage);
         }
 
         if (toChestButton != null)
@@ -795,61 +817,88 @@ public class InventoryUI : MonoBehaviour
     {
         if (inventoryData == null || slotIcons == null) return;
 
-        UpdateHpVideoByCurrentHealth();
-
         var slots = inventoryData.GetSlots();
         int activeIndex = playerInventory.activeItemIndex;
+        bool nearChest = playerInventory.IsNearChest();
+        if (useInventoryPagination && activeIndex >= 0)
+        {
+            int perPage = Mathf.Max(1, slotsPerPage);
+            currentInventoryPage = activeIndex / perPage;
+        }
 
         if (activeItemInfoText != null)
         {
+            string nextInfoText;
             if (activeIndex >= 0 && activeIndex < slots.Count && slots[activeIndex] != null && slots[activeIndex].type != InventoryItem.ItemType.Empty)
             {
                 var activeItem = slots[activeIndex];
                 if (activeItem.useCustomDescription && !string.IsNullOrWhiteSpace(activeItem.customDescription))
                 {
-                    activeItemInfoText.text = $"Тип: {activeItem.itemName}\n{activeItem.customDescription}";
+                    nextInfoText = $"Тип: {activeItem.itemName}\n{activeItem.customDescription}";
                 }
                 else
                 {
                     switch (activeItem.type)
                     {
                         case InventoryItem.ItemType.Gun:
-                            activeItemInfoText.text = $"Тип: {activeItem.itemName}\nВинтовка, что использует патроны 10мм. Рабочая лошадка. Без модификаций.";
+                            nextInfoText = $"Тип: {activeItem.itemName}\nВинтовка, что использует патроны 10мм. Рабочая лошадка. Без модификаций.";
                             break;
                         case InventoryItem.ItemType.Pistol:
-                            activeItemInfoText.text = $"Тип: {activeItem.itemName}\nЛёгкий пистолет с патронами 9мм. Быстрая перезарядка, низкий урон.";
+                            nextInfoText = $"Тип: {activeItem.itemName}\nЛёгкий пистолет с патронами 9мм. Быстрая перезарядка, низкий урон.";
                             break;
                         case InventoryItem.ItemType.Disketa:
                         case InventoryItem.ItemType.Cassette:
-                            activeItemInfoText.text = $"Тип: {activeItem.itemName}\nНоситель данных для терминалов - самый большой компьютер в комплексе";
+                            nextInfoText = $"Тип: {activeItem.itemName}\nНоситель данных для терминалов - самый большой компьютер в комплексе";
                             break;
                         case InventoryItem.ItemType.PistolAmmo:
-                            activeItemInfoText.text = $"Тип: {activeItem.itemName}\nБоеприпасы для пистолета. Доступно: <b>{PlayerAmmoData.pistolReserve}</b>.";
+                            nextInfoText = $"Тип: {activeItem.itemName}\nБоеприпасы для пистолета. Доступно: <b>{PlayerAmmoData.pistolReserve}</b>.";
                             break;
                         case InventoryItem.ItemType.ShotgunAmmo:
-                            activeItemInfoText.text = $"Тип: {activeItem.itemName}\nБоеприпасы для дробовика. Доступно: <b>{PlayerAmmoData.gunReserve}</b>.";
+                            nextInfoText = $"Тип: {activeItem.itemName}\nБоеприпасы для дробовика. Доступно: <b>{PlayerAmmoData.gunReserve}</b>.";
                             break;
                         case InventoryItem.ItemType.Medkit:
                             int healAmount = activeItem.medkitProfile != null ? activeItem.medkitProfile.HealAmount : 0;
                             if (healAmount > 0)
-                                activeItemInfoText.text = $"Тип: {activeItem.itemName}\nАптечка. Восстанавливает <b>{healAmount}</b> HP.";
+                                nextInfoText = $"Тип: {activeItem.itemName}\nАптечка. Восстанавливает <b>{healAmount}</b> HP.";
                             else
-                                activeItemInfoText.text = $"Тип: {activeItem.itemName}\nАптечка. Профиль лечения не назначен.";
+                                nextInfoText = $"Тип: {activeItem.itemName}\nАптечка. Профиль лечения не назначен.";
                             break;
                         default:
-                            activeItemInfoText.text = $"Активный предмет: {activeItem.itemName}\nТип: {activeItem.type}";
+                            nextInfoText = $"Активный предмет: {activeItem.itemName}\nТип: {activeItem.type}";
                             break;
                     }
                 }
             }
             else
             {
-                activeItemInfoText.text = "Ничего не выбрано";
+                nextInfoText = "Ничего не выбрано";
+            }
+
+            if (nextInfoText != lastActiveItemInfoText || activeIndex != lastActiveItemIndex)
+            {
+                activeItemInfoText.text = nextInfoText;
+                lastActiveItemInfoText = nextInfoText;
+                lastActiveItemIndex = activeIndex;
             }
         }
 
+        int totalSlots = slotIcons.Length;
+        int pageStart = GetInventoryPageStart(totalSlots);
+        int pageEnd = Mathf.Min(totalSlots, pageStart + Mathf.Max(1, slotsPerPage));
+
         for (int i = 0; i < slotIcons.Length; i++)
         {
+            bool inPage = !useInventoryPagination || (i >= pageStart && i < pageEnd);
+            if (slotObjects != null && slotObjects[i] != null)
+                slotObjects[i].SetActive(inPage);
+
+            if (!inPage)
+            {
+                if (outlines[i] != null)
+                    outlines[i].enabled = false;
+                continue;
+            }
+
             if (i < slots.Count && slots[i] != null && slots[i].type != InventoryItem.ItemType.Empty)
             {
                 if (slotIcons[i] != null)
@@ -857,9 +906,7 @@ public class InventoryUI : MonoBehaviour
                     slotIcons[i].sprite = slots[i].icon;
                     slotIcons[i].enabled = true;
                 }
-                
-                bool nearChest = playerInventory.IsNearChest();
-                
+
                 if (storeButtons[i] != null)
                     storeButtons[i].gameObject.SetActive(nearChest);
                 
@@ -887,7 +934,97 @@ public class InventoryUI : MonoBehaviour
 
         if (toChestButton != null)
         {
-            toChestButton.gameObject.SetActive(playerInventory.IsNearChest());
+            if (nearChest != lastNearChest)
+                toChestButton.gameObject.SetActive(nearChest);
+        }
+
+        lastNearChest = nearChest;
+        UpdateInventoryPaginationButtons(totalSlots);
+    }
+
+    private int GetInventoryPageStart(int totalSlots)
+    {
+        if (!useInventoryPagination)
+            return 0;
+
+        int perPage = Mathf.Max(1, slotsPerPage);
+        int totalPages = Mathf.Max(1, Mathf.CeilToInt((float)totalSlots / perPage));
+        currentInventoryPage = Mathf.Clamp(currentInventoryPage, 0, totalPages - 1);
+        return currentInventoryPage * perPage;
+    }
+
+    private void UpdateInventoryPaginationButtons(int totalSlots)
+    {
+        if (!useInventoryPagination)
+        {
+            if (leftArrowButton != null) leftArrowButton.gameObject.SetActive(false);
+            if (rightArrowButton != null) rightArrowButton.gameObject.SetActive(false);
+            return;
+        }
+
+        int perPage = Mathf.Max(1, slotsPerPage);
+        int totalPages = Mathf.Max(1, Mathf.CeilToInt((float)totalSlots / perPage));
+        bool showArrows = totalPages > 1;
+
+        if (leftArrowButton != null)
+            leftArrowButton.gameObject.SetActive(showArrows);
+        if (rightArrowButton != null)
+            rightArrowButton.gameObject.SetActive(showArrows);
+    }
+
+    private void NextInventoryPage()
+    {
+        if (!useInventoryPagination || inventoryData == null)
+            return;
+
+        int perPage = Mathf.Max(1, slotsPerPage);
+        int totalSlots = inventoryData.maxSlots;
+        int totalPages = Mathf.Max(1, Mathf.CeilToInt((float)totalSlots / perPage));
+        currentInventoryPage = (currentInventoryPage + 1) % totalPages;
+        UpdateInventoryUI();
+    }
+
+    private void PreviousInventoryPage()
+    {
+        if (!useInventoryPagination || inventoryData == null)
+            return;
+
+        int perPage = Mathf.Max(1, slotsPerPage);
+        int totalSlots = inventoryData.maxSlots;
+        int totalPages = Mathf.Max(1, Mathf.CeilToInt((float)totalSlots / perPage));
+        currentInventoryPage = (currentInventoryPage - 1 + totalPages) % totalPages;
+        UpdateInventoryUI();
+    }
+
+    private void SelectNextInventoryItem(int direction)
+    {
+        if (inventoryData == null || playerInventory == null)
+            return;
+
+        var slots = inventoryData.GetSlots();
+        if (slots == null || slots.Count == 0)
+            return;
+
+        int count = slots.Count;
+        int startIndex = Mathf.Clamp(playerInventory.activeItemIndex, 0, count - 1);
+        int index = startIndex;
+
+        for (int i = 0; i < count; i++)
+        {
+            index = (index + direction + count) % count;
+            if (slots[index] != null && slots[index].type != InventoryItem.ItemType.Empty)
+            {
+                playerInventory.SetActiveItemByIndex(index);
+
+                if (useInventoryPagination)
+                {
+                    int perPage = Mathf.Max(1, slotsPerPage);
+                    currentInventoryPage = index / perPage;
+                }
+
+                UpdateInventoryUI();
+                return;
+            }
         }
     }
 
