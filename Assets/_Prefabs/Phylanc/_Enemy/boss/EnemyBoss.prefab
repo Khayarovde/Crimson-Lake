@@ -16639,7 +16639,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0.29526615, z: -0, w: -0.95541507}
   m_LocalPosition: {x: -204.2, y: 6.37, z: 542.6}
-  m_LocalScale: {x: 2, y: 2, z: 2}
+  m_LocalScale: {x: 1.6378915, y: 1.6378915, z: 1.6378915}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 2823425004510317343}
@@ -16659,7 +16659,7 @@ Animator:
   m_Controller: {fileID: 9100000, guid: 9fa9acd00ddac7d4784c394a59454528, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
-  m_ApplyRootMotion: 0
+  m_ApplyRootMotion: 1
   m_LinearVelocityBlending: 0
   m_StabilizeFeet: 0
   m_AnimatePhysics: 0
@@ -16687,7 +16687,7 @@ CapsuleCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 0.5
+  m_Radius: 0.84
   m_Height: 3
   m_Direction: 1
   m_Center: {x: 0, y: 1, z: 0}
@@ -16844,32 +16844,37 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   phase2HealthThreshold: 0.5
-  maxHealth: 40
+  maxHealth: 100
   health: 0
-  canBeFinished: 0
+  canBeFinished: 1
   autoFinishableOnLowHealth: 1
   finishableHealthPercent: 0.2
   requirePhase2ForFinisher: 1
   stunDamageThreshold: 60
   getDownDuration: 0.7
-  tryaskaDuration: 1
+  tryaskaDuration: 5
   wakeUpDuration: 0.8
-  chaseSpeed: 3.5
+  chaseSpeed: 2.5
   aimingSpeed: 1.2
   ramSpeed: 9
   ramTriggerDistance: 5
   ramAimDuration: 0.8
+  ramAimDurationMin: 0.5
+  ramAimDurationMax: 0.95
   ramDuration: 0.6
   ramDamage: 25
   ramCooldown: 4
   ramHitRadius: 1.2
-  useAttackHitEvent: 1
-  attackEventDamage: 15
-  attackEventRadius: 1.1
-  attackEventCooldown: 0.08
+  ramSpeedMin: 8.5
+  ramSpeedMax: 10.5
+  ramFeintAngle: 12
+  ramFeintSwitchInterval: 0.18
+  doubleRamTriggerDistance: 9
+  doubleRamGap: 0.25
+  doubleRamSecondAimScale: 0.6
   closeAttackDistance: 1.6
+  closeAttackDamage: 15
   closeAttackCooldown: 1.1
-  maxHitColliders: 8
   slowOnHitChance: 0.55
   slowSpeedMultiplier: 0.4
   slowDuration: 0.5
@@ -16894,7 +16899,7 @@ MonoBehaviour:
   rukaLayerName: Ruka
   rukaRamAnim: Attack
   rukaCloseAnim: Attack2
-  rukaHitAnim: hit
+  rukaHitAnim: Hit
   animCrossFade: 0.12
   baseLayerIndex: 0
   rukaLayerIndex: 1
@@ -16903,9 +16908,6 @@ MonoBehaviour:
   audioSource: {fileID: 592380497844059572}
   ramRoarClip: {fileID: 8300000, guid: f0f2d5b9139331648b5fa08248d397c4, type: 3}
   leskaSpawnClip: {fileID: 8300000, guid: df9cae808ab4ebb4a9b09a34957c7648, type: 3}
-  playerLayer:
-    serializedVersion: 2
-    m_Bits: 256
 --- !u!65 &6588023724172125371
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -16923,7 +16925,7 @@ BoxCollider:
   m_LayerOverridePriority: 0
   m_IsTrigger: 1
   m_ProvidesContacts: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 3
   m_Size: {x: 2, y: 2.18, z: 2}
   m_Center: {x: 0, y: 1.01, z: 0}
