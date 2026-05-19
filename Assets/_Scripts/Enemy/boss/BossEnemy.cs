@@ -73,6 +73,10 @@ public class BossEnemy : MonoBehaviour
     public float ramTriggerDistance = 5f;
     [Tooltip("Длительность фазы прицеливания перед тараном.")]
     public float ramAimDuration = 0.8f;
+    [Tooltip("Минимальная длительность прицеливания (рандомизация).")]
+    public float ramAimDurationMin = 0.5f;
+    [Tooltip("Максимальная длительность прицеливания (рандомизация).")]
+    public float ramAimDurationMax = 0.95f;
     [Tooltip("Длительность самого рывка.")]
     public float ramDuration = 0.6f;
     [Tooltip("Урон от тарана.")]
@@ -81,26 +85,28 @@ public class BossEnemy : MonoBehaviour
     public float ramCooldown = 4f;
     [Tooltip("Радиус хитбокса при ударе тарана.")]
     public float ramHitRadius = 1.2f;
-
-    [Header("Attack Hitbox (Animation Event)")]
-    public bool useAttackHitEvent = true;
-    public int attackEventDamage = 15;
-    public float attackEventRadius = 1.1f;
-    public float attackEventCooldown = 0.08f;
-
-    [Header("Attack Hitboxes")]
-    public Transform headHitPoint;
-    public Transform leftHandHitPoint;
-    public Transform rightHandHitPoint;
+    [Tooltip("Минимальная скорость рывка (рандомизация).")]
+    public float ramSpeedMin = 8.5f;
+    [Tooltip("Максимальная скорость рывка (рандомизация).")]
+    public float ramSpeedMax = 10.5f;
+    [Tooltip("Угол финта во время прицеливания (градусы).")]
+    public float ramFeintAngle = 12f;
+    [Tooltip("Интервал смены финта во время прицеливания (сек).")]
+    public float ramFeintSwitchInterval = 0.18f;
+    [Tooltip("Дистанция, на которой запускается двойной таран (если игрок слишком далеко).")]
+    public float doubleRamTriggerDistance = 9f;
+    [Tooltip("Пауза между первым и вторым рывком двойного тарана.")]
+    public float doubleRamGap = 0.25f;
+    [Tooltip("Множитель времени прицеливания для второго рывка двойного тарана.")]
+    public float doubleRamSecondAimScale = 0.6f;
 
     [Header("Close Attack (Ruka Attack2)")]
     [Tooltip("Если игрок слишком близко, проигрывается Attack2 на слое Ruka.")]
     public float closeAttackDistance = 1.6f;
+    [Tooltip("Урон ближней атаки.")]
+    public int closeAttackDamage = 15;
     [Tooltip("Кулдаун между близкими атаками.")]
     public float closeAttackCooldown = 1.1f;
-
-    [Header("Hit Detection")]
-    [SerializeField, Range(1, 32)] private int maxHitColliders = 8;
 
     // ─── Замедление при уроне (фаза 2) ────────────────────────────────────────
 
@@ -168,7 +174,6 @@ public class BossEnemy : MonoBehaviour
     public AudioSource audioSource;
     public AudioClip ramRoarClip;
     public AudioClip leskaSpawnClip;
-    public LayerMask playerLayer;
 
     // ─── Внутреннее состояние ─────────────────────────────────────────────────
 
@@ -177,9 +182,11 @@ public class BossEnemy : MonoBehaviour
     private PlayerHealth playerHealth;
 
     private BossPhase currentPhase = BossPhase.Phase1;
+    private bool phase2Entered;
     private bool isDead;
     private bool isSlow;
     private bool isStunSequence;
+    private bool isDoingCloseAttack;
 
     private float nextRamTime;
     private float nextLeskaTime;
@@ -189,17 +196,13 @@ public class BossEnemy : MonoBehaviour
     private bool isDoingRam;
     private bool isSpawningLeska;
 
+    private Coroutine slowRoutine;
+
     private float pendingDamage;
     private float accumulatedStunDamage;
 
     private string currentBaseAnimState;
     private string currentRukaAnimState;
-
-    private Collider[] attackHitResults;
-
-    private float nextHeadHitTime;
-    private float nextLeftHitTime;
-    private float nextRightHitTime;
 
     // ─────────────────────────────────────────────────────────────────────────
     // Инициализация
@@ -224,6 +227,7 @@ public class BossEnemy : MonoBehaviour
         }
 
         health = maxHealth;
+        phase2Entered = false;
         pendingDamage = 0f;
         accumulatedStunDamage = 0f;
 
@@ -235,8 +239,6 @@ public class BossEnemy : MonoBehaviour
             animator.applyRootMotion = false;
             ResolveAnimatorLayers();
         }
-
-        PrepareHitBuffers();
     }
 
     public bool CanBeFinished()
@@ -266,39 +268,6 @@ public class BossEnemy : MonoBehaviour
         Die();
     }
 
-    public void AttackHitboxOn()
-    {
-        AttackHitboxOnHead();
-    }
-
-    public void AttackHitboxOnHead()
-    {
-        if (!useAttackHitEvent)
-            return;
-
-        TryDealHit(headHitPoint, ramHitRadius, ramDamage, ref nextHeadHitTime);
-    }
-
-    public void AttackHitboxOnLeftHand()
-    {
-        if (!useAttackHitEvent)
-            return;
-
-        TryDealHit(leftHandHitPoint, attackEventRadius, attackEventDamage, ref nextLeftHitTime);
-    }
-
-    public void AttackHitboxOnRightHand()
-    {
-        if (!useAttackHitEvent)
-            return;
-
-        TryDealHit(rightHandHitPoint, attackEventRadius, attackEventDamage, ref nextRightHitTime);
-    }
-
-    public void AttackHitboxOff()
-    {
-    }
-
     // ─────────────────────────────────────────────────────────────────────────
     // Update
     // ─────────────────────────────────────────────────────────────────────────
@@ -308,10 +277,8 @@ public class BossEnemy : MonoBehaviour
         if (isDead || player == null || navAgent == null || !navAgent.isOnNavMesh)
             return;
 
-        CheckPhaseTransition();
-
         // Во время тарана, стана или спавна лесок — управление передано корутине
-        if (isDoingRam || isSpawningLeska || isStunSequence)
+        if (isDoingRam || isDoingCloseAttack || isSpawningLeska || isStunSequence)
             return;
 
         // Фаза 2: периодический спавн лесок
@@ -326,13 +293,17 @@ public class BossEnemy : MonoBehaviour
     // ─────────────────────────────────────────────────────────────────────────
 
     /// <summary>
-    /// Проверяет порог HP и переключает фазу.
+    /// Проверяет порог HP и переключает фазу один раз.
     /// </summary>
-    private void CheckPhaseTransition()
+    private void TryEnterPhase2()
     {
-        if (currentPhase == BossPhase.Phase1 && health <= maxHealth * phase2HealthThreshold)
+        if (phase2Entered)
+            return;
+
+        if (health <= maxHealth * phase2HealthThreshold)
         {
             currentPhase = BossPhase.Phase2;
+            phase2Entered = true;
             Debug.Log($"[BossEnemy] Переход в фазу 2 (HP={health:0.#})");
         }
     }
@@ -347,9 +318,19 @@ public class BossEnemy : MonoBehaviour
 
         // Ближняя атака (Attack2 на слое Ruka)
         bool didCloseAttack = TryCloseAttack(distSqr);
+        if (didCloseAttack)
+            return;
 
         // Попытка тарана
         float ramTriggerDistSqr = ramTriggerDistance * ramTriggerDistance;
+        float doubleRamDistSqr = doubleRamTriggerDistance * doubleRamTriggerDistance;
+        bool canDoubleRam = currentPhase == BossPhase.Phase1 && health <= maxHealth * 0.7f;
+        if (!didCloseAttack && canDoubleRam && Time.time >= nextRamTime && distSqr >= doubleRamDistSqr)
+        {
+            StartCoroutine(DoubleRamRoutine());
+            return;
+        }
+
         if (!didCloseAttack && Time.time >= nextRamTime && distSqr <= ramTriggerDistSqr)
         {
             StartCoroutine(RamRoutine());
@@ -399,9 +380,31 @@ public class BossEnemy : MonoBehaviour
         if (distSqr > closeDistSqr)
             return false;
 
-        PlayRukaAnim(rukaCloseAnim);
+        StartCoroutine(CloseAttackRoutine());
         nextCloseAttackTime = Time.time + Mathf.Max(0f, closeAttackCooldown);
         return true;
+    }
+
+    /// <summary>
+    /// Ближняя атака без коллайдеров: стоп, разворот, прямой урон, возврат к преследованию.
+    /// </summary>
+    private IEnumerator CloseAttackRoutine()
+    {
+        isDoingCloseAttack = true;
+
+        StopAgentHard();
+        FacePlayer(1440f);
+        PlayRukaAnim(rukaCloseAnim);
+
+        TryApplyDirectDamage(transform.position, closeAttackDistance, closeAttackDamage);
+
+        yield return new WaitForSeconds(0.15f);
+
+        navAgent.isStopped = false;
+        SetAgentSpeed(isSlow ? chaseSpeed * slowSpeedMultiplier : chaseSpeed);
+        PlayBaseAnim(baseWalkAnim);
+
+        isDoingCloseAttack = false;
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -420,9 +423,28 @@ public class BossEnemy : MonoBehaviour
         isDoingRam = true;
         nextRamTime = Time.time + ramCooldown;
 
-        // Запуск атаки сразу при начале тарана
-        PlayRukaAnim(rukaRamAnim);
+        yield return RamOnceRoutine(1f);
 
+        isDoingRam = false;
+    }
+
+    private IEnumerator DoubleRamRoutine()
+    {
+        isDoingRam = true;
+        nextRamTime = Time.time + ramCooldown;
+
+        yield return RamOnceRoutine(1f);
+
+        if (doubleRamGap > 0f)
+            yield return new WaitForSeconds(doubleRamGap);
+
+        yield return RamOnceRoutine(Mathf.Clamp(doubleRamSecondAimScale, 0.2f, 1f));
+
+        isDoingRam = false;
+    }
+
+    private IEnumerator RamOnceRoutine(float aimScale)
+    {
         // — Прицеливание —
         SetAgentSpeed(aimingSpeed);
         navAgent.isStopped = false;
@@ -432,11 +454,41 @@ public class BossEnemy : MonoBehaviour
         if (audioSource != null && ramRoarClip != null)
             audioSource.PlayOneShot(ramRoarClip);
 
-        float aimEnd = Time.time + ramAimDuration;
+        float aimDuration = Mathf.Clamp(Random.Range(ramAimDurationMin, ramAimDurationMax), 0.05f, 2f);
+        if (aimDuration <= 0f)
+            aimDuration = ramAimDuration;
+
+        aimDuration *= Mathf.Clamp(aimScale, 0.2f, 2f);
+
+        float aimEnd = Time.time + aimDuration;
         float nextAimRepath = 0f;
+        float feintSign = 1f;
+        float nextFeintSwitch = Time.time + ramFeintSwitchInterval;
         while (Time.time < aimEnd)
         {
-            FacePlayer(720f);
+            if (ramFeintAngle > 0.01f)
+            {
+                if (Time.time >= nextFeintSwitch)
+                {
+                    feintSign *= -1f;
+                    nextFeintSwitch = Time.time + Mathf.Max(0.05f, ramFeintSwitchInterval);
+                }
+
+                Vector3 feintDir = player.position - transform.position;
+                feintDir.y = 0f;
+                if (feintDir.sqrMagnitude > 0.0001f)
+                {
+                    Quaternion feintRot = Quaternion.AngleAxis(ramFeintAngle * feintSign, Vector3.up);
+                    Vector3 lookDir = feintRot * feintDir.normalized;
+                    Quaternion target = Quaternion.LookRotation(lookDir, Vector3.up);
+                    transform.rotation = Quaternion.RotateTowards(transform.rotation, target, 720f * Time.deltaTime);
+                }
+            }
+            else
+            {
+                FacePlayer(720f);
+            }
+
             if (Time.time >= nextAimRepath)
             {
                 nextAimRepath = Time.time + Mathf.Max(0.05f, pathRecalcInterval);
@@ -447,16 +499,25 @@ public class BossEnemy : MonoBehaviour
 
         // — Рывок —
         StopAgentHard();
+        PlayRukaAnim(rukaRamAnim);
         Vector3 ramDir = player.position - transform.position;
         ramDir.y = 0f;
         if (ramDir.sqrMagnitude < 0.0001f)
             ramDir = transform.forward;
         ramDir.Normalize();
 
+        float dashSpeed = Mathf.Clamp(Random.Range(ramSpeedMin, ramSpeedMax), 0.1f, 50f);
+        if (dashSpeed <= 0f)
+            dashSpeed = ramSpeed;
+
         float ramEnd = Time.time + ramDuration;
+        bool ramHitDealt = false;
         while (Time.time < ramEnd)
         {
-            navAgent.Move(ramDir * ramSpeed * Time.deltaTime);
+            if (!ramHitDealt && TryApplyDirectDamage(transform.position, ramHitRadius, ramDamage))
+                ramHitDealt = true;
+
+            navAgent.Move(ramDir * dashSpeed * Time.deltaTime);
             yield return null;
         }
 
@@ -464,48 +525,8 @@ public class BossEnemy : MonoBehaviour
         navAgent.isStopped = false;
         SetAgentSpeed(isSlow ? chaseSpeed * slowSpeedMultiplier : chaseSpeed);
         PlayBaseAnim(baseWalkAnim);
-
-        isDoingRam = false;
     }
 
-    private void TryDealHit(Transform hitPoint, float hitRadius, int damage, ref float nextHitTime)
-    {
-        if (damage <= 0)
-            return;
-
-        if (hitPoint == null)
-            return;
-
-        if (Time.time < nextHitTime)
-            return;
-
-        nextHitTime = Time.time + Mathf.Max(0f, attackEventCooldown);
-
-        if (attackHitResults == null || attackHitResults.Length == 0)
-            PrepareHitBuffers();
-
-        float radius = Mathf.Max(0.1f, hitRadius);
-        int hitCount = Physics.OverlapSphereNonAlloc(
-            hitPoint.position,
-            radius,
-            attackHitResults,
-            playerLayer,
-            QueryTriggerInteraction.Collide);
-
-        for (int i = 0; i < hitCount; i++)
-        {
-            Collider c = attackHitResults[i];
-            if (c == null)
-                continue;
-
-            PlayerHealth ph = c.transform.root.GetComponent<PlayerHealth>();
-            if (ph != null && !ph.IsDead)
-            {
-                ph.ApplyDamage(damage);
-                break;
-            }
-        }
-    }
 
     // ─────────────────────────────────────────────────────────────────────────
     // Лески (фаза 2)
@@ -599,8 +620,10 @@ public class BossEnemy : MonoBehaviour
     {
         if (Random.value > slowOnHitChance) return; // Шанс не сработал — не тормозим
 
-        StopCoroutine(nameof(SlowRoutine)); // На случай уже активного замедления
-        StartCoroutine(SlowRoutine());
+        if (slowRoutine != null)
+            StopCoroutine(slowRoutine);
+
+        slowRoutine = StartCoroutine(SlowRoutine());
     }
 
     private IEnumerator SlowRoutine()
@@ -613,6 +636,8 @@ public class BossEnemy : MonoBehaviour
         isSlow = false;
         if (!isDoingRam)
             SetAgentSpeed(chaseSpeed);
+
+        slowRoutine = null;
     }
 
     private IEnumerator StunBreakRoutine()
@@ -651,7 +676,7 @@ public class BossEnemy : MonoBehaviour
         pendingDamage = 0f;
         health = Mathf.Max(0f, health);
 
-        CheckPhaseTransition();
+        TryEnterPhase2();
 
         if (health <= 0f)
         {
@@ -715,14 +740,6 @@ public class BossEnemy : MonoBehaviour
             animator.SetLayerWeight(rukaLayerIndex, 1f);
     }
 
-    private void PrepareHitBuffers()
-    {
-        int size = Mathf.Max(1, maxHitColliders);
-
-        if (attackHitResults == null || attackHitResults.Length != size)
-            attackHitResults = new Collider[size];
-    }
-
     private void StopAgentHard()
     {
         if (navAgent == null || !navAgent.isOnNavMesh) return;
@@ -742,14 +759,43 @@ public class BossEnemy : MonoBehaviour
         transform.rotation = Quaternion.RotateTowards(transform.rotation, target, degreesPerSecond * Time.deltaTime);
     }
 
+    private bool TryApplyDirectDamage(Vector3 sourcePosition, float radius, int damage)
+    {
+        if (damage <= 0 || player == null || playerHealth == null || playerHealth.IsDead)
+            return false;
+
+        float hitRadius = Mathf.Max(0.1f, radius);
+        float distSqr = (player.position - sourcePosition).sqrMagnitude;
+        if (distSqr > hitRadius * hitRadius)
+            return false;
+
+        playerHealth.ApplyDamage(damage);
+        return true;
+    }
+
     private void PlayBaseAnim(string stateName)
     {
+        if (!string.IsNullOrEmpty(stateName) && stateName != baseWalkAnim)
+            SetRukaLayerWeight(0f);
+
         PlayAnimOnLayer(stateName, baseLayerIndex, ref currentBaseAnimState);
     }
 
     private void PlayRukaAnim(string stateName)
     {
+        SetRukaLayerWeight(1f);
         PlayAnimOnLayer(stateName, rukaLayerIndex, ref currentRukaAnimState);
+    }
+
+    private void SetRukaLayerWeight(float weight)
+    {
+        if (animator == null)
+            return;
+
+        if (rukaLayerIndex < 0 || rukaLayerIndex >= animator.layerCount)
+            return;
+
+        animator.SetLayerWeight(rukaLayerIndex, Mathf.Clamp01(weight));
     }
 
     private void PlayAnimOnLayer(string stateName, int layer, ref string currentState)
