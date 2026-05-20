@@ -31,7 +31,8 @@ public class EnemyStepSound : MonoBehaviour
     [Tooltip("Включить логирование для отладки (выключено в релизе)")]
     public bool enableDebug = false;
 
-    private AudioSource audioSource;
+    private AudioSource audioSource;      // основной AudioSource врага (не трогаем)
+    private AudioSource stepAudioSource;  // отдельный AudioSource только для шагов
     private Rigidbody rb;
     private Vector3 lastPosition;
     private float estimatedPlanarSpeed;
@@ -43,9 +44,21 @@ public class EnemyStepSound : MonoBehaviour
 
     private void Start()
     {
+        // Ищем основной AudioSource врага
         audioSource = GetComponent<AudioSource>();
         if (audioSource == null)
             audioSource = GetComponentInChildren<AudioSource>();
+
+        // Создаём отдельный AudioSource для шагов, чтобы не мешать другим звукам
+        GameObject stepSourceObj = new GameObject("StepAudioSource");
+        stepSourceObj.transform.SetParent(transform, false);
+        stepAudioSource = stepSourceObj.AddComponent<AudioSource>();
+        stepAudioSource.spatialBlend = audioSource != null ? audioSource.spatialBlend : 1f;
+        stepAudioSource.outputAudioMixerGroup = audioSource != null ? audioSource.outputAudioMixerGroup : null;
+        stepAudioSource.rolloffMode = audioSource != null ? audioSource.rolloffMode : AudioRolloffMode.Logarithmic;
+        stepAudioSource.minDistance = audioSource != null ? audioSource.minDistance : 1f;
+        stepAudioSource.maxDistance = audioSource != null ? audioSource.maxDistance : 20f;
+        stepAudioSource.playOnAwake = false;
 
         rb = GetComponent<Rigidbody>();
         if (rb == null)
@@ -54,7 +67,7 @@ public class EnemyStepSound : MonoBehaviour
         lastPosition = transform.position;
 
         if (audioSource == null && enableDebug)
-            Debug.LogWarning("EnemyStepSound: AudioSource не найден на объекте/детях.", this);
+            Debug.LogWarning("EnemyStepSound: основной AudioSource не найден, 3D-настройки шагов будут по умолчанию.", this);
 
         if (requireMovement && rb == null && enableDebug)
             Debug.LogWarning("EnemyStepSound: Rigidbody не найден. Будет использоваться оценка движения по смещению Transform.", this);
@@ -99,12 +112,12 @@ public class EnemyStepSound : MonoBehaviour
         SurfaceStepSounds surfaceSettings;
         AudioClip[] clipsToPlay = GetSurfaceClips(out surfaceSettings);
 
-        if (clipsToPlay.Length > 0 && audioSource != null)
+        if (clipsToPlay.Length > 0)
         {
             AudioClip clip = clipsToPlay[Random.Range(0, clipsToPlay.Length)];
-            audioSource.pitch = Random.Range(surfaceSettings.minPitch, surfaceSettings.maxPitch);
-            audioSource.volume = surfaceSettings.baseVolume;
-            audioSource.PlayOneShot(clip);
+            // Питч и громкость применяются только к stepAudioSource — основной AudioSource не затрагивается
+            stepAudioSource.pitch = Random.Range(surfaceSettings.minPitch, surfaceSettings.maxPitch);
+            stepAudioSource.PlayOneShot(clip, surfaceSettings.baseVolume);
         }
     }
 
@@ -154,7 +167,6 @@ public class EnemyStepSound : MonoBehaviour
             if (enableDebug)
                 Debug.Log("EnemyStepSound: surface hit = " + hit.collider.name + ", tag = " + hit.collider.tag, this);
 
-            // Быстрый поиск по тегу через словарь (меньше операций, чем линейный перебор)
             if (surfaceLookup != null)
             {
                 if (surfaceLookup.TryGetValue(hit.collider.tag, out SurfaceStepSounds entry) && entry.clips != null && entry.clips.Length > 0)
