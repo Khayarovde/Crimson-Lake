@@ -1,37 +1,21 @@
 using UnityEngine;
 
 // Вспомогательный компонент для Signal Receiver (Timeline).
-// Позволяет по сигналу Timeline просто включить босс-объект.
+// Позволяет скрыть катсценного босса и заспавнить настоящего.
 [DisallowMultipleComponent]
 public class CustEnemy : MonoBehaviour
 {
-    [Tooltip("Объект на сцене, который должен быть отключен при активации.")]
-    [SerializeField] private GameObject bossObject;
+    [Tooltip("Объект катсценного босса (пустышки), который нужно скрыть.")]
+    [SerializeField] private GameObject cutsceneBoss;
 
-    [Tooltip("Если босс должен создаваться заново, сюда назначь prefab босса.")]
-    [SerializeField] private GameObject bossPrefab;
+    [Tooltip("Префаб настоящего босса с логикой и скриптами.")]
+    [SerializeField] private GameObject realBossPrefab;
 
-    [Tooltip("Точка спавна. Если не задана, будет использован объект с этим компонентом.")]
+    [Tooltip("Точка спавна настоящего босса. Если пусто — заспавнится там же, где висит этот скрипт.")]
     [SerializeField] private Transform spawnPoint;
-
-    [Tooltip("Ссылка на компонент BossEnemy для авто-поиска скрытого объекта")]
-    [SerializeField] private BossEnemy bossEnemy;
-
-    private void Reset()
-    {
-        bossEnemy = GetComponentInParent<BossEnemy>();
-        bossObject = bossEnemy != null ? bossEnemy.gameObject : null;
-        spawnPoint = transform;
-    }
 
     private void Awake()
     {
-        if (bossEnemy == null)
-            bossEnemy = GetComponentInParent<BossEnemy>();
-
-        if (bossObject == null && bossEnemy != null)
-            bossObject = bossEnemy.gameObject;
-
         if (spawnPoint == null)
             spawnPoint = transform;
     }
@@ -39,25 +23,36 @@ public class CustEnemy : MonoBehaviour
     // Вызывается из Signal Receiver для скрытия объекта на сцене.
     public void HideBoss()
     {
-        if (bossObject == null)
+        if (cutsceneBoss != null)
         {
-            Debug.LogWarning("CustEnemy: не назначен bossObject для HideBoss.");
-            return;
+            cutsceneBoss.SetActive(false);
         }
+        else
+        {
+            Debug.LogWarning("CustEnemy: Не назначен cutsceneBoss для HideBoss.");
+        }
+    }
 
-        bossObject.SetActive(false);
+    // Вызывается из Signal Receiver для включения уже существующего босс-объекта.
+    public void ShowBoss()
+    {
+        if (cutsceneBoss != null)
+        {
+            cutsceneBoss.SetActive(true);
+        }
     }
 
     // Вызывается из Signal Receiver для спавна босса из префаба.
     public void SpawnBoss()
     {
-        if (bossPrefab == null)
+        if (realBossPrefab != null)
         {
-            Debug.LogWarning("CustEnemy: не назначен bossPrefab для SpawnBoss.");
-            return;
+            Transform point = spawnPoint != null ? spawnPoint : transform;
+            Instantiate(realBossPrefab, point.position, point.rotation);
         }
-
-        Transform point = spawnPoint != null ? spawnPoint : transform;
-        Instantiate(bossPrefab, point.position, point.rotation);
+        else
+        {
+            Debug.LogWarning("CustEnemy: Не назначен realBossPrefab для SpawnBoss.");
+        }
     }
 }
