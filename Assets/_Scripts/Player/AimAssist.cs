@@ -154,10 +154,12 @@ public class AimAssist : MonoBehaviour
         rawAimDirection = toAimPoint.normalized;
     }
 
+    private Collider[] overlapHits = new Collider[32];
+
     private void FindBestTarget()
     {
-        Collider[] hits = Physics.OverlapSphere(muzzlePoint.position, captureRange, enemyLayerMask);
-        if (hits.Length == 0)
+        int hitCount = Physics.OverlapSphereNonAlloc(muzzlePoint.position, captureRange, overlapHits, enemyLayerMask);
+        if (hitCount == 0)
         {
             currentTarget = null;
             return;
@@ -166,8 +168,9 @@ public class AimAssist : MonoBehaviour
         Transform best = null;
         float bestScore = float.MaxValue;
 
-        foreach (var col in hits)
+        for (int i = 0; i < hitCount; i++)
         {
+            var col = overlapHits[i];
             if (col == null)
                 continue;
 

@@ -50,14 +50,17 @@ public class PlayerInteraction : MonoBehaviour
         }
     }
 
+    private Collider[] overlapHits = new Collider[16];
+
     private Interact FindClosestTarget()
     {
-        Collider[] hits = Physics.OverlapSphere(transform.position, interactRange, interactLayer);
+        int hitCount = Physics.OverlapSphereNonAlloc(transform.position, interactRange, overlapHits, interactLayer);
         Interact closestInteract = null;
         float closestDistanceSqr = float.MaxValue;
 
-        foreach (var hit in hits)
+        for (int i = 0; i < hitCount; i++)
         {
+            var hit = overlapHits[i];
             var interact = hit.GetComponent<Interact>();
             if (interact == null)
             {

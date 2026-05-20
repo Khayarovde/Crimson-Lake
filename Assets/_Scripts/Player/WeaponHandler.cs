@@ -562,15 +562,19 @@ public class WeaponHandler : MonoBehaviour
         return FindClosestStunnedEnemy(finisherRange, requireFrontForFinisher, false) != null;
     }
 
+    private Collider[] overlapColliders = new Collider[32];
+
     private FinisherTarget FindClosestStunnedEnemy(float range, bool requireFrontCheck, bool ignoreLayerMask)
     {
         float bestDist = float.MaxValue;
         FinisherTarget best = null;
 
         int mask = ignoreLayerMask ? ~0 : enemyLayerMask.value;
-        var hits = Physics.OverlapSphere(transform.position, range, mask, QueryTriggerInteraction.Ignore);
-        foreach (var h in hits)
+        int hitCount = Physics.OverlapSphereNonAlloc(transform.position, range, overlapColliders, mask, QueryTriggerInteraction.Ignore);
+
+        for (int i = 0; i < hitCount; i++)
         {
+            Collider h = overlapColliders[i];
             if (h == null) continue;
             FinisherTarget target = CreateFinisherTarget(h);
             if (target == null || !target.CanBeFinished()) continue;

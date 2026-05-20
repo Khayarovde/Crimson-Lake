@@ -25,7 +25,6 @@ public class TankController : MonoBehaviour
 #endif
     public float rotateSpeed = 10f;
     [SerializeField] private float rotationSmoothTime = 0.12f;
-    [SerializeField] private float extraGravityAcceleration = 60f;
 
     [Header("Aim Feel")]
     [SerializeField] private float aimRotationSmoothTime = 0.07f;
@@ -132,14 +131,6 @@ public class TankController : MonoBehaviour
         if (movementLocked) return;
         ApplyMovement();
         ApplyRotation();
-        ApplyExtraGravity();
-    }
-
-    private void ApplyExtraGravity()
-    {
-        if (rb == null || extraGravityAcceleration <= 0f) return;
-        if (rb.linearVelocity.y > -0.01f) return;
-        rb.AddForce(Vector3.down * extraGravityAcceleration, ForceMode.Acceleration);
     }
 
     private void ApplyUpdateAimRotation()

@@ -145,12 +145,11 @@ public class PlayerStepSound : MonoBehaviour
         Vector3 origin = transform.position + Vector3.up * surfaceCheckStartOffset;
         if (Physics.Raycast(origin, Vector3.down, out RaycastHit hit, surfaceCheckDistance, surfaceMask, QueryTriggerInteraction.Ignore))
         {
-            string tag = hit.collider.tag;
             if (logSurfaceHit)
 //                Debug.Log("Surface hit: " + hit.collider.name + " tag=" + tag);
             for (int i = 0; i < surfaceClips.Length; i++)
             {
-                if (surfaceClips[i].surfaceTag == tag && surfaceClips[i].clips != null)
+                if (hit.collider.CompareTag(surfaceClips[i].surfaceTag) && surfaceClips[i].clips != null)
                 {
                     settings = surfaceClips[i];
                     cachedSurfaceSettings = settings;

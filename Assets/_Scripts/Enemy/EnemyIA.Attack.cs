@@ -4,6 +4,8 @@ using System.Collections;
 
 public partial class AdvancedEnemyAI
 {
+    private Collider[] attackOverlapHits = new Collider[16];
+
     private void AttackPlayer()
     {
         if (IsMovementDisabled()) return;
@@ -224,9 +226,10 @@ public partial class AdvancedEnemyAI
             return (closest - center).sqrMagnitude <= radius * radius;
         }
 
-        Collider[] hits = Physics.OverlapSphere(center, radius, ~0, QueryTriggerInteraction.Collide);
-        foreach (var h in hits)
+        int hitCount = Physics.OverlapSphereNonAlloc(center, radius, attackOverlapHits, ~0, QueryTriggerInteraction.Collide);
+        for (int i = 0; i < hitCount; i++)
         {
+            var h = attackOverlapHits[i];
             if (h == null) continue;
             if (h.transform == player || h.transform.IsChildOf(player))
                 return true;
