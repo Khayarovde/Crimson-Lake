@@ -124,6 +124,38 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 1686174189577929514, guid: 1add228915585b74c8e39e1c69f7e0a8, type: 3}
   m_PrefabInstance: {fileID: 5473071885701891658}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &11956703
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 11956704}
+  m_Layer: 8
+  m_Name: pistol
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &11956704
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 11956703}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.4865539, y: 0.13029827, z: 0.05126583, w: 0.8623569}
+  m_LocalPosition: {x: 0.2164, y: 1.3512, z: 0.2939}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 1731760356}
+  m_Father: {fileID: 1479789140}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &18293656
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -5370,6 +5402,67 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!1001 &1388636439
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 11956704}
+    m_Modifications:
+    - target: {fileID: 6324483284543288331, guid: 7193bf1282faffe43872bb82f7e08da0, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6324483284543288331, guid: 7193bf1282faffe43872bb82f7e08da0, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6324483284543288331, guid: 7193bf1282faffe43872bb82f7e08da0, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6324483284543288331, guid: 7193bf1282faffe43872bb82f7e08da0, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6324483284543288331, guid: 7193bf1282faffe43872bb82f7e08da0, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6324483284543288331, guid: 7193bf1282faffe43872bb82f7e08da0, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6324483284543288331, guid: 7193bf1282faffe43872bb82f7e08da0, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6324483284543288331, guid: 7193bf1282faffe43872bb82f7e08da0, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6324483284543288331, guid: 7193bf1282faffe43872bb82f7e08da0, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6324483284543288331, guid: 7193bf1282faffe43872bb82f7e08da0, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7018287897960650172, guid: 7193bf1282faffe43872bb82f7e08da0, type: 3}
+      propertyPath: m_Name
+      value: Sci Fi Pistol 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7018287897960650172, guid: 7193bf1282faffe43872bb82f7e08da0, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 7193bf1282faffe43872bb82f7e08da0, type: 3}
 --- !u!1 &1389881683 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 8439502441941190864, guid: c4a5bef15dc18d541bac6042da6a7c24, type: 3}
@@ -7020,6 +7113,11 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d5b62d2bae9c4de458ac4fdb8fe16979, type: 3}
+--- !u!4 &1731760356 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 6324483284543288331, guid: 7193bf1282faffe43872bb82f7e08da0, type: 3}
+  m_PrefabInstance: {fileID: 1388636439}
+  m_PrefabAsset: {fileID: 0}
 --- !u!114 &1745982492 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 4457648823648141853, guid: e7133a08c13325544abbbe6eae5b3be6, type: 3}
@@ -7426,6 +7524,11 @@ Rigidbody:
   m_CorrespondingSourceObject: {fileID: 6694293217616909699, guid: ebc4bac64a24a7f42a07cb2499345bc4, type: 3}
   m_PrefabInstance: {fileID: 127583857525048118}
   m_PrefabAsset: {fileID: 0}
+--- !u!82 &1834082600 stripped
+AudioSource:
+  m_CorrespondingSourceObject: {fileID: 46208908161000009, guid: ebc4bac64a24a7f42a07cb2499345bc4, type: 3}
+  m_PrefabInstance: {fileID: 127583857525048118}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1840172137
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -7502,10 +7605,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 1170108464459754687, guid: ef8a1ac8c271a1341abc6a662df67489, type: 3}
-      propertyPath: m_IsActive
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 1917085988310698854, guid: ef8a1ac8c271a1341abc6a662df67489, type: 3}
       propertyPath: m_LocalPosition.x
       value: -44.85
@@ -7546,10 +7645,6 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 1923159485390573535, guid: ef8a1ac8c271a1341abc6a662df67489, type: 3}
-      propertyPath: m_IsActive
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 2444749522448532875, guid: ef8a1ac8c271a1341abc6a662df67489, type: 3}
       propertyPath: 'disableWhileOpen.Array.data[0]'
       value: 
@@ -7582,14 +7677,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: SafeRoom
       objectReference: {fileID: 0}
-    - target: {fileID: 4297630948534034561, guid: ef8a1ac8c271a1341abc6a662df67489, type: 3}
-      propertyPath: m_IsActive
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 4781180853886736763, guid: ef8a1ac8c271a1341abc6a662df67489, type: 3}
-      propertyPath: m_IsActive
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 5109467399823831363, guid: ef8a1ac8c271a1341abc6a662df67489, type: 3}
       propertyPath: hintRoot
       value: 
@@ -7610,18 +7697,6 @@ PrefabInstance:
       propertyPath: teleportTarget
       value: 
       objectReference: {fileID: 1946361276}
-    - target: {fileID: 5227322560510266143, guid: ef8a1ac8c271a1341abc6a662df67489, type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7280214307313140266, guid: ef8a1ac8c271a1341abc6a662df67489, type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8892833074052474515, guid: ef8a1ac8c271a1341abc6a662df67489, type: 3}
-      propertyPath: m_IsActive
-      value: 1
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -8802,9 +8877,21 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3654670086047877682, guid: ebc4bac64a24a7f42a07cb2499345bc4, type: 3}
+      propertyPath: audioSource
+      value: 
+      objectReference: {fileID: 1834082600}
+    - target: {fileID: 3654670086047877682, guid: ebc4bac64a24a7f42a07cb2499345bc4, type: 3}
       propertyPath: finisherManager
       value: 
       objectReference: {fileID: 1474821126}
+    - target: {fileID: 3654670086047877682, guid: ebc4bac64a24a7f42a07cb2499345bc4, type: 3}
+      propertyPath: pistolHoldVisualPoint
+      value: 
+      objectReference: {fileID: 11956704}
+    - target: {fileID: 3654670086047877682, guid: ebc4bac64a24a7f42a07cb2499345bc4, type: 3}
+      propertyPath: pistolHoldVisualPrefab
+      value: 
+      objectReference: {fileID: 7018287897960650172, guid: 7193bf1282faffe43872bb82f7e08da0, type: 3}
     - target: {fileID: 7341642727682615517, guid: ebc4bac64a24a7f42a07cb2499345bc4, type: 3}
       propertyPath: m_Center.z
       value: 0.3
@@ -8923,7 +9010,10 @@ PrefabInstance:
       objectReference: {fileID: 1923403105}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects: []
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: 3253778392951045453, guid: ebc4bac64a24a7f42a07cb2499345bc4, type: 3}
+      insertIndex: 0
+      addedObject: {fileID: 11956704}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: ebc4bac64a24a7f42a07cb2499345bc4, type: 3}
 --- !u!1001 &1910013343653126172

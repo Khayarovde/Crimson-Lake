@@ -67,6 +67,12 @@ public class WeaponHandler : MonoBehaviour
     [SerializeField] private Transform shotgunHoldPoint;
     [SerializeField] private Transform defaultMuzzlePoint;
 
+    [Header("=== Hold визуалы ===")]
+    [SerializeField] private Transform pistolHoldVisualPoint;
+    [SerializeField] private Transform gunHoldVisualPoint;
+    [SerializeField] private GameObject pistolHoldVisualPrefab;
+    [SerializeField] private GameObject gunHoldVisualPrefab;
+
     [Header("=== Модели оружия ===")]
     [SerializeField] private GameObject gunPrefab;
     [SerializeField] private Vector3 gunScale = Vector3.one;
@@ -241,6 +247,8 @@ public class WeaponHandler : MonoBehaviour
     private static readonly int EmissionColorId = Shader.PropertyToID("_EmissionColor");
     // Словарь для отслеживания количества попаданий по каждому врагу
     private Dictionary<AdvancedEnemyAI, int> enemyHitCount = new Dictionary<AdvancedEnemyAI, int>();
+    private GameObject holdVisualInstance;
+    private InventoryItem.ItemType holdVisualType = InventoryItem.ItemType.Empty;
 
     private void Awake()
     {
@@ -273,6 +281,7 @@ public class WeaponHandler : MonoBehaviour
         HandleInput();
         if (Input.GetKeyDown(KeyCode.R)) TryManualReload();
         UpdateWeaponGlowVisual();
+        UpdateHoldVisual();
     }
 
     private void HandleInput()
@@ -795,6 +804,7 @@ public class WeaponHandler : MonoBehaviour
     {
         isAiming = true;
         EquipActiveWeapon();
+        ClearHoldVisual();
         if (tankController)
             tankController.moveSpeed = aimWalkSpeed;
         aimAssist.SetAiming(true, muzzlePoint);
@@ -807,6 +817,7 @@ public class WeaponHandler : MonoBehaviour
         if (tankController)
             tankController.moveSpeed = originalWalkSpeed;
         aimAssist.SetAiming(false, null);
+        UpdateHoldVisual();
     }
 
     private void ForceDefaultIdle()
@@ -1355,6 +1366,7 @@ public class WeaponHandler : MonoBehaviour
         }
 
         isShotSequenceRunning = false;
+        UpdateHoldVisual();
     }
 
     private void SaveCurrentAmmo()
@@ -1599,6 +1611,7 @@ public class WeaponHandler : MonoBehaviour
         if (currentWeaponType == InventoryItem.ItemType.Empty)
         {
             UnequipWeapon();
+            ClearHoldVisual();
             return;
         }
 
@@ -1613,6 +1626,84 @@ public class WeaponHandler : MonoBehaviour
         {
             UnequipWeapon();
         }
+
+        UpdateHoldVisual();
+    }
+
+    private InventoryItem.ItemType GetActiveWeaponTypeFromInventory()
+    {
+        if (playerInventory == null || playerInventory.inventoryData == null)
+            return InventoryItem.ItemType.Empty;
+
+        int idx = playerInventory.activeItemIndex;
+        if (idx < 0 || idx >= playerInventory.inventoryData.GetSlotCount())
+            return InventoryItem.ItemType.Empty;
+
+        var item = playerInventory.inventoryData.GetItemAt(idx);
+        if (item == null)
+            return InventoryItem.ItemType.Empty;
+
+        if (item.type != InventoryItem.ItemType.Gun && item.type != InventoryItem.ItemType.Pistol)
+            return InventoryItem.ItemType.Empty;
+
+        return item.type;
+    }
+
+    private void UpdateHoldVisual()
+    {
+        if (isAiming)
+        {
+            ClearHoldVisual();
+            return;
+        }
+
+        if (!HasActiveWeaponSelected())
+        {
+            ClearHoldVisual();
+            return;
+        }
+
+        InventoryItem.ItemType activeType = GetActiveWeaponTypeFromInventory();
+        if (activeType != InventoryItem.ItemType.Gun && activeType != InventoryItem.ItemType.Pistol)
+        {
+            ClearHoldVisual();
+            return;
+        }
+
+        if (holdVisualInstance != null && holdVisualType == activeType)
+            return;
+
+        ClearHoldVisual();
+
+        GameObject prefab = activeType == InventoryItem.ItemType.Gun ? gunHoldVisualPrefab : pistolHoldVisualPrefab;
+        Vector3 scale = activeType == InventoryItem.ItemType.Gun ? gunScale : pistolScale;
+
+        if (prefab == null)
+            return;
+
+        Transform holdPoint = activeType == InventoryItem.ItemType.Gun ? gunHoldVisualPoint : pistolHoldVisualPoint;
+        if (holdPoint == null)
+            holdPoint = activeType == InventoryItem.ItemType.Gun ? shotgunHoldPoint : pistolHoldPoint;
+        if (holdPoint == null)
+            holdPoint = weaponHoldPoint;
+
+        if (holdPoint == null)
+            return;
+
+        holdVisualInstance = Instantiate(prefab, holdPoint, false);
+        holdVisualInstance.transform.localScale = scale;
+        holdVisualInstance.transform.localPosition = Vector3.zero;
+        holdVisualInstance.transform.localRotation = Quaternion.identity;
+        holdVisualType = activeType;
+    }
+
+    private void ClearHoldVisual()
+    {
+        if (holdVisualInstance != null)
+            Destroy(holdVisualInstance);
+
+        holdVisualInstance = null;
+        holdVisualType = InventoryItem.ItemType.Empty;
     }
 
     private void SyncCurrentReserveFromData()
