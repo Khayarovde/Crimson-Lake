@@ -14,39 +14,16 @@ public class WeaponHandler : MonoBehaviour
         public Enemytest enemyTest;
         public BossEnemy bossEnemy;
 
-        public Transform Transform
-        {
-            get
-            {
-                if (advancedEnemy != null)
-                    return advancedEnemy.transform;
-                if (enemyTest != null)
-                    return enemyTest.transform;
-                if (bossEnemy != null)
-                    return bossEnemy.transform;
-                return null;
-            }
-        }
+        public Transform Transform => advancedEnemy?.transform ?? enemyTest?.transform ?? bossEnemy?.transform;
 
-        public bool CanBeFinished()
-        {
-            if (advancedEnemy != null)
-                return advancedEnemy.CanBeFinished();
-            if (enemyTest != null)
-                return enemyTest.CanBeFinished();
-            if (bossEnemy != null)
-                return bossEnemy.CanBeFinished();
-            return false;
-        }
+        public bool CanBeFinished() => 
+            advancedEnemy?.CanBeFinished() ?? enemyTest?.CanBeFinished() ?? bossEnemy?.CanBeFinished() ?? false;
 
         public void KillDuringStun()
         {
-            if (advancedEnemy != null)
-                advancedEnemy.KillDuringStun();
-            else if (enemyTest != null)
-                enemyTest.KillDuringStun();
-            else if (bossEnemy != null)
-                bossEnemy.KillDuringStun();
+            advancedEnemy?.KillDuringStun();
+            enemyTest?.KillDuringStun();
+            bossEnemy?.KillDuringStun();
         }
     }
 
@@ -88,18 +65,20 @@ public class WeaponHandler : MonoBehaviour
     private float pistolShotLoudness = 1f;
     [SerializeField, Tooltip("Громкость выстрела для системы слуха врагов")]
     private float gunShotLoudness = 1.35f;
+    [Space(5)]
+    [SerializeField, Tooltip("Звуки выстрела (Лазерная винтовка)")] private AudioClip[] gunShootSounds;
+    [SerializeField, Tooltip("Звук перезарядки (Лазерная винтовка)")] private AudioClip gunReloadSound;
+    [Space(5)]
+    [SerializeField, Tooltip("Звуки выстрела (Пистолет)")] private AudioClip[] pistolShootSounds;
+    [SerializeField, Tooltip("Звук перезарядки (Пистолет)")] private AudioClip pistolReloadSound;
 
     [Header("=== ЛАЗЕРНАЯ ВИНТОВКА ===")]
     [SerializeField] private GunStats shotgunStats;
-    [SerializeField] private AudioClip[] gunShootSounds;
-    [SerializeField] private AudioClip gunReloadSound;
     [SerializeField] private RecoilProfile shotgunRecoilProfile;
     [SerializeField] private WeaponGlowProfile shotgunGlowProfile = new WeaponGlowProfile();
 
     [Header("=== ПИСТОЛЕТ ===")]
     [SerializeField] private GunStats pistolStats;
-    [SerializeField] private AudioClip[] pistolShootSounds;
-    [SerializeField] private AudioClip pistolReloadSound;
     [SerializeField] private RecoilProfile pistolRecoilProfile;
     [SerializeField] private WeaponGlowProfile pistolGlowProfile = new WeaponGlowProfile();
 
@@ -252,6 +231,19 @@ public class WeaponHandler : MonoBehaviour
 
     private void Awake()
     {
+        // Если AudioSource назначен вручную — используем его
+        if (audioSource == null)
+        {
+            // Иначе создаем автономный источник
+            GameObject audioObj = new GameObject("WeaponAudioSourceFallback");
+            audioObj.transform.SetParent(transform);
+            audioObj.transform.localPosition = Vector3.zero;
+            
+            audioSource = audioObj.AddComponent<AudioSource>();
+            audioSource.spatialBlend = 0f; // 2D звук - его ГАРАНТИРОВАННО будет слышно независимо от дистанции камеры
+            audioSource.playOnAwake = false;
+        }
+
         m_Animator = GetComponent<Animator>();
         playerCapsule = GetComponent<CapsuleCollider>();
         playerInventory = GetComponent<PlayerInventory>();
@@ -602,34 +594,13 @@ public class WeaponHandler : MonoBehaviour
 
     private FinisherTarget CreateFinisherTarget(Collider hit)
     {
-        BossEnemy boss = hit.GetComponentInParent<BossEnemy>();
-        if (boss != null)
+        var target = new FinisherTarget
         {
-            return new FinisherTarget
-            {
-                bossEnemy = boss
-            };
-        }
-
-        AdvancedEnemyAI advanced = hit.GetComponentInParent<AdvancedEnemyAI>();
-        if (advanced != null)
-        {
-            return new FinisherTarget
-            {
-                advancedEnemy = advanced
-            };
-        }
-
-        Enemytest enemyTest = hit.GetComponentInParent<Enemytest>();
-        if (enemyTest != null)
-        {
-            return new FinisherTarget
-            {
-                enemyTest = enemyTest
-            };
-        }
-
-        return null;
+            bossEnemy = hit.GetComponentInParent<BossEnemy>(),
+            advancedEnemy = hit.GetComponentInParent<AdvancedEnemyAI>(),
+            enemyTest = hit.GetComponentInParent<Enemytest>()
+        };
+        return target.Transform != null ? target : null;
     }
 
     private bool IsPlayerInEnemyFront(Transform enemyTransform)
@@ -954,60 +925,31 @@ public class WeaponHandler : MonoBehaviour
         }
 
         Vector3 direction = GetShotDirectionFromMuzzle(Mathf.Max(0f, muzzleForwardSpread));
-
         Ray ray = new Ray(muzzlePoint.position, direction);
-        bool hitSomething = Physics.Raycast(
-            ray,
-            out RaycastHit hit,
-            maxTracerDistance,
-            Physics.DefaultRaycastLayers,
-            QueryTriggerInteraction.Ignore
-        );
-
-        // === СИСТЕМА ОГЛУШЕНИЯ ===
-        if (hitSomething && hit.collider.TryGetComponent<AdvancedEnemyAI>(out var enemy))
-        {
-            enemy.NotifyShotHitByPlayer(muzzlePoint.position);
-
-            // В стане урон/стан не проходит
-            if (enemy.IsStunned) return;
-
-            int hitsRequired = pistolHitsToStun;
-
-            if (!enemyHitCount.ContainsKey(enemy))
-                enemyHitCount[enemy] = 0;
-
-            enemyHitCount[enemy]++;
-
-            if (enemyHitCount[enemy] >= hitsRequired)
-            {
-                enemy.ApplyStun(20f); // Длительность стана — как было раньше
-                enemyHitCount[enemy] = 0; // Сбрасываем счётчик после успешного оглушения
-            }
-        }
+        bool hitSomething = Physics.Raycast(ray, out RaycastHit hit, maxTracerDistance, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore);
 
         if (hitSomething)
         {
-            TryDamageEnemytest(hit.collider, pistolDamageToEnemytest);
+            ApplyHitEffectsToTargets(
+                hit.collider.GetComponentInParent<AdvancedEnemyAI>(),
+                hit.collider.GetComponentInParent<Enemytest>(),
+                hit.collider.GetComponentInParent<BossEnemy>(),
+                pistolDamageToEnemytest,
+                pistolHitsToStun,
+                muzzlePoint.position
+            );
+
+            if (pistolHitEffect != null)
+                Destroy(Instantiate(pistolHitEffect, hit.point, Quaternion.LookRotation(hit.normal)), 2f);
         }
 
-        // Искры от попадания
-        if (pistolHitEffect != null && hitSomething)
-        {
-            var fx = Instantiate(pistolHitEffect, hit.point, Quaternion.LookRotation(hit.normal));
-            Destroy(fx, 2f);
-        }
-
-        // Трассировщик/луч
-        float distance = hitSomething ? hit.distance : maxTracerDistance;
-        CreateTracer(direction, distance);
+        CreateTracer(direction, hitSomething ? hit.distance : maxTracerDistance);
     }
 
     private void PerformShotgunShot()
     {
         Vector3 baseDir = GetShotDirectionFromMuzzle(0f);
         Vector3 origin = muzzlePoint.position;
-
         bool hitSomething = false;
         RaycastHit closestHit = default;
         float closestDistance = maxTracerDistance;
@@ -1015,20 +957,12 @@ public class WeaponHandler : MonoBehaviour
         AdvancedEnemyAI hitEnemy = null;
         Enemytest hitTestEnemy = null;
         BossEnemy hitBossEnemy = null;
-
         int pellets = Mathf.Max(1, gunPellets);
+
         for (int i = 0; i < pellets; i++)
         {
             Vector3 dir = ApplyAngularSpread(baseDir, gunPelletSpread);
-
-            if (Physics.SphereCast(
-                origin,
-                gunHitRadius,
-                dir,
-                out RaycastHit hit,
-                maxTracerDistance,
-                Physics.DefaultRaycastLayers,
-                QueryTriggerInteraction.Ignore))
+            if (Physics.SphereCast(origin, gunHitRadius, dir, out RaycastHit hit, maxTracerDistance, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
             {
                 hitSomething = true;
                 if (hit.distance < closestDistance)
@@ -1037,53 +971,36 @@ public class WeaponHandler : MonoBehaviour
                     closestHit = hit;
                 }
 
-                if (hitEnemy == null && hit.collider.TryGetComponent<AdvancedEnemyAI>(out var enemy))
-                    hitEnemy = enemy;
-
-                if (hitTestEnemy == null)
-                    hitTestEnemy = hit.collider.GetComponentInParent<Enemytest>();
-
-                if (hitBossEnemy == null)
-                    hitBossEnemy = hit.collider.GetComponentInParent<BossEnemy>();
+                hitEnemy ??= hit.collider.GetComponentInParent<AdvancedEnemyAI>();
+                hitTestEnemy ??= hit.collider.GetComponentInParent<Enemytest>();
+                hitBossEnemy ??= hit.collider.GetComponentInParent<BossEnemy>();
             }
         }
 
+        ApplyHitEffectsToTargets(hitEnemy, hitTestEnemy, hitBossEnemy, gunDamageToEnemytest, gunHitsToStun, muzzlePoint.position);
+
+        if (gunHitEffect != null && hitSomething)
+            Destroy(Instantiate(gunHitEffect, closestHit.point, Quaternion.LookRotation(closestHit.normal)), 2f);
+
+        CreateTracer(baseDir, hitSomething ? closestDistance : maxTracerDistance);
+    }
+
+    private void ApplyHitEffectsToTargets(AdvancedEnemyAI hitEnemy, Enemytest hitTestEnemy, BossEnemy hitBossEnemy, float damageAmount, int hitsToStun, Vector3 hitPosition)
+    {
         if (hitEnemy != null && !hitEnemy.IsStunned)
         {
-            hitEnemy.NotifyShotHitByPlayer(muzzlePoint.position);
+            hitEnemy.NotifyShotHitByPlayer(hitPosition);
+            enemyHitCount[hitEnemy] = enemyHitCount.GetValueOrDefault(hitEnemy) + 1;
 
-            int hitsRequired = gunHitsToStun;
-
-            if (!enemyHitCount.ContainsKey(hitEnemy))
-                enemyHitCount[hitEnemy] = 0;
-
-            enemyHitCount[hitEnemy]++;
-
-            if (enemyHitCount[hitEnemy] >= hitsRequired)
+            if (enemyHitCount[hitEnemy] >= hitsToStun)
             {
                 hitEnemy.ApplyStun(20f);
                 enemyHitCount[hitEnemy] = 0;
             }
         }
 
-        if (hitTestEnemy != null)
-        {
-            hitTestEnemy.TakeWeaponDamage(gunDamageToEnemytest);
-        }
-
-        if (hitBossEnemy != null)
-        {
-            hitBossEnemy.TakeDamage(gunDamageToEnemytest);
-        }
-
-        if (gunHitEffect != null && hitSomething)
-        {
-            var fx = Instantiate(gunHitEffect, closestHit.point, Quaternion.LookRotation(closestHit.normal));
-            Destroy(fx, 2f);
-        }
-
-        float distance = hitSomething ? closestDistance : maxTracerDistance;
-        CreateTracer(baseDir, distance);
+        hitTestEnemy?.TakeWeaponDamage(damageAmount);
+        hitBossEnemy?.TakeDamage(damageAmount);
     }
 
     private Vector3 GetShotDirectionFromMuzzle(float spreadDegrees)
@@ -1133,26 +1050,6 @@ public class WeaponHandler : MonoBehaviour
         PlayerShotFired?.Invoke(origin, loudness);
     }
 
-    private void TryDamageEnemytest(Collider hitCollider, float damageAmount)
-    {
-        if (hitCollider == null || damageAmount <= 0f)
-            return;
-
-        Enemytest testEnemy = hitCollider.GetComponentInParent<Enemytest>();
-        if (testEnemy != null)
-        {
-            testEnemy.TakeWeaponDamage(damageAmount);
-            return;
-        }
-
-        BossEnemy boss = hitCollider.GetComponentInParent<BossEnemy>();
-        if (boss != null)
-        {
-            boss.TakeDamage(damageAmount);
-            return;
-        }
-    }
-
     private void CreateTracer(Vector3 direction, float distance)
     {
         GameObject prefab = currentWeaponType == InventoryItem.ItemType.Gun ? gunTracerPrefab : pistolTracerPrefab;
@@ -1199,22 +1096,27 @@ public class WeaponHandler : MonoBehaviour
         }
     }
 
+    private void PlaySound(AudioClip clip)
+    {
+        if (audioSource != null && clip != null)
+        {
+            audioSource.PlayOneShot(clip);
+        }
+    }
+
     private void PlayShootSound()
     {
-        if (audioSource && currentShootSounds != null && currentShootSounds.Length > 0)
-            audioSource.PlayOneShot(currentShootSounds[Random.Range(0, currentShootSounds.Length)]);
+        if (currentShootSounds != null && currentShootSounds.Length > 0)
+            PlaySound(currentShootSounds[Random.Range(0, currentShootSounds.Length)]);
     }
 
     private void PlayEmptyMagSound()
     {
-        if (!audioSource || !emptyMagSound)
-            return;
-
-        if (Time.time < nextEmptyMagSoundTime)
-            return;
-
-        audioSource.PlayOneShot(emptyMagSound);
-        nextEmptyMagSoundTime = Time.time + Mathf.Max(0.05f, emptyMagSoundCooldown);
+        if (emptyMagSound != null && Time.time >= nextEmptyMagSoundTime)
+        {
+            PlaySound(emptyMagSound);
+            nextEmptyMagSoundTime = Time.time + Mathf.Max(0.05f, emptyMagSoundCooldown);
+        }
     }
 
     // ===================================================================
@@ -1414,7 +1316,7 @@ public class WeaponHandler : MonoBehaviour
             yield break;
         }
 
-        if (audioSource && currentReloadSound) audioSource.PlayOneShot(currentReloadSound);
+        PlaySound(currentReloadSound);
         StartReloadGlowTransition();
 
         yield return new WaitForSeconds(currentReloadTime);
