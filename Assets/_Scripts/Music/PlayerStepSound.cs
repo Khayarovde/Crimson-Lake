@@ -23,6 +23,8 @@ public class PlayerStepSound : MonoBehaviour
     [Header("Surface Cache")]
     public float surfaceCacheInterval = 0.3f;
     private AudioSource audioSource;
+    private AudioSource stepAudioSource;
+    private bool stepAudioSourceInitialized;
     private Rigidbody rb;
 
     [Header("Movement Gate")]
@@ -39,11 +41,14 @@ public class PlayerStepSound : MonoBehaviour
     private SurfaceStepSounds cachedSurfaceSettings;
 
 
+    private void Awake()
+    {
+        EnsureStepAudioSource();
+    }
+
     private void Start()
     {
-        audioSource = GetComponent<AudioSource>();
-        if (audioSource == null)
-            audioSource = GetComponentInChildren<AudioSource>();
+        EnsureStepAudioSource();
 
         rb = GetComponent<Rigidbody>();
         if (rb == null)
@@ -52,7 +57,7 @@ public class PlayerStepSound : MonoBehaviour
         lastPosition = transform.position;
 
         if (audioSource == null)
-            Debug.LogWarning("PlayerStepSound: AudioSource не найден на объекте/детях.", this);
+            Debug.LogWarning("PlayerStepSound: основной AudioSource не найден, 3D-настройки шагов будут по умолчанию.", this);
 
         if (rb == null && requireMovement)
             Debug.LogWarning("PlayerStepSound: Rigidbody не найден на объекте/родителях. Будет использоваться оценка движения по смещению Transform и Input fallback.", this);
@@ -73,6 +78,8 @@ public class PlayerStepSound : MonoBehaviour
 
     public void Step_sound_play()
     {
+        EnsureStepAudioSource();
+
         if (logStepEvents)
             Debug.Log("PlayerStepSound: Step_sound_play вызван", this);
 
@@ -86,12 +93,12 @@ public class PlayerStepSound : MonoBehaviour
         SurfaceStepSounds surfaceSettings;
         AudioClip[] clipsToPlay = GetSurfaceClips(out surfaceSettings);
 
-        if (clipsToPlay.Length > 0 && audioSource != null)
+        if (clipsToPlay.Length > 0 && stepAudioSource != null)
         {
             AudioClip clip = clipsToPlay[Random.Range(0, clipsToPlay.Length)];
-            audioSource.pitch = Random.Range(surfaceSettings.minPitch, surfaceSettings.maxPitch);
-            audioSource.volume = surfaceSettings.baseVolume;
-            audioSource.PlayOneShot(clip);
+            stepAudioSource.pitch = Random.Range(surfaceSettings.minPitch, surfaceSettings.maxPitch);
+            stepAudioSource.volume = 1f;
+            stepAudioSource.PlayOneShot(clip, surfaceSettings.baseVolume);
 
             // Debug.Log("Событие шага сработало"); // Для отладки: смотрите в консоль Unity
             // print("Звук шага"); // Ваш оригинальный print
@@ -160,5 +167,32 @@ public class PlayerStepSound : MonoBehaviour
         }
 
         return EmptyClips;
+    }
+
+    private void EnsureStepAudioSource()
+    {
+        if (stepAudioSourceInitialized)
+            return;
+
+        if (audioSource == null)
+        {
+            audioSource = GetComponent<AudioSource>();
+            if (audioSource == null)
+                audioSource = GetComponentInChildren<AudioSource>();
+        }
+
+        GameObject stepSourceObj = new GameObject("StepAudioSource");
+        stepSourceObj.transform.SetParent(transform, false);
+        stepAudioSource = stepSourceObj.AddComponent<AudioSource>();
+        stepAudioSource.spatialBlend = audioSource != null ? audioSource.spatialBlend : 1f;
+        stepAudioSource.outputAudioMixerGroup = audioSource != null ? audioSource.outputAudioMixerGroup : null;
+        stepAudioSource.rolloffMode = audioSource != null ? audioSource.rolloffMode : AudioRolloffMode.Logarithmic;
+        stepAudioSource.minDistance = audioSource != null ? audioSource.minDistance : 1f;
+        stepAudioSource.maxDistance = audioSource != null ? audioSource.maxDistance : 20f;
+        stepAudioSource.playOnAwake = false;
+        stepAudioSource.loop = false;
+        stepAudioSource.volume = 1f;
+
+        stepAudioSourceInitialized = true;
     }
 }

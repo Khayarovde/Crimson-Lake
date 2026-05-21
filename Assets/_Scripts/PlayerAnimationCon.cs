@@ -8,6 +8,8 @@ public class PlayerAnimationCon : MonoBehaviour
     private static readonly int IsWalkingParam = Animator.StringToHash("IsWalking");
     private static readonly int IsRunningParam = Animator.StringToHash("IsRunning");
     private static readonly int IsAimingParam = Animator.StringToHash("IsAiming");
+    private static readonly int IsPholdParam = Animator.StringToHash("IsPhold");
+    private static readonly int IsSholdParam = Animator.StringToHash("IsShold");
     private static readonly int HParam = Animator.StringToHash("H");
     private static readonly int VParam = Animator.StringToHash("V");
 
@@ -16,6 +18,7 @@ public class PlayerAnimationCon : MonoBehaviour
     private WeaponHandler weaponHandler;
     private PlayerInventory playerInventory;
     private bool wasAiming;
+    private InventoryItem.ItemType lastWeaponType = InventoryItem.ItemType.Empty;
     [SerializeField, Min(0f)] private float hitReturnDelay = 0.25f;
     private Coroutine hitReturnRoutine;
 
@@ -39,15 +42,64 @@ public class PlayerAnimationCon : MonoBehaviour
         anim.SetFloat(HParam, speed > 0.01f ? localVelocity.x / speed : 0f, 0.1f, Time.deltaTime);
         anim.SetFloat(VParam, speed > 0.01f ? localVelocity.z / speed : 0f, 0.1f, Time.deltaTime);
 
+        // ── Ruka: параметры удержания оружия ───────────────────────
+        bool isPistol = false;
+        bool isShotgun = false;
+        InventoryItem.ItemType currentWeapon = InventoryItem.ItemType.Empty;
+
+        if (playerInventory != null && playerInventory.inventoryData != null)
+        {
+            int idx = playerInventory.activeItemIndex;
+            if (idx >= 0 && idx < playerInventory.inventoryData.GetSlotCount())
+            {
+                var item = playerInventory.inventoryData.GetItemAt(idx);
+                if (item != null)
+                {
+                    currentWeapon = item.type;
+                    if (item.type == InventoryItem.ItemType.Pistol) isPistol = true;
+                    else if (item.type == InventoryItem.ItemType.Gun) isShotgun = true;
+                }
+            }
+        }
+
+        anim.SetBool(IsPholdParam, isPistol);
+        anim.SetBool(IsSholdParam, isShotgun);
+
         // ── Ruka: прицеливание (читаем из WeaponHandler) ───────────
         bool aiming = weaponHandler != null ? weaponHandler.IsAiming : controller.IsAiming;
         anim.SetBool(IsAimingParam, aiming);
 
-        if (aiming && !wasAiming)
+        // Резкое переключение анимации при смене оружия
+        if (currentWeapon != lastWeaponType)
+        {
+            if (!aiming)
+            {
+                if (isPistol)
+                    Play("PistolHolding", LayerRuka);
+                else if (isShotgun)
+                    Play("ShotgunHolding", LayerRuka);
+                else
+                    Play("New State", LayerRuka);
+            }
+            else
+            {
+                UpdateAimingLayer();
+            }
+            lastWeaponType = currentWeapon;
+        }
+
+        if (aiming && !wasAiming && currentWeapon == lastWeaponType)
             UpdateAimingLayer();
 
         if (!aiming && wasAiming)
-            Play("New State", LayerRuka);
+        {
+            if (!isPistol && !isShotgun)
+                Play("New State", LayerRuka);
+            else if (isPistol)
+                Play("PistolHolding", LayerRuka);
+            else if (isShotgun)
+                Play("ShotgunHolding", LayerRuka);
+        }
 
         wasAiming = aiming;
     }
@@ -121,7 +173,14 @@ public class PlayerAnimationCon : MonoBehaviour
     {
         if (hitReturnDelay > 0f)
             yield return new WaitForSeconds(hitReturnDelay);
-        Play("New State", LayerRuka);
+        
+        bool isPistol = anim.GetBool(IsPholdParam);
+        bool isShotgun = anim.GetBool(IsSholdParam);
+
+        if (!isPistol && !isShotgun)
+            Play("New State", LayerRuka);
+        // Если оружие выбрано, аниматор должен сам уйти из "hit" в нужный state через Any State + IsPhold/IsShold
+
         hitReturnRoutine = null;
     }
 
