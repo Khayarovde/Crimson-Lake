@@ -652,7 +652,7 @@ GameObject:
   - component: {fileID: 9217266326506041846}
   m_Layer: 0
   m_Name: prohodOsnovaLeft
-  m_TagString: Untagged
+  m_TagString: SafeRoom
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -686,7 +686,7 @@ GameObject:
   - component: {fileID: 2263781589649902903}
   m_Layer: 0
   m_Name: Cube
-  m_TagString: Untagged
+  m_TagString: SafeRoom
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -902,7 +902,7 @@ GameObject:
   - component: {fileID: 4146277421420663588}
   m_Layer: 15
   m_Name: Plane (11)
-  m_TagString: osnovaRoom
+  m_TagString: SafeRoom
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1033,6 +1033,7 @@ Transform:
   - {fileID: 7280214307312918024}
   - {fileID: 5227322560510564157}
   - {fileID: 2700647673702233970}
+  - {fileID: 5746214804820638976}
   - {fileID: 1999376584172047118}
   - {fileID: 5207718047925536526}
   - {fileID: 971340141821707360}
@@ -1067,6 +1068,59 @@ Transform:
   - {fileID: 1263369007034085612}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &3626974815273834838
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5746214804820638976}
+  - component: {fileID: 753424364340919942}
+  m_Layer: 15
+  m_Name: ---kletkaCamera
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5746214804820638976
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3626974815273834838}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -0.9000017, y: 0, z: 1.32}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1917085988310698854}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &753424364340919942
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3626974815273834838}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1.5, y: 7.44, z: 2.1}
+  m_Center: {x: 0, y: 2, z: 0}
 --- !u!1 &3830122854379018999
 GameObject:
   m_ObjectHideFlags: 0
@@ -1468,7 +1522,7 @@ GameObject:
   - component: {fileID: 33831896192195491}
   m_Layer: 0
   m_Name: prohodOsnovaLeft
-  m_TagString: Untagged
+  m_TagString: SafeRoom
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -2376,7 +2430,7 @@ GameObject:
   - component: {fileID: 5577946210157921733}
   m_Layer: 0
   m_Name: Cube
-  m_TagString: Untagged
+  m_TagString: SafeRoom
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -2767,7 +2821,7 @@ GameObject:
   - component: {fileID: 875569362931177550}
   m_Layer: 15
   m_Name: Plane (12)
-  m_TagString: osnovaRoom
+  m_TagString: SafeRoom
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -3448,11 +3502,23 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 322077462370134789, guid: f6008182cadd0874c9cfcbfb0049505b, type: 3}
       propertyPath: m_Size.x
-      value: 0.69
+      value: 0.35
+      objectReference: {fileID: 0}
+    - target: {fileID: 322077462370134789, guid: f6008182cadd0874c9cfcbfb0049505b, type: 3}
+      propertyPath: m_Size.y
+      value: 0.3
       objectReference: {fileID: 0}
     - target: {fileID: 322077462370134789, guid: f6008182cadd0874c9cfcbfb0049505b, type: 3}
       propertyPath: m_Size.z
-      value: 1.3
+      value: 0.35
+      objectReference: {fileID: 0}
+    - target: {fileID: 322077462370134789, guid: f6008182cadd0874c9cfcbfb0049505b, type: 3}
+      propertyPath: m_Center.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 322077462370134789, guid: f6008182cadd0874c9cfcbfb0049505b, type: 3}
+      propertyPath: m_Center.z
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 322077462370134789, guid: f6008182cadd0874c9cfcbfb0049505b, type: 3}
       propertyPath: m_IsTrigger
@@ -3531,6 +3597,9 @@ PrefabInstance:
       addedObject: {fileID: 3178598805015493222}
     - targetCorrespondingSourceObject: {fileID: 5678005075880140256, guid: f6008182cadd0874c9cfcbfb0049505b, type: 3}
       insertIndex: -1
+      addedObject: {fileID: 797513886334221944}
+    - targetCorrespondingSourceObject: {fileID: 5678005075880140256, guid: f6008182cadd0874c9cfcbfb0049505b, type: 3}
+      insertIndex: -1
       addedObject: {fileID: 2151920033086141906}
   m_SourcePrefab: {fileID: 100100000, guid: f6008182cadd0874c9cfcbfb0049505b, type: 3}
 --- !u!1 &5922823764018524464 stripped
@@ -3557,6 +3626,28 @@ MonoBehaviour:
   interactionText: 
   showPromptOnApproach: 1
   interactKey: 101
+--- !u!114 &797513886334221944
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5922823764018524464}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9c3e3e00e040c754faae7d3c4790c744, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  hintImage: {fileID: 0}
+  playerTag: Player
+  fadeDuration: 0.25
+  usePulse: 1
+  pulseScale: 0.88
+  pressTime: 0.15
+  releaseTime: 0.25
+  pauseBetween: 0.7
+  pressEase: 2
+  releaseEase: 24
 --- !u!114 &2151920033086141906
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3778,8 +3869,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 2.32, y: 1.92, z: 1.2744111}
-  m_Center: {x: 0.83, y: 0.29986447, z: 0.63720685}
+  m_Size: {x: 1, y: 1.92, z: 1}
+  m_Center: {x: 0, y: 0, z: 0.83}
 --- !u!1001 &3991642008364359120
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4203,13 +4294,29 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1917085988310698854}
     m_Modifications:
+    - target: {fileID: 100000, guid: 1b74ff2139ba6ea47803d0c80ee0702a, type: 3}
+      propertyPath: m_TagString
+      value: SafeRoom
+      objectReference: {fileID: 0}
+    - target: {fileID: 100002, guid: 1b74ff2139ba6ea47803d0c80ee0702a, type: 3}
+      propertyPath: m_TagString
+      value: SafeRoom
+      objectReference: {fileID: 0}
     - target: {fileID: 100004, guid: 1b74ff2139ba6ea47803d0c80ee0702a, type: 3}
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 100004, guid: 1b74ff2139ba6ea47803d0c80ee0702a, type: 3}
+      propertyPath: m_TagString
+      value: SafeRoom
+      objectReference: {fileID: 0}
     - target: {fileID: 100006, guid: 1b74ff2139ba6ea47803d0c80ee0702a, type: 3}
       propertyPath: m_Name
       value: SafeRoomDoor_Down
+      objectReference: {fileID: 0}
+    - target: {fileID: 100006, guid: 1b74ff2139ba6ea47803d0c80ee0702a, type: 3}
+      propertyPath: m_TagString
+      value: SafeRoom
       objectReference: {fileID: 0}
     - target: {fileID: 400002, guid: 1b74ff2139ba6ea47803d0c80ee0702a, type: 3}
       propertyPath: m_LocalPosition.y
@@ -4751,13 +4858,29 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1917085988310698854}
     m_Modifications:
+    - target: {fileID: 100000, guid: 1b74ff2139ba6ea47803d0c80ee0702a, type: 3}
+      propertyPath: m_TagString
+      value: SafeRoom
+      objectReference: {fileID: 0}
+    - target: {fileID: 100002, guid: 1b74ff2139ba6ea47803d0c80ee0702a, type: 3}
+      propertyPath: m_TagString
+      value: SafeRoom
+      objectReference: {fileID: 0}
     - target: {fileID: 100004, guid: 1b74ff2139ba6ea47803d0c80ee0702a, type: 3}
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 100004, guid: 1b74ff2139ba6ea47803d0c80ee0702a, type: 3}
+      propertyPath: m_TagString
+      value: SafeRoom
+      objectReference: {fileID: 0}
     - target: {fileID: 100006, guid: 1b74ff2139ba6ea47803d0c80ee0702a, type: 3}
       propertyPath: m_Name
       value: SafeRoomDoor_Up
+      objectReference: {fileID: 0}
+    - target: {fileID: 100006, guid: 1b74ff2139ba6ea47803d0c80ee0702a, type: 3}
+      propertyPath: m_TagString
+      value: SafeRoom
       objectReference: {fileID: 0}
     - target: {fileID: 400002, guid: 1b74ff2139ba6ea47803d0c80ee0702a, type: 3}
       propertyPath: m_LocalPosition.y

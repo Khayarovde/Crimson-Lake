@@ -4795,6 +4795,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 450292822744165481, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
+      propertyPath: m_PlayOnAwake
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 636205799131586819, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
       propertyPath: m_Avatar
       value: 
@@ -4830,7 +4834,7 @@ PrefabInstance:
     - target: {fileID: 1988559161486194445, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
       propertyPath: audioSource
       value: 
-      objectReference: {fileID: 46208908161000009}
+      objectReference: {fileID: 7846983316453671933}
     - target: {fileID: 1988559161486194445, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
       propertyPath: pistolStats
       value: 
@@ -5561,7 +5565,7 @@ PrefabInstance:
       addedObject: {fileID: 7932342954922118391}
     - targetCorrespondingSourceObject: {fileID: 2308958626575937540, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 46208908161000009}
+      addedObject: {fileID: 7846983316453671933}
   m_SourcePrefab: {fileID: 100100000, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
 --- !u!4 &529655978617831101 stripped
 Transform:
@@ -5592,7 +5596,7 @@ SphereCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Radius: 1
+  m_Radius: 0.85
   m_Center: {x: 0, y: 0.8, z: 0.3}
 --- !u!114 &9088604346388668586
 MonoBehaviour:
@@ -5704,7 +5708,7 @@ MonoBehaviour:
   noTargetMessage: "\u0423 \u0442\u043E\u0447\u043A\u0438 \u043D\u0435\u0442 \u0446\u0435\u043B\u0438"
   teleportFailedMessage: "\u0422\u0435\u043B\u0435\u043F\u043E\u0440\u0442 \u043D\u0435
     \u0443\u0434\u0430\u043B\u0441\u044F"
---- !u!82 &46208908161000009
+--- !u!82 &7846983316453671933
 AudioSource:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -5716,7 +5720,7 @@ AudioSource:
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 0}
-  m_PlayOnAwake: 0
+  m_PlayOnAwake: 1
   m_Volume: 1
   m_Pitch: 1
   Loop: 0
