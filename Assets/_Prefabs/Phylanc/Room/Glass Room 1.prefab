@@ -138,6 +138,7 @@ Transform:
   m_LocalScale: {x: 0.5, y: 2, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 3591954602111100590}
   - {fileID: 2585194977589677351}
   - {fileID: 4249043601763130862}
   - {fileID: 7636895576523403645}
@@ -873,6 +874,59 @@ MonoBehaviour:
   m_LightCookieSize: {x: 1, y: 1}
   m_LightCookieOffset: {x: 0, y: 0}
   m_SoftShadowQuality: 0
+--- !u!1 &3189708868011712977
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3591954602111100590}
+  - component: {fileID: 8078148096067400159}
+  m_Layer: 14
+  m_Name: --KletkaCameraGlass
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3591954602111100590
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3189708868011712977}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -2.8421706e-14, z: -0.70710677, w: 0.7071068}
+  m_LocalPosition: {x: -4.62, y: 18.81, z: -0.37}
+  m_LocalScale: {x: 0.49999997, y: 2, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1689827216515662059}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &8078148096067400159
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3189708868011712977}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 8, y: 5, z: 2}
+  m_Center: {x: 0, y: 2, z: 0}
 --- !u!1 &3610599902175338191
 GameObject:
   m_ObjectHideFlags: 0
@@ -1142,7 +1196,7 @@ GameObject:
   - component: {fileID: 3363261045064274767}
   m_Layer: 14
   m_Name: Plane (5)
-  m_TagString: osnovaRoom
+  m_TagString: GlassRoom
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 1
@@ -1600,6 +1654,7 @@ GameObject:
   - component: {fileID: 5820179050499936735}
   - component: {fileID: 48286518105292189}
   - component: {fileID: 6401802132734000746}
+  - component: {fileID: 8952713060369395361}
   m_Layer: 15
   m_Name: AmmoPistolGlassRoom
   m_TagString: Untagged
@@ -1617,7 +1672,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0.00000033978395, y: -0.00000039541024, z: 0.7071066, w: -0.707107}
   m_LocalPosition: {x: 0.00005514318, y: 24.351997, z: -1.079987}
-  m_LocalScale: {x: 0.5, y: 2, z: 1}
+  m_LocalScale: {x: 0.5, y: 0.66534, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1689827216515662059}
@@ -1754,7 +1809,29 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   outlineColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
-  outlineWidth: 2
+  outlineWidth: 15
+--- !u!114 &8952713060369395361
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5606972581481065650}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9c3e3e00e040c754faae7d3c4790c744, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  hintImage: {fileID: 0}
+  playerTag: Player
+  fadeDuration: 0.3
+  usePulse: 1
+  pulseScale: 0.88
+  pressTime: 0.15
+  releaseTime: 0.25
+  pauseBetween: 0.7
+  pressEase: 2
+  releaseEase: 24
 --- !u!1 &6072411749358143635
 GameObject:
   m_ObjectHideFlags: 0
@@ -1909,7 +1986,7 @@ GameObject:
   - component: {fileID: 1981477994782411662}
   m_Layer: 14
   m_Name: Plane (8)
-  m_TagString: osnovaRoom
+  m_TagString: GlassRoom
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 1
@@ -2192,7 +2269,7 @@ GameObject:
   - component: {fileID: 5181377039191554801}
   m_Layer: 14
   m_Name: Plane (4)
-  m_TagString: osnovaRoom
+  m_TagString: GlassRoom
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 1
