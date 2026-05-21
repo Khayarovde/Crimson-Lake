@@ -240,7 +240,7 @@ public class WeaponHandler : MonoBehaviour
             audioObj.transform.localPosition = Vector3.zero;
             
             audioSource = audioObj.AddComponent<AudioSource>();
-            audioSource.spatialBlend = 0f; // 2D звук - его ГАРАНТИРОВАННО будет слышно независимо от дистанции камеры
+            audioSource.spatialBlend = 0f; 
             audioSource.playOnAwake = false;
         }
 
