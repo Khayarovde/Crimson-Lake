@@ -1148,6 +1148,7 @@ Transform:
   - {fileID: 8322037078562962088}
   - {fileID: 1414728826681447621}
   - {fileID: 7051785673774503674}
+  - {fileID: 6861394383165899301}
   - {fileID: 4511705157925781429}
   - {fileID: 7351221300177607492}
   - {fileID: 1453957935296400075}
@@ -2117,6 +2118,59 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 10209, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &2018428825937104294
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6861394383165899301}
+  - component: {fileID: 1426962750770996781}
+  m_Layer: 14
+  m_Name: ----KletkaCameraEnd
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6861394383165899301
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2018428825937104294}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -5.619995, y: 0, z: 0}
+  m_LocalScale: {x: 1.34745, y: 1, z: 3.134}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 6101762269548646959}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &1426962750770996781
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2018428825937104294}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 14, y: 10, z: 5.2}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &2037349936042525470
 GameObject:
   m_ObjectHideFlags: 0
@@ -3707,7 +3761,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1089692825380449616
 Transform:
   m_ObjectHideFlags: 0
