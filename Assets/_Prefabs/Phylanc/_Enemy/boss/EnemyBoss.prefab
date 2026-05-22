@@ -3323,6 +3323,82 @@ Transform:
   - {fileID: 1256364696325154723}
   m_Father: {fileID: 8817443622816208648}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1220915275745931056
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4207577226356084420}
+  - component: {fileID: 5325680030128860519}
+  - component: {fileID: 6290913403104274475}
+  m_Layer: 12
+  m_Name: ---TheEndTriggerFinish
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4207577226356084420
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1220915275745931056}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: 0.76969355, z: -0, w: -0.6384136}
+  m_LocalPosition: {x: 0.01, y: 1.8682556, z: -0.27}
+  m_LocalScale: {x: 0.13923097, y: 3.224023, z: 0.61054087}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1493284104649094233}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &5325680030128860519
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1220915275745931056}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 16.12, y: 2, z: 5.87}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &6290913403104274475
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1220915275745931056}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6761fc835c75bf148ad3d201d4d9ec99, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  nextSceneName: Menu
+  playerTag: Player
+  triggerZone: {fileID: 5325680030128860519}
+  bossDeathImageRoot: {fileID: 0}
+  introVideo: {fileID: 0}
+  videoRoot: {fileID: 0}
+  blackScreenRoot: {fileID: 0}
+  canvasesToDisable:
+  - {fileID: 0}
+  pauseGameWhilePlaying: 1
 --- !u!1 &1233489576509553208
 GameObject:
   m_ObjectHideFlags: 0
@@ -16618,10 +16694,10 @@ GameObject:
   - component: {fileID: 5333811635369025033}
   - component: {fileID: 738176507764042939}
   - component: {fileID: 592380497844059572}
-  - component: {fileID: 7467341393547579028}
   - component: {fileID: 5114662874806635327}
   - component: {fileID: 6588023724172125371}
-  - component: {fileID: 737760965373348987}
+  - component: {fileID: 6719276859981017924}
+  - component: {fileID: 6066955128932137280}
   m_Layer: 9
   m_Name: EnemyBoss
   m_TagString: MeleePush
@@ -16643,6 +16719,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 2823425004510317343}
+  - {fileID: 4207577226356084420}
   - {fileID: 5555382215156792836}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 325.653, z: 0}
@@ -16810,27 +16887,6 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
---- !u!114 &7467341393547579028
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5709727445875696020}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fabdbbe06d140ab4f85c7ae1b36a46eb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  manager: {fileID: 0}
-  player: {fileID: 0}
-  enemy: {fileID: 1493284104649094233}
-  requireFinishableEnemy: 1
-  ignoreFrontSideCheckForEventStart: 1
-  autoFindEnemyRadius: 3.5
-  enemyLayerMask:
-    serializedVersion: 2
-    m_Bits: 512
 --- !u!114 &5114662874806635327
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16844,13 +16900,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   phase2HealthThreshold: 0.5
-  maxHealth: 100
+  maxHealth: 328
   health: 0
   canBeFinished: 1
   autoFinishableOnLowHealth: 1
   finishableHealthPercent: 0.2
-  requirePhase2ForFinisher: 1
-  stunDamageThreshold: 60
+  requirePhase2ForFinisher: 0
+  armorBreakThreshold: 90
+  armorRegenDelay: 8
   getDownDuration: 0.7
   tryaskaDuration: 5
   wakeUpDuration: 0.8
@@ -16875,13 +16932,42 @@ MonoBehaviour:
   closeAttackDistance: 1.6
   closeAttackDamage: 15
   closeAttackCooldown: 1.1
+  enableReverseRam: 1
+  reverseRamTurnDuration: 0.2
+  reverseRamDurationScale: 0.75
+  reverseRamSpeedScale: 0.95
+  closeHitForwardOffset: 0.8
+  closeHitUpOffset: 0.8
+  closeHitDelay: 0.1
+  closeHitWindow: 0.25
+  ramHitForwardOffset: 0.9
+  ramHitUpOffset: 0.8
+  playerHitUpOffset: 0.9
+  sharkCooldown: 6
+  sharkSpinDuration: 0.5
+  sharkRadius: 2.2
+  sharkDamage: 18
+  sharkTriggerDistance: 3
+  sharkBehindAngle: 120
+  sharkHitMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  feintChance: 0.35
+  feintMinTime: 0.12
+  feintMaxTime: 0.28
+  feintSidestepDistance: 1.1
+  feintSidestepDuration: 0.18
   slowOnHitChance: 0.55
   slowSpeedMultiplier: 0.4
   slowDuration: 0.5
   leskaPrefab: {fileID: -747546280736710164, guid: 5e349ebf7ee2fd4428399efd9bed4e1a, type: 3}
   leskaDamage: 20
   leskaLifetime: 3.5
-  leskaSpawnOffset: 1.5
+  leskaSpawnOffsetFront: {x: 0, y: 1, z: 1.5}
+  leskaSpawnOffsetBack: {x: 0, y: 1, z: -1.5}
+  leskaRingCount: 8
+  leskaRingRadius: 2.2
+  leskaSpawnStepDelay: 0.08
   leskaCooldown: 5
   leskaSpawnAnimDuration: 0.9
   navAcceleration: 8
@@ -16908,6 +16994,12 @@ MonoBehaviour:
   audioSource: {fileID: 592380497844059572}
   ramRoarClip: {fileID: 8300000, guid: f0f2d5b9139331648b5fa08248d397c4, type: 3}
   leskaSpawnClip: {fileID: 8300000, guid: df9cae808ab4ebb4a9b09a34957c7648, type: 3}
+  armorBreakClip: {fileID: 8300000, guid: f01434a462f6b264f9112fbcf4c72670, type: 3}
+  damageClip: {fileID: 8300000, guid: 3281c7bd57f1e7746a34e11c0feaceb5, type: 3}
+  deathClip: {fileID: 8300000, guid: 1d22083046b06c5408baef1d714ad0a8, type: 3}
+  sceneTransitionTriggerObject: {fileID: 1220915275745931056}
+  showGizmos: 0
+  showGizmoLabels: 0
 --- !u!65 &6588023724172125371
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -16927,9 +17019,9 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 0
   serializedVersion: 3
-  m_Size: {x: 2, y: 2.18, z: 2}
+  m_Size: {x: 3, y: 2.18, z: 3}
   m_Center: {x: 0, y: 1.01, z: 0}
---- !u!114 &737760965373348987
+--- !u!114 &6719276859981017924
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -16938,17 +17030,67 @@ MonoBehaviour:
   m_GameObject: {fileID: 5709727445875696020}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8a2459463fbf89246b07e0339f87c3a3, type: 3}
+  m_Script: {fileID: 11500000, guid: e52de21a22b6dd44c9cc19f810c65059, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  imageCanvas: {fileID: 0}
-  playerTag: Player
-  clickScaleMultiplier: 1.12
-  clickDuration: 0.28
-  clickEase: 4
-  stunStateName: Stun
-  requireFrontAngleForHint: 1
-  finisherFrontMaxAngle: 85
+  m_Events:
+    m_Signals:
+    - {fileID: 11400000, guid: fc78191ada92233429cc2abed0683bd6, type: 2}
+    m_Events:
+    - m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 0}
+          m_TargetAssemblyTypeName: CustEnemy, Assembly-CSharp
+          m_MethodName: SpawnBoss
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+--- !u!114 &6066955128932137280
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5709727445875696020}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbeca0dc962251743b01b3f3f74d4d92, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  surfaceClips:
+  - surfaceTag: TheEndRoom
+    clips:
+    - {fileID: 8300000, guid: 6cffc95e58e574b429f3db7dced57126, type: 3}
+    - {fileID: 8300000, guid: 6b397ffd13a1fea43b2233a0b887f69b, type: 3}
+    - {fileID: 8300000, guid: 805082d428a46944b9bf0fc63bcfa16d, type: 3}
+    - {fileID: 8300000, guid: 950a5d5a82c53434fb5487a671df2b3f, type: 3}
+    baseVolume: 1
+    minPitch: 0.3
+    maxPitch: 0.5
+  - surfaceTag: TheEndRoomWater
+    clips:
+    - {fileID: 8300000, guid: ae210fb23079a1f47bba6f41c9a7b4a6, type: 3}
+    - {fileID: 8300000, guid: 672cc3ddfe6cdef479cae6871330f624, type: 3}
+    - {fileID: 8300000, guid: dc9cb715cf062e3498770514f0a4cc27, type: 3}
+    - {fileID: 8300000, guid: e8bcbaaf7798a2b41bdaa4f1bfd32d9e, type: 3}
+    baseVolume: 1
+    minPitch: 0.4
+    maxPitch: 0.5
+  surfaceMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  surfaceCheckDistance: 1.5
+  surfaceCheckStartOffset: 0.2
+  surfaceCacheInterval: 0.3
+  requireMovement: 1
+  moveSpeedThreshold: 0.05
+  enableDebug: 0
 --- !u!1 &5723552458075381322
 GameObject:
   m_ObjectHideFlags: 0

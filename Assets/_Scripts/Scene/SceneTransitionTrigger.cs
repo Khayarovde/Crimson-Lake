@@ -14,6 +14,10 @@ public class SceneTransitionTrigger : MonoBehaviour
     [SerializeField] private string playerTag = "Player";
     [SerializeField] private Collider triggerZone;
 
+    [Header("Image после смерти босса")]
+    [Tooltip("Image/Panel, который показывается только когда босс мёртв и игрок внутри триггера")]
+    [SerializeField] private GameObject bossDeathImageRoot;
+
     [Header("Видео перед переходом")]
     [Tooltip("VideoPlayer для проигрывания ролика перед переходом")]
     public VideoPlayer introVideo;
@@ -33,6 +37,8 @@ public class SceneTransitionTrigger : MonoBehaviour
     public bool pauseGameWhilePlaying = true;
 
     private bool triggered = false; // Чтобы срабатывало только раз
+    private bool bossDefeated;
+    private bool playerInsideTrigger;
     private float previousTimeScale = 1f;
     private bool videoEnded;
     private AsyncOperation loadOperation;
@@ -45,6 +51,9 @@ public class SceneTransitionTrigger : MonoBehaviour
         if (videoRoot != null)
             videoRoot.SetActive(false);
 
+        if (bossDeathImageRoot != null)
+            bossDeathImageRoot.SetActive(false);
+
         if (introVideo != null)
         {
             introVideo.playOnAwake = false;
@@ -54,13 +63,52 @@ public class SceneTransitionTrigger : MonoBehaviour
         if (blackScreenRoot != null)
             blackScreenRoot.SetActive(false);
 
+        RefreshBossDeathImageVisibility();
+    }
+
+    public void SetBossDefeated(bool value)
+    {
+        bossDefeated = value;
+        RefreshBossDeathImageVisibility();
     }
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag(playerTag) && !triggered && !string.IsNullOrEmpty(nextSceneName))
+        if (other.CompareTag(playerTag))
+        {
+            playerInsideTrigger = true;
+            RefreshBossDeathImageVisibility();
+        }
+    }
+
+    private void OnTriggerStay(Collider other)
+    {
+        if (other.CompareTag(playerTag))
+        {
+            playerInsideTrigger = true;
+            RefreshBossDeathImageVisibility();
+        }
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.CompareTag(playerTag))
+        {
+            playerInsideTrigger = false;
+            RefreshBossDeathImageVisibility();
+        }
+    }
+
+    private void Update()
+    {
+        if (triggered || !bossDefeated || !playerInsideTrigger || string.IsNullOrEmpty(nextSceneName))
+            return;
+
+        if (Input.GetMouseButtonDown(0))
         {
             triggered = true;
+            playerInsideTrigger = false;
+
             if (triggerZone != null)
                 triggerZone.enabled = false;
 
@@ -184,9 +232,16 @@ public class SceneTransitionTrigger : MonoBehaviour
 
         SetCanvasesActive(true);
 
-        SetCanvasesActive(true);
-
         Destroy(gameObject);
+    }
+
+    private void RefreshBossDeathImageVisibility()
+    {
+        if (bossDeathImageRoot == null)
+            return;
+
+        bool shouldShow = bossDefeated && playerInsideTrigger && !triggered;
+        bossDeathImageRoot.SetActive(shouldShow);
     }
 
     private void SetCanvasesActive(bool active)

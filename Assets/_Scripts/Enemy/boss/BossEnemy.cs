@@ -15,10 +15,11 @@ using UnityEngine.AI;
 ///   — Добавляется способность СПАВНИТЬ ЛЕСКИ: перед собой и за собой.
 ///   — При получении урона: с вероятностью slowOnHitChance — теряет скорость.
 ///
-/// Получение урона:
-///   — Урон копится, но основное HP уменьшается только после серии:
-///     GetDown -> Tryaska(1/2) -> (HP-).
-///   — Если HP остаётся, босс делает wakeUp_stun и возвращается к walking.
+/// Получение урона (броня + окно уязвимости):
+///   — В броне урон не проходит в HP, а копится в счётчик пробития.
+///   — При пробитии: GetDown -> Tryaska(1/2) (окно урона) -> wakeUp_stun.
+///   — HP уменьшается только во время Tryaska.
+///   — После wakeUp броня восстанавливается через задержку.
 ///   — Если HP <= 0, переходит в death_end.
 /// </summary>
 [RequireComponent(typeof(NavMeshAgent))]
@@ -45,11 +46,13 @@ public class BossEnemy : MonoBehaviour
     [SerializeField, Range(0f, 1f)] private float finishableHealthPercent = 0.2f;
     [SerializeField] private bool requirePhase2ForFinisher = true;
 
-    // ─── Стан/ломаемая полоска ───────────────────────────────────────────────
+    // ─── Броня / окно уязвимости ────────────────────────────────────────────
 
-    [Header("Stun / Break Sequence")]
-    [Tooltip("Суммарный урон, после которого запускается GetDown -> Tryaska.")]
-    public float stunDamageThreshold = 60f;
+    [Header("Armor / Vulnerability")]
+    [Tooltip("Суммарный урон по броне, после которого она ломается.")]
+    public float armorBreakThreshold = 90f;
+    [Tooltip("Задержка восстановления брони после wakeUp (сек).")]
+    public float armorRegenDelay = 8f;
     [Tooltip("Длительность анимации GetDown (сек).")]
     public float getDownDuration = 0.7f;
     [Tooltip("Длительность анимации Tryaska1/Tryaska2 (сек).")]
@@ -100,6 +103,20 @@ public class BossEnemy : MonoBehaviour
     [Tooltip("Множитель времени прицеливания для второго рывка двойного тарана.")]
     public float doubleRamSecondAimScale = 0.6f;
 
+    [Header("Adaptive Ram (Anti-Dodge)")]
+    public bool enableAdaptiveRam = true;
+    [Tooltip("Минимальный порог подряд удачных уклонений, после которого таран ускоряется.")]
+    [Range(1, 10)] public int adaptiveDodgeThresholdMin = 2;
+    [Tooltip("Максимальный порог подряд удачных уклонений, после которого таран ускоряется.")]
+    [Range(1, 10)] public int adaptiveDodgeThresholdMax = 3;
+
+    [Header("Ram Target Lag")]
+    public bool useLaggedRamTarget = true;
+    [Tooltip("Минимальная задержка позиции игрока для тарана (сек).")]
+    public float ramTargetLagMin = 0.3f;
+    [Tooltip("Максимальная задержка позиции игрока для тарана (сек).")]
+    public float ramTargetLagMax = 0.4f;
+
     [Header("Close Attack (Ruka Attack2)")]
     [Tooltip("Если игрок слишком близко, проигрывается Attack2 на слое Ruka.")]
     public float closeAttackDistance = 1.6f;
@@ -107,6 +124,60 @@ public class BossEnemy : MonoBehaviour
     public int closeAttackDamage = 15;
     [Tooltip("Кулдаун между близкими атаками.")]
     public float closeAttackCooldown = 1.1f;
+
+    [Header("Phase 1 - Reverse Ram")]
+    [Tooltip("После первого тарана делает второй рывок в обратном направлении.")]
+    public bool enableReverseRam = true;
+    [Tooltip("Время разворота перед обратным рывком (сек).")]
+    public float reverseRamTurnDuration = 0.2f;
+    [Tooltip("Множитель длительности обратного рывка.")]
+    public float reverseRamDurationScale = 0.75f;
+    [Tooltip("Множитель скорости обратного рывка.")]
+    public float reverseRamSpeedScale = 0.95f;
+
+    [Header("Hit Detection")]
+    [Tooltip("Смещение точки попадания ближней атаки вперёд от босса (м).")]
+    public float closeHitForwardOffset = 0.8f;
+    [Tooltip("Вертикальное смещение точки попадания ближней атаки (м).")]
+    public float closeHitUpOffset = 0.8f;
+    [Tooltip("Задержка перед нанесением урона ближней атакой (сек).")]
+    public float closeHitDelay = 0.1f;
+    [Tooltip("Длительность окна попадания ближней атаки (сек).")]
+    public float closeHitWindow = 0.25f;
+    [Tooltip("Смещение точки попадания тарана вперёд от босса (м).")]
+    public float ramHitForwardOffset = 0.9f;
+    [Tooltip("Вертикальное смещение точки попадания тарана (м).")]
+    public float ramHitUpOffset = 0.8f;
+    [Tooltip("Вертикальное смещение точки цели (игрока) для расчёта попадания (м).")]
+    public float playerHitUpOffset = 0.9f;
+
+    [Header("Phase 2 - Shark Spin")]
+    [Tooltip("Кулдаун между вращениями (сек).")]
+    public float sharkCooldown = 6f;
+    [Tooltip("Длительность вращения (сек).")]
+    public float sharkSpinDuration = 0.5f;
+    [Tooltip("Радиус урона вращения.")]
+    public float sharkRadius = 2.2f;
+    [Tooltip("Урон вращения.")]
+    public int sharkDamage = 18;
+    [Tooltip("Макс. дистанция до игрока для запуска вращения.")]
+    public float sharkTriggerDistance = 3.0f;
+    [Tooltip("Требуемый угол за спиной (градусы). 180 = строго сзади.")]
+    public float sharkBehindAngle = 120f;
+    [Tooltip("Маска слоёв для OverlapSphere вращения.")]
+    public LayerMask sharkHitMask = ~0;
+
+    [Header("Phase 2 - Feint Ram")]
+    [Tooltip("Шанс ложного тарана (0..1).")]
+    [Range(0f, 1f)] public float feintChance = 0.35f;
+    [Tooltip("Минимальное время до прерывания тарана (сек).")]
+    public float feintMinTime = 0.12f;
+    [Tooltip("Максимальное время до прерывания тарана (сек).")]
+    public float feintMaxTime = 0.28f;
+    [Tooltip("Дистанция шага в сторону при финте (м).")]
+    public float feintSidestepDistance = 1.1f;
+    [Tooltip("Длительность шага в сторону при финте (сек).")]
+    public float feintSidestepDuration = 0.18f;
 
     // ─── Замедление при уроне (фаза 2) ────────────────────────────────────────
 
@@ -127,8 +198,10 @@ public class BossEnemy : MonoBehaviour
     public float leskaDamage = 20f;
     [Tooltip("Сколько секунд леска лежит на арене.")]
     public float leskaLifetime = 3.5f;
-    [Tooltip("Расстояние от босса, на котором спавнится леска.")]
-    public float leskaSpawnOffset = 1.5f;
+    [Tooltip("Локальная точка спавна лески перед боссом (X=вбок, Y=вверх, Z=вперёд).")]
+    public Vector3 leskaSpawnOffsetFront = new Vector3(0f, 0f, 1.5f);
+    [Tooltip("Локальная точка спавна лески за боссом (X=вбок, Y=вверх, Z=назад).")]
+    public Vector3 leskaSpawnOffsetBack = new Vector3(0f, 0f, -1.5f);
     [Tooltip("Кулдаун между спавном лесок.")]
     public float leskaCooldown = 5f;
     [Tooltip("Длительность анимации спавна лески (босс стоит на месте).")]
@@ -174,6 +247,14 @@ public class BossEnemy : MonoBehaviour
     public AudioSource audioSource;
     public AudioClip ramRoarClip;
     public AudioClip leskaSpawnClip;
+    public AudioClip armorBreakClip;
+    public AudioClip damageClip;
+    public AudioClip deathClip;
+    [SerializeField] private GameObject sceneTransitionTriggerObject;
+
+    [Header("Gizmos")]
+    public bool showGizmos = true;
+    public bool showGizmoLabels = false;
 
     // ─── Внутреннее состояние ─────────────────────────────────────────────────
 
@@ -195,11 +276,28 @@ public class BossEnemy : MonoBehaviour
 
     private bool isDoingRam;
     private bool isSpawningLeska;
+    private bool isDoingShark;
+    private bool abortRamChain;
 
     private Coroutine slowRoutine;
 
-    private float pendingDamage;
-    private float accumulatedStunDamage;
+    private readonly Collider[] sharkHitsBuffer = new Collider[8];
+
+    private float armorDamage;
+    private bool isArmorBroken;
+    private bool isVulnerable;
+
+    private float nextSharkTime;
+    private Vector3 lastRamDir;
+
+    private int dodgeStreak;
+    private int adaptiveDodgeThreshold;
+
+    private const int playerPosHistorySize = 32;
+    private Vector3[] playerPosHistory;
+    private float[] playerPosTimeHistory;
+    private int playerPosHistoryCount;
+    private int playerPosHistoryIndex;
 
     private string currentBaseAnimState;
     private string currentRukaAnimState;
@@ -228,8 +326,17 @@ public class BossEnemy : MonoBehaviour
 
         health = maxHealth;
         phase2Entered = false;
-        pendingDamage = 0f;
-        accumulatedStunDamage = 0f;
+        armorDamage = 0f;
+        isArmorBroken = false;
+        isVulnerable = false;
+
+        dodgeStreak = 0;
+        adaptiveDodgeThreshold = GetAdaptiveDodgeThreshold();
+
+        playerPosHistory = new Vector3[playerPosHistorySize];
+        playerPosTimeHistory = new float[playerPosHistorySize];
+        playerPosHistoryCount = 0;
+        playerPosHistoryIndex = 0;
 
         ApplyNavTuning();
         SetAgentSpeed(chaseSpeed);
@@ -239,6 +346,9 @@ public class BossEnemy : MonoBehaviour
             animator.applyRootMotion = false;
             ResolveAnimatorLayers();
         }
+
+        if (sceneTransitionTriggerObject != null)
+            sceneTransitionTriggerObject.SetActive(false);
     }
 
     public bool CanBeFinished()
@@ -277,8 +387,10 @@ public class BossEnemy : MonoBehaviour
         if (isDead || player == null || navAgent == null || !navAgent.isOnNavMesh)
             return;
 
+        RecordPlayerHistory();
+
         // Во время тарана, стана или спавна лесок — управление передано корутине
-        if (isDoingRam || isDoingCloseAttack || isSpawningLeska || isStunSequence)
+        if (isDoingRam || isDoingCloseAttack || isSpawningLeska || isStunSequence || isDoingShark)
             return;
 
         // Фаза 2: периодический спавн лесок
@@ -346,6 +458,12 @@ public class BossEnemy : MonoBehaviour
     /// </summary>
     private void Phase2Update()
     {
+        if (Time.time >= nextSharkTime && ShouldDoSharkSpin())
+        {
+            StartCoroutine(SharkSpinRoutine());
+            return;
+        }
+
         if (Time.time >= nextLeskaTime && leskaPrefab != null)
         {
             StartCoroutine(LeskaSpawnRoutine());
@@ -396,9 +514,21 @@ public class BossEnemy : MonoBehaviour
         FacePlayer(1440f);
         PlayRukaAnim(rukaCloseAnim);
 
-        TryApplyDirectDamage(transform.position, closeAttackDistance, closeAttackDamage);
+        if (closeHitDelay > 0f)
+            yield return new WaitForSeconds(closeHitDelay);
 
-        yield return new WaitForSeconds(0.15f);
+        float hitEnd = Time.time + Mathf.Max(0.01f, closeHitWindow);
+        bool closeHitDealt = false;
+        while (Time.time < hitEnd)
+        {
+            if (!closeHitDealt)
+            {
+                Vector3 hitOrigin = GetHitOrigin(closeHitForwardOffset, closeHitUpOffset);
+                if (TryApplyDirectDamage(hitOrigin, closeAttackDistance, closeAttackDamage))
+                    closeHitDealt = true;
+            }
+            yield return null;
+        }
 
         navAgent.isStopped = false;
         SetAgentSpeed(isSlow ? chaseSpeed * slowSpeedMultiplier : chaseSpeed);
@@ -425,6 +555,16 @@ public class BossEnemy : MonoBehaviour
 
         yield return RamOnceRoutine(1f);
 
+        if (abortRamChain)
+        {
+            abortRamChain = false;
+            isDoingRam = false;
+            yield break;
+        }
+
+        if (currentPhase == BossPhase.Phase1 && enableReverseRam)
+            yield return ReverseRamOnceRoutine();
+
         isDoingRam = false;
     }
 
@@ -434,6 +574,13 @@ public class BossEnemy : MonoBehaviour
         nextRamTime = Time.time + ramCooldown;
 
         yield return RamOnceRoutine(1f);
+
+        if (abortRamChain)
+        {
+            abortRamChain = false;
+            isDoingRam = false;
+            yield break;
+        }
 
         if (doubleRamGap > 0f)
             yield return new WaitForSeconds(doubleRamGap);
@@ -445,6 +592,8 @@ public class BossEnemy : MonoBehaviour
 
     private IEnumerator RamOnceRoutine(float aimScale)
     {
+        bool isAdaptiveRush = enableAdaptiveRam && dodgeStreak >= adaptiveDodgeThreshold;
+
         // — Прицеливание —
         SetAgentSpeed(aimingSpeed);
         navAgent.isStopped = false;
@@ -459,6 +608,8 @@ public class BossEnemy : MonoBehaviour
             aimDuration = ramAimDuration;
 
         aimDuration *= Mathf.Clamp(aimScale, 0.2f, 2f);
+        if (isAdaptiveRush)
+            aimDuration = Mathf.Max(0.05f, ramAimDurationMin);
 
         float aimEnd = Time.time + aimDuration;
         float nextAimRepath = 0f;
@@ -500,11 +651,13 @@ public class BossEnemy : MonoBehaviour
         // — Рывок —
         StopAgentHard();
         PlayRukaAnim(rukaRamAnim);
-        Vector3 ramDir = player.position - transform.position;
+        Vector3 ramTarget = useLaggedRamTarget ? GetLaggedPlayerPosition() : player.position;
+        Vector3 ramDir = ramTarget - transform.position;
         ramDir.y = 0f;
         if (ramDir.sqrMagnitude < 0.0001f)
             ramDir = transform.forward;
         ramDir.Normalize();
+        lastRamDir = ramDir;
 
         float dashSpeed = Mathf.Clamp(Random.Range(ramSpeedMin, ramSpeedMax), 0.1f, 50f);
         if (dashSpeed <= 0f)
@@ -512,19 +665,80 @@ public class BossEnemy : MonoBehaviour
 
         float ramEnd = Time.time + ramDuration;
         bool ramHitDealt = false;
+        Vector3 lastHitOrigin = GetHitOrigin(ramHitForwardOffset, ramHitUpOffset);
+        bool doFeint = currentPhase == BossPhase.Phase2 && Random.value < feintChance;
+        float feintTime = Time.time + Mathf.Clamp(Random.Range(feintMinTime, feintMaxTime), 0.05f, ramDuration);
         while (Time.time < ramEnd)
         {
-            if (!ramHitDealt && TryApplyDirectDamage(transform.position, ramHitRadius, ramDamage))
-                ramHitDealt = true;
+            if (doFeint && Time.time >= feintTime)
+            {
+                abortRamChain = true;
+                yield return FeintRoutine();
+                yield break;
+            }
+
+            Vector3 currentHitOrigin = GetHitOrigin(ramHitForwardOffset, ramHitUpOffset);
+            if (!ramHitDealt && SegmentHitsPlayer(lastHitOrigin, currentHitOrigin, ramHitRadius))
+            {
+                if (TryApplyDirectDamage(currentHitOrigin, ramHitRadius, ramDamage))
+                    ramHitDealt = true;
+            }
 
             navAgent.Move(ramDir * dashSpeed * Time.deltaTime);
+            lastHitOrigin = currentHitOrigin;
             yield return null;
         }
+
+        RegisterRamOutcome(ramHitDealt);
 
         // — Возврат к преследованию —
         navAgent.isStopped = false;
         SetAgentSpeed(isSlow ? chaseSpeed * slowSpeedMultiplier : chaseSpeed);
         PlayBaseAnim(baseWalkAnim);
+    }
+
+    private IEnumerator ReverseRamOnceRoutine()
+    {
+        Vector3 reverseDir = -lastRamDir;
+        if (reverseDir.sqrMagnitude < 0.0001f)
+            reverseDir = -transform.forward;
+        reverseDir.y = 0f;
+        reverseDir.Normalize();
+
+        if (reverseRamTurnDuration > 0f)
+        {
+            float turnEnd = Time.time + reverseRamTurnDuration;
+            Quaternion targetRot = Quaternion.LookRotation(reverseDir, Vector3.up);
+            while (Time.time < turnEnd)
+            {
+                transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRot, 1440f * Time.deltaTime);
+                yield return null;
+            }
+        }
+
+        StopAgentHard();
+        PlayRukaAnim(rukaRamAnim);
+
+        float dashSpeed = Mathf.Max(0.1f, ramSpeed * reverseRamSpeedScale);
+        float dashDuration = Mathf.Max(0.05f, ramDuration * reverseRamDurationScale);
+        float ramEnd = Time.time + dashDuration;
+        bool ramHitDealt = false;
+        Vector3 lastHitOrigin = GetHitOrigin(ramHitForwardOffset, ramHitUpOffset);
+        while (Time.time < ramEnd)
+        {
+            Vector3 currentHitOrigin = GetHitOrigin(ramHitForwardOffset, ramHitUpOffset);
+            if (!ramHitDealt && SegmentHitsPlayer(lastHitOrigin, currentHitOrigin, ramHitRadius))
+            {
+                if (TryApplyDirectDamage(currentHitOrigin, ramHitRadius, ramDamage))
+                    ramHitDealt = true;
+            }
+
+            navAgent.Move(reverseDir * dashSpeed * Time.deltaTime);
+            lastHitOrigin = currentHitOrigin;
+            yield return null;
+        }
+
+        RegisterRamOutcome(ramHitDealt);
     }
 
 
@@ -551,8 +765,8 @@ public class BossEnemy : MonoBehaviour
 
         yield return new WaitForSeconds(leskaSpawnAnimDuration);
 
-        SpawnLeska(transform.position + transform.forward * leskaSpawnOffset);
-        SpawnLeska(transform.position - transform.forward * leskaSpawnOffset);
+        SpawnLeska(transform.TransformPoint(leskaSpawnOffsetFront));
+        SpawnLeska(transform.TransformPoint(leskaSpawnOffsetBack));
 
         navAgent.isStopped = false;
         PlayBaseAnim(baseWalkAnim);
@@ -592,20 +806,13 @@ public class BossEnemy : MonoBehaviour
         if (!isDoingRam && !isStunSequence)
             PlayRukaAnim(rukaHitAnim);
 
-        pendingDamage += incomingDamage;
-
-        if (stunDamageThreshold > 0f)
+        if (isVulnerable)
         {
-            accumulatedStunDamage += incomingDamage;
-            if (!isStunSequence && accumulatedStunDamage >= stunDamageThreshold)
-            {
-                accumulatedStunDamage = 0f;
-                StartCoroutine(StunBreakRoutine());
-            }
+            ApplyHealthDamage(incomingDamage);
         }
         else
         {
-            ApplyPendingDamage();
+            ApplyArmorDamage(incomingDamage);
         }
 
         // Замедление при уроне — только в фазе 2
@@ -640,10 +847,15 @@ public class BossEnemy : MonoBehaviour
         slowRoutine = null;
     }
 
-    private IEnumerator StunBreakRoutine()
+    private IEnumerator ArmorBreakRoutine()
     {
         isStunSequence = true;
         StopAgentHard();
+        isArmorBroken = true;
+        isVulnerable = false;
+
+        if (audioSource != null && armorBreakClip != null)
+            audioSource.PlayOneShot(armorBreakClip);
 
         PlayBaseAnim(baseGetDownAnim);
         if (getDownDuration > 0f)
@@ -651,10 +863,12 @@ public class BossEnemy : MonoBehaviour
 
         string tryaskaAnim = (Random.value < 0.5f) ? baseTryaska1Anim : baseTryaska2Anim;
         PlayBaseAnim(tryaskaAnim);
+        isVulnerable = true;
         if (tryaskaDuration > 0f)
             yield return new WaitForSeconds(tryaskaDuration);
 
-        if (ApplyPendingDamage())
+        isVulnerable = false;
+        if (isDead)
             yield break;
 
         PlayBaseAnim(baseWakeUpAnim);
@@ -665,35 +879,73 @@ public class BossEnemy : MonoBehaviour
         SetAgentSpeed(isSlow ? chaseSpeed * slowSpeedMultiplier : chaseSpeed);
         PlayBaseAnim(baseWalkAnim);
         isStunSequence = false;
+
+        if (armorRegenDelay > 0f)
+            yield return new WaitForSeconds(armorRegenDelay);
+
+        armorDamage = 0f;
+        isArmorBroken = false;
     }
 
-    private bool ApplyPendingDamage()
+    private void ApplyArmorDamage(float incomingDamage)
     {
-        if (pendingDamage <= 0f)
-            return false;
+        if (armorBreakThreshold <= 0f)
+        {
+            ApplyHealthDamage(incomingDamage);
+            return;
+        }
 
-        health -= pendingDamage;
-        pendingDamage = 0f;
+        if (isArmorBroken || isStunSequence)
+            return;
+
+        armorDamage += incomingDamage;
+        if (armorDamage >= armorBreakThreshold)
+        {
+            armorDamage = 0f;
+            StartCoroutine(ArmorBreakRoutine());
+        }
+    }
+
+    private void ApplyHealthDamage(float incomingDamage)
+    {
+        if (incomingDamage <= 0f)
+            return;
+
+        health -= incomingDamage;
         health = Mathf.Max(0f, health);
+
+        if (audioSource != null && damageClip != null)
+            audioSource.PlayOneShot(damageClip);
 
         TryEnterPhase2();
 
         if (health <= 0f)
-        {
             Die();
-            return true;
-        }
-
-        return false;
     }
 
     private void Die()
     {
         isDead = true;
         isStunSequence = false;
+
+        dodgeStreak = 0;
+
         StopAllCoroutines();
         StopAgentHard();
         PlayBaseAnim(baseDeathAnim);
+
+        if (audioSource != null && deathClip != null)
+            audioSource.PlayOneShot(deathClip);
+
+        if (sceneTransitionTriggerObject != null)
+        {
+            sceneTransitionTriggerObject.SetActive(true);
+
+            SceneTransitionTrigger transitionTrigger = sceneTransitionTriggerObject.GetComponent<SceneTransitionTrigger>();
+            if (transitionTrigger != null)
+                transitionTrigger.SetBossDefeated(true);
+        }
+
         Debug.Log("[BossEnemy] Босс умер.");
         // Здесь можно добавить: выдать лут, отыграть музыку победы, и т.д.
     }
@@ -765,12 +1017,101 @@ public class BossEnemy : MonoBehaviour
             return false;
 
         float hitRadius = Mathf.Max(0.1f, radius);
-        float distSqr = (player.position - sourcePosition).sqrMagnitude;
+        Vector3 targetPos = player.position + Vector3.up * Mathf.Max(0f, playerHitUpOffset);
+        float distSqr = (targetPos - sourcePosition).sqrMagnitude;
         if (distSqr > hitRadius * hitRadius)
             return false;
 
         playerHealth.ApplyDamage(damage);
         return true;
+    }
+
+    private Vector3 GetHitOrigin(float forwardOffset, float upOffset)
+    {
+        return transform.position + transform.forward * forwardOffset + Vector3.up * upOffset;
+    }
+
+    private bool SegmentHitsPlayer(Vector3 start, Vector3 end, float radius)
+    {
+        if (player == null)
+            return false;
+
+        Vector3 targetPos = player.position + Vector3.up * Mathf.Max(0f, playerHitUpOffset);
+        Vector3 ab = end - start;
+        float abSqr = ab.sqrMagnitude;
+        float t = 0f;
+        if (abSqr > 0.0001f)
+            t = Mathf.Clamp01(Vector3.Dot(targetPos - start, ab) / abSqr);
+
+        Vector3 closest = start + ab * t;
+        float distSqr = (targetPos - closest).sqrMagnitude;
+        return distSqr <= radius * radius;
+    }
+
+    private bool ShouldDoSharkSpin()
+    {
+        if (player == null)
+            return false;
+
+        Vector3 toPlayer = player.position - transform.position;
+        float distSqr = toPlayer.sqrMagnitude;
+        if (distSqr > sharkTriggerDistance * sharkTriggerDistance)
+            return false;
+
+        Vector3 flatToPlayer = toPlayer;
+        flatToPlayer.y = 0f;
+        if (flatToPlayer.sqrMagnitude < 0.0001f)
+            return false;
+
+        float angle = Vector3.Angle(transform.forward, flatToPlayer.normalized);
+        return angle >= sharkBehindAngle;
+    }
+
+    private IEnumerator SharkSpinRoutine()
+    {
+        isDoingShark = true;
+        nextSharkTime = Time.time + sharkCooldown;
+
+        StopAgentHard();
+
+        float endTime = Time.time + Mathf.Max(0.05f, sharkSpinDuration);
+        while (Time.time < endTime)
+        {
+            transform.Rotate(Vector3.up, 720f * Time.deltaTime, Space.World);
+            yield return null;
+        }
+
+        int hitCount = Physics.OverlapSphereNonAlloc(transform.position, sharkRadius, sharkHitsBuffer, sharkHitMask);
+        for (int i = 0; i < hitCount; i++)
+        {
+            if (sharkHitsBuffer[i] != null && sharkHitsBuffer[i].TryGetComponent(out PlayerHealth hitHealth))
+            {
+                if (!hitHealth.IsDead)
+                    hitHealth.ApplyDamage(sharkDamage);
+                break;
+            }
+        }
+
+        navAgent.isStopped = false;
+        SetAgentSpeed(isSlow ? chaseSpeed * slowSpeedMultiplier : chaseSpeed);
+        PlayBaseAnim(baseWalkAnim);
+        isDoingShark = false;
+    }
+
+    private IEnumerator FeintRoutine()
+    {
+        StopAgentHard();
+
+        float side = (Random.value < 0.5f) ? -1f : 1f;
+        Vector3 sidestepDir = transform.right * side;
+        float endTime = Time.time + Mathf.Max(0.05f, feintSidestepDuration);
+        while (Time.time < endTime)
+        {
+            navAgent.Move(sidestepDir * (feintSidestepDistance / Mathf.Max(0.05f, feintSidestepDuration)) * Time.deltaTime);
+            yield return null;
+        }
+
+        yield return StartCoroutine(CloseAttackRoutine());
     }
 
     private void PlayBaseAnim(string stateName)
@@ -822,6 +1163,9 @@ public class BossEnemy : MonoBehaviour
 
     private void OnDrawGizmosSelected()
     {
+        if (!showGizmos)
+            return;
+
         // Зона тарана
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, ramTriggerDistance);
@@ -836,11 +1180,104 @@ public class BossEnemy : MonoBehaviour
 
         // Точки спавна лесок
         Gizmos.color = Color.cyan;
-        Gizmos.DrawWireSphere(transform.position + transform.forward * leskaSpawnOffset, 0.25f);
-        Gizmos.DrawWireSphere(transform.position - transform.forward * leskaSpawnOffset, 0.25f);
+        Gizmos.DrawWireSphere(transform.TransformPoint(leskaSpawnOffsetFront), 0.25f);
+        Gizmos.DrawWireSphere(transform.TransformPoint(leskaSpawnOffsetBack), 0.25f);
+
+        // Точки хитбокса
+        Gizmos.color = new Color(0.2f, 0.9f, 1f, 0.6f);
+        Gizmos.DrawWireSphere(GetHitOrigin(closeHitForwardOffset, closeHitUpOffset), closeAttackDistance);
+        Gizmos.DrawWireSphere(GetHitOrigin(ramHitForwardOffset, ramHitUpOffset), ramHitRadius);
+
+        // Шарк
+        Gizmos.color = new Color(0.2f, 1f, 0.4f, 0.45f);
+        Gizmos.DrawWireSphere(transform.position, sharkRadius);
 
         // Порог перехода в фазу 2 (текст в Scene view)
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(transform.position, 0.3f);
+
+    #if UNITY_EDITOR
+        if (showGizmoLabels)
+        {
+            UnityEditor.Handles.Label(transform.position + Vector3.up * 2f, "Boss Gizmos");
+            UnityEditor.Handles.Label(GetHitOrigin(closeHitForwardOffset, closeHitUpOffset), "Close Hit");
+            UnityEditor.Handles.Label(GetHitOrigin(ramHitForwardOffset, ramHitUpOffset), "Ram Hit");
+            UnityEditor.Handles.Label(transform.TransformPoint(leskaSpawnOffsetFront), "Leska Front");
+            UnityEditor.Handles.Label(transform.TransformPoint(leskaSpawnOffsetBack), "Leska Back");
+        }
+    #endif
+    }
+
+    private void RecordPlayerHistory()
+    {
+        if (player == null)
+            return;
+
+        playerPosHistory[playerPosHistoryIndex] = player.position;
+        playerPosTimeHistory[playerPosHistoryIndex] = Time.time;
+        playerPosHistoryIndex = (playerPosHistoryIndex + 1) % playerPosHistorySize;
+        if (playerPosHistoryCount < playerPosHistorySize)
+            playerPosHistoryCount++;
+    }
+
+    private Vector3 GetLaggedPlayerPosition()
+    {
+        if (playerPosHistoryCount == 0 || player == null)
+            return player != null ? player.position : transform.position;
+
+        float lag = Mathf.Clamp(Random.Range(ramTargetLagMin, ramTargetLagMax), 0.05f, 2f);
+        float targetTime = Time.time - lag;
+
+        Vector3 olderPos = player.position;
+        float olderTime = -1f;
+        Vector3 newerPos = player.position;
+        float newerTime = float.PositiveInfinity;
+
+        for (int i = 0; i < playerPosHistoryCount; i++)
+        {
+            int idx = (playerPosHistoryIndex - 1 - i + playerPosHistorySize) % playerPosHistorySize;
+            float t = playerPosTimeHistory[idx];
+            Vector3 p = playerPosHistory[idx];
+
+            if (t <= targetTime && t > olderTime)
+            {
+                olderTime = t;
+                olderPos = p;
+            }
+
+            if (t >= targetTime && t < newerTime)
+            {
+                newerTime = t;
+                newerPos = p;
+            }
+        }
+
+        if (olderTime < 0f)
+            return newerTime < float.PositiveInfinity ? newerPos : player.position;
+
+        if (newerTime == float.PositiveInfinity || Mathf.Approximately(olderTime, newerTime))
+            return olderPos;
+
+        float lerpT = Mathf.InverseLerp(olderTime, newerTime, targetTime);
+        return Vector3.Lerp(olderPos, newerPos, lerpT);
+    }
+
+    private void RegisterRamOutcome(bool hitDealt)
+    {
+        if (hitDealt)
+        {
+            dodgeStreak = 0;
+            adaptiveDodgeThreshold = GetAdaptiveDodgeThreshold();
+            return;
+        }
+
+        dodgeStreak++;
+    }
+
+    private int GetAdaptiveDodgeThreshold()
+    {
+        int min = Mathf.Max(1, adaptiveDodgeThresholdMin);
+        int max = Mathf.Max(min, adaptiveDodgeThresholdMax);
+        return Random.Range(min, max + 1);
     }
 }

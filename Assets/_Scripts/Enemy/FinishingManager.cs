@@ -135,6 +135,12 @@ public class FinishingManager : MonoBehaviour
             return;
         }
 
+        if (IsBossEnemy(e))
+        {
+            Debug.LogWarning("FinishingManager: Finishing is blocked for BossEnemy targets.");
+            return;
+        }
+
         EndAutomaticRoutine();
         RestoreSceneState();
 
@@ -466,6 +472,11 @@ public class FinishingManager : MonoBehaviour
         {
             return;
         }
+    }
+
+    private bool IsBossEnemy(Transform target)
+    {
+        return target != null && target.GetComponentInParent<BossEnemy>() != null;
     }
 
     private float GetClipLength(Animator animator, string clipName, float fallback)
