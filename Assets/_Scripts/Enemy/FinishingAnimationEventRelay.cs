@@ -175,8 +175,6 @@ public class FinishingAnimationEventRelay : MonoBehaviour
         if (enemyTest != null)
             return enemyTest.CanBeFinished();
 
-        if (bossEnemy != null)
-            return bossEnemy.CanBeFinished();
 
         return true;
     }
@@ -225,19 +223,7 @@ public class FinishingAnimationEventRelay : MonoBehaviour
                 continue;
             }
 
-            BossEnemy boss = hit.GetComponentInParent<BossEnemy>();
-            if (boss != null)
-            {
-                if (!boss.CanBeFinished())
-                    continue;
-
-                float bossDistance = Vector3.Distance(origin, boss.transform.position);
-                if (bossDistance < bestDistance)
-                {
-                    bestDistance = bossDistance;
-                    best = boss.transform;
-                }
-            }
+            
         }
 
         return best;

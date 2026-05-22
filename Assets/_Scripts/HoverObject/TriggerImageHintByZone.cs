@@ -137,10 +137,7 @@ public class TriggerImageHintByZone : MonoBehaviour
             return advancedEnemy.CanBeFinished();
         }
 
-        if (bossEnemy != null)
-        {
-            return bossEnemy.CanBeFinished();
-        }
+        
 
         if (enemyTest != null)
         {

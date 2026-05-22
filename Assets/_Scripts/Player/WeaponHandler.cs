@@ -17,13 +17,13 @@ public class WeaponHandler : MonoBehaviour
         public Transform Transform => advancedEnemy?.transform ?? enemyTest?.transform ?? bossEnemy?.transform;
 
         public bool CanBeFinished() => 
-            advancedEnemy?.CanBeFinished() ?? enemyTest?.CanBeFinished() ?? bossEnemy?.CanBeFinished() ?? false;
+            advancedEnemy?.CanBeFinished() ?? enemyTest?.CanBeFinished() ?? false;
 
         public void KillDuringStun()
         {
             advancedEnemy?.KillDuringStun();
             enemyTest?.KillDuringStun();
-            bossEnemy?.KillDuringStun();
+            
         }
     }
 
