@@ -3,6 +3,12 @@ using UnityEngine.InputSystem;
 
 public class GamepadController : MonoBehaviour
 {
+    private enum ActiveInputDevice
+    {
+        KeyboardMouse,
+        Gamepad
+    }
+
     [Header("References")]
     [SerializeField] private TankController tankController;
     [SerializeField] private WeaponHandler weaponHandler;
@@ -28,6 +34,7 @@ public class GamepadController : MonoBehaviour
 
     private float lastGamepadInputTime = -10f;
     private float lastMouseKeyboardInputTime = -10f;
+    private ActiveInputDevice activeInputDevice = ActiveInputDevice.KeyboardMouse;
     private GUIStyle inputModeLabelStyle;
     private bool ignoreMouseMotionOnce;
 
@@ -45,17 +52,16 @@ public class GamepadController : MonoBehaviour
     {
         ResolveReferences();
 
-        Gamepad gamepad = Gamepad.current;
         bool uiOpen = inventoryUI != null && (inventoryUI.IsInventoryOpen() || inventoryUI.IsChestUIOpen() || inventoryUI.IsContextMenuOpen());
         bool inventoryOpen = inventoryUI != null && inventoryUI.IsInventoryOpen();
         bool chestOpen = inventoryUI != null && inventoryUI.IsChestUIOpen();
         bool contextMenuOpen = inventoryUI != null && inventoryUI.IsContextMenuOpen();
 
-        bool mouseKeyboardInputThisFrame = HasMouseKeyboardInputThisFrame();
-        if (mouseKeyboardInputThisFrame)
-            lastMouseKeyboardInputTime = Time.unscaledTime;
+        UpdateActiveDevice(uiOpen);
 
+        Gamepad gamepad = Gamepad.current;
         bool gamepadAvailable = gamepad != null;
+        bool gamepadActive = IsGamepadModeActive;
         Vector2 moveInput = Vector2.zero;
         Vector2 lookInput = Vector2.zero;
         bool runHeld = false;
@@ -71,32 +77,7 @@ public class GamepadController : MonoBehaviour
             aimHeld = gamepad.leftTrigger.ReadValue() >= triggerThreshold;
             fireHeld = gamepad.rightTrigger.ReadValue() >= triggerThreshold;
             reloadHeld = aimHeld;
-
-            bool anyGamepadInput = moveInput.sqrMagnitude >= moveDeadzone * moveDeadzone ||
-                                   lookInput.sqrMagnitude >= lookDeadzone * lookDeadzone ||
-                                   runHeld ||
-                                   aimHeld ||
-                                   fireHeld ||
-                                   gamepad.startButton.wasPressedThisFrame ||
-                                   gamepad.buttonSouth.wasPressedThisFrame ||
-                                   gamepad.buttonEast.wasPressedThisFrame ||
-                                   gamepad.buttonWest.wasPressedThisFrame ||
-                                   gamepad.buttonNorth.wasPressedThisFrame ||
-                                   gamepad.leftShoulder.wasPressedThisFrame ||
-                                   gamepad.rightShoulder.wasPressedThisFrame ||
-                                   gamepad.dpad.left.wasPressedThisFrame ||
-                                   gamepad.dpad.right.wasPressedThisFrame ||
-                                   gamepad.dpad.up.wasPressedThisFrame ||
-                                   gamepad.dpad.down.wasPressedThisFrame;
-
-            if (anyGamepadInput)
-                lastGamepadInputTime = Time.unscaledTime;
         }
-
-        bool gamepadRecent = gamepadAvailable && Time.unscaledTime - lastGamepadInputTime <= gamepadActiveTimeout;
-        bool mouseKeyboardRecent = Time.unscaledTime - lastMouseKeyboardInputTime <= gamepadActiveTimeout;
-        bool gamepadActive = gamepadRecent && (!mouseKeyboardRecent || lastGamepadInputTime >= lastMouseKeyboardInputTime);
-        UpdateCursorState(uiOpen, gamepadActive);
 
         if (tankController != null)
         {
@@ -152,11 +133,6 @@ public class GamepadController : MonoBehaviour
 
         if (gamepadActive)
             HandleWorldInput(gamepad);
-        else
-        {
-            ClearGamepadState();
-            UpdateCursorState(uiOpen, gamepadActive);
-        }
     }
 
     private void OnGUI()
@@ -166,7 +142,7 @@ public class GamepadController : MonoBehaviour
 
         EnsureInputModeLabelStyle();
 
-        string label = IsGamepadModeActive() ? gamepadModeLabel : keyboardMouseModeLabel;
+        string label = IsGamepadModeActive ? gamepadModeLabel : keyboardMouseModeLabel;
         float left = (Screen.width - inputModeLabelWidth) * 0.5f;
         float top = Screen.height - inputModeLabelBottomOffset - inputModeLabelHeight;
         Rect rect = new Rect(left, top, inputModeLabelWidth, inputModeLabelHeight);
@@ -210,8 +186,6 @@ public class GamepadController : MonoBehaviour
             weaponHandler.SetGamepadAimHeld(false);
             weaponHandler.SetGamepadFireHeld(false);
         }
-
-        lastGamepadInputTime = -10f;
     }
 
     private void EnsureInputModeLabelStyle()
@@ -228,15 +202,58 @@ public class GamepadController : MonoBehaviour
         inputModeLabelStyle.normal.textColor = Color.white;
     }
 
-    private bool IsGamepadModeActive()
+    public bool IsGamepadModeActive => activeInputDevice == ActiveInputDevice.Gamepad;
+
+    private void UpdateActiveDevice(bool uiOpen)
     {
         Gamepad gamepad = Gamepad.current;
-        if (gamepad == null)
-            return false;
+        bool gamepadAvailable = gamepad != null;
 
-        bool gamepadRecent = Time.unscaledTime - lastGamepadInputTime <= gamepadActiveTimeout;
+        if (HasMouseKeyboardInputThisFrame())
+            lastMouseKeyboardInputTime = Time.unscaledTime;
+
+        if (gamepadAvailable)
+        {
+            Vector2 moveInput = gamepad.leftStick.ReadValue();
+            Vector2 lookInput = gamepad.rightStick.ReadValue();
+            bool runHeld = gamepad.leftShoulder.isPressed;
+            bool aimHeld = gamepad.leftTrigger.ReadValue() >= triggerThreshold;
+            bool fireHeld = gamepad.rightTrigger.ReadValue() >= triggerThreshold;
+
+            bool anyGamepadInput = moveInput.sqrMagnitude >= moveDeadzone * moveDeadzone ||
+                                   lookInput.sqrMagnitude >= lookDeadzone * lookDeadzone ||
+                                   runHeld ||
+                                   aimHeld ||
+                                   fireHeld ||
+                                   gamepad.startButton.wasPressedThisFrame ||
+                                   gamepad.buttonSouth.wasPressedThisFrame ||
+                                   gamepad.buttonEast.wasPressedThisFrame ||
+                                   gamepad.buttonWest.wasPressedThisFrame ||
+                                   gamepad.buttonNorth.wasPressedThisFrame ||
+                                   gamepad.leftShoulder.wasPressedThisFrame ||
+                                   gamepad.rightShoulder.wasPressedThisFrame ||
+                                   gamepad.dpad.left.wasPressedThisFrame ||
+                                   gamepad.dpad.right.wasPressedThisFrame ||
+                                   gamepad.dpad.up.wasPressedThisFrame ||
+                                   gamepad.dpad.down.wasPressedThisFrame;
+
+            if (anyGamepadInput)
+                lastGamepadInputTime = Time.unscaledTime;
+        }
+
+        bool gamepadRecent = gamepadAvailable && Time.unscaledTime - lastGamepadInputTime <= gamepadActiveTimeout;
         bool mouseKeyboardRecent = Time.unscaledTime - lastMouseKeyboardInputTime <= gamepadActiveTimeout;
-        return gamepadRecent && (!mouseKeyboardRecent || lastGamepadInputTime >= lastMouseKeyboardInputTime);
+        ActiveInputDevice nextActiveDevice = gamepadRecent && (!mouseKeyboardRecent || lastGamepadInputTime >= lastMouseKeyboardInputTime)
+            ? ActiveInputDevice.Gamepad
+            : ActiveInputDevice.KeyboardMouse;
+
+        if (nextActiveDevice != activeInputDevice)
+        {
+            ClearGamepadState();
+            activeInputDevice = nextActiveDevice;
+        }
+
+        UpdateCursorState(uiOpen, IsGamepadModeActive);
     }
 
     private bool HasMouseKeyboardInputThisFrame()
