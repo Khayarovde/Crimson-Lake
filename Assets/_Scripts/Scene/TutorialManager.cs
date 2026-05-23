@@ -20,6 +20,17 @@ public class TutorialManager : MonoBehaviour
 
     private bool isTutorialOpen = false;
     private bool isHintIconVisible = true;
+    // Глобальный флаг, который другие UI-скрипты должны проверять
+    // перед тем, как открывать инвентарь, паузу или другие оверлеи.
+    // Пример использования в другом скрипте:
+    // if (TutorialManager.TutorialIsOpen) return; // не открывать UI
+    public static bool TutorialIsOpen { get; private set; } = false;
+    // Вспомогательные поля для управления порядком канвы и игнорирования закрытия
+    private Canvas _runtimeCanvas; // Canvas на панели туториала (можем создать временно)
+    private bool _createdRuntimeCanvas = false;
+    private bool _ignoreAnyKeyThisFrame = false;
+    private bool _prevOverrideSorting;
+    private int _prevSortingOrder;
 
     void Start()
     {
@@ -68,6 +79,16 @@ public class TutorialManager : MonoBehaviour
                 OpenTutorial();
             }
         }
+
+        // Если туториал открыт, любую клавишу можно использовать для закрытия,
+        // но игнорируем событие в том же кадре, когда открыли туториал.
+        if (isTutorialOpen && !_ignoreAnyKeyThisFrame && Input.anyKeyDown)
+        {
+            CloseTutorial();
+        }
+
+        // Сброс флага игнорирования в конце кадра
+        _ignoreAnyKeyThisFrame = false;
     }
 
     private void UpdateHintIconVisibility()
@@ -94,10 +115,27 @@ public class TutorialManager : MonoBehaviour
         if (isTutorialOpen) return;
 
         isTutorialOpen = true;
+        TutorialIsOpen = true;
+        _ignoreAnyKeyThisFrame = true;
 
         if (tutorialPanelGO != null)
         {
             tutorialPanelGO.SetActive(true);
+            // Поднимаем панель туториала на самый верх иерархии, чтобы
+            // другие UI не отображались поверх него.
+            tutorialPanelGO.transform.SetAsLastSibling();
+            // Обеспечим, что панель рендерится поверх других Canvas'ов.
+            _runtimeCanvas = tutorialPanelGO.GetComponent<Canvas>();
+            if (_runtimeCanvas == null)
+            {
+                _runtimeCanvas = tutorialPanelGO.AddComponent<Canvas>();
+                _createdRuntimeCanvas = true;
+            }
+            // Сохраним прежние значения, если Canvas был
+            _prevOverrideSorting = _runtimeCanvas.overrideSorting;
+            _prevSortingOrder = _runtimeCanvas.sortingOrder;
+            _runtimeCanvas.overrideSorting = true;
+            _runtimeCanvas.sortingOrder = 1000;
         }
 
         if (tutorialCanvasGroup != null)
@@ -115,6 +153,7 @@ public class TutorialManager : MonoBehaviour
         if (!isTutorialOpen) return;
 
         isTutorialOpen = false;
+        TutorialIsOpen = false;
 
         if (tutorialCanvasGroup != null)
         {
@@ -134,6 +173,22 @@ public class TutorialManager : MonoBehaviour
             {
                 tutorialPanelGO.SetActive(false);
             }
+        }
+
+        // Восстановим Canvas
+        if (_runtimeCanvas != null)
+        {
+            if (_createdRuntimeCanvas)
+            {
+                Destroy(_runtimeCanvas);
+            }
+            else
+            {
+                _runtimeCanvas.overrideSorting = _prevOverrideSorting;
+                _runtimeCanvas.sortingOrder = _prevSortingOrder;
+            }
+            _runtimeCanvas = null;
+            _createdRuntimeCanvas = false;
         }
 
         Debug.Log("Обучение закрыто (нажмите H для открытия)");
