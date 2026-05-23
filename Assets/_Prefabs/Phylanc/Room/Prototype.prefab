@@ -1123,7 +1123,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &3517538790647424813
 Transform:
   m_ObjectHideFlags: 0
@@ -2790,7 +2790,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   hintImage: {fileID: 0}
+  additionalHintImages: []
   playerTag: Player
+  playMultiPressSequence: 1
+  multiStepDelay: 0.15
+  multiPressScale: 0.88
+  multiPressTime: 0.12
+  multiReleaseTime: 0.18
+  multiPressEase: 2
+  multiReleaseEase: 6
   fadeDuration: 0.25
   usePulse: 1
   pulseScale: 0.88
@@ -4993,7 +5001,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &6504204388509394567
 Transform:
   m_ObjectHideFlags: 0

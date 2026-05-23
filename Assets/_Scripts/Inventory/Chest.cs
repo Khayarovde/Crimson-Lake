@@ -1,6 +1,9 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine.InputSystem;
+using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 public class Chest : MonoBehaviour
 {
@@ -18,9 +21,19 @@ public class Chest : MonoBehaviour
     [Header("Настройки взаимодействия")]
     [Tooltip("Можно ли открыть сундук, если инвентарь уже открыт")]
     public bool canOpenWhenInventoryOpen = false;
+
+    [Header("Gamepad")]
+    [SerializeField] private float gamepadCursorSpeed = 1200f;
+    [SerializeField, Range(0.05f, 0.75f)] private float triggerThreshold = 0.5f;
     
     private AudioSource audioSource;
     private bool isChestOpen = false;
+    private Vector2 gamepadCursorPosition;
+    private bool gamepadCursorInitialized;
+    private bool cursorWasVisible;
+    private CursorLockMode cursorWasLockState;
+    private bool leftTriggerWasPressed;
+    private bool rightTriggerWasPressed;
 
     private void Start()
     {
@@ -36,8 +49,120 @@ public class Chest : MonoBehaviour
             if (inventoryUI != null && !inventoryUI.IsChestUIOpen())
             {
                 isChestOpen = false;
+                RestoreCursorState();
+            }
+
+            if (inventoryUI != null)
+            {
+                HandleGamepadInput(inventoryUI);
             }
         }
+    }
+
+    public void HandleGamepadInput(InventoryUI inventoryUI)
+    {
+        if (!isChestOpen || inventoryUI == null)
+            return;
+
+        Gamepad gamepad = Gamepad.current;
+        if (gamepad == null)
+            return;
+
+        ApplyCursorState(true);
+        UpdateGamepadCursor(gamepad);
+
+        bool leftTriggerPressed = gamepad.leftTrigger.ReadValue() >= triggerThreshold;
+        bool rightTriggerPressed = gamepad.rightTrigger.ReadValue() >= triggerThreshold;
+
+        if (leftTriggerPressed && !leftTriggerWasPressed)
+        {
+            inventoryUI.GoToInventoryFromButton();
+            leftTriggerWasPressed = leftTriggerPressed;
+            rightTriggerWasPressed = rightTriggerPressed;
+            return;
+        }
+
+        if (gamepad.rightShoulder.wasPressedThisFrame)
+        {
+            ClickButtonUnderCursor();
+        }
+
+        if (gamepad.buttonEast.wasPressedThisFrame)
+        {
+            inventoryUI.CloseChestUI();
+        }
+
+        leftTriggerWasPressed = leftTriggerPressed;
+        rightTriggerWasPressed = rightTriggerPressed;
+    }
+
+    private void UpdateGamepadCursor(Gamepad gamepad)
+    {
+        if (!gamepadCursorInitialized)
+        {
+            gamepadCursorPosition = new Vector2(Screen.width * 0.5f, Screen.height * 0.5f);
+            gamepadCursorInitialized = true;
+        }
+
+        Vector2 stick = gamepad.rightStick.ReadValue();
+        if (stick.sqrMagnitude < 0.01f)
+            return;
+
+        gamepadCursorPosition += stick * gamepadCursorSpeed * Time.unscaledDeltaTime;
+        gamepadCursorPosition.x = Mathf.Clamp(gamepadCursorPosition.x, 0f, Screen.width - 1f);
+        gamepadCursorPosition.y = Mathf.Clamp(gamepadCursorPosition.y, 0f, Screen.height - 1f);
+
+        if (Mouse.current != null)
+        {
+            Mouse.current.WarpCursorPosition(gamepadCursorPosition);
+        }
+    }
+
+    private void ClickButtonUnderCursor()
+    {
+        if (EventSystem.current == null)
+            return;
+
+        PointerEventData pointerData = new PointerEventData(EventSystem.current)
+        {
+            position = Mouse.current != null ? Mouse.current.position.ReadValue() : gamepadCursorPosition
+        };
+
+        List<RaycastResult> results = new List<RaycastResult>();
+        EventSystem.current.RaycastAll(pointerData, results);
+
+        foreach (RaycastResult result in results)
+        {
+            if (result.gameObject == null)
+                continue;
+
+            Button button = result.gameObject.GetComponentInParent<Button>();
+            if (button != null && button.interactable)
+            {
+                button.onClick.Invoke();
+                return;
+            }
+        }
+    }
+
+    private void ApplyCursorState(bool active)
+    {
+        if (active)
+        {
+            cursorWasVisible = Cursor.visible;
+            cursorWasLockState = Cursor.lockState;
+            Cursor.visible = true;
+            Cursor.lockState = CursorLockMode.None;
+            return;
+        }
+
+        RestoreCursorState();
+    }
+
+    private void RestoreCursorState()
+    {
+        Cursor.visible = cursorWasVisible;
+        Cursor.lockState = cursorWasLockState;
     }
 
     private void InitializeChest()
@@ -177,6 +302,13 @@ public class Chest : MonoBehaviour
     public void SetOpenState(bool open)
     {
         isChestOpen = open;
+        if (!open)
+        {
+            leftTriggerWasPressed = false;
+            rightTriggerWasPressed = false;
+            gamepadCursorInitialized = false;
+            RestoreCursorState();
+        }
     }
 
     public bool IsFull { get { return chestData != null && chestData.items.Count >= chestData.maxSlots; } }

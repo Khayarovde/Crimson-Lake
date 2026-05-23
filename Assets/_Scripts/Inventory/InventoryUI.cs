@@ -233,14 +233,10 @@ public class InventoryUI : MonoBehaviour
             CloseChestUI();
         }
 
-        // Gamepad handling for chest UI and quick chest/inventory toggle via Y
+        // Gamepad handling for quick chest/inventory toggle via gamepad
         if (Gamepad.current != null)
         {
-            if (IsChestUIOpen())
-            {
-                HandleChestGamepadInput();
-            }
-            else if (IsInventoryOpen())
+            if (!IsChestUIOpen() && IsInventoryOpen())
             {
                 bool rightTriggerPressed = Gamepad.current.rightTrigger.ReadValue() >= triggerSwitchThreshold;
                 if (rightTriggerPressed && !rightTriggerWasPressed && playerInventory != null && playerInventory.IsNearChest())
@@ -250,86 +246,6 @@ public class InventoryUI : MonoBehaviour
 
                 rightTriggerWasPressed = rightTriggerPressed;
                 leftTriggerWasPressed = Gamepad.current.leftTrigger.ReadValue() >= triggerSwitchThreshold;
-            }
-        }
-    }
-
-    private void HandleChestGamepadInput()
-    {
-        UpdateChestGamepadCursor();
-
-        if (Gamepad.current == null)
-            return;
-
-        bool leftTriggerPressed = Gamepad.current.leftTrigger.ReadValue() >= triggerSwitchThreshold;
-        bool rightTriggerPressed = Gamepad.current.rightTrigger.ReadValue() >= triggerSwitchThreshold;
-
-        if (leftTriggerPressed && !leftTriggerWasPressed)
-        {
-            SwitchToInventoryUI();
-            leftTriggerWasPressed = leftTriggerPressed;
-            rightTriggerWasPressed = rightTriggerPressed;
-            return;
-        }
-
-        rightTriggerWasPressed = rightTriggerPressed;
-        leftTriggerWasPressed = leftTriggerPressed;
-
-        if (Gamepad.current.rightShoulder.wasPressedThisFrame)
-        {
-            ClickChestButtonUnderCursor();
-        }
-
-        if (Gamepad.current.buttonEast.wasPressedThisFrame)
-        {
-            CloseChestUI();
-        }
-    }
-
-    private void UpdateChestGamepadCursor()
-    {
-        if (Mouse.current == null || Gamepad.current == null)
-            return;
-
-        if (!chestGamepadCursorInitialized)
-        {
-            chestGamepadCursorPosition = new Vector2(Screen.width * 0.5f, Screen.height * 0.5f);
-            chestGamepadCursorInitialized = true;
-        }
-
-        Vector2 stick = Gamepad.current.rightStick.ReadValue();
-        if (stick.sqrMagnitude > 0.01f)
-        {
-            chestGamepadCursorPosition += stick * chestGamepadCursorSpeed * Time.unscaledDeltaTime;
-            chestGamepadCursorPosition.x = Mathf.Clamp(chestGamepadCursorPosition.x, 0f, Screen.width - 1f);
-            chestGamepadCursorPosition.y = Mathf.Clamp(chestGamepadCursorPosition.y, 0f, Screen.height - 1f);
-            Mouse.current.WarpCursorPosition(chestGamepadCursorPosition);
-        }
-    }
-
-    private void ClickChestButtonUnderCursor()
-    {
-        if (EventSystem.current == null)
-            return;
-
-        PointerEventData pointerData = new PointerEventData(EventSystem.current)
-        {
-            position = Mouse.current != null ? Mouse.current.position.ReadValue() : chestGamepadCursorPosition
-        };
-
-        List<RaycastResult> results = new List<RaycastResult>();
-        EventSystem.current.RaycastAll(pointerData, results);
-
-        foreach (RaycastResult result in results)
-        {
-            if (result.gameObject == null)
-                continue;
-
-            Button button = result.gameObject.GetComponentInParent<Button>();
-            if (button != null && button.interactable)
-            {
-                button.onClick.Invoke();
-                return;
             }
         }
     }
@@ -1634,6 +1550,8 @@ public class InventoryUI : MonoBehaviour
 
         currentChest = chest;
         currentChest.SetOpenState(true);
+        leftTriggerWasPressed = false;
+        rightTriggerWasPressed = false;
         if (chestCanvas != null)
         {
             chestCanvas.SetActive(true);
@@ -1676,8 +1594,6 @@ public class InventoryUI : MonoBehaviour
             currentChest.SetOpenState(false);
         }
 
-        currentChest = null;
-
         if (inventoryCanvas != null)
         {
             inventoryCanvas.SetActive(true);
@@ -1685,7 +1601,10 @@ public class InventoryUI : MonoBehaviour
             UpdateHpVideoByCurrentHealth(force: true);
         }
 
-        ApplyChestCursorState(true);
+        if (currentChest != null)
+            currentChest.SetOpenState(false);
+
+        ApplyChestCursorState(false);
 
         isCombineSelectionMode = false;
         combineSourceSlotIndex = -1;
@@ -1707,6 +1626,8 @@ public class InventoryUI : MonoBehaviour
         }
 
         currentChest = null;
+        leftTriggerWasPressed = false;
+        rightTriggerWasPressed = false;
 
         isCombineSelectionMode = false;
         combineSourceSlotIndex = -1;

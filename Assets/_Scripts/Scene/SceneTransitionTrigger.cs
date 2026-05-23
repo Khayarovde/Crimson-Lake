@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.Video;
 using System.Collections;
+using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(Collider))]
 public class SceneTransitionTrigger : MonoBehaviour
@@ -104,7 +105,7 @@ public class SceneTransitionTrigger : MonoBehaviour
         if (triggered || !bossDefeated || !playerInsideTrigger || string.IsNullOrEmpty(nextSceneName))
             return;
 
-        if (Input.GetMouseButtonDown(0))
+        if (IsTransitionConfirmPressed())
         {
             triggered = true;
             playerInsideTrigger = false;
@@ -114,6 +115,18 @@ public class SceneTransitionTrigger : MonoBehaviour
 
             StartCoroutine(TransitionSequence());
         }
+    }
+
+    private bool IsTransitionConfirmPressed()
+    {
+        if (Input.GetMouseButtonDown(0))
+            return true;
+
+        Gamepad gamepad = Gamepad.current;
+        if (gamepad == null)
+            return false;
+
+        return gamepad.rightTrigger.wasPressedThisFrame;
     }
 
     private IEnumerator TransitionSequence()

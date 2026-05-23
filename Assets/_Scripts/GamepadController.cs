@@ -45,6 +45,7 @@ public class GamepadController : MonoBehaviour
         bool runHeld = gamepad.leftShoulder.isPressed;
         bool aimHeld = gamepad.leftTrigger.ReadValue() >= triggerThreshold;
         bool fireHeld = gamepad.rightTrigger.ReadValue() >= triggerThreshold;
+        bool reloadHeld = aimHeld;
 
         bool anyGamepadInput = moveInput.sqrMagnitude >= moveDeadzone * moveDeadzone ||
                                lookInput.sqrMagnitude >= lookDeadzone * lookDeadzone ||
@@ -93,6 +94,13 @@ public class GamepadController : MonoBehaviour
         if (gamepad.startButton.wasPressedThisFrame)
         {
             ToggleInventory();
+            return;
+        }
+
+        if (!inventoryOpen && !chestOpen && !contextMenuOpen && reloadHeld && gamepad.buttonNorth.wasPressedThisFrame)
+        {
+            if (weaponHandler != null)
+                weaponHandler.RequestGamepadReload();
             return;
         }
 

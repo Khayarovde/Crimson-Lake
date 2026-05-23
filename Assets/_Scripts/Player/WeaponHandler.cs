@@ -1515,6 +1515,11 @@ public class WeaponHandler : MonoBehaviour
         StartReload();
     }
 
+    public void RequestGamepadReload()
+    {
+        TryManualReload();
+    }
+
     public void AddAmmo(InventoryItem.ItemType type, int amount)
     {
         if (type == InventoryItem.ItemType.Gun || type == InventoryItem.ItemType.ShotgunAmmo)

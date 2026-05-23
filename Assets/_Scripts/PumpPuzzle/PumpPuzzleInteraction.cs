@@ -207,12 +207,12 @@ public class PumpPuzzleInteraction : MonoBehaviour
         if (Gamepad.current == null) return;
 
         bool moved = false;
-        if (Gamepad.current.dpad.up.wasPressedThisFrame)
+        if (Gamepad.current.dpad.left.wasPressedThisFrame)
         {
             selectedPuzzleIndex = (selectedPuzzleIndex - 1 + puzzleButtons.Length) % puzzleButtons.Length;
             moved = true;
         }
-        else if (Gamepad.current.dpad.down.wasPressedThisFrame)
+        else if (Gamepad.current.dpad.right.wasPressedThisFrame)
         {
             selectedPuzzleIndex = (selectedPuzzleIndex + 1) % puzzleButtons.Length;
             moved = true;

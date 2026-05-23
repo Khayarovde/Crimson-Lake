@@ -3,6 +3,8 @@ using UnityEngine.UI;
 using TMPro;
 using UnityEngine.Events; // Добавляем для UnityEvent
 using UnityEngine.InputSystem;
+using UnityEngine.EventSystems;
+using System.Collections.Generic;
 
 public class ComputerInteraction : MonoBehaviour
 {
@@ -36,6 +38,10 @@ public class ComputerInteraction : MonoBehaviour
     public float randomFailureChance = 0.15f;
     public float randomFailureDrop = 20f;
 
+    [Header("Gamepad")]
+    [SerializeField] private float gamepadCursorSpeed = 1200f;
+    [SerializeField, Range(0.05f, 0.75f)] private float triggerThreshold = 0.5f;
+
     [Header("Лифт")]
     public UnityEvent onDisketteInsertedSuccess; // Событие, которое вызовется при успехе
 
@@ -49,6 +55,11 @@ public class ComputerInteraction : MonoBehaviour
     private float progress = 0f;
     private float failureTimer = 0f;
     private bool insertSuccess = false;
+    private Vector2 gamepadCursorPosition;
+    private bool gamepadCursorInitialized;
+    private bool cursorWasVisible;
+    private CursorLockMode cursorWasLockState;
+    private bool leftTriggerWasPressed;
 
     [HideInInspector] public bool isInsertHeld = false;
 
@@ -63,22 +74,58 @@ public class ComputerInteraction : MonoBehaviour
         audioSource = GetComponent<AudioSource>();
         if (audioSource == null) audioSource = gameObject.AddComponent<AudioSource>();
 
-        powerButton.onClick.AddListener(TurnOnPC);
-        insertButton.onClick.AddListener(StartInserting);
+        if (powerButton != null)
+            powerButton.onClick.AddListener(TurnOnPC);
+        if (insertButton != null)
+            insertButton.onClick.AddListener(StartInserting);
     }
 
     void Update()
     {
-        bool gpPressed = Gamepad.current != null && Gamepad.current.buttonSouth.wasPressedThisFrame;
-        bool gpHeld = Gamepad.current != null && Gamepad.current.buttonSouth.isPressed;
+        bool hasGamepad = Gamepad.current != null;
+        bool gpPressed = hasGamepad && Gamepad.current.buttonSouth.wasPressedThisFrame;
+        bool gpHeld = hasGamepad && Gamepad.current.buttonSouth.isPressed;
 
         if (!interacting && Vector3.Distance(player.transform.position, transform.position) < interactionDistance && (Input.GetKeyDown(KeyCode.E) || gpPressed))
         {
             StartInteraction();
         }
-        else if (interacting && (Input.GetKeyDown(KeyCode.E) || gpPressed))
+
+        if (interacting)
         {
-            CloseInteraction();
+            HandleGamepadCursor();
+
+            if (hasGamepad)
+            {
+                if (gpPressed)
+                {
+                    if (!ClickButtonUnderCursor())
+                    {
+                        if (computerCanvas != null && computerCanvas.gameObject.activeSelf)
+                        {
+                            if (insertButton != null && insertButton.gameObject.activeSelf)
+                            {
+                                if (insertButton != null && insertButton.onClick != null)
+                                    insertButton.onClick.Invoke();
+                            }
+                            else if (powerButton != null && powerButton.gameObject.activeSelf)
+                            {
+                                if (powerButton != null && powerButton.onClick != null)
+                                    powerButton.onClick.Invoke();
+                            }
+                        }
+                    }
+                }
+                if (Gamepad.current.buttonEast.wasPressedThisFrame)
+                {
+                    CloseInteraction();
+                    return;
+                }
+            }
+            else if (Input.GetKeyDown(KeyCode.E))
+            {
+                CloseInteraction();
+            }
         }
 
         if (inserting && isOn && !insertSuccess)
@@ -142,6 +189,7 @@ public class ComputerInteraction : MonoBehaviour
         interacting = true;
         computerCanvas.gameObject.SetActive(true);
         RefreshDisketteState();
+        ApplyGamepadCursorState(true);
 
         // Звук открытия интерфейса (подход к ПК)
         if (openInterfaceSound != null) audioSource.PlayOneShot(openInterfaceSound);
@@ -173,6 +221,7 @@ public class ComputerInteraction : MonoBehaviour
         computerCanvas.gameObject.SetActive(false);
         audioSource.Stop();
         isInsertHeld = false;
+        ApplyGamepadCursorState(false);
 
         if (inserting && !insertSuccess)
         {
@@ -221,6 +270,76 @@ public class ComputerInteraction : MonoBehaviour
     public void EndInsertHold()
     {
         isInsertHeld = false;
+    }
+
+    private void HandleGamepadCursor()
+    {
+        if (!interacting || Gamepad.current == null)
+            return;
+
+        if (!gamepadCursorInitialized)
+        {
+            gamepadCursorPosition = new Vector2(Screen.width * 0.5f, Screen.height * 0.5f);
+            gamepadCursorInitialized = true;
+        }
+
+        Vector2 stick = Gamepad.current.rightStick.ReadValue();
+        if (stick.sqrMagnitude > 0.01f)
+        {
+            gamepadCursorPosition += stick * gamepadCursorSpeed * Time.unscaledDeltaTime;
+            gamepadCursorPosition.x = Mathf.Clamp(gamepadCursorPosition.x, 0f, Screen.width - 1f);
+            gamepadCursorPosition.y = Mathf.Clamp(gamepadCursorPosition.y, 0f, Screen.height - 1f);
+
+            if (Mouse.current != null)
+            {
+                Mouse.current.WarpCursorPosition(gamepadCursorPosition);
+            }
+        }
+    }
+
+    private bool ClickButtonUnderCursor()
+    {
+        if (EventSystem.current == null)
+            return false;
+
+        PointerEventData pointerData = new PointerEventData(EventSystem.current)
+        {
+            position = Mouse.current != null ? Mouse.current.position.ReadValue() : gamepadCursorPosition
+        };
+
+        List<RaycastResult> results = new List<RaycastResult>();
+        EventSystem.current.RaycastAll(pointerData, results);
+
+        foreach (RaycastResult result in results)
+        {
+            if (result.gameObject == null)
+                continue;
+
+            Button button = result.gameObject.GetComponentInParent<Button>();
+            if (button != null && button.interactable)
+            {
+                button.onClick.Invoke();
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private void ApplyGamepadCursorState(bool active)
+    {
+        if (active)
+        {
+            cursorWasVisible = Cursor.visible;
+            cursorWasLockState = Cursor.lockState;
+            Cursor.visible = true;
+            Cursor.lockState = CursorLockMode.None;
+            gamepadCursorInitialized = false;
+            return;
+        }
+
+        Cursor.visible = cursorWasVisible;
+        Cursor.lockState = cursorWasLockState;
     }
 
     private void InsertSuccess()
