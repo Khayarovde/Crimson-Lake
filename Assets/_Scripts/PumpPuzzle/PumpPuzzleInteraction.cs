@@ -1,7 +1,9 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.UI;
+using UnityEngine.EventSystems;
+using System.Collections;
 
-//решение пазла a-b(6 раз) a-c(1) full a (4) 
 [RequireComponent(typeof(Collider))]
 public class PumpPuzzleInteraction : MonoBehaviour
 {
@@ -48,13 +50,17 @@ public class PumpPuzzleInteraction : MonoBehaviour
     private bool inventoryWasEnabled;
     private bool weaponWasEnabled;
 
+    // UI gamepad navigation
+    private Button[] puzzleButtons;
+    private int selectedPuzzleIndex = 0;
+    private float lastUiNavTime = 0f;
+    private float uiNavCooldown = 0.12f;
+
     private void Reset()
     {
         Collider col = GetComponent<Collider>();
         if (col != null)
-        {
             col.isTrigger = true;
-        }
     }
 
     private void Start()
@@ -62,26 +68,17 @@ public class PumpPuzzleInteraction : MonoBehaviour
         if (player == null)
         {
             GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
-            if (playerObj != null)
-            {
-                player = playerObj.transform;
-            }
+            if (playerObj != null) player = playerObj.transform;
         }
 
         if (autoFindPlayerControllers)
-        {
             TryAutoAssignPlayerControllers();
-        }
 
         if (puzzleCanvasRoot != null)
-        {
             puzzleCanvasRoot.SetActive(false);
-        }
 
         if (isSolvedByDefault)
-        {
             ApplyCompletedState();
-        }
 
         SetHintVisible(false);
     }
@@ -92,10 +89,7 @@ public class PumpPuzzleInteraction : MonoBehaviour
 
         if (!playerInRange)
         {
-            if (!isOpened)
-            {
-                SetHintVisible(false);
-            }
+            if (!isOpened) SetHintVisible(false);
             return;
         }
 
@@ -109,7 +103,11 @@ public class PumpPuzzleInteraction : MonoBehaviour
             return;
         }
 
-        if (Input.GetKeyDown(closeKey) || Input.GetKeyDown(interactionKey) || (Gamepad.current != null && Gamepad.current.buttonSouth.wasPressedThisFrame))
+        // If opened, handle UI navigation and buttons
+        if (Gamepad.current != null)
+            HandlePuzzleUiNavigation();
+
+        if (Input.GetKeyDown(closeKey) || (Gamepad.current != null && Gamepad.current.buttonEast.wasPressedThisFrame))
         {
             ClosePuzzle();
         }
@@ -117,39 +115,23 @@ public class PumpPuzzleInteraction : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (!other.CompareTag("Player"))
-        {
-            return;
-        }
-
+        if (!other.CompareTag("Player")) return;
         playerInRange = true;
-        if (!isOpened)
-        {
-            SetHintVisible(true);
-        }
+        if (!isOpened) SetHintVisible(true);
     }
 
     private void OnTriggerExit(Collider other)
     {
-        if (!other.CompareTag("Player"))
-        {
-            return;
-        }
-
+        if (!other.CompareTag("Player")) return;
         playerInRange = false;
-        if (!isOpened)
-        {
-            SetHintVisible(false);
-        }
+        if (!isOpened) SetHintVisible(false);
     }
 
     public void OnPuzzleSolved()
     {
         if (solvedCloseTriggered) return;
-        
         isSolvedByDefault = true;
         ApplyCompletedState();
-
         if (isOpened && autoCloseOnSolved)
         {
             solvedCloseTriggered = true;
@@ -161,26 +143,16 @@ public class PumpPuzzleInteraction : MonoBehaviour
     {
         if (lightsToDisableOnSolved != null)
         {
-            for (int i = 0; i < lightsToDisableOnSolved.Length; i++)
-            {
-                if (lightsToDisableOnSolved[i] != null)
-                {
-                    lightsToDisableOnSolved[i].SetActive(false);
-                }
-            }
+            foreach (var go in lightsToDisableOnSolved)
+                if (go != null) go.SetActive(false);
         }
 
         if (disableOnSolved != null)
         {
-            for (int i = 0; i < disableOnSolved.Length; i++)
-            {
-                if (disableOnSolved[i] != null)
-                {
-                    disableOnSolved[i].enabled = false;
-                }
-            }
+            foreach (var b in disableOnSolved)
+                if (b != null) b.enabled = false;
         }
-        
+
         Collider col = GetComponent<Collider>();
         if (col != null) col.enabled = false;
         SetHintVisible(false);
@@ -188,54 +160,105 @@ public class PumpPuzzleInteraction : MonoBehaviour
 
     public void OpenPuzzle()
     {
-        if (isOpened)
-        {
-            return;
-        }
-
+        if (isOpened) return;
         isOpened = true;
         solvedCloseTriggered = false;
 
-        if (puzzleCanvasRoot != null)
-        {
-            puzzleCanvasRoot.SetActive(true);
-        }
-
-        if (puzzleController != null && resetPuzzleOnOpen)
-        {
-            puzzleController.ResetPuzzle();
-        }
+        if (puzzleCanvasRoot != null) puzzleCanvasRoot.SetActive(true);
+        if (puzzleController != null && resetPuzzleOnOpen) puzzleController.ResetPuzzle();
 
         ApplyInputLock(true);
         SetHintVisible(false);
+        EnsurePuzzleButtons();
+        UpdatePuzzleSelectionVisual();
     }
 
     public void ClosePuzzle()
     {
-        if (!isOpened)
-        {
-            return;
-        }
-
+        if (!isOpened) return;
         isOpened = false;
         solvedCloseTriggered = false;
         CancelInvoke(nameof(ClosePuzzle));
 
         ApplyInputLock(false);
+        if (puzzleController != null && resetPuzzleOnClose) puzzleController.ResetPuzzle();
+        if (puzzleCanvasRoot != null) puzzleCanvasRoot.SetActive(false);
+        if (playerInRange) SetHintVisible(true);
 
-        if (puzzleController != null && resetPuzzleOnClose)
+        // clear selection
+        selectedPuzzleIndex = 0;
+        UpdatePuzzleSelectionVisual();
+    }
+
+    private void EnsurePuzzleButtons()
+    {
+        if (puzzleCanvasRoot == null) return;
+        var btns = puzzleCanvasRoot.GetComponentsInChildren<Button>(true);
+        puzzleButtons = btns != null ? btns : new Button[0];
+        selectedPuzzleIndex = Mathf.Clamp(selectedPuzzleIndex, 0, Mathf.Max(0, puzzleButtons.Length - 1));
+        if (puzzleButtons.Length > 0 && EventSystem.current != null)
+            EventSystem.current.SetSelectedGameObject(puzzleButtons[selectedPuzzleIndex].gameObject);
+    }
+
+    private void HandlePuzzleUiNavigation()
+    {
+        if (puzzleButtons == null || puzzleButtons.Length == 0) return;
+        if (Time.unscaledTime - lastUiNavTime < uiNavCooldown) return;
+        if (Gamepad.current == null) return;
+
+        bool moved = false;
+        if (Gamepad.current.dpad.up.wasPressedThisFrame)
         {
-            puzzleController.ResetPuzzle();
+            selectedPuzzleIndex = (selectedPuzzleIndex - 1 + puzzleButtons.Length) % puzzleButtons.Length;
+            moved = true;
+        }
+        else if (Gamepad.current.dpad.down.wasPressedThisFrame)
+        {
+            selectedPuzzleIndex = (selectedPuzzleIndex + 1) % puzzleButtons.Length;
+            moved = true;
         }
 
-        if (puzzleCanvasRoot != null)
+        if (moved)
         {
-            puzzleCanvasRoot.SetActive(false);
+            lastUiNavTime = Time.unscaledTime;
+            UpdatePuzzleSelectionVisual();
+            if (EventSystem.current != null)
+                EventSystem.current.SetSelectedGameObject(puzzleButtons[selectedPuzzleIndex].gameObject);
+            return;
         }
 
-        if (playerInRange)
+        if (Gamepad.current.buttonSouth.wasPressedThisFrame)
         {
-            SetHintVisible(true);
+            Button btn = puzzleButtons[selectedPuzzleIndex];
+            if (btn != null && btn.interactable) btn.onClick.Invoke();
+        }
+
+        if (Gamepad.current.buttonEast.wasPressedThisFrame)
+        {
+            ClosePuzzle();
+        }
+    }
+
+    private void UpdatePuzzleSelectionVisual()
+    {
+        if (puzzleButtons == null) return;
+        for (int i = 0; i < puzzleButtons.Length; i++)
+        {
+            var btn = puzzleButtons[i];
+            if (btn == null) continue;
+
+            UnityEngine.UI.Outline outline = btn.GetComponent<UnityEngine.UI.Outline>();
+            if (i == selectedPuzzleIndex)
+            {
+                if (outline == null) outline = btn.gameObject.AddComponent<UnityEngine.UI.Outline>();
+                outline.effectColor = Color.red;
+                outline.effectDistance = new Vector2(2f, 2f);
+                outline.enabled = true;
+            }
+            else
+            {
+                if (outline != null) outline.enabled = false;
+            }
         }
     }
 
@@ -273,9 +296,7 @@ public class PumpPuzzleInteraction : MonoBehaviour
             if (disableWhileOpen != null)
             {
                 if (disabledByInteraction == null || disabledByInteraction.Length != disableWhileOpen.Length)
-                {
                     disabledByInteraction = new bool[disableWhileOpen.Length];
-                }
 
                 for (int i = 0; i < disableWhileOpen.Length; i++)
                 {
@@ -340,60 +361,28 @@ public class PumpPuzzleInteraction : MonoBehaviour
         if (playerTransform == null)
         {
             GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
-            if (playerObj != null)
-            {
-                playerTransform = playerObj.transform;
-            }
+            if (playerObj != null) playerTransform = playerObj.transform;
         }
 
-        if (playerTransform == null)
-        {
-            return;
-        }
+        if (playerTransform == null) return;
 
-        if (movementController == null)
-        {
-            movementController = FindOnPlayer<TankController>(playerTransform);
-        }
-
-        if (inventoryController == null)
-        {
-            inventoryController = FindOnPlayer<PlayerInventory>(playerTransform);
-        }
-
-        if (weaponController == null)
-        {
-            weaponController = FindOnPlayer<WeaponHandler>(playerTransform);
-        }
+        if (movementController == null) movementController = FindOnPlayer<TankController>(playerTransform);
+        if (inventoryController == null) inventoryController = FindOnPlayer<PlayerInventory>(playerTransform);
+        if (weaponController == null) weaponController = FindOnPlayer<WeaponHandler>(playerTransform);
     }
 
     private static T FindOnPlayer<T>(Transform playerTransform) where T : Component
     {
-        if (playerTransform == null)
-        {
-            return null;
-        }
-
+        if (playerTransform == null) return null;
         T component = playerTransform.GetComponent<T>();
-        if (component != null)
-        {
-            return component;
-        }
-
+        if (component != null) return component;
         component = playerTransform.GetComponentInParent<T>();
-        if (component != null)
-        {
-            return component;
-        }
-
+        if (component != null) return component;
         return playerTransform.GetComponentInChildren<T>(true);
     }
 
     private void SetHintVisible(bool isVisible)
     {
-        if (interactionHint != null)
-        {
-            interactionHint.SetActive(isVisible);
-        }
+        if (interactionHint != null) interactionHint.SetActive(isVisible);
     }
 }

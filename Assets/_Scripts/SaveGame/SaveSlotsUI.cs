@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 using TMPro;
 using UnityEngine.SceneManagement;
@@ -59,6 +60,9 @@ public class SaveSlotsUI : MonoBehaviour
     private int openedFrame = -1;
     private bool isLoadMode;
     private string loadFallbackScene;
+    private int selectedSlotIndex = 0;
+    private float lastNavTime = 0f;
+    private float navCooldown = 0.12f;
 
     public bool IsOpen => isOpen;
     public static bool IsSaveMenuOpen { get; private set; }
@@ -112,6 +116,33 @@ public class SaveSlotsUI : MonoBehaviour
             }
 
             Hide();
+        }
+
+        // Gamepad navigation: dpad to move, A to activate, B to cancel
+        if (Gamepad.current != null)
+        {
+            if (Gamepad.current.dpad.up.wasPressedThisFrame)
+            {
+                selectedSlotIndex = (selectedSlotIndex - 1 + slotButtons.Length) % slotButtons.Length;
+                if (EventSystem.current != null && slotButtons[selectedSlotIndex] != null)
+                    EventSystem.current.SetSelectedGameObject(slotButtons[selectedSlotIndex].gameObject);
+            }
+            else if (Gamepad.current.dpad.down.wasPressedThisFrame)
+            {
+                selectedSlotIndex = (selectedSlotIndex + 1) % slotButtons.Length;
+                if (EventSystem.current != null && slotButtons[selectedSlotIndex] != null)
+                    EventSystem.current.SetSelectedGameObject(slotButtons[selectedSlotIndex].gameObject);
+            }
+
+            if (Gamepad.current.buttonSouth.wasPressedThisFrame)
+            {
+                OnSlotPressed(selectedSlotIndex);
+            }
+
+            if (Gamepad.current.buttonEast.wasPressedThisFrame)
+            {
+                Hide();
+            }
         }
     }
 
@@ -181,6 +212,10 @@ public class SaveSlotsUI : MonoBehaviour
             saveManager.MarkUnsaved();
         RefreshSlots();
         EnsureEventSystem();
+        // set default selection
+        selectedSlotIndex = 0;
+        if (EventSystem.current != null && slotButtons.Length > 0 && slotButtons[0] != null)
+            EventSystem.current.SetSelectedGameObject(slotButtons[0].gameObject);
         ApplyInputLock(true);
         ForcePanelToTop();
         EnableAllButtons();

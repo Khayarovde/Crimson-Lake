@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine.Video;
 using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
 using DG.Tweening;
 
 public class InventoryUI : MonoBehaviour
@@ -118,6 +119,18 @@ public class InventoryUI : MonoBehaviour
     private Image[] chestSlotIcons;
     private Button[] chestTakeButtons;
     private Button[] chestDestroyButtons;
+    private UIOutline[] chestOutlines;
+    private int selectedChestIndex = 0;
+    private float lastChestNav = 0f;
+    private float chestNavCooldown = 0.12f;
+    private Vector2 chestGamepadCursorPosition;
+    private bool chestGamepadCursorInitialized;
+    private bool chestCursorWasVisible;
+    private CursorLockMode chestCursorWasLocked;
+    [SerializeField] private float chestGamepadCursorSpeed = 1200f;
+    [SerializeField] private float triggerSwitchThreshold = 0.5f;
+    private bool leftTriggerWasPressed;
+    private bool rightTriggerWasPressed;
 
     private enum HpVideoState
     {
@@ -219,6 +232,122 @@ public class InventoryUI : MonoBehaviour
         {
             CloseChestUI();
         }
+
+        // Gamepad handling for chest UI and quick chest/inventory toggle via Y
+        if (Gamepad.current != null)
+        {
+            if (IsChestUIOpen())
+            {
+                HandleChestGamepadInput();
+            }
+            else if (IsInventoryOpen())
+            {
+                bool rightTriggerPressed = Gamepad.current.rightTrigger.ReadValue() >= triggerSwitchThreshold;
+                if (rightTriggerPressed && !rightTriggerWasPressed && playerInventory != null && playerInventory.IsNearChest())
+                {
+                    OpenChestUI(playerInventory.GetNearbyChest());
+                }
+
+                rightTriggerWasPressed = rightTriggerPressed;
+                leftTriggerWasPressed = Gamepad.current.leftTrigger.ReadValue() >= triggerSwitchThreshold;
+            }
+        }
+    }
+
+    private void HandleChestGamepadInput()
+    {
+        UpdateChestGamepadCursor();
+
+        if (Gamepad.current == null)
+            return;
+
+        bool leftTriggerPressed = Gamepad.current.leftTrigger.ReadValue() >= triggerSwitchThreshold;
+        bool rightTriggerPressed = Gamepad.current.rightTrigger.ReadValue() >= triggerSwitchThreshold;
+
+        if (leftTriggerPressed && !leftTriggerWasPressed)
+        {
+            SwitchToInventoryUI();
+            leftTriggerWasPressed = leftTriggerPressed;
+            rightTriggerWasPressed = rightTriggerPressed;
+            return;
+        }
+
+        rightTriggerWasPressed = rightTriggerPressed;
+        leftTriggerWasPressed = leftTriggerPressed;
+
+        if (Gamepad.current.rightShoulder.wasPressedThisFrame)
+        {
+            ClickChestButtonUnderCursor();
+        }
+
+        if (Gamepad.current.buttonEast.wasPressedThisFrame)
+        {
+            CloseChestUI();
+        }
+    }
+
+    private void UpdateChestGamepadCursor()
+    {
+        if (Mouse.current == null || Gamepad.current == null)
+            return;
+
+        if (!chestGamepadCursorInitialized)
+        {
+            chestGamepadCursorPosition = new Vector2(Screen.width * 0.5f, Screen.height * 0.5f);
+            chestGamepadCursorInitialized = true;
+        }
+
+        Vector2 stick = Gamepad.current.rightStick.ReadValue();
+        if (stick.sqrMagnitude > 0.01f)
+        {
+            chestGamepadCursorPosition += stick * chestGamepadCursorSpeed * Time.unscaledDeltaTime;
+            chestGamepadCursorPosition.x = Mathf.Clamp(chestGamepadCursorPosition.x, 0f, Screen.width - 1f);
+            chestGamepadCursorPosition.y = Mathf.Clamp(chestGamepadCursorPosition.y, 0f, Screen.height - 1f);
+            Mouse.current.WarpCursorPosition(chestGamepadCursorPosition);
+        }
+    }
+
+    private void ClickChestButtonUnderCursor()
+    {
+        if (EventSystem.current == null)
+            return;
+
+        PointerEventData pointerData = new PointerEventData(EventSystem.current)
+        {
+            position = Mouse.current != null ? Mouse.current.position.ReadValue() : chestGamepadCursorPosition
+        };
+
+        List<RaycastResult> results = new List<RaycastResult>();
+        EventSystem.current.RaycastAll(pointerData, results);
+
+        foreach (RaycastResult result in results)
+        {
+            if (result.gameObject == null)
+                continue;
+
+            Button button = result.gameObject.GetComponentInParent<Button>();
+            if (button != null && button.interactable)
+            {
+                button.onClick.Invoke();
+                return;
+            }
+        }
+    }
+
+    private void ApplyChestCursorState(bool active)
+    {
+        if (active)
+        {
+            chestCursorWasVisible = Cursor.visible;
+            chestCursorWasLocked = Cursor.lockState;
+            Cursor.visible = true;
+            Cursor.lockState = CursorLockMode.None;
+            chestGamepadCursorInitialized = false;
+            return;
+        }
+
+        Cursor.visible = chestCursorWasVisible;
+        Cursor.lockState = chestCursorWasLocked;
     }
 
     // Новый метод для очистки ссылок на сундук
@@ -860,6 +989,7 @@ public class InventoryUI : MonoBehaviour
         chestSlotIcons = new Image[16];
         chestTakeButtons = new Button[16];
         chestDestroyButtons = new Button[16];
+        chestOutlines = new UIOutline[16];
 
         for (int i = 0; i < 16; i++)
         {
@@ -871,6 +1001,12 @@ public class InventoryUI : MonoBehaviour
             if (icon != null)
             {
                 icon.enabled = false;
+                chestOutlines[i] = icon.GetComponent<UIOutline>();
+                if (chestOutlines[i] != null)
+                {
+                    chestOutlines[i].effectColor = Color.red;
+                    chestOutlines[i].enabled = false;
+                }
             }
 
             Button takeButton = FindOrCreateButton(slot, "TakeButton", takeButtonPrefab);
@@ -1502,8 +1638,7 @@ public class InventoryUI : MonoBehaviour
         {
             chestCanvas.SetActive(true);
             UpdateChestUI();
-            // Cursor.lockState = CursorLockMode.None;
-            // Cursor.visible = true;
+            ApplyChestCursorState(true);
         }
     }
 
@@ -1550,6 +1685,8 @@ public class InventoryUI : MonoBehaviour
             UpdateHpVideoByCurrentHealth(force: true);
         }
 
+        ApplyChestCursorState(true);
+
         isCombineSelectionMode = false;
         combineSourceSlotIndex = -1;
         HideContextMenu();
@@ -1587,8 +1724,7 @@ public class InventoryUI : MonoBehaviour
             {
                 inventoryCanvas.SetActive(false);
             }
-            // Cursor.lockState = CursorLockMode.Locked;
-            // Cursor.visible = false;
+            ApplyChestCursorState(false);
         }
 
         wasInventoryOpenBeforeChest = false;
