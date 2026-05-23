@@ -2902,8 +2902,8 @@ MonoBehaviour:
   m_TileSize: 256
   m_OverrideVoxelSize: 0
   m_VoxelSize: 0.16666667
-  m_MinRegionArea: 2
-  m_NavMeshData: {fileID: 23800000, guid: 1a9306820ea2faa499d976844536a15c, type: 2}
+  m_MinRegionArea: 4.01
+  m_NavMeshData: {fileID: 23800000, guid: 0c823632102a02649a850aca0fd589bf, type: 2}
   m_BuildHeightMesh: 0
 --- !u!1 &2960430283877572474
 GameObject:
@@ -6170,7 +6170,7 @@ Transform:
   m_GameObject: {fileID: 7681242740800857289}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: 0.27500224, w: 0.9614436}
-  m_LocalPosition: {x: -6.01, y: -1.28, z: 0}
+  m_LocalPosition: {x: -6.01, y: -1.48, z: 0}
   m_LocalScale: {x: 0.5, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -7961,6 +7961,30 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 6101762269548646959}
     m_Modifications:
+    - target: {fileID: 738176507764042939, guid: 70735b687686e644f8f256fb21aeaa51, type: 3}
+      propertyPath: m_Speed
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 738176507764042939, guid: 70735b687686e644f8f256fb21aeaa51, type: 3}
+      propertyPath: m_Radius
+      value: 0.3
+      objectReference: {fileID: 0}
+    - target: {fileID: 738176507764042939, guid: 70735b687686e644f8f256fb21aeaa51, type: 3}
+      propertyPath: m_Acceleration
+      value: 25
+      objectReference: {fileID: 0}
+    - target: {fileID: 738176507764042939, guid: 70735b687686e644f8f256fb21aeaa51, type: 3}
+      propertyPath: m_AngularSpeed
+      value: 300
+      objectReference: {fileID: 0}
+    - target: {fileID: 738176507764042939, guid: 70735b687686e644f8f256fb21aeaa51, type: 3}
+      propertyPath: m_StoppingDistance
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 738176507764042939, guid: 70735b687686e644f8f256fb21aeaa51, type: 3}
+      propertyPath: m_ObstacleAvoidanceType
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1493284104649094233, guid: 70735b687686e644f8f256fb21aeaa51, type: 3}
       propertyPath: m_LocalPosition.x
       value: -13.449997
@@ -8001,9 +8025,77 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1834195026432649363, guid: 70735b687686e644f8f256fb21aeaa51, type: 3}
+      propertyPath: m_ApplyRootMotion
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5114662874806635327, guid: 70735b687686e644f8f256fb21aeaa51, type: 3}
+      propertyPath: health
+      value: 60
+      objectReference: {fileID: 0}
+    - target: {fileID: 5114662874806635327, guid: 70735b687686e644f8f256fb21aeaa51, type: 3}
+      propertyPath: ramSpeed
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 5114662874806635327, guid: 70735b687686e644f8f256fb21aeaa51, type: 3}
+      propertyPath: deathClip
+      value: 
+      objectReference: {fileID: 8300000, guid: 669702c38b1c8504f9d40fa40509b937, type: 3}
     - target: {fileID: 5114662874806635327, guid: 70735b687686e644f8f256fb21aeaa51, type: 3}
       propertyPath: maxHealth
       value: 120
+      objectReference: {fileID: 0}
+    - target: {fileID: 5114662874806635327, guid: 70735b687686e644f8f256fb21aeaa51, type: 3}
+      propertyPath: chaseSpeed
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 5114662874806635327, guid: 70735b687686e644f8f256fb21aeaa51, type: 3}
+      propertyPath: showGizmos
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5114662874806635327, guid: 70735b687686e644f8f256fb21aeaa51, type: 3}
+      propertyPath: aimingSpeed
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 5114662874806635327, guid: 70735b687686e644f8f256fb21aeaa51, type: 3}
+      propertyPath: leskaDamage
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 5114662874806635327, guid: 70735b687686e644f8f256fb21aeaa51, type: 3}
+      propertyPath: armorBreakClip
+      value: 
+      objectReference: {fileID: 8300000, guid: f2f88792f8a4fe34eb0a0893f1234e96, type: 3}
+    - target: {fileID: 5114662874806635327, guid: 70735b687686e644f8f256fb21aeaa51, type: 3}
+      propertyPath: enableGlazktuk
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5114662874806635327, guid: 70735b687686e644f8f256fb21aeaa51, type: 3}
+      propertyPath: showGizmoLabels
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5114662874806635327, guid: 70735b687686e644f8f256fb21aeaa51, type: 3}
+      propertyPath: closeAttackDistance
+      value: 0.43
+      objectReference: {fileID: 0}
+    - target: {fileID: 5114662874806635327, guid: 70735b687686e644f8f256fb21aeaa51, type: 3}
+      propertyPath: predictedLeskaChance
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5114662874806635327, guid: 70735b687686e644f8f256fb21aeaa51, type: 3}
+      propertyPath: leskaSpawnOffsetBack.z
+      value: -3
+      objectReference: {fileID: 0}
+    - target: {fileID: 5114662874806635327, guid: 70735b687686e644f8f256fb21aeaa51, type: 3}
+      propertyPath: leskaSpawnOffsetFront.z
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 5114662874806635327, guid: 70735b687686e644f8f256fb21aeaa51, type: 3}
+      propertyPath: glazTriggerHealthPercent
+      value: 0.523
+      objectReference: {fileID: 0}
+    - target: {fileID: 5114662874806635327, guid: 70735b687686e644f8f256fb21aeaa51, type: 3}
+      propertyPath: predictedLeskaSideOffset
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 5709727445875696020, guid: 70735b687686e644f8f256fb21aeaa51, type: 3}
       propertyPath: m_Name
@@ -8021,6 +8113,10 @@ PrefabInstance:
       propertyPath: blackScreenRoot
       value: 
       objectReference: {fileID: 4860350092886305785}
+    - target: {fileID: 6588023724172125371, guid: 70735b687686e644f8f256fb21aeaa51, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 6719276859981017924, guid: 70735b687686e644f8f256fb21aeaa51, type: 3}
       propertyPath: m_Events.m_Events.Array.data[0].m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 

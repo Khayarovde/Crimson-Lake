@@ -302,6 +302,7 @@ public class BossEnemy : MonoBehaviour
 
     private Coroutine slowRoutine;
     private Coroutine rageRoutine;
+    private Coroutine armorBreakRoutine;
 
     private readonly Collider[] sharkHitsBuffer = new Collider[8];
 
@@ -506,9 +507,10 @@ public class BossEnemy : MonoBehaviour
         if (isDead || player == null || navAgent == null || !navAgent.isOnNavMesh)
             return;
 
-        if (armorBreakPending && !isStunSequence && !isDoingRam && !isDoingGlazktuk)
+        if (armorBreakPending && armorBreakRoutine == null && !isStunSequence && !isDoingRam && !isDoingGlazktuk)
         {
-            StartCoroutine(ArmorBreakRoutine());
+            armorBreakPending = false;
+            armorBreakRoutine = StartCoroutine(ArmorBreakRoutine());
             return;
         }
 
@@ -1310,51 +1312,57 @@ public class BossEnemy : MonoBehaviour
 
     private IEnumerator ArmorBreakRoutine()
     {
-        armorBreakPending = false;
-        isDoingRam = false;
-        isDoingGlazktuk = false;
-        isStunSequence = true;
-        StopAgentHard();
-        isArmorBroken = true;
-        isVulnerable = false;
+        try
+        {
+            isDoingRam = false;
+            isDoingGlazktuk = false;
+            isStunSequence = true;
+            StopAgentHard();
+            isArmorBroken = true;
+            isVulnerable = false;
 
-        if (audioSource != null && armorBreakClip != null)
-            audioSource.PlayOneShot(armorBreakClip);
+            if (audioSource != null && armorBreakClip != null)
+                audioSource.PlayOneShot(armorBreakClip);
 
-        float originalCrossFade = animCrossFade;
-        animCrossFade = Mathf.Max(originalCrossFade, 0.22f);
-        LogBossEvent("Начало GetDown", $"t={Time.time:0.000}");
-        PlayBaseAnim(baseGetDownAnim);
-        animCrossFade = originalCrossFade;
-        if (getDownDuration > 0f)
-            yield return new WaitForSeconds(getDownDuration);
+            float originalCrossFade = animCrossFade;
+            animCrossFade = Mathf.Max(originalCrossFade, 0.22f);
+            LogBossEvent("Начало GetDown", $"t={Time.time:0.000}");
+            PlayBaseAnim(baseGetDownAnim);
+            animCrossFade = originalCrossFade;
+            if (getDownDuration > 0f)
+                yield return new WaitForSeconds(getDownDuration);
 
-        string tryaskaAnim = (Random.value < 0.5f) ? baseTryaska1Anim : baseTryaska2Anim;
-        LogBossEvent("Начало Tryaska", $"Анимация={tryaskaAnim}, t={Time.time:0.000}");
-        PlayBaseAnim(tryaskaAnim);
-        isVulnerable = true;
-        if (tryaskaDuration > 0f)
-            yield return new WaitForSeconds(tryaskaDuration);
+            string tryaskaAnim = (Random.value < 0.5f) ? baseTryaska1Anim : baseTryaska2Anim;
+            LogBossEvent("Начало Tryaska", $"Анимация={tryaskaAnim}, t={Time.time:0.000}");
+            PlayBaseAnim(tryaskaAnim);
+            isVulnerable = true;
+            if (tryaskaDuration > 0f)
+                yield return new WaitForSeconds(tryaskaDuration);
 
-        isVulnerable = false;
-        if (isDead)
-            yield break;
+            isVulnerable = false;
+            if (isDead)
+                yield break;
 
-        LogBossEvent("Начало wakeUp", $"t={Time.time:0.000}");
-        PlayBaseAnim(baseWakeUpAnim);
-        if (wakeUpDuration > 0f)
-            yield return new WaitForSeconds(wakeUpDuration);
+            LogBossEvent("Начало wakeUp", $"t={Time.time:0.000}");
+            PlayBaseAnim(baseWakeUpAnim);
+            if (wakeUpDuration > 0f)
+                yield return new WaitForSeconds(wakeUpDuration);
 
-        navAgent.isStopped = false;
-        SetAgentSpeed(isSlow ? chaseSpeed * slowSpeedMultiplier : chaseSpeed);
-        PlayBaseAnim(baseWalkAnim);
-        isStunSequence = false;
+            navAgent.isStopped = false;
+            SetAgentSpeed(isSlow ? chaseSpeed * slowSpeedMultiplier : chaseSpeed);
+            PlayBaseAnim(baseWalkAnim);
+            isStunSequence = false;
 
-        if (armorRegenDelay > 0f)
-            yield return new WaitForSeconds(armorRegenDelay);
+            if (armorRegenDelay > 0f)
+                yield return new WaitForSeconds(armorRegenDelay);
 
-        armorDamage = 0f;
-        isArmorBroken = false;
+            armorDamage = 0f;
+            isArmorBroken = false;
+        }
+        finally
+        {
+            armorBreakRoutine = null;
+        }
     }
 
     private void ApplyArmorDamage(float incomingDamage)
@@ -1458,7 +1466,7 @@ public class BossEnemy : MonoBehaviour
     {
         if (navAgent == null || !navAgent.isOnNavMesh) return;
         navAgent.isStopped = true;
-        if (navAgent.hasPath) navAgent.ResetPath();
+        navAgent.ResetPath();
         navAgent.velocity = Vector3.zero;
         navAgent.nextPosition = transform.position;
     }
