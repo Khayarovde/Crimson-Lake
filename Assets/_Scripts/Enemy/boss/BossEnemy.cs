@@ -115,6 +115,12 @@ public class BossEnemy : MonoBehaviour
     [Header("Close Attack (Ruka Attack2)")]
     [Tooltip("Если игрок слишком близко, проигрывается Attack2 на слое Ruka.")]
     public float closeAttackDistance = 1.6f;
+    [Tooltip("Во сколько раз дальше отрабатывает приоритет Attack2, даже если игрок ещё не в прямом радиусе удара.")]
+    [Range(1f, 3f)] public float closeAttackPreferRangeMultiplier = 1.8f;
+    [Tooltip("Шанс выбрать Attack2 на границе зоны предпочтения (чем ближе, тем выше шанс).")]
+    [Range(0f, 1f)] public float closeAttackPreferChanceAtEdge = 0.25f;
+    [Tooltip("Шанс выбрать Attack2 почти вплотную к боссу, если Attack2 уже доступен по дистанции.")]
+    [Range(0f, 1f)] public float closeAttackPreferChanceNear = 0.95f;
     [Tooltip("Урон ближней атаки.")]
     public int closeAttackDamage = 15;
     [Tooltip("Кулдаун между близкими атаками.")]
@@ -145,6 +151,12 @@ public class BossEnemy : MonoBehaviour
     public float ramHitUpOffset = 0.8f;
     [Tooltip("Вертикальное смещение точки цели (игрока) для расчёта попадания (м).")]
     public float playerHitUpOffset = 0.9f;
+
+    [Header("Chase Tuning")]
+    [Tooltip("Минимальный интервал пересчёта пути при обычном преследовании (сек).")]
+    [Range(0.01f, 0.2f)] public float chaseRepathInterval = 0.03f;
+    [Tooltip("Минимальный сдвиг позиции игрока, после которого босс обновляет путь (м).")]
+    [Range(0.01f, 1f)] public float chaseRepathDistanceThreshold = 0.1f;
 
     [Header("Phase 2 - Shark Spin")]
     [Tooltip("Кулдаун между вращениями (сек).")]
@@ -394,6 +406,15 @@ public class BossEnemy : MonoBehaviour
             ResolveAnimatorLayers();
         }
 
+        if (navAgent != null)
+        {
+            navAgent.autoBraking = false;
+            navAgent.autoRepath = true;
+            navAgent.acceleration = 999f;
+            navAgent.angularSpeed = 720f;
+            navAgent.stoppingDistance = 0.1f;
+        }
+
         if (sceneTransitionTriggerObject != null)
             sceneTransitionTriggerObject.SetActive(false);
     }
@@ -511,13 +532,23 @@ public class BossEnemy : MonoBehaviour
     private void ChasePlayer()
     {
         Vector3 destination = player.position;
-        if (Time.time >= nextRepathTime && ShouldRefreshPath(destination))
+        if (ShouldRefreshPath(destination))
         {
-            nextRepathTime = Time.time + 0.15f;
-            navAgent.isStopped = false;
-            navAgent.SetDestination(destination);
-            lastChaseDestination = destination;
-            hasChaseDestination = true;
+            float chaseThreshold = Mathf.Max(0.01f, chaseRepathDistanceThreshold);
+            float chaseThresholdSqr = chaseThreshold * chaseThreshold;
+            bool shouldRepathNow = !hasChaseDestination
+                                  || Time.time >= nextRepathTime
+                                  || (destination - lastChaseDestination).sqrMagnitude >= chaseThresholdSqr
+                                  || !navAgent.hasPath;
+
+            if (shouldRepathNow)
+            {
+                nextRepathTime = Time.time + Mathf.Max(0.01f, chaseRepathInterval);
+                navAgent.isStopped = false;
+                navAgent.SetDestination(destination);
+                lastChaseDestination = destination;
+                hasChaseDestination = true;
+            }
         }
 
         PlayBaseAnim(baseWalkAnim);
@@ -532,7 +563,21 @@ public class BossEnemy : MonoBehaviour
             return false;
 
         float closeDistSqr = closeAttackDistance * closeAttackDistance;
-        if (distSqr > closeDistSqr)
+        if (distSqr <= closeDistSqr)
+        {
+            StartCoroutine(CloseAttackRoutine());
+            nextCloseAttackTime = Time.time + Mathf.Max(0f, closeAttackCooldown);
+            return true;
+        }
+
+        float preferRange = closeAttackDistance * Mathf.Max(1f, closeAttackPreferRangeMultiplier);
+        float preferRangeSqr = preferRange * preferRange;
+        if (distSqr > preferRangeSqr)
+            return false;
+
+        float proximityT = Mathf.InverseLerp(preferRangeSqr, closeDistSqr, distSqr);
+        float preferChance = Mathf.Lerp(closeAttackPreferChanceAtEdge, closeAttackPreferChanceNear, proximityT);
+        if (Random.value > preferChance)
             return false;
 
         StartCoroutine(CloseAttackRoutine());
