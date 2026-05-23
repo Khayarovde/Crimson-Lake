@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 //решение пазла a-b(6 раз) a-c(1) full a (4) 
 [RequireComponent(typeof(Collider))]
@@ -101,14 +102,14 @@ public class PumpPuzzleInteraction : MonoBehaviour
         if (!isOpened)
         {
             SetHintVisible(true);
-            if (Input.GetKeyDown(interactionKey))
+            if (Input.GetKeyDown(interactionKey) || (Gamepad.current != null && Gamepad.current.buttonSouth.wasPressedThisFrame))
             {
                 OpenPuzzle();
             }
             return;
         }
 
-        if (Input.GetKeyDown(closeKey) || Input.GetKeyDown(interactionKey))
+        if (Input.GetKeyDown(closeKey) || Input.GetKeyDown(interactionKey) || (Gamepad.current != null && Gamepad.current.buttonSouth.wasPressedThisFrame))
         {
             ClosePuzzle();
         }

@@ -69,6 +69,18 @@ public class MedkitPickup : MonoBehaviour
         LateHintUpdate();
     }
 
+    public bool TryPickupFromGamepad()
+    {
+        if (!playerInRange || pickedUp)
+            return false;
+
+        bool success = TryResolvePickup();
+        if (success)
+            CompletePickup();
+
+        return success;
+    }
+
     private void StartDialogue()
     {
         if (pickedUp)

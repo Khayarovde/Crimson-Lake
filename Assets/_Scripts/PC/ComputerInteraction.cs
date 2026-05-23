@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using UnityEngine.Events; // Добавляем для UnityEvent
+using UnityEngine.InputSystem;
 
 public class ComputerInteraction : MonoBehaviour
 {
@@ -68,17 +69,30 @@ public class ComputerInteraction : MonoBehaviour
 
     void Update()
     {
-        if (!interacting && Vector3.Distance(player.transform.position, transform.position) < interactionDistance && Input.GetKeyDown(KeyCode.E))
+        bool gpPressed = Gamepad.current != null && Gamepad.current.buttonSouth.wasPressedThisFrame;
+        bool gpHeld = Gamepad.current != null && Gamepad.current.buttonSouth.isPressed;
+
+        if (!interacting && Vector3.Distance(player.transform.position, transform.position) < interactionDistance && (Input.GetKeyDown(KeyCode.E) || gpPressed))
         {
             StartInteraction();
         }
-        else if (interacting && Input.GetKeyDown(KeyCode.E))
+        else if (interacting && (Input.GetKeyDown(KeyCode.E) || gpPressed))
         {
             CloseInteraction();
         }
 
         if (inserting && isOn && !insertSuccess)
         {
+            // Update isInsertHeld from gamepad hold as well
+            if (!isInsertHeld && gpHeld)
+            {
+                BeginInsertHold();
+            }
+            else if (isInsertHeld && !gpHeld && Gamepad.current != null)
+            {
+                EndInsertHold();
+            }
+
             if (isInsertHeld)
             {
                 if (!holding)

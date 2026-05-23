@@ -228,6 +228,9 @@ public class WeaponHandler : MonoBehaviour
     private Dictionary<AdvancedEnemyAI, int> enemyHitCount = new Dictionary<AdvancedEnemyAI, int>();
     private GameObject holdVisualInstance;
     private InventoryItem.ItemType holdVisualType = InventoryItem.ItemType.Empty;
+    private bool gamepadAimHeld;
+    private bool gamepadFireHeld;
+    private bool gamepadModeActive;
 
     private void Awake()
     {
@@ -280,7 +283,9 @@ public class WeaponHandler : MonoBehaviour
     {
         bool hasActiveWeapon = HasActiveWeaponSelected();
         bool blockAimingNow = ShouldBlockAimingForFinisher();
-        bool aiming = hasActiveWeapon && !blockAimingNow && Input.GetMouseButton(1);
+        bool aimHeld = gamepadModeActive ? gamepadAimHeld : (gamepadAimHeld || Input.GetMouseButton(1));
+        bool fireHeld = gamepadModeActive ? gamepadFireHeld : (gamepadFireHeld || Input.GetMouseButton(0));
+        bool aiming = hasActiveWeapon && !blockAimingNow && aimHeld;
 
         if (blockAimingNow && isAiming)
             StopAiming();
@@ -290,8 +295,23 @@ public class WeaponHandler : MonoBehaviour
         else if (!aiming && isAiming)
             StopAiming();
 
-        if (aiming && Input.GetMouseButton(0) && CanShoot() && firingCoroutine == null)
+        if (aiming && fireHeld && CanShoot() && firingCoroutine == null)
             firingCoroutine = StartCoroutine(ShootingRoutine());
+    }
+
+    public void SetGamepadAimHeld(bool isHeld)
+    {
+        gamepadAimHeld = isHeld;
+    }
+
+    public void SetGamepadFireHeld(bool isHeld)
+    {
+        gamepadFireHeld = isHeld;
+    }
+
+    public void SetGamepadModeActive(bool isActive)
+    {
+        gamepadModeActive = isActive;
     }
 
     private bool HasActiveWeaponSelected()
@@ -863,13 +883,18 @@ public class WeaponHandler : MonoBehaviour
 
     private IEnumerator ShootingRoutine()
     {
-        while (Input.GetMouseButton(0) && CanShoot())
+        while (IsFireHeld() && CanShoot())
         {
             ShootOnce();
             float delay = currentAmmoInMag <= 0 ? Mathf.Max(0.05f, emptyMagSoundCooldown) : 0.01f;
             yield return new WaitForSeconds(delay);
         }
         firingCoroutine = null;
+    }
+
+    private bool IsFireHeld()
+    {
+        return gamepadFireHeld || Input.GetMouseButton(0);
     }
 
     private void ShootOnce()

@@ -33,7 +33,7 @@ public class SavePointInteraction : MonoBehaviour
     {
         if (!isPlayerNearby) return;
 
-        if (Input.GetKeyDown(interactKey))
+        if (Input.GetKeyDown(interactKey) || (UnityEngine.InputSystem.Gamepad.current != null && UnityEngine.InputSystem.Gamepad.current.buttonSouth.wasPressedThisFrame))
         {
             if (saveSlotsUI == null)
                 saveSlotsUI = ResolveSaveSlotsUI();

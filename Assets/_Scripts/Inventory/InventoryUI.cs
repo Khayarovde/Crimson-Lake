@@ -103,6 +103,10 @@ public class InventoryUI : MonoBehaviour
     private bool isCombineSelectionMode;
     private int combineSourceSlotIndex = -1;
     private int contextMenuSlotIndex = -1;
+    private int contextMenuSelectionIndex;
+    private readonly List<Button> contextMenuButtons = new List<Button>();
+    private readonly Color contextMenuButtonColor = Color.white;
+    private readonly Color contextMenuButtonHoverColor = new Color(0.85f, 0.85f, 0.85f, 1f);
     private Tween craftFailTextTween;
 
     [Header("Пагинация инвентаря")]
@@ -366,7 +370,28 @@ public class InventoryUI : MonoBehaviour
             contextCancelButton.onClick.AddListener(HideContextMenu);
         }
 
+        RebuildContextMenuButtons();
+
         contextMenuPanel.SetActive(false);
+    }
+
+    private void RebuildContextMenuButtons()
+    {
+        contextMenuButtons.Clear();
+
+        if (contextSelectButton != null)
+            contextMenuButtons.Add(contextSelectButton);
+        if (contextCombineButton != null)
+            contextMenuButtons.Add(contextCombineButton);
+        if (contextDestroyButton != null)
+            contextMenuButtons.Add(contextDestroyButton);
+        if (contextCancelButton != null)
+            contextMenuButtons.Add(contextCancelButton);
+
+        if (contextMenuButtons.Count > 0)
+            contextMenuSelectionIndex = Mathf.Clamp(contextMenuSelectionIndex, 0, contextMenuButtons.Count - 1);
+        else
+            contextMenuSelectionIndex = 0;
     }
 
     private GameObject CreateRuntimeContextMenuPanel()
@@ -408,7 +433,7 @@ public class InventoryUI : MonoBehaviour
         buttonObj.transform.SetParent(parent, false);
 
         Image buttonImage = buttonObj.AddComponent<Image>();
-        buttonImage.color = new Color(0.2f, 0.2f, 0.2f, 1f);
+        buttonImage.color = contextMenuButtonColor;
 
         Button button = buttonObj.AddComponent<Button>();
 
@@ -479,17 +504,24 @@ public class InventoryUI : MonoBehaviour
         }
     }
 
-    private void ShowContextMenuForSlot(int slotIndex)
+    private void ShowContextMenuForSlot(int slotIndex, bool centerOnScreen = false)
     {
         if (contextMenuPanel == null)
             return;
 
         contextMenuSlotIndex = slotIndex;
+        contextMenuSelectionIndex = 0;
         contextMenuPanel.SetActive(true);
 
         RectTransform panelRect = contextMenuPanel.GetComponent<RectTransform>();
         if (panelRect != null)
-            panelRect.position = Input.mousePosition;
+        {
+            panelRect.position = centerOnScreen
+                ? new Vector3(Screen.width * 0.5f - 120f, Screen.height * 0.5f, 0f)
+                : Input.mousePosition;
+        }
+
+        UpdateContextMenuSelectionVisual();
     }
 
     private void HideContextMenu()
@@ -498,6 +530,136 @@ public class InventoryUI : MonoBehaviour
             contextMenuPanel.SetActive(false);
 
         contextMenuSlotIndex = -1;
+    }
+
+    public bool IsContextMenuOpen()
+    {
+        return contextMenuPanel != null && contextMenuPanel.activeSelf;
+    }
+
+    public bool ShowContextMenuForActiveItem()
+    {
+        return ShowContextMenuForActiveItem(false);
+    }
+
+    public bool ShowContextMenuForActiveItem(bool centerOnScreen)
+    {
+        if (playerInventory == null || inventoryData == null)
+            return false;
+
+        int slotIndex = playerInventory.activeItemIndex;
+        var slots = inventoryData.GetSlots();
+        if (slots == null || slotIndex < 0 || slotIndex >= slots.Count)
+            return false;
+
+        InventoryItem activeItem = slots[slotIndex];
+        if (activeItem == null || activeItem.type == InventoryItem.ItemType.Empty)
+            return false;
+
+        ShowContextMenuForSlot(slotIndex, centerOnScreen);
+        return true;
+    }
+
+    public void MoveContextMenuSelection(int direction)
+    {
+        if (!IsContextMenuOpen() || contextMenuButtons.Count == 0)
+            return;
+
+        if (direction == 0)
+            return;
+
+        contextMenuSelectionIndex = (contextMenuSelectionIndex + direction + contextMenuButtons.Count) % contextMenuButtons.Count;
+        UpdateContextMenuSelectionVisual();
+    }
+
+    public bool IsCombineSelectionMode()
+    {
+        return isCombineSelectionMode;
+    }
+
+    public void TriggerContextMenuSelect()
+    {
+        TriggerSelectedContextMenuAction();
+    }
+
+    public void TriggerContextMenuCombine()
+    {
+        OnContextCombineClicked();
+    }
+
+    public void TriggerContextMenuDestroy()
+    {
+        OnContextDestroyClicked();
+    }
+
+    public void TriggerContextMenuCancel()
+    {
+        HideContextMenu();
+    }
+
+    public bool TryCombineWithActiveItem()
+    {
+        if (!isCombineSelectionMode || playerInventory == null || inventoryData == null)
+            return false;
+
+        int activeIndex = playerInventory.activeItemIndex;
+        var slots = inventoryData.GetSlots();
+        if (slots == null || activeIndex < 0 || activeIndex >= slots.Count)
+            return false;
+
+        InventoryItem activeItem = slots[activeIndex];
+        if (activeItem == null || activeItem.type == InventoryItem.ItemType.Empty)
+            return false;
+
+        if (activeIndex == combineSourceSlotIndex)
+        {
+            if (activeItemInfoText != null)
+                activeItemInfoText.text = "Выберите другой предмет для соединения";
+            return false;
+        }
+
+        TryCombineWithSecondSlot(activeIndex);
+        return true;
+    }
+
+    public void CancelCombineSelectionMode()
+    {
+        isCombineSelectionMode = false;
+        combineSourceSlotIndex = -1;
+
+        if (activeItemInfoText != null)
+            activeItemInfoText.text = "Соединение отменено";
+
+        UpdateInventoryUI();
+    }
+
+    private void TriggerSelectedContextMenuAction()
+    {
+        if (!IsContextMenuOpen() || contextMenuButtons.Count == 0)
+            return;
+
+        contextMenuSelectionIndex = Mathf.Clamp(contextMenuSelectionIndex, 0, contextMenuButtons.Count - 1);
+
+        Button selectedButton = contextMenuButtons[contextMenuSelectionIndex];
+        if (selectedButton == contextSelectButton)
+        {
+            OnContextSelectClicked();
+            return;
+        }
+
+        if (selectedButton == contextCombineButton)
+        {
+            OnContextCombineClicked();
+            return;
+        }
+
+        if (selectedButton == contextDestroyButton)
+        {
+            OnContextDestroyClicked();
+            return;
+        }
+
+        HideContextMenu();
     }
 
     private void OnContextSelectClicked()
@@ -522,6 +684,27 @@ public class InventoryUI : MonoBehaviour
             activeItemInfoText.text = "Режим соединения: выберите второй предмет";
     }
 
+    private void UpdateContextMenuSelectionVisual()
+    {
+        if (contextMenuButtons.Count == 0)
+            return;
+
+        for (int i = 0; i < contextMenuButtons.Count; i++)
+        {
+            Button button = contextMenuButtons[i];
+            if (button == null)
+                continue;
+
+            Image image = button.GetComponent<Image>();
+            if (image == null)
+                continue;
+
+            image.color = i == contextMenuSelectionIndex
+                ? contextMenuButtonHoverColor
+                : contextMenuButtonColor;
+        }
+    }
+
     private void OnContextDestroyClicked()
     {
         if (contextMenuSlotIndex < 0)
@@ -537,9 +720,6 @@ public class InventoryUI : MonoBehaviour
             return;
 
         int sourceSlot = combineSourceSlotIndex;
-        isCombineSelectionMode = false;
-        combineSourceSlotIndex = -1;
-
         if (sourceSlot < 0 || secondSlotIndex < 0 || sourceSlot == secondSlotIndex)
         {
             if (activeItemInfoText != null)
@@ -568,8 +748,12 @@ public class InventoryUI : MonoBehaviour
                 activeItemInfoText.text = $"Нельзя соединить: {firstItem.itemName} + {secondItem.itemName}";
 
             AnimateCraftFailText();
+            UpdateInventoryUI();
             return;
         }
+
+        isCombineSelectionMode = false;
+        combineSourceSlotIndex = -1;
 
         inventoryData.ClearSlot(sourceSlot);
         inventoryData.ClearSlot(secondSlotIndex);

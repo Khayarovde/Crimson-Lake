@@ -1,6 +1,7 @@
 using UnityEngine;
 using DG.Tweening;
 using Yarn.Unity;
+using UnityEngine.InputSystem;
 
 public class AmmoPickup : MonoBehaviour
 {
@@ -59,10 +60,22 @@ public class AmmoPickup : MonoBehaviour
         if (!playerInRange || pickedUp)
             return;
 
-        if (Input.GetKeyDown(interactKey))
+        if (Input.GetKeyDown(interactKey) || (Gamepad.current != null && Gamepad.current.buttonSouth.wasPressedThisFrame))
             StartDialogue();
 
         LateHintUpdate();
+    }
+
+    public bool TryPickupFromGamepad()
+    {
+        if (!playerInRange || pickedUp)
+            return false;
+
+        bool success = TryResolvePickup();
+        if (success)
+            CompletePickup();
+
+        return success;
     }
 
     private void StartDialogue()

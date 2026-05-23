@@ -2,6 +2,7 @@ using System.Collections;
 using DG.Tweening;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.InputSystem;
 
 /// <summary>
 /// Дверь в стиле Signalis:
@@ -148,7 +149,7 @@ public class DoorTeleportTrigger : MonoBehaviour
         if (!_playerInRange || _isInteracting)
             return;
 
-        if (Input.GetKeyDown(interactKey))
+        if (Input.GetKeyDown(interactKey) || (Gamepad.current != null && Gamepad.current.buttonSouth.wasPressedThisFrame))
             StartCoroutine(InteractionSequence());
     }
 

@@ -2,6 +2,7 @@ using TMPro;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.InputSystem;
 
 [DisallowMultipleComponent]
 public class UniversalHelpUI : MonoBehaviour
@@ -96,13 +97,13 @@ public class UniversalHelpUI : MonoBehaviour
     {
         if (!uiOpened)
         {
-            if (playerInside && Input.GetKeyDown(openKey))
+            if (playerInside && (Input.GetKeyDown(openKey) || (Gamepad.current != null && Gamepad.current.buttonSouth.wasPressedThisFrame)))
                 OpenUI();
 
             return;
         }
 
-        if (Input.GetKeyDown(openKey))
+        if (Input.GetKeyDown(openKey) || (Gamepad.current != null && Gamepad.current.buttonSouth.wasPressedThisFrame))
         {
             CloseUIByKey();
             return;
@@ -111,14 +112,32 @@ public class UniversalHelpUI : MonoBehaviour
         if (!HasPages)
             return;
 
-        if (Input.GetKeyDown(KeyCode.D))
+        if (HasPages)
         {
-            NextPage();
-            return;
-        }
+            if (Gamepad.current != null)
+            {
+                if (Gamepad.current.dpad.right.wasPressedThisFrame || Gamepad.current.dpad.down.wasPressedThisFrame)
+                {
+                    NextPage();
+                    return;
+                }
 
-        if (Input.GetKeyDown(KeyCode.A))
-            PreviousPage();
+                if (Gamepad.current.dpad.left.wasPressedThisFrame || Gamepad.current.dpad.up.wasPressedThisFrame)
+                {
+                    PreviousPage();
+                    return;
+                }
+            }
+
+            if (Input.GetKeyDown(KeyCode.D))
+            {
+                NextPage();
+                return;
+            }
+
+            if (Input.GetKeyDown(KeyCode.A))
+                PreviousPage();
+        }
     }
 
     private void OnTriggerEnter(Collider other)

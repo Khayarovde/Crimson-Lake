@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class ItemPickup : MonoBehaviour
 {
@@ -20,9 +21,8 @@ public class ItemPickup : MonoBehaviour
 
     private void Update()
     {
-        if (isPlayerNearby && Input.GetKeyDown(KeyCode.E))
+        if (isPlayerNearby && (Input.GetKeyDown(KeyCode.E) || (Gamepad.current != null && Gamepad.current.buttonSouth.wasPressedThisFrame)))
         {
-            // Debug.Log($"[ItemPickup] Нажата клавиша E для объекта {gameObject.name}");
             TryPickup();
         }
     }
@@ -53,12 +53,17 @@ public class ItemPickup : MonoBehaviour
         }
     }
 
-    private void TryPickup()
+    public bool TryPickupFromGamepad()
+    {
+        return TryPickup();
+    }
+
+    private bool TryPickup()
     {
         if (item == null)
         {
             Debug.LogError($"[ItemPickup] Предмет не назначен на объекте {gameObject.name}!");
-            return;
+            return false;
         }
 
         if (player != null && Vector3.Distance(transform.position, player.position) <= interactionDistance)
@@ -72,11 +77,10 @@ public class ItemPickup : MonoBehaviour
                 {
                     // Debug.Log($"[ItemPickup] Предмет {item.itemName} успешно подобран!");
                     Destroy(gameObject);
+                    return true;
                 }
-                else
-                {
-                    Debug.LogWarning($"[ItemPickup] Не удалось добавить предмет {item.itemName} (возможно, инвентарь полон)");
-                }
+
+                Debug.LogWarning($"[ItemPickup] Не удалось добавить предмет {item.itemName} (возможно, инвентарь полон)");
             }
             else
             {
@@ -87,5 +91,7 @@ public class ItemPickup : MonoBehaviour
         {
             Debug.LogWarning($"[ItemPickup] Игрок слишком далеко или не обнаружен для объекта {gameObject.name}!");
         }
+
+        return false;
     }
 }

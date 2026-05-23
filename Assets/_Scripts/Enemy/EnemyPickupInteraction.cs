@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using UnityEngine.InputSystem;
 using System.Linq;
 
 public class EnemyPickupInteraction : MonoBehaviour
@@ -132,7 +133,7 @@ public class EnemyPickupInteraction : MonoBehaviour
                 enemyTest.gameObject.SetActive(false);
         }
 
-        if (!alreadyPickedUp && isPlayerNearby && Input.GetKeyDown(KeyCode.E))
+        if (!alreadyPickedUp && isPlayerNearby && (Input.GetKeyDown(KeyCode.E) || (Gamepad.current != null && Gamepad.current.buttonSouth.wasPressedThisFrame)))
         {
             TryPickup();
         }
@@ -151,6 +152,15 @@ public class EnemyPickupInteraction : MonoBehaviour
         {
             ApplyChaseVolume();
         }
+    }
+
+    public bool TryPickupFromGamepad()
+    {
+        if (alreadyPickedUp || !isPlayerNearby)
+            return false;
+
+        TryPickup();
+        return alreadyPickedUp;
     }
 
     private void OnTriggerEnter(Collider other)

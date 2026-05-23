@@ -41,6 +41,9 @@ public class TankController : MonoBehaviour
     [SerializeField] private LayerMask cursorAimMask = ~0;
     [SerializeField] private bool mouseRotationEnabled = true;
     [SerializeField] private bool cameraRelativeMovement = true;
+    [Header("Gamepad Input")]
+    [SerializeField, Range(0.01f, 0.5f)] private float gamepadMoveDeadzone = 0.2f;
+    [SerializeField, Range(0.01f, 0.5f)] private float gamepadLookDeadzone = 0.2f;
 
     [SerializeField] private PlayerInventory playerInventory;
 
@@ -54,6 +57,13 @@ public class TankController : MonoBehaviour
     private Quaternion targetRotation;
     private bool hasRotationTarget;
     private Camera cachedMainCamera;
+    private Vector2 gamepadMoveInput;
+    private bool hasGamepadMoveInput;
+    private Vector2 gamepadLookInput;
+    private bool hasGamepadLookInput;
+    private bool gamepadRunHeld;
+    private bool gamepadAimHeld;
+    private bool gamepadModeActive;
 
     private bool isAiming;
     private bool isRunning;
@@ -67,6 +77,33 @@ public class TankController : MonoBehaviour
     public float MoveInputMagnitude => moveInputMagnitude;
     public Vector3 AimForward => aimForward;
     public Vector3 CurrentPlanarVelocity => currentPlanarVelocity;
+
+    public void SetGamepadMoveInput(Vector2 moveInput)
+    {
+        gamepadMoveInput = moveInput;
+        hasGamepadMoveInput = moveInput.sqrMagnitude >= gamepadMoveDeadzone * gamepadMoveDeadzone;
+    }
+
+    public void SetGamepadLookInput(Vector2 lookInput)
+    {
+        gamepadLookInput = lookInput;
+        hasGamepadLookInput = lookInput.sqrMagnitude >= gamepadLookDeadzone * gamepadLookDeadzone;
+    }
+
+    public void SetGamepadRunHeld(bool isHeld)
+    {
+        gamepadRunHeld = isHeld;
+    }
+
+    public void SetGamepadAimHeld(bool isHeld)
+    {
+        gamepadAimHeld = isHeld;
+    }
+
+    public void SetGamepadModeActive(bool isActive)
+    {
+        gamepadModeActive = isActive;
+    }
 
     void Start()
     {
@@ -104,12 +141,19 @@ public class TankController : MonoBehaviour
         if (movementLocked) return;
 
         bool hasActiveWeapon = HasActiveWeaponSelected();
-        isAiming = hasActiveWeapon && Input.GetMouseButton(1);
+        isAiming = hasActiveWeapon && (gamepadModeActive ? gamepadAimHeld : (gamepadAimHeld || Input.GetMouseButton(1)));
 
         ProcessMovement();
 
         bool isMoving = IsCharacterMoving();
-        if (mouseRotationEnabled)
+        if (gamepadModeActive)
+        {
+            if (hasGamepadLookInput)
+                UpdateRotationTargetByGamepadLook(gamepadLookInput);
+            else if (isMoving)
+                UpdateRotationTargetByMovement(new Vector2(currentPlanarVelocity.x, currentPlanarVelocity.z));
+        }
+        else if (mouseRotationEnabled)
         {
             if (isAiming)
                 UpdateRotationTargetByMouse();
@@ -154,15 +198,23 @@ public class TankController : MonoBehaviour
 
     void ProcessMovement()
     {
-        inputHorizontal = Input.GetAxisRaw("Horizontal");
-        inputVertical = Input.GetAxisRaw("Vertical");
+        if (gamepadModeActive)
+        {
+            inputHorizontal = hasGamepadMoveInput ? gamepadMoveInput.x : 0f;
+            inputVertical = hasGamepadMoveInput ? gamepadMoveInput.y : 0f;
+        }
+        else
+        {
+            inputHorizontal = Input.GetAxisRaw("Horizontal");
+            inputVertical = Input.GetAxisRaw("Vertical");
+        }
 
         desiredMoveDirectionWorld = GetMovementDirectionWorld(inputHorizontal, inputVertical);
 
         bool hasMoveInput = Mathf.Abs(inputHorizontal) > 0.1f || Mathf.Abs(inputVertical) > 0.1f;
         moveInputMagnitude = Mathf.Clamp01(new Vector2(inputHorizontal, inputVertical).magnitude);
 
-        bool sprintHeld = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
+        bool sprintHeld = gamepadRunHeld || Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
         isRunning = hasMoveInput && sprintHeld && !Input.GetMouseButton(1);
     }
 
@@ -280,6 +332,16 @@ public class TankController : MonoBehaviour
         targetAngle += aimYawOffsetDegrees;
         targetRotation = Quaternion.Euler(0f, targetAngle, 0f);
         hasRotationTarget = true;
+    }
+
+    void UpdateRotationTargetByGamepadLook(Vector2 lookInput)
+    {
+        Vector3 worldDirection = GetMovementDirectionWorld(lookInput.x, lookInput.y);
+        if (worldDirection.sqrMagnitude < 0.0001f)
+            return;
+
+        aimForward = worldDirection.normalized;
+        UpdateRotationTargetByMovement(new Vector2(worldDirection.x, worldDirection.z));
     }
 
     private void ApplyRotation()
