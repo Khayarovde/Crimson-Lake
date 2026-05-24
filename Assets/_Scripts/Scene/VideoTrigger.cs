@@ -36,6 +36,10 @@ public class VideoTrigger : MonoBehaviour
     [Header("ВРЕМЕННО: Тестовый режим (смотреть видео много раз)")]
     [SerializeField] private bool testModeAllowRepeat = true;
 
+    [Header("Активировать предмет при старте видео")]
+    [Tooltip("Если предмет уже находится в сцене и отключён — назначьте его сюда. Будет включён при старте воспроизведения.")]
+    [SerializeField] private GameObject itemToEnable;
+
     [Header("Время событий (сек до конца видео)")]
     [SerializeField] private float warningTimeBeforeEnd = 3f;
     [SerializeField] private float teleportTimeBeforeEnd = 1f;
@@ -49,6 +53,7 @@ public class VideoTrigger : MonoBehaviour
     private bool isVideoActive = false;
     private bool soundPlayed = false;
     private bool teleported = false;
+    private bool itemEnabled = false;
 
     private bool HasShown => !testModeAllowRepeat && SaveManager.HasSeenEvent(cutsceneEventId);
 
@@ -136,6 +141,10 @@ public class VideoTrigger : MonoBehaviour
         isVideoActive = true;
         soundPlayed = false;
         teleported = false;
+        itemEnabled = false;
+
+        // Включаем назначенный объект и его скрипты при старте воспроизведения
+        EnableAssignedItem();
 
         if (videoPanel != null) videoPanel.SetActive(true);
 
@@ -248,6 +257,32 @@ public class VideoTrigger : MonoBehaviour
             FullyRestoreControl();
 
         HideEverything();
+    }
+
+    private void EnableAssignedItem()
+    {
+        if (itemToEnable == null || itemEnabled)
+            return;
+
+        // Активируем объект (если он был выключен)
+        try
+        {
+            itemToEnable.SetActive(true);
+
+            // Включаем все MonoBehaviour компоненты (если они были выключены)
+            var behaviours = itemToEnable.GetComponentsInChildren<MonoBehaviour>(true);
+            foreach (var b in behaviours)
+            {
+                if (b == null) continue;
+                b.enabled = true;
+            }
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogWarning("Не удалось включить назначенный предмет: " + ex.Message);
+        }
+
+        itemEnabled = true;
     }
 
     private void HideEverything()
