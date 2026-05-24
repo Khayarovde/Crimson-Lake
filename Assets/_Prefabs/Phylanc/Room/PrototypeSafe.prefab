@@ -1149,8 +1149,8 @@ Transform:
   m_GameObject: {fileID: 3830122854379018999}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0.70710677, z: -0, w: 0.7071069}
-  m_LocalPosition: {x: 7.4400063, y: 1.24, z: -1.737999}
-  m_LocalScale: {x: 6, y: 0.3, z: 3}
+  m_LocalPosition: {x: 7.5664, y: 1.24, z: -1.738}
+  m_LocalScale: {x: 6, y: 0.3, z: 3.2525666}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1917085988310698854}
@@ -1227,7 +1227,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 0.82}
+  m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &4064774338376461244
 GameObject:
@@ -3171,8 +3171,38 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 100006, guid: 044924269960e4cf8acae471f250277d, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8260666937870116997}
   m_SourcePrefab: {fileID: 100100000, guid: 044924269960e4cf8acae471f250277d, type: 3}
+--- !u!1 &1418174830330137292 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 100006, guid: 044924269960e4cf8acae471f250277d, type: 3}
+  m_PrefabInstance: {fileID: 1418174830330236010}
+  m_PrefabAsset: {fileID: 0}
+--- !u!64 &8260666937870116997
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1418174830330137292}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 5
+  m_Convex: 1
+  m_CookingOptions: 30
+  m_Mesh: {fileID: 4300002, guid: 044924269960e4cf8acae471f250277d, type: 3}
 --- !u!4 &1418174830330369770 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 400000, guid: 044924269960e4cf8acae471f250277d, type: 3}
@@ -3639,7 +3669,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   hintImage: {fileID: 0}
+  additionalHintImages: []
   playerTag: Player
+  playMultiPressSequence: 1
+  multiStepDelay: 0.15
+  multiPressScale: 0.88
+  multiPressTime: 0.12
+  multiReleaseTime: 0.18
+  multiPressEase: 2
+  multiReleaseEase: 6
   fadeDuration: 0.25
   usePulse: 1
   pulseScale: 0.88
@@ -3850,6 +3888,8 @@ MonoBehaviour:
   storageSound: {fileID: 0}
   chestId: default_chest
   canOpenWhenInventoryOpen: 0
+  gamepadCursorSpeed: 1200
+  triggerThreshold: 0.5
 --- !u!65 &8129647620742992606
 BoxCollider:
   m_ObjectHideFlags: 0
