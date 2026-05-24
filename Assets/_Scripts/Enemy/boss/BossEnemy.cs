@@ -33,6 +33,8 @@ public class BossEnemy : MonoBehaviour
     [Header("Phase")]
     [Tooltip("Порог HP (0..1 = процент от максимума), при котором активируется фаза 2.")]
     [Range(0f, 0.99f)] public float phase2HealthThreshold = 0.5f;
+    [Tooltip("Расстояние (м), ближе которого в фазе 2 босс переключается только на ближние атаки и прекращает тараны.")]
+    public float phase2CloseRangeThreshold = 3.5f;
 
     // ─── Здоровье ─────────────────────────────────────────────────────────────
 
@@ -229,32 +231,6 @@ public class BossEnemy : MonoBehaviour
     [SerializeField] private int baseLayerIndex = 0;
     [SerializeField] private int rukaLayerIndex = 1;
 
-    // ─── Glazktuk / Zigzag Rush (low HP special) ─────────────────────────────
-    [Header("Glazktuk - Zigzag Rush")]
-    [Tooltip("Включить режим цепных зигзагообразных рывков при низком HP (фаза 1).")]
-    public bool enableGlazktuk = true;
-    [Tooltip("Порог HP (0..1) для активации Glazktuk (примерно 0.3-0.35).")]
-    [Range(0f, 0.99f)] public float glazTriggerHealthPercent = 0.35f;
-    [Tooltip("Минимум рывков в серии")]
-    public int glazMinRams = 4;
-    [Tooltip("Максимум рывков в серии")]
-    public int glazMaxRams = 6;
-    [Tooltip("Угол поворота между рывками (мин градусы)")]
-    public float glazAngleMin = 45f;
-    [Tooltip("Угол поворота между рывками (макс градусы)")]
-    public float glazAngleMax = 90f;
-    [Tooltip("Множитель увеличения скорости для каждого следующего рывка (например 0.12 = +12% каждый раз)")]
-    public float glazSpeedIncreasePerDash = 0.12f;
-    [Tooltip("Короткое прицеливание перед серией (сек). Обычно доли секунды")]
-    public float glazInitialAim = 0.12f;
-    [Tooltip("Длительность каждого рывка в серии (сек)")]
-    public float glazDashDuration = 0.45f;
-    [Tooltip("Пауза после серии (сек) — окно для контратаки игрока.")]
-    public float glazPauseAfterSeries = 1.0f;
-    [Tooltip("На середине рывка резкая коррекция курса на этот угол к игроку (мин)")]
-    public float glazMidTurnMin = 20f;
-    [Tooltip("На середине рывка резкая коррекция курса на этот угол к игроку (макс)")]
-    public float glazMidTurnMax = 35f;
     // ─── Ссылки ───────────────────────────────────────────────────────────────
 
     [Header("References")]
@@ -294,15 +270,14 @@ public class BossEnemy : MonoBehaviour
     private bool isSpawningLeska;
     private bool isDoingShark;
     private bool abortRamChain;
-    private bool glazPhaseConflictLogged;
-
-    // Glazktuk state
-    private bool isDoingGlazktuk;
-    private int ramAttemptCounter = 0;
 
     private Coroutine slowRoutine;
     private Coroutine rageRoutine;
     private Coroutine armorBreakRoutine;
+    private Coroutine hitReturnRoutine;
+    private string hitResumeRukaState;
+    private float hitResumeRukaNormalizedTime;
+    private float hitResumeRukaLayerWeight;
 
     private readonly Collider[] sharkHitsBuffer = new Collider[8];
 
@@ -350,8 +325,7 @@ public class BossEnemy : MonoBehaviour
 
     private enum MemoryAttackType
     {
-        Ram,
-        Glazktuk
+        Ram
     }
 
     private struct DodgeEvent
@@ -477,27 +451,6 @@ public class BossEnemy : MonoBehaviour
             sceneTransitionTriggerObject.SetActive(false);
     }
 
-    private void OnValidate()
-    {
-        phase2HealthThreshold = Mathf.Clamp(phase2HealthThreshold, 0f, 0.99f);
-        glazTriggerHealthPercent = Mathf.Clamp(glazTriggerHealthPercent, 0f, 0.99f);
-
-        if (!enableGlazktuk)
-            return;
-
-        if (phase2HealthThreshold >= glazTriggerHealthPercent)
-        {
-            Debug.LogWarning(
-                $"[BossEnemy] Конфликт порогов: phase2HealthThreshold ({phase2HealthThreshold:0.00}) >= glazTriggerHealthPercent ({glazTriggerHealthPercent:0.00}). " +
-                "Glazktuk будет запускаться только с fallback-логикой и может вести себя не так, как ожидается.",
-                this);
-        }
-    }
-
-    
-
-    
-
     // ─────────────────────────────────────────────────────────────────────────
     // Update
     // ─────────────────────────────────────────────────────────────────────────
@@ -507,7 +460,7 @@ public class BossEnemy : MonoBehaviour
         if (isDead || player == null || navAgent == null || !navAgent.isOnNavMesh)
             return;
 
-        if (armorBreakPending && armorBreakRoutine == null && !isStunSequence && !isDoingRam && !isDoingGlazktuk)
+        if (armorBreakPending && armorBreakRoutine == null && !isStunSequence && !isDoingRam)
         {
             armorBreakPending = false;
             armorBreakRoutine = StartCoroutine(ArmorBreakRoutine());
@@ -520,11 +473,15 @@ public class BossEnemy : MonoBehaviour
         if (isDoingRam || isDoingCloseAttack || isSpawningLeska || isStunSequence || isDoingShark)
             return;
 
-        // Фаза 2: периодический спавн лесок
         if (currentPhase == BossPhase.Phase2)
+        {
             Phase2Update();
-
-        Phase1Update();
+            Phase2CombatUpdate();
+        }
+        else
+        {
+            Phase1Update();
+        }
        
     }
 
@@ -563,27 +520,8 @@ public class BossEnemy : MonoBehaviour
 
         // Попытка тарана
         float ramTriggerDistSqr = ramTriggerDistance * ramTriggerDistance;
-        // Glazktuk (цепной зигзаг) при низком HP
-        bool lowHealthForGlaz = health <= maxHealth * glazTriggerHealthPercent;
-        bool glazThresholdConflict = phase2HealthThreshold > glazTriggerHealthPercent;
-        bool glazPhaseAllowed = currentPhase == BossPhase.Phase1 || glazThresholdConflict;
-        bool canGlazktuk = enableGlazktuk && lowHealthForGlaz && glazPhaseAllowed;
-
-        if (enableGlazktuk && glazThresholdConflict && currentPhase == BossPhase.Phase2 && !glazPhaseConflictLogged)
+        if (Time.time >= nextRamTime && distSqr <= ramTriggerDistSqr)
         {
-            glazPhaseConflictLogged = true;
-            LogBossEvent("Glazktuk fallback", "phase2HealthThreshold выше glazTriggerHealthPercent; Glazktuk разрешен в Phase2, иначе не сработает");
-        }
-
-        if (!didCloseAttack && canGlazktuk && Time.time >= nextRamTime && distSqr <= ramTriggerDistSqr)
-        {
-            StartCoroutine(GlazktukRoutine());
-            return;
-        }
-
-        if (!didCloseAttack && Time.time >= nextRamTime && distSqr <= ramTriggerDistSqr)
-        {
-            ramAttemptCounter++;
             StartCoroutine(RamRoutine());
             return;
         }
@@ -597,15 +535,55 @@ public class BossEnemy : MonoBehaviour
     /// </summary>
     private void Phase2Update()
     {
+        // SharkSpin — реагирует на игрока сзади, независимо от дистанции
         if (Time.time >= nextSharkTime && ShouldDoSharkSpin())
         {
             StartCoroutine(SharkSpinRoutine());
             return;
         }
 
-        if (Time.time >= nextLeskaTime && leskaPrefab != null)
+        // Лески — только если игрок далеко (не мешать ближнему бою)
+        float distSqr = (player.position - transform.position).sqrMagnitude;
+        float closeThreshSqr = phase2CloseRangeThreshold * phase2CloseRangeThreshold;
+        if (distSqr > closeThreshSqr && Time.time >= nextLeskaTime && leskaPrefab != null)
         {
             StartCoroutine(LeskaSpawnRoutine());
+        }
+    }
+
+    /// <summary>
+    /// Фаза 2: боевая логика с дистанционным разделением.
+    /// Далеко — только тараны для сближения.
+    /// Близко — только ближние атаки, тараны запрещены.
+    /// </summary>
+    private void Phase2CombatUpdate()
+    {
+        Vector3 toPlayer = player.position - transform.position;
+        float distSqr = toPlayer.sqrMagnitude;
+        float closeThreshSqr = phase2CloseRangeThreshold * phase2CloseRangeThreshold;
+
+        bool playerIsClose = distSqr <= closeThreshSqr;
+
+        if (playerIsClose)
+        {
+            // — Ближний бой: только ближние атаки, тараны запрещены —
+            bool didCloseAttack = TryCloseAttack(distSqr, true);
+            // Если атака не сработала — просто преследуем (агент уже не остановлен)
+            if (!didCloseAttack && !isDoingCloseAttack)
+                ChasePlayer();
+        }
+        else
+        {
+            // — Дальняя дистанция: только таран для сближения —
+            float ramTriggerDistSqr = ramTriggerDistance * ramTriggerDistance;
+            if (Time.time >= nextRamTime && distSqr <= ramTriggerDistSqr)
+            {
+                StartCoroutine(RamRoutine());
+                return;
+            }
+
+            // Игрок дальше ramTriggerDistance — просто преследуем
+            ChasePlayer();
         }
     }
 
@@ -638,19 +616,19 @@ public class BossEnemy : MonoBehaviour
         PlayBaseAnim(baseWalkAnim);
     }
 
-    private bool TryCloseAttack(float distSqr)
+    private bool TryCloseAttack(float distSqr, bool forceAttack = false)
     {
-        if (isDoingRam || isDoingGlazktuk || isSpawningLeska || isStunSequence || isDoingShark)
+        if (isDoingRam || isSpawningLeska || isStunSequence || isDoingShark)
             return false;
 
         if (closeAttackDistance <= 0f)
             return false;
 
-        if (Time.time < nextCloseAttackTime)
+        if (!forceAttack && Time.time < nextCloseAttackTime)
             return false;
 
         float closeDistSqr = closeAttackDistance * closeAttackDistance;
-        if (distSqr <= closeDistSqr)
+        if (forceAttack || distSqr <= closeDistSqr)
         {
             StartCoroutine(CloseAttackRoutine());
             nextCloseAttackTime = Time.time + Mathf.Max(0f, closeAttackCooldown);
@@ -743,16 +721,13 @@ public class BossEnemy : MonoBehaviour
             yield break;
         }
 
+        // Обратный рывок — только в фазе 1
         if (currentPhase == BossPhase.Phase1 && enableReverseRam)
             yield return ReverseRamOnceRoutine();
 
-        if (ShouldChainCloseAfterRam())
-        {
-            if (currentPhase == BossPhase.Phase2)
-                yield return Phase2RamBounceAndCloseAttackRoutine();
-            else
-                yield return StartCoroutine(CloseAttackRoutine());
-        }
+        // Цепная ближняя атака после тарана — только в фазе 1
+        if (currentPhase == BossPhase.Phase1 && ShouldChainCloseAfterRam())
+            yield return StartCoroutine(CloseAttackRoutine());
 
         isDoingRam = false;
     }
@@ -854,7 +829,9 @@ public class BossEnemy : MonoBehaviour
         float ramEnd = Time.time + ramDuration;
         bool ramHitDealt = false;
         Vector3 lastHitOrigin = GetHitOrigin(ramHitForwardOffset, ramHitUpOffset);
-        bool doFeint = currentPhase == BossPhase.Phase2 && playerDodgesEarly && reactedDuringAim;
+        float distToPlayerAtDash = (player.position - transform.position).sqrMagnitude;
+        bool playerCloseAtDash = distToPlayerAtDash <= phase2CloseRangeThreshold * phase2CloseRangeThreshold;
+        bool doFeint = currentPhase == BossPhase.Phase2 && !playerCloseAtDash && playerDodgesEarly && reactedDuringAim;
         float feintDelay = Mathf.Clamp(averageReactionTime, feintMinTime, feintMaxTime);
         float feintTime = Time.time + Mathf.Clamp(feintDelay, 0.05f, ramDuration);
         float dashStartTime = Time.time;
@@ -864,6 +841,7 @@ public class BossEnemy : MonoBehaviour
         {
             if (armorBreakPending)
             {
+                abortRamChain = true;
                 StopAgentHard();
                 yield return new WaitForSeconds(0.08f);
                 if (!isDead && !isStunSequence)
@@ -1029,146 +1007,6 @@ public class BossEnemy : MonoBehaviour
         yield return StartCoroutine(CloseAttackRoutine());
     }
 
-    /// <summary>
-    /// Glazktuk: серия из нескольких рывков зигзагом (без возврата к преследованию между ними).
-    /// Триггерится при низком HP и выполняется в фазе 1.
-    /// </summary>
-    private IEnumerator GlazktukRoutine()
-    {
-        if (isDoingGlazktuk || player == null || navAgent == null)
-            yield break;
-
-        isDoingGlazktuk = true;
-        isDoingRam = true;
-        nextRamTime = Time.time + glazPauseAfterSeries;
-
-        try
-        {
-            // Короткое прицеливание перед серией
-            SetAgentSpeed(aimingSpeed);
-            navAgent.isStopped = false;
-            PlayBaseAnim(baseWalkAnim);
-            if (audioSource != null && ramRoarClip != null)
-                audioSource.PlayOneShot(ramRoarClip);
-
-            float aimDuration = Mathf.Max(0.01f, glazInitialAim);
-            float aimEnd = Time.time + aimDuration;
-            while (Time.time < aimEnd)
-            {
-                FacePlayer(720f);
-                yield return null;
-            }
-
-            // Отрезаем влияние pathfinding перед серией ручных Move.
-            StopAgentHard();
-            PlayRukaAnim(rukaRamAnim);
-
-            // Подготовка параметров серии
-            int count = Random.Range(Mathf.Max(1, glazMinRams), Mathf.Max(glazMinRams, glazMaxRams) + 1);
-            float initialSpeed = Mathf.Clamp(Random.Range(ramSpeedMin, ramSpeedMax), 0.1f, 50f);
-            Vector3 lastDir = transform.forward;
-
-            for (int i = 0; i < count; i++)
-            {
-                // Определяем направление: первый рывок — в сторону игрока, далее — от previous + поворот
-                Vector3 ramTarget = useLaggedRamTarget ? GetLaggedPlayerPosition() : player.position;
-                Vector3 ramDir = (ramTarget - transform.position);
-                ramDir.y = 0f;
-                if (ramDir.sqrMagnitude < 0.0001f)
-                    ramDir = transform.forward;
-                ramDir.Normalize();
-
-                if (i > 0)
-                {
-                    float ang = Random.Range(glazAngleMin, glazAngleMax);
-                    ang *= (Random.value < 0.5f) ? -1f : 1f;
-                    ramDir = Quaternion.AngleAxis(ang, Vector3.up) * lastDir;
-                    ramDir.y = 0f;
-                    ramDir.Normalize();
-                }
-
-                lastDir = ramDir;
-
-                // Скорость растёт каждый шаг
-                float dashSpeed = initialSpeed * (1f + glazSpeedIncreasePerDash * i);
-                LogBossEvent("Glazktuk рывок", $"Итерация {i + 1}/{count}, скорость={dashSpeed:0.00}");
-                float dashStart = Time.time;
-                float dashEnd = dashStart + Mathf.Max(0.05f, glazDashDuration);
-                bool ramHit = false;
-                Vector3 lastHitOrigin = GetHitOrigin(ramHitForwardOffset, ramHitUpOffset);
-                bool midTurnDone = false;
-
-                while (Time.time < dashEnd)
-                {
-                    if (armorBreakPending)
-                    {
-                        StopAgentHard();
-                        yield return new WaitForSeconds(0.08f);
-                        if (!isDead && !isStunSequence)
-                            StartCoroutine(ArmorBreakRoutine());
-                        yield break;
-                    }
-
-                    // В середине рывка делаем резкую коррекцию курса в сторону игрока
-                    if (!midTurnDone && Time.time >= dashStart + (dashEnd - dashStart) * 0.5f)
-                    {
-                        midTurnDone = true;
-                        Vector3 toPlayer = player.position - transform.position;
-                        toPlayer.y = 0f;
-                        if (toPlayer.sqrMagnitude > 0.0001f)
-                        {
-                            float angleToPlayer = Vector3.SignedAngle(ramDir, toPlayer.normalized, Vector3.up);
-                            float correction = Mathf.Clamp(angleToPlayer, -Mathf.Max(glazMidTurnMin, 0f), Mathf.Max(glazMidTurnMax, 0f));
-                            ramDir = Quaternion.AngleAxis(correction, Vector3.up) * ramDir;
-                            ramDir.Normalize();
-                        }
-                    }
-
-                    Vector3 currentHitOrigin = GetHitOrigin(ramHitForwardOffset, ramHitUpOffset);
-                    if (!ramHit && SegmentHitsPlayer(lastHitOrigin, currentHitOrigin, ramHitRadius))
-                    {
-                        if (TryApplyDirectDamage(currentHitOrigin, ramHitRadius, ramDamage))
-                        {
-                            ramHit = true;
-                            LogBossEvent("Попадание тарана", $"Glazktuk рывок {i + 1}/{count} попал по игроку");
-                        }
-                    }
-
-                    navAgent.Move(ramDir * dashSpeed * Time.deltaTime);
-                    lastHitOrigin = currentHitOrigin;
-                    yield return null;
-                }
-
-                pendingRamAttackType = MemoryAttackType.Glazktuk;
-                CaptureRamDodgeSample(ramDir);
-
-                if (!ramHit)
-                    LogBossEvent("Промах тарана", $"Glazktuk рывок {i + 1}/{count} не попал по игроку");
-
-                RegisterRamOutcome(ramHit);
-                // Небольшая пауза между рывками — минимальная, чтобы не возвращаться к преследованию
-                yield return null;
-            }
-
-            // Завершаем серию: даём окно игроку
-            if (glazPauseAfterSeries > 0f)
-                yield return new WaitForSeconds(glazPauseAfterSeries);
-        }
-        finally
-        {
-            isDoingGlazktuk = false;
-            isDoingRam = false;
-
-            if (!isDead && !isStunSequence && navAgent != null && navAgent.isOnNavMesh)
-            {
-                navAgent.isStopped = false;
-                SetAgentSpeed(isSlow ? chaseSpeed * slowSpeedMultiplier : chaseSpeed);
-                PlayBaseAnim(baseWalkAnim);
-            }
-        }
-    }
-
-
     // ─────────────────────────────────────────────────────────────────────────
     // Лески (фаза 2)
     // ─────────────────────────────────────────────────────────────────────────
@@ -1185,7 +1023,8 @@ public class BossEnemy : MonoBehaviour
         nextLeskaTime = Time.time + leskaCooldown;
 
         StopAgentHard();
-        PlayBaseAnim(baseLeskaSpawnAnim);
+        if (!string.IsNullOrEmpty(baseLeskaSpawnAnim))
+            PlayBaseAnim(baseLeskaSpawnAnim);
 
         if (audioSource != null && leskaSpawnClip != null)
             audioSource.PlayOneShot(leskaSpawnClip);
@@ -1239,7 +1078,37 @@ public class BossEnemy : MonoBehaviour
 
         // Реакция на урон — hit на слое Ruka (только если не таран/стан)
         if (!isDoingRam && !isStunSequence)
+        {
+            if (animator != null)
+            {
+                AnimatorStateInfo currentRukaState = animator.GetCurrentAnimatorStateInfo(rukaLayerIndex);
+                float currentRukaWeight = animator.GetLayerWeight(rukaLayerIndex);
+
+                if (currentRukaWeight > 0.01f && !currentRukaState.IsName(rukaHitAnim))
+                {
+                    hitResumeRukaState = currentRukaAnimState;
+                    hitResumeRukaNormalizedTime = currentRukaState.normalizedTime;
+                    hitResumeRukaLayerWeight = currentRukaWeight;
+                }
+                else
+                {
+                    hitResumeRukaState = null;
+                    hitResumeRukaNormalizedTime = 0f;
+                    hitResumeRukaLayerWeight = 0f;
+                }
+            }
+
             PlayRukaAnim(rukaHitAnim);
+            if (animator != null && animator.HasState(rukaLayerIndex, Animator.StringToHash(rukaHitAnim)))
+            {
+                // Для скорострельного урона принудительно перезапускаем hit с начала.
+                animator.Play(Animator.StringToHash(rukaHitAnim), rukaLayerIndex, 0f);
+            }
+
+            if (hitReturnRoutine != null)
+                StopCoroutine(hitReturnRoutine);
+            hitReturnRoutine = StartCoroutine(ReturnFromHit());
+        }
 
         if (isVulnerable)
         {
@@ -1312,57 +1181,98 @@ public class BossEnemy : MonoBehaviour
 
     private IEnumerator ArmorBreakRoutine()
     {
-        try
+        isDoingRam = false;
+        isStunSequence = true;
+        StopAgentHard();
+        isArmorBroken = true;
+        isVulnerable = false;
+
+        if (hitReturnRoutine != null)
         {
-            isDoingRam = false;
-            isDoingGlazktuk = false;
-            isStunSequence = true;
-            StopAgentHard();
-            isArmorBroken = true;
-            isVulnerable = false;
-
-            if (audioSource != null && armorBreakClip != null)
-                audioSource.PlayOneShot(armorBreakClip);
-
-            float originalCrossFade = animCrossFade;
-            animCrossFade = Mathf.Max(originalCrossFade, 0.22f);
-            LogBossEvent("Начало GetDown", $"t={Time.time:0.000}");
-            PlayBaseAnim(baseGetDownAnim);
-            animCrossFade = originalCrossFade;
-            if (getDownDuration > 0f)
-                yield return new WaitForSeconds(getDownDuration);
-
-            string tryaskaAnim = (Random.value < 0.5f) ? baseTryaska1Anim : baseTryaska2Anim;
-            LogBossEvent("Начало Tryaska", $"Анимация={tryaskaAnim}, t={Time.time:0.000}");
-            PlayBaseAnim(tryaskaAnim);
-            isVulnerable = true;
-            if (tryaskaDuration > 0f)
-                yield return new WaitForSeconds(tryaskaDuration);
-
-            isVulnerable = false;
-            if (isDead)
-                yield break;
-
-            LogBossEvent("Начало wakeUp", $"t={Time.time:0.000}");
-            PlayBaseAnim(baseWakeUpAnim);
-            if (wakeUpDuration > 0f)
-                yield return new WaitForSeconds(wakeUpDuration);
-
-            navAgent.isStopped = false;
-            SetAgentSpeed(isSlow ? chaseSpeed * slowSpeedMultiplier : chaseSpeed);
-            PlayBaseAnim(baseWalkAnim);
-            isStunSequence = false;
-
-            if (armorRegenDelay > 0f)
-                yield return new WaitForSeconds(armorRegenDelay);
-
-            armorDamage = 0f;
-            isArmorBroken = false;
+            StopCoroutine(hitReturnRoutine);
+            hitReturnRoutine = null;
         }
-        finally
+        hitResumeRukaState = null;
+        hitResumeRukaNormalizedTime = 0f;
+        hitResumeRukaLayerWeight = 0f;
+        SetRukaLayerWeight(0f);
+
+        if (audioSource != null && armorBreakClip != null)
+            audioSource.PlayOneShot(armorBreakClip);
+
+        float originalCrossFade = animCrossFade;
+        animCrossFade = Mathf.Max(originalCrossFade, 0.22f);
+        LogBossEvent("Начало GetDown", $"t={Time.time:0.000}");
+        PlayBaseAnim(baseGetDownAnim);
+        animCrossFade = originalCrossFade;
+        if (getDownDuration > 0f)
+            yield return new WaitForSeconds(getDownDuration);
+
+        string tryaskaAnim = (Random.value < 0.5f) ? baseTryaska1Anim : baseTryaska2Anim;
+        LogBossEvent("Начало Tryaska", $"Анимация={tryaskaAnim}, t={Time.time:0.000}");
+        PlayBaseAnim(tryaskaAnim);
+        isVulnerable = true;
+        if (tryaskaDuration > 0f)
+            yield return new WaitForSeconds(tryaskaDuration);
+
+        isVulnerable = false;
+        if (isDead)
         {
             armorBreakRoutine = null;
+            yield break;
         }
+
+        LogBossEvent("Начало wakeUp", $"t={Time.time:0.000}");
+        PlayBaseAnim(baseWakeUpAnim);
+        if (wakeUpDuration > 0f)
+            yield return new WaitForSeconds(wakeUpDuration);
+
+        navAgent.isStopped = false;
+        SetAgentSpeed(isSlow ? chaseSpeed * slowSpeedMultiplier : chaseSpeed);
+        PlayBaseAnim(baseWalkAnim);
+        isStunSequence = false;
+
+        if (armorRegenDelay > 0f)
+            yield return new WaitForSeconds(armorRegenDelay);
+
+        armorDamage = 0f;
+        isArmorBroken = false;
+        armorBreakRoutine = null;
+    }
+
+    private IEnumerator ReturnFromHit()
+    {
+        if (animator == null)
+        {
+            hitReturnRoutine = null;
+            yield break;
+        }
+
+        float waitUntil = Time.time + 2f;
+        bool sawHitState = false;
+        while (Time.time < waitUntil)
+        {
+            AnimatorStateInfo currentRukaState = animator.GetCurrentAnimatorStateInfo(rukaLayerIndex);
+            if (currentRukaState.IsName(rukaHitAnim))
+            {
+                sawHitState = true;
+                if (currentRukaState.normalizedTime >= 1f)
+                    break;
+            }
+            else if (sawHitState)
+            {
+                break;
+            }
+
+            yield return null;
+        }
+
+        SetRukaLayerWeight(0f);
+
+        hitResumeRukaState = null;
+        hitResumeRukaNormalizedTime = 0f;
+        hitResumeRukaLayerWeight = 0f;
+        hitReturnRoutine = null;
     }
 
     private void ApplyArmorDamage(float incomingDamage)
@@ -1543,6 +1453,7 @@ public class BossEnemy : MonoBehaviour
         nextSharkTime = Time.time + sharkCooldown;
 
         StopAgentHard();
+        PlayRukaAnim(rukaRamAnim);
 
         float endTime = Time.time + Mathf.Max(0.05f, sharkSpinDuration);
         while (Time.time < endTime)
@@ -1564,6 +1475,7 @@ public class BossEnemy : MonoBehaviour
 
         navAgent.isStopped = false;
         SetAgentSpeed(isSlow ? chaseSpeed * slowSpeedMultiplier : chaseSpeed);
+        SetRukaLayerWeight(0f);
         PlayBaseAnim(baseWalkAnim);
         isDoingShark = false;
     }
@@ -1928,10 +1840,8 @@ public class BossEnemy : MonoBehaviour
 
     private string GetCurrentAttackName()
     {
-        if (isDoingGlazktuk)
-            return "Glazktuk";
         if (isDoingRam)
-            return pendingRamAttackType == MemoryAttackType.Glazktuk ? "Glazktuk" : "Таран";
+            return "Таран";
         if (isDoingCloseAttack)
             return "CloseAttack";
         if (isDoingShark)
