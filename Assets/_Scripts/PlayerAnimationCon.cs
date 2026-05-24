@@ -21,6 +21,8 @@ public class PlayerAnimationCon : MonoBehaviour
     private InventoryItem.ItemType lastWeaponType = InventoryItem.ItemType.Empty;
     [SerializeField, Min(0f)] private float hitReturnDelay = 0.25f;
     private Coroutine hitReturnRoutine;
+    private int hitReturnStateHash = -1;
+    private float hitReturnNormalizedTime;
 
     void Start()
     {
@@ -109,6 +111,14 @@ public class PlayerAnimationCon : MonoBehaviour
     public void PlayHit()
     {
         if (anim == null) return;
+
+        AnimatorStateInfo currentState = anim.GetCurrentAnimatorStateInfo(LayerRuka);
+        if (!currentState.IsName("hit"))
+        {
+            hitReturnStateHash = currentState.shortNameHash;
+            hitReturnNormalizedTime = currentState.normalizedTime;
+        }
+
         Play("hit", LayerRuka);
         if (hitReturnRoutine != null)
             StopCoroutine(hitReturnRoutine);
@@ -173,13 +183,28 @@ public class PlayerAnimationCon : MonoBehaviour
     {
         if (hitReturnDelay > 0f)
             yield return new WaitForSeconds(hitReturnDelay);
-        
-        bool isPistol = anim.GetBool(IsPholdParam);
-        bool isShotgun = anim.GetBool(IsSholdParam);
 
-        if (!isPistol && !isShotgun)
-            Play("New State", LayerRuka);
-        // Если оружие выбрано, аниматор должен сам уйти из "hit" в нужный state через Any State + IsPhold/IsShold
+        if (anim == null)
+        {
+            hitReturnRoutine = null;
+            yield break;
+        }
+
+        if (hitReturnStateHash != -1 && anim.HasState(LayerRuka, hitReturnStateHash))
+        {
+            float normalizedTime = Mathf.Clamp01(hitReturnNormalizedTime);
+            anim.CrossFadeInFixedTime(hitReturnStateHash, 0.1f, LayerRuka, normalizedTime);
+        }
+        else
+        {
+            bool isPistol = anim.GetBool(IsPholdParam);
+            bool isShotgun = anim.GetBool(IsSholdParam);
+
+            if (!isPistol && !isShotgun)
+                Play("New State", LayerRuka);
+        }
+
+        hitReturnStateHash = -1;
 
         hitReturnRoutine = null;
     }
