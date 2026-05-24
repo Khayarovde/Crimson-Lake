@@ -282,12 +282,12 @@ public class WeaponHandler : MonoBehaviour
     private void HandleInput()
     {
         bool hasActiveWeapon = HasActiveWeaponSelected();
-        bool blockAimingNow = ShouldBlockAimingForFinisher();
+        bool blockWeaponUseNow = ShouldBlockAimingForFinisher() || IsEnemyTooCloseToShoot();
         bool aimHeld = gamepadModeActive ? gamepadAimHeld : (gamepadAimHeld || Input.GetMouseButton(1));
         bool fireHeld = gamepadModeActive ? gamepadFireHeld : (gamepadFireHeld || Input.GetMouseButton(0));
-        bool aiming = hasActiveWeapon && !blockAimingNow && aimHeld;
+        bool aiming = hasActiveWeapon && !blockWeaponUseNow && aimHeld;
 
-        if (blockAimingNow && isAiming)
+        if (blockWeaponUseNow && isAiming)
             StopAiming();
 
         if (aiming && !isAiming)
@@ -581,6 +581,24 @@ public class WeaponHandler : MonoBehaviour
             return false;
 
         return FindClosestStunnedEnemy(finisherRange, requireFrontForFinisher, false) != null;
+    }
+
+    private bool IsEnemyTooCloseToShoot()
+    {
+        float blockRange = Mathf.Max(0.1f, finisherRange);
+        int hitCount = Physics.OverlapSphereNonAlloc(transform.position, blockRange, overlapColliders, enemyLayerMask, QueryTriggerInteraction.Ignore);
+
+        for (int i = 0; i < hitCount; i++)
+        {
+            Collider hit = overlapColliders[i];
+            if (hit == null)
+                continue;
+
+            if (CreateFinisherTarget(hit) != null)
+                return true;
+        }
+
+        return false;
     }
 
     private Collider[] overlapColliders = new Collider[32];
@@ -879,7 +897,8 @@ public class WeaponHandler : MonoBehaviour
     private bool CanShoot() =>
         currentWeaponType != InventoryItem.ItemType.Empty &&
         !isReloading &&
-        !isShotSequenceRunning;
+        !isShotSequenceRunning &&
+        !IsEnemyTooCloseToShoot();
 
     private IEnumerator ShootingRoutine()
     {
@@ -967,7 +986,6 @@ public class WeaponHandler : MonoBehaviour
             if (pistolHitEffect != null)
                 Destroy(Instantiate(pistolHitEffect, hit.point, Quaternion.LookRotation(hit.normal)), 2f);
         }
-
         CreateTracer(direction, hitSomething ? hit.distance : maxTracerDistance);
     }
 
