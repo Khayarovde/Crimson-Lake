@@ -36,6 +36,8 @@ public class EnemyPickupInteraction : MonoBehaviour
     private Transform player;
     private bool alreadyPickedUp = false;
     private bool warnedAboutMissingInteractSource;
+    private PlayerInventory cachedPlayerInventory;
+    private MusicZoneTrigger[] cachedMusicZones;
 
     private AudioSource chaseAudioSource;
     private GameObject chaseAudioObject;
@@ -54,6 +56,9 @@ public class EnemyPickupInteraction : MonoBehaviour
             yarnInteractSource = GetComponent<Interact>();
 
         ResolveEnemyReferences();
+        CachePlayerInventory();
+        CacheMusicZones();
+        InitializeChaseAudio();
 
         PrepareEnemyForDiskettePickup();
     }
@@ -71,20 +76,9 @@ public class EnemyPickupInteraction : MonoBehaviour
             Debug.LogWarning($"[DiskettePickup] Коллайдер на {gameObject.name} не является триггером! Рекомендуется установить isTrigger = true.");
 
         ResolveEnemyReferences();
+        CachePlayerInventory();
+        CacheMusicZones();
         PrepareEnemyForDiskettePickup();
-
-        // Создаём независимый источник для chase-музыки
-        if (chaseMusicClip != null)
-        {
-            chaseAudioObject = new GameObject("GlobalChaseMusic");
-            chaseAudioObject.transform.SetParent(transform);
-            chaseAudioSource = chaseAudioObject.AddComponent<AudioSource>();
-            chaseAudioSource.playOnAwake = false;
-            chaseAudioSource.loop = true;
-            chaseLocalVolume = 0f;
-            ApplyChaseVolume();
-            chaseAudioSource.clip = chaseMusicClip;
-        }
 
         // Проверка на наличие предмета (если используешь инвентарь)
         if (item == null)
@@ -171,6 +165,12 @@ public class EnemyPickupInteraction : MonoBehaviour
         {
             isPlayerNearby = true;
             player = other.transform;
+            if (cachedPlayerInventory == null)
+            {
+                cachedPlayerInventory = other.GetComponentInParent<PlayerInventory>();
+                if (cachedPlayerInventory == null)
+                    cachedPlayerInventory = FindFirstObjectByType<PlayerInventory>();
+            }
             // Debug.Log($"[DiskettePickup] Игрок вошёл в зону подбора дискеты ({gameObject.name})");
         }
     }
@@ -191,11 +191,7 @@ public class EnemyPickupInteraction : MonoBehaviour
     {
         if (player == null) return;
 
-        PlayerInventory playerInventory = player.GetComponentInParent<PlayerInventory>();
-        if (playerInventory == null)
-            playerInventory = FindFirstObjectByType<PlayerInventory>();
-
-        if (playerInventory == null)
+        if (cachedPlayerInventory == null)
         {
             Debug.LogError("[DiskettePickup] PlayerInventory не найден на игроке или в сцене!");
             return;
@@ -207,14 +203,14 @@ public class EnemyPickupInteraction : MonoBehaviour
             return;
         }
 
-        bool added = playerInventory.AddItemToInventory(item);
+        bool added = cachedPlayerInventory.AddItemToInventory(item);
         if (!added)
         {
             Debug.LogWarning("[DiskettePickup] Не удалось добавить дискету в инвентарь (возможно, полон).");
             return;
         }
 
-        if (!IsCassetteInPlayerInventory(playerInventory))
+        if (!IsCassetteInPlayerInventory(cachedPlayerInventory))
         {
             Debug.LogWarning("[DiskettePickup] После подбора кассета не найдена в инвентаре, запуск погони отменён.");
             return;
@@ -311,8 +307,6 @@ public class EnemyPickupInteraction : MonoBehaviour
 
     private void ActivateEnemyChase()
     {
-        ResolveEnemyReferences();
-
         if (enemyAI == null && enemyTest == null)
         {
             Debug.LogError("Enemy AI не назначен (AdvancedEnemyAI / Enemytest)!");
@@ -363,10 +357,11 @@ public class EnemyPickupInteraction : MonoBehaviour
         }
 
         // Запоминаем зону, в которой взяли дискету
-        originalChaseZone = FindCurrentActiveZone();
+        var musicZones = GetCachedMusicZones();
+        originalChaseZone = FindCurrentActiveZone(musicZones);
 
         // Затухание всех зональных треков
-        FadeOutAllZoneMusic();
+        FadeOutAllZoneMusic(musicZones);
 
         // Запуск chase-музыки
         if (chaseAudioSource != null)
@@ -389,6 +384,37 @@ public class EnemyPickupInteraction : MonoBehaviour
             enemyTest = FindFirstObjectByType<Enemytest>();
     }
 
+    private void CachePlayerInventory()
+    {
+        if (cachedPlayerInventory != null)
+            return;
+
+        cachedPlayerInventory = FindFirstObjectByType<PlayerInventory>();
+    }
+
+    private void CacheMusicZones()
+    {
+        if (cachedMusicZones != null)
+            return;
+
+        cachedMusicZones = FindObjectsByType<MusicZoneTrigger>(FindObjectsSortMode.InstanceID);
+    }
+
+    private void InitializeChaseAudio()
+    {
+        if (chaseMusicClip == null || chaseAudioObject != null)
+            return;
+
+        chaseAudioObject = new GameObject("GlobalChaseMusic");
+        chaseAudioObject.transform.SetParent(transform);
+        chaseAudioSource = chaseAudioObject.AddComponent<AudioSource>();
+        chaseAudioSource.playOnAwake = false;
+        chaseAudioSource.loop = true;
+        chaseLocalVolume = 0f;
+        chaseAudioSource.clip = chaseMusicClip;
+        ApplyChaseVolume();
+    }
+
     private bool IsTrackedEnemyDead()
     {
         if (enemyAI != null)
@@ -403,19 +429,29 @@ public class EnemyPickupInteraction : MonoBehaviour
         return false;
     }
 
-    private MusicZoneTrigger FindCurrentActiveZone()
+    private MusicZoneTrigger[] GetCachedMusicZones()
     {
-        var allZones = FindObjectsByType<MusicZoneTrigger>(FindObjectsSortMode.InstanceID);
-        return allZones.FirstOrDefault(z =>
+        CacheMusicZones();
+        return cachedMusicZones;
+    }
+
+    private MusicZoneTrigger FindCurrentActiveZone(MusicZoneTrigger[] musicZones)
+    {
+        if (musicZones == null)
+            return null;
+
+        return musicZones.FirstOrDefault(z =>
             z.zoneAudioSource != null &&
             z.zoneAudioSource.isPlaying &&
             z.zoneAudioSource.volume > 0.01f);
     }
 
-    private void FadeOutAllZoneMusic()
+    private void FadeOutAllZoneMusic(MusicZoneTrigger[] musicZones)
     {
-        var allZones = FindObjectsByType<MusicZoneTrigger>(FindObjectsSortMode.InstanceID);
-        foreach (var zone in allZones)
+        if (musicZones == null)
+            return;
+
+        foreach (var zone in musicZones)
         {
             if (zone.zoneAudioSource != null && zone.zoneAudioSource.isPlaying)
             {
