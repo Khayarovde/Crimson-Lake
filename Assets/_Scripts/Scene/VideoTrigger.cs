@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.Video;
 using UnityEngine.UI;
+using UnityEngine.InputSystem;
 using System.Collections;
 
 public class VideoTrigger : MonoBehaviour
@@ -54,6 +55,7 @@ public class VideoTrigger : MonoBehaviour
     private bool soundPlayed = false;
     private bool teleported = false;
     private bool itemEnabled = false;
+    private bool linkedDoorTeleportWasEnabled = true;
 
     private bool HasShown => !testModeAllowRepeat && SaveManager.HasSeenEvent(cutsceneEventId);
 
@@ -105,11 +107,23 @@ public class VideoTrigger : MonoBehaviour
             return;
         }
 
-        if (playerInTrigger && Input.GetKeyDown(KeyCode.E) && !HasShown && !isVideoActive)
+        if (playerInTrigger && !HasShown && !isVideoActive && IsStartVideoPressed())
         {
             HideHint();
             StartVideoPlayback();
         }
+    }
+
+    private bool IsStartVideoPressed()
+    {
+        if (Input.GetKeyDown(KeyCode.E))
+            return true;
+
+        Gamepad gamepad = Gamepad.current;
+        if (gamepad == null)
+            return false;
+
+        return gamepad.buttonSouth.wasPressedThisFrame || gamepad.rightTrigger.wasPressedThisFrame;
     }
 
     void OnTriggerEnter(Collider other)
@@ -117,6 +131,7 @@ public class VideoTrigger : MonoBehaviour
         if (other.CompareTag(playerTag) && !HasShown && !isVideoActive)
         {
             playerInTrigger = true;
+            DisableLinkedDoorTeleportTrigger();
             if (hintPanel != null) hintPanel.SetActive(true);
         }
     }
@@ -126,6 +141,7 @@ public class VideoTrigger : MonoBehaviour
         if (other.CompareTag(playerTag))
         {
             playerInTrigger = false;
+            RestoreLinkedDoorTeleportTrigger();
             if (hintPanel != null && hintPanel.activeSelf)
                 hintPanel.SetActive(false);
         }
@@ -142,6 +158,7 @@ public class VideoTrigger : MonoBehaviour
         soundPlayed = false;
         teleported = false;
         itemEnabled = false;
+        DisableLinkedDoorTeleportTrigger();
 
         // Включаем назначенный объект и его скрипты при старте воспроизведения
         EnableAssignedItem();
@@ -292,8 +309,27 @@ public class VideoTrigger : MonoBehaviour
         if (videoPanel != null) videoPanel.SetActive(false);
         if (videoPlayer != null) videoPlayer.Stop();
 
+        RestoreLinkedDoorTeleportTrigger();
+
         if (!testModeAllowRepeat && !string.IsNullOrWhiteSpace(cutsceneEventId))
             SaveManager.MarkEventSeen(cutsceneEventId);
+    }
+
+    private void DisableLinkedDoorTeleportTrigger()
+    {
+        if (doorTeleportTrigger == null)
+            return;
+
+        linkedDoorTeleportWasEnabled = doorTeleportTrigger.enabled;
+        doorTeleportTrigger.enabled = false;
+    }
+
+    private void RestoreLinkedDoorTeleportTrigger()
+    {
+        if (doorTeleportTrigger == null)
+            return;
+
+        doorTeleportTrigger.enabled = linkedDoorTeleportWasEnabled;
     }
 
     // Отладка
