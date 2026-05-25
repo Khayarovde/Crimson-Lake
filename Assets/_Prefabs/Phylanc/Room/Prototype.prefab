@@ -1032,6 +1032,76 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
+  tankVisualCurves:
+  - serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 2
+      outSlope: 2
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  - serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  - serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 1
+      outSlope: 1
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 1
+      outSlope: 1
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
   tankLiquidScaleTargets:
   - {fileID: 0}
   - {fileID: 0}
@@ -1095,13 +1165,14 @@ MonoBehaviour:
   fillStep: 0.125
   stepwiseTransfer: 1
   levelTolerance: 0.005
+  actionCooldown: 0.4
   allowInfinitePlayAfterSuccess: 0
   autoResetOnSuccessInInfiniteMode: 0
   autoResetDelay: 0.85
   fillTweenDuration: 0.35
   overflowShakeDuration: 0.35
   overflowShakeStrength: 20
-  enableDebugLogs: 1
+  enableDebugLogs: 0
 --- !u!1 &1179779557699463336
 GameObject:
   m_ObjectHideFlags: 0
@@ -1242,6 +1313,7 @@ MonoBehaviour:
   startNode: item
   itemToPickup: {fileID: 11400000, guid: 2b3c4d5e6f7890a1b2c3d4e5f6071829, type: 2}
   destroyObjectAfterPickup: 1
+  pickupId: 
   interactionHint: {fileID: 0}
   hintScaleMultiplier: 1.1
   hintDuration: 0.55
@@ -4428,6 +4500,7 @@ MonoBehaviour:
   startNode: item
   itemToPickup: {fileID: 11400000, guid: 2b3c4d5e6f7890a1b2c3d4e5f6071829, type: 2}
   destroyObjectAfterPickup: 1
+  pickupId: 
   interactionHint: {fileID: 0}
   hintScaleMultiplier: 1.1
   hintDuration: 0.55
@@ -5174,6 +5247,7 @@ MonoBehaviour:
   startNode: item
   itemToPickup: {fileID: 11400000, guid: 1a2b3c4d5e6f7890a1b2c3d4e5f60718, type: 2}
   destroyObjectAfterPickup: 1
+  pickupId: 
   interactionHint: {fileID: 0}
   hintScaleMultiplier: 1.1
   hintDuration: 0.55
@@ -10027,6 +10101,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   item: {fileID: 11400000, guid: c5f9a2c576d74a54490865808364d56e, type: 2}
+  pickupId: cf4cf22da3976254d9cba418c30e7042
   enemyAI: {fileID: 0}
   enemyTest: {fileID: 0}
   enemySpawnPoint: {fileID: 2469915389970555662}
