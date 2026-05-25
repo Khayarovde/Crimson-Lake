@@ -1676,55 +1676,55 @@ public class InventoryUI : MonoBehaviour
             return;
 
         int columns = GetChestColumns();
-        int rows = Mathf.CeilToInt((float)totalSlots / columns);
+        int currentRow = Mathf.Max(0, selectedChestIndex / columns);
+        int currentCol = Mathf.Max(0, selectedChestIndex % columns);
+        int nextIndex = FindNearestChestIndex(currentRow, currentCol, columns, deltaX, deltaY, totalSlots);
 
-        int currentRow = Mathf.Clamp(selectedChestIndex / columns, 0, rows - 1);
-        int currentCol = Mathf.Clamp(selectedChestIndex % columns, 0, columns - 1);
-
-        int nextIndex = selectedChestIndex;
-        bool found = false;
-
-        if (deltaX != 0)
-        {
-            for (int col = currentCol + deltaX; col >= 0 && col < columns; col += deltaX)
-            {
-                int candidate = currentRow * columns + col;
-                if (candidate < 0 || candidate >= totalSlots)
-                    break;
-
-                InventoryItem item = currentChest.chestData.GetItemAt(candidate);
-                if (item != null && item.type != InventoryItem.ItemType.Empty)
-                {
-                    nextIndex = candidate;
-                    found = true;
-                    break;
-                }
-            }
-        }
-        else if (deltaY != 0)
-        {
-            for (int row = currentRow + deltaY; row >= 0 && row < rows; row += deltaY)
-            {
-                int candidate = row * columns + currentCol;
-                if (candidate < 0 || candidate >= totalSlots)
-                    continue;
-
-                InventoryItem item = currentChest.chestData.GetItemAt(candidate);
-                if (item != null && item.type != InventoryItem.ItemType.Empty)
-                {
-                    nextIndex = candidate;
-                    found = true;
-                    break;
-                }
-            }
-        }
-
-        if (!found || nextIndex == selectedChestIndex)
+        if (nextIndex == selectedChestIndex)
             return;
 
         selectedChestIndex = nextIndex;
         lastChestNav = Time.unscaledTime;
         UpdateChestUI();
+    }
+
+    private int FindNearestChestIndex(int currentRow, int currentCol, int columns, int deltaX, int deltaY, int totalSlots)
+    {
+        if (currentChest == null || currentChest.chestData == null)
+            return selectedChestIndex;
+
+        int bestIndex = selectedChestIndex;
+        float bestScore = float.MaxValue;
+
+        for (int i = 0; i < totalSlots; i++)
+        {
+            InventoryItem item = currentChest.chestData.GetItemAt(i);
+            if (item == null || item.type == InventoryItem.ItemType.Empty)
+                continue;
+
+            int row = i / columns;
+            int col = i % columns;
+
+            int dRow = row - currentRow;
+            int dCol = col - currentCol;
+
+            if (deltaX > 0 && dCol <= 0) continue;
+            if (deltaX < 0 && dCol >= 0) continue;
+            if (deltaY > 0 && dRow <= 0) continue;
+            if (deltaY < 0 && dRow >= 0) continue;
+
+            float primary = deltaX != 0 ? Mathf.Abs(dCol) : Mathf.Abs(dRow);
+            float secondary = deltaX != 0 ? Mathf.Abs(dRow) : Mathf.Abs(dCol);
+            float score = primary * 10f + secondary;
+
+            if (score < bestScore)
+            {
+                bestScore = score;
+                bestIndex = i;
+            }
+        }
+
+        return bestIndex;
     }
 
     public bool TryTakeSelectedChestItem()

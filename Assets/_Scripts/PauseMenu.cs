@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.Controls;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -43,6 +44,10 @@ public class PauseMenu : MonoBehaviour
     private float lastPauseNavTime = 0f;
     [SerializeField] private float pauseNavCooldown = 0.12f;
 
+    [Header("Gamepad Shortcuts")]
+    [SerializeField] private bool allowGamepadPause = true;
+    [SerializeField] private bool preferTouchpadForPause = true;
+
     public static float CurrentMusicAttenuation =>
         Instance != null && Instance.isPaused ? Mathf.Clamp01(Instance.pauseMusicVolumeMultiplier) : 1f;
 
@@ -81,15 +86,17 @@ public class PauseMenu : MonoBehaviour
         if (SaveSlotsUI.IsSaveMenuOpen)
             return;
 
+        Gamepad gamepad = Gamepad.current;
+
         if (exitWithoutSaveConfirmPanel != null && exitWithoutSaveConfirmPanel.activeSelf)
         {
-            if (Input.GetKeyDown(KeyCode.Escape))
+            if (Input.GetKeyDown(KeyCode.Escape) || WasGamepadPausePressed(gamepad))
                 CancelExitToMainMenu();
             HandlePauseGamepadInput();
             return;
         }
 
-        if (Input.GetKeyDown(KeyCode.Escape))
+        if (Input.GetKeyDown(KeyCode.Escape) || WasGamepadPausePressed(gamepad))
         {
             if (isPaused) Resume();
             else Pause();
@@ -97,6 +104,21 @@ public class PauseMenu : MonoBehaviour
 
         if (isPaused)
             HandlePauseGamepadInput();
+    }
+
+    private bool WasGamepadPausePressed(Gamepad gamepad)
+    {
+        if (!allowGamepadPause || gamepad == null)
+            return false;
+
+        if (preferTouchpadForPause)
+        {
+            ButtonControl touchpadButton = gamepad.TryGetChildControl<ButtonControl>("touchpadButton");
+            if (touchpadButton != null && touchpadButton.wasPressedThisFrame)
+                return true;
+        }
+
+        return gamepad.selectButton.wasPressedThisFrame;
     }
 
     private void HandlePauseGamepadInput()

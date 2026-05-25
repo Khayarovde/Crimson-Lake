@@ -40,6 +40,7 @@ public class PumpPuzzleInteraction : MonoBehaviour
     [SerializeField] private WeaponHandler weaponController;
     [SerializeField] private Behaviour[] disableWhileOpen;
 
+
     private bool playerInRange;
     private bool isOpened;
     private bool solvedCloseTriggered;
@@ -229,8 +230,19 @@ public class PumpPuzzleInteraction : MonoBehaviour
 
         if (Gamepad.current.buttonSouth.wasPressedThisFrame)
         {
-            Button btn = puzzleButtons[selectedPuzzleIndex];
-            if (btn != null && btn.interactable) btn.onClick.Invoke();
+            Button btn = null;
+            if (EventSystem.current != null)
+            {
+                var selected = EventSystem.current.currentSelectedGameObject;
+                if (selected != null)
+                    btn = selected.GetComponent<Button>();
+            }
+
+            if (btn == null)
+                btn = puzzleButtons[selectedPuzzleIndex];
+
+            if (btn != null && btn.interactable)
+                btn.onClick.Invoke();
         }
 
         if (Gamepad.current.buttonEast.wasPressedThisFrame)

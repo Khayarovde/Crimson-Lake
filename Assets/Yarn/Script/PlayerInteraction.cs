@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class PlayerInteraction : MonoBehaviour
 {
@@ -11,7 +12,7 @@ public class PlayerInteraction : MonoBehaviour
 
     void Update()
     {
-        if (currentTarget != null && Input.GetKeyDown(KeyCode.E))
+        if (currentTarget != null && IsInteractPressed())
         {
             currentTarget.StartDialogue();
             hidePromptUntilTargetChanges = true;
@@ -89,5 +90,14 @@ public class PlayerInteraction : MonoBehaviour
     {
         if (promptUI != null)
             promptUI.SetActive(false);
+    }
+
+    private bool IsInteractPressed()
+    {
+        if (Input.GetKeyDown(KeyCode.E))
+            return true;
+
+        Gamepad gamepad = Gamepad.current;
+        return gamepad != null && gamepad.buttonSouth.wasPressedThisFrame;
     }
 }

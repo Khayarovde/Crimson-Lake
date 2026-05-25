@@ -44,6 +44,9 @@ public class TankController : MonoBehaviour
     [Header("Gamepad Input")]
     [SerializeField, Range(0.01f, 0.5f)] private float gamepadMoveDeadzone = 0.2f;
     [SerializeField, Range(0.01f, 0.5f)] private float gamepadLookDeadzone = 0.2f;
+    [Header("Gamepad Aim While Moving")]
+    [SerializeField] private bool clampGamepadLookWhileMoving = true;
+    [SerializeField, Range(0f, 180f)] private float maxLookOffsetAngleWhileMoving = 70f;
 
     [SerializeField] private PlayerInventory playerInventory;
 
@@ -149,7 +152,12 @@ public class TankController : MonoBehaviour
         if (gamepadModeActive)
         {
             if (hasGamepadLookInput)
-                UpdateRotationTargetByGamepadLook(gamepadLookInput);
+            {
+                if (!isAiming && isMoving && clampGamepadLookWhileMoving)
+                    UpdateRotationTargetByGamepadLookClamped(gamepadLookInput, desiredMoveDirectionWorld);
+                else
+                    UpdateRotationTargetByGamepadLook(gamepadLookInput);
+            }
             else if (isMoving)
                 UpdateRotationTargetByMovement(new Vector2(currentPlanarVelocity.x, currentPlanarVelocity.z));
         }
@@ -215,7 +223,7 @@ public class TankController : MonoBehaviour
         moveInputMagnitude = Mathf.Clamp01(new Vector2(inputHorizontal, inputVertical).magnitude);
 
         bool sprintHeld = gamepadRunHeld || Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
-        isRunning = hasMoveInput && sprintHeld && !Input.GetMouseButton(1);
+        isRunning = hasMoveInput && sprintHeld && !isAiming;
     }
 
     void ApplyMovement()
@@ -342,6 +350,39 @@ public class TankController : MonoBehaviour
 
         aimForward = worldDirection.normalized;
         UpdateRotationTargetByMovement(new Vector2(worldDirection.x, worldDirection.z));
+    }
+
+    private void UpdateRotationTargetByGamepadLookClamped(Vector2 lookInput, Vector3 moveDirectionWorld)
+    {
+        Vector3 lookWorld = GetMovementDirectionWorld(lookInput.x, lookInput.y);
+        if (lookWorld.sqrMagnitude < 0.0001f)
+        {
+            return;
+        }
+
+        Vector3 moveWorld = moveDirectionWorld;
+        moveWorld.y = 0f;
+
+        if (moveWorld.sqrMagnitude < 0.0001f)
+        {
+            moveWorld = new Vector3(currentPlanarVelocity.x, 0f, currentPlanarVelocity.z);
+        }
+
+        if (moveWorld.sqrMagnitude < 0.0001f)
+        {
+            UpdateRotationTargetByGamepadLook(lookInput);
+            return;
+        }
+
+        float angle = Vector3.Angle(moveWorld.normalized, lookWorld.normalized);
+        if (angle > maxLookOffsetAngleWhileMoving)
+        {
+            aimForward = moveWorld.normalized;
+            UpdateRotationTargetByMovement(new Vector2(moveWorld.x, moveWorld.z));
+            return;
+        }
+
+        UpdateRotationTargetByGamepadLook(lookInput);
     }
 
     private void ApplyRotation()

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using UnityEngine.InputSystem;
 
 public class YarnDialogueInteract : MonoBehaviour {
 
@@ -63,7 +64,7 @@ public class YarnDialogueInteract : MonoBehaviour {
             return;
         }
 
-        if (Input.GetKeyDown(interactionKey)) {
+        if (IsInteractPressed()) {
             StartDialogue();
         }
     }
@@ -233,5 +234,14 @@ public class YarnDialogueInteract : MonoBehaviour {
 
         cachedRunner = null;
         return null;
+    }
+
+    private bool IsInteractPressed()
+    {
+        if (Input.GetKeyDown(interactionKey))
+            return true;
+
+        Gamepad gamepad = Gamepad.current;
+        return gamepad != null && gamepad.buttonSouth.wasPressedThisFrame;
     }
 }

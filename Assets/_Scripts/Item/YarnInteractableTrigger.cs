@@ -4,6 +4,7 @@ using DG.Tweening;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.UI;
+using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(Collider))]
 public class YarnInteractableTrigger : MonoBehaviour
@@ -44,7 +45,7 @@ public class YarnInteractableTrigger : MonoBehaviour
     private void Update()
     {
         if (!_playerInRange || _used) return;
-        if (Input.GetKeyDown(KeyCode.E))
+        if (IsInteractPressed())
             StartDialogue();
     }
 
@@ -128,6 +129,15 @@ public class YarnInteractableTrigger : MonoBehaviour
     {
         if (interactHintImage != null)
             interactHintImage.enabled = visible;
+    }
+
+    private bool IsInteractPressed()
+    {
+        if (Input.GetKeyDown(KeyCode.E))
+            return true;
+
+        Gamepad gamepad = Gamepad.current;
+        return gamepad != null && gamepad.buttonSouth.wasPressedThisFrame;
     }
 
     private void OnDestroy()
