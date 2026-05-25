@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using TMPro;
 
 public class GamepadController : MonoBehaviour
 {
@@ -31,28 +32,33 @@ public class GamepadController : MonoBehaviour
     [SerializeField, Range(0f, 80f)] private float inputModeLabelBottomOffset = 24f;
     [SerializeField, Range(180f, 420f)] private float inputModeLabelWidth = 280f;
     [SerializeField, Range(28f, 72f)] private float inputModeLabelHeight = 36f;
+    [SerializeField] private TextMeshProUGUI inputModeLabelText;
 
     private float lastGamepadInputTime = -10f;
     private float lastMouseKeyboardInputTime = -10f;
     private ActiveInputDevice activeInputDevice = ActiveInputDevice.KeyboardMouse;
-    private GUIStyle inputModeLabelStyle;
+    private RectTransform inputModeLabelRect;
     private bool ignoreMouseMotionOnce;
     private int externalCursorOverrideCount;
 
     private void Awake()
     {
         ResolveReferences();
+        EnsureInputModeLabel();
+        UpdateInputModeLabel();
     }
 
-    private void Start()
+    private void OnDisable()
     {
-        ResolveReferences();
+        externalCursorOverrideCount = 0;
+        ignoreMouseMotionOnce = false;
+        Cursor.visible = true;
+        Cursor.lockState = CursorLockMode.None;
+        ClearGamepadState();
     }
 
     private void Update()
     {
-        ResolveReferences();
-
         bool uiOpen = inventoryUI != null && (inventoryUI.IsInventoryOpen() || inventoryUI.IsChestUIOpen() || inventoryUI.IsContextMenuOpen());
         bool inventoryOpen = inventoryUI != null && inventoryUI.IsInventoryOpen();
         bool chestOpen = inventoryUI != null && inventoryUI.IsChestUIOpen();
@@ -96,63 +102,64 @@ public class GamepadController : MonoBehaviour
             weaponHandler.SetGamepadFireHeld(gamepadActive && fireHeld && !inventoryOpen && !chestOpen && !contextMenuOpen);
         }
 
-        if (gamepadAvailable && gamepad.startButton.wasPressedThisFrame)
-        {
-            ToggleInventory();
-            return;
-        }
-
-        if (gamepadAvailable && !inventoryOpen && !chestOpen && !contextMenuOpen && reloadHeld && gamepad.buttonNorth.wasPressedThisFrame)
-        {
-            if (weaponHandler != null)
-                weaponHandler.RequestGamepadReload();
-            return;
-        }
-
-        if (gamepadActive && inventoryOpen)
-        {
-            MoveUiCursor(lookInput);
-            HandleInventoryInput(gamepad, contextMenuOpen);
-            ClearCombatInput();
-            return;
-        }
-
-        if (gamepadActive && chestOpen)
-        {
-            HandleChestInput(gamepad);
-            ClearCombatInput();
-            return;
-        }
-
-        if (gamepadActive && contextMenuOpen)
-        {
-            MoveUiCursor(lookInput);
-            HandleContextMenuInput(gamepad);
-            ClearCombatInput();
-            return;
-        }
-
-        if (gamepadActive)
-            HandleWorldInput(gamepad);
+        HandleGameplayInput(gamepad, gamepadAvailable, gamepadActive, inventoryOpen, chestOpen, contextMenuOpen, reloadHeld, lookInput);
+        UpdateInputModeLabel();
     }
 
-    private void OnGUI()
+    private void EnsureInputModeLabel()
     {
         if (!showInputModeLabel)
             return;
 
-        EnsureInputModeLabelStyle();
+        if (inputModeLabelText == null)
+        {
+            Canvas canvas = FindFirstObjectByType<Canvas>();
+            if (canvas != null)
+            {
+                GameObject labelObject = new GameObject("InputModeLabel");
+                labelObject.transform.SetParent(canvas.transform, false);
+                inputModeLabelText = labelObject.AddComponent<TextMeshProUGUI>();
+            }
+        }
 
-        string label = IsGamepadModeActive ? gamepadModeLabel : keyboardMouseModeLabel;
-        float left = (Screen.width - inputModeLabelWidth) * 0.5f;
-        float top = Screen.height - inputModeLabelBottomOffset - inputModeLabelHeight;
-        Rect rect = new Rect(left, top, inputModeLabelWidth, inputModeLabelHeight);
+        if (inputModeLabelText == null)
+            return;
 
-        Color previousColor = GUI.color;
-        GUI.color = new Color(0f, 0f, 0f, 0.55f);
-        GUI.Box(rect, GUIContent.none);
-        GUI.color = previousColor;
-        GUI.Label(rect, label, inputModeLabelStyle);
+        inputModeLabelRect = inputModeLabelText.rectTransform;
+        inputModeLabelRect.anchorMin = new Vector2(0.5f, 0f);
+        inputModeLabelRect.anchorMax = new Vector2(0.5f, 0f);
+        inputModeLabelRect.pivot = new Vector2(0.5f, 0f);
+        inputModeLabelRect.sizeDelta = new Vector2(inputModeLabelWidth, inputModeLabelHeight);
+        inputModeLabelRect.anchoredPosition = new Vector2(0f, inputModeLabelBottomOffset);
+
+        inputModeLabelText.alignment = TextAlignmentOptions.Center;
+        inputModeLabelText.fontStyle = FontStyles.Bold;
+        inputModeLabelText.fontSize = inputModeLabelFontSize;
+        inputModeLabelText.color = Color.white;
+    }
+
+    private void UpdateInputModeLabel()
+    {
+        if (inputModeLabelText == null)
+            return;
+
+        if (!showInputModeLabel)
+        {
+            if (inputModeLabelText.gameObject.activeSelf)
+                inputModeLabelText.gameObject.SetActive(false);
+            return;
+        }
+
+        if (!inputModeLabelText.gameObject.activeSelf)
+            inputModeLabelText.gameObject.SetActive(true);
+
+        if (inputModeLabelRect == null)
+            inputModeLabelRect = inputModeLabelText.rectTransform;
+
+        inputModeLabelRect.sizeDelta = new Vector2(inputModeLabelWidth, inputModeLabelHeight);
+        inputModeLabelRect.anchoredPosition = new Vector2(0f, inputModeLabelBottomOffset);
+        inputModeLabelText.fontSize = inputModeLabelFontSize;
+        inputModeLabelText.text = IsGamepadModeActive ? gamepadModeLabel : keyboardMouseModeLabel;
     }
 
     private void ResolveReferences()
@@ -189,18 +196,34 @@ public class GamepadController : MonoBehaviour
         }
     }
 
-    private void EnsureInputModeLabelStyle()
+    private void HandleGameplayInput(
+        Gamepad gamepad,
+        bool gamepadAvailable,
+        bool gamepadActive,
+        bool inventoryOpen,
+        bool chestOpen,
+        bool contextMenuOpen,
+        bool reloadHeld,
+        Vector2 lookInput)
     {
-        if (inputModeLabelStyle != null)
+        if (gamepadAvailable && gamepad.startButton.wasPressedThisFrame)
+        {
+            ToggleInventory();
+            return;
+        }
+
+        if (gamepadAvailable && !inventoryOpen && !chestOpen && !contextMenuOpen && reloadHeld && gamepad.buttonNorth.wasPressedThisFrame)
+        {
+            if (weaponHandler != null)
+                weaponHandler.RequestGamepadReload();
+            return;
+        }
+
+        if (HandleUIInput(gamepad, gamepadActive, inventoryOpen, chestOpen, contextMenuOpen, lookInput))
             return;
 
-        inputModeLabelStyle = new GUIStyle(GUI.skin.label)
-        {
-            alignment = TextAnchor.MiddleCenter,
-            fontSize = Mathf.RoundToInt(inputModeLabelFontSize),
-            fontStyle = FontStyle.Bold
-        };
-        inputModeLabelStyle.normal.textColor = Color.white;
+        if (gamepadActive && gamepad != null)
+            HandleWorldInput(gamepad);
     }
 
     public bool IsGamepadModeActive => activeInputDevice == ActiveInputDevice.Gamepad;
@@ -468,9 +491,7 @@ public class GamepadController : MonoBehaviour
 
         if (combineMode && gamepad.buttonSouth.wasPressedThisFrame)
         {
-            if (!inventoryUI.TryCombineWithActiveItem())
-                return;
-
+            inventoryUI.TryCombineWithActiveItem();
             return;
         }
 
@@ -496,6 +517,43 @@ public class GamepadController : MonoBehaviour
             CycleActiveItem(1);
         else if (gamepad.dpad.up.wasPressedThisFrame)
             CycleActiveItem(-1);
+    }
+
+    private bool HandleUIInput(
+        Gamepad gamepad,
+        bool gamepadActive,
+        bool inventoryOpen,
+        bool chestOpen,
+        bool contextMenuOpen,
+        Vector2 lookInput)
+    {
+        if (!gamepadActive || gamepad == null)
+            return false;
+
+        if (inventoryOpen)
+        {
+            MoveUiCursor(lookInput);
+            HandleInventoryInput(gamepad, contextMenuOpen);
+            ClearCombatInput();
+            return true;
+        }
+
+        if (chestOpen)
+        {
+            HandleChestInput(gamepad);
+            ClearCombatInput();
+            return true;
+        }
+
+        if (contextMenuOpen)
+        {
+            MoveUiCursor(lookInput);
+            HandleContextMenuInput(gamepad);
+            ClearCombatInput();
+            return true;
+        }
+
+        return false;
     }
 
     private void HandleContextMenuInput(Gamepad gamepad)
