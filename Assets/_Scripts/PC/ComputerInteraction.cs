@@ -46,6 +46,7 @@ public class ComputerInteraction : MonoBehaviour
     public UnityEvent onDisketteInsertedSuccess; // Событие, которое вызовется при успехе
 
     private AudioSource audioSource;
+    private GamepadController gamepadController;
     private bool interacting = false;
     private bool isOn = false;
     private bool hasDiskette = false;
@@ -55,6 +56,7 @@ public class ComputerInteraction : MonoBehaviour
     private float progress = 0f;
     private float failureTimer = 0f;
     private bool insertSuccess = false;
+    private bool insertHoldStartedByMouse = false;
     private Vector2 gamepadCursorPosition;
     private bool gamepadCursorInitialized;
     private bool cursorWasVisible;
@@ -65,6 +67,9 @@ public class ComputerInteraction : MonoBehaviour
 
     void Start()
     {
+        ResolvePlayerReference();
+        ResolveGamepadController();
+
         if (computerCanvas != null) computerCanvas.gameObject.SetActive(false);
         if (progressBar != null) progressBar.gameObject.SetActive(false);
         if (insertButton != null) insertButton.gameObject.SetActive(false);
@@ -82,62 +87,67 @@ public class ComputerInteraction : MonoBehaviour
 
     void Update()
     {
+        // Input handling separated for clarity and symmetry
+        HandleInput();
+    }
+
+    private void HandleInput()
+    {
         bool hasGamepad = Gamepad.current != null;
         bool gpPressed = hasGamepad && Gamepad.current.buttonSouth.wasPressedThisFrame;
         bool gpHeld = hasGamepad && Gamepad.current.buttonSouth.isPressed;
 
-        if (!interacting && Vector3.Distance(player.transform.position, transform.position) < interactionDistance && (Input.GetKeyDown(KeyCode.E) || gpPressed))
+        // Open interaction: keyboard E or gamepad A
+        if (!interacting && player != null && Vector3.Distance(player.transform.position, transform.position) < interactionDistance && (Input.GetKeyDown(KeyCode.E) || gpPressed))
         {
             StartInteraction();
+            return;
         }
 
-        if (interacting)
-        {
-            HandleGamepadCursor();
+        if (!interacting)
+            return;
 
-            if (hasGamepad)
+        // When interacting, always allow keyboard E to close, and gamepad East to close
+        HandleGamepadCursor();
+
+        if (Input.GetKeyDown(KeyCode.E) || (hasGamepad && Gamepad.current.buttonEast.wasPressedThisFrame))
+        {
+            CloseInteraction();
+            return;
+        }
+
+        // Gamepad click handling for UI when interacting
+        if (hasGamepad && gpPressed)
+        {
+            if (!ClickButtonUnderCursor())
             {
-                if (gpPressed)
+                if (computerCanvas != null && computerCanvas.gameObject.activeSelf)
                 {
-                    if (!ClickButtonUnderCursor())
+                    if (insertButton != null && insertButton.gameObject.activeSelf)
                     {
-                        if (computerCanvas != null && computerCanvas.gameObject.activeSelf)
-                        {
-                            if (insertButton != null && insertButton.gameObject.activeSelf)
-                            {
-                                if (insertButton != null && insertButton.onClick != null)
-                                    insertButton.onClick.Invoke();
-                            }
-                            else if (powerButton != null && powerButton.gameObject.activeSelf)
-                            {
-                                if (powerButton != null && powerButton.onClick != null)
-                                    powerButton.onClick.Invoke();
-                            }
-                        }
+                        if (insertButton.onClick != null)
+                            insertButton.onClick.Invoke();
+                    }
+                    else if (powerButton != null && powerButton.gameObject.activeSelf)
+                    {
+                        if (powerButton.onClick != null)
+                            powerButton.onClick.Invoke();
                     }
                 }
-                if (Gamepad.current.buttonEast.wasPressedThisFrame)
-                {
-                    CloseInteraction();
-                    return;
-                }
-            }
-            else if (Input.GetKeyDown(KeyCode.E))
-            {
-                CloseInteraction();
             }
         }
 
-        if (inserting && isOn && !insertSuccess)
+        if (inserting && !insertSuccess)
         {
             // Update isInsertHeld from gamepad hold as well
             if (!isInsertHeld && gpHeld)
             {
-                BeginInsertHold();
+                BeginInsertHold(false);
             }
             else if (isInsertHeld && !gpHeld && Gamepad.current != null)
             {
-                EndInsertHold();
+                if (!insertHoldStartedByMouse)
+                    EndInsertHold();
             }
 
             if (isInsertHeld)
@@ -186,10 +196,19 @@ public class ComputerInteraction : MonoBehaviour
 
     private void StartInteraction()
     {
+        if (computerCanvas == null || progressBar == null || insertButton == null || powerButton == null || pcImage == null || statusText == null)
+            return;
+
         interacting = true;
         computerCanvas.gameObject.SetActive(true);
         RefreshDisketteState();
         ApplyGamepadCursorState(true);
+        if (gamepadController != null)
+            gamepadController.PushExternalCursorOverride();
+
+        // Initialize gamepad cursor to center immediately so UI is ready for gamepad
+        gamepadCursorInitialized = true;
+        gamepadCursorPosition = new Vector2(Screen.width * 0.5f, Screen.height * 0.5f);
 
         // Звук открытия интерфейса (подход к ПК)
         if (openInterfaceSound != null) audioSource.PlayOneShot(openInterfaceSound);
@@ -199,6 +218,8 @@ public class ComputerInteraction : MonoBehaviour
         inserting = false;
         insertSuccess = false;
         holding = false;
+        insertHoldStartedByMouse = false;
+        isInsertHeld = false;
         progress = 0f;
         progressBar.value = 0f;
         progressBar.gameObject.SetActive(false);
@@ -222,6 +243,8 @@ public class ComputerInteraction : MonoBehaviour
         audioSource.Stop();
         isInsertHeld = false;
         ApplyGamepadCursorState(false);
+        if (gamepadController != null)
+            gamepadController.PopExternalCursorOverride();
 
         if (inserting && !insertSuccess)
         {
@@ -229,6 +252,8 @@ public class ComputerInteraction : MonoBehaviour
             progressBar.gameObject.SetActive(false);
             statusText.text = "";
         }
+
+        insertHoldStartedByMouse = false;
     }
 
     private void TurnOnPC()
@@ -250,7 +275,7 @@ public class ComputerInteraction : MonoBehaviour
         }
     }
 
-    private void StartInserting()
+    public void StartInserting()
     {
         if (isOn && hasDiskette && !inserting)
         {
@@ -262,6 +287,12 @@ public class ComputerInteraction : MonoBehaviour
 
     public void BeginInsertHold()
     {
+        BeginInsertHold(false);
+    }
+
+    public void BeginInsertHold(bool fromMouse)
+    {
+        insertHoldStartedByMouse = fromMouse;
         isInsertHeld = true;
         if (isOn && hasDiskette && !inserting)
             StartInserting();
@@ -270,6 +301,7 @@ public class ComputerInteraction : MonoBehaviour
     public void EndInsertHold()
     {
         isInsertHeld = false;
+        insertHoldStartedByMouse = false;
     }
 
     private void HandleGamepadCursor()
@@ -416,5 +448,41 @@ public class ComputerInteraction : MonoBehaviour
                 break;
             }
         }
+    }
+
+    private bool IsPointerOverButton(Button button)
+    {
+        if (button == null || computerCanvas == null || Mouse.current == null)
+            return false;
+
+        RectTransform buttonRect = button.GetComponent<RectTransform>();
+        if (buttonRect == null)
+            return false;
+
+        Camera uiCamera = computerCanvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : computerCanvas.worldCamera;
+        return RectTransformUtility.RectangleContainsScreenPoint(buttonRect, Mouse.current.position.ReadValue(), uiCamera);
+    }
+
+    private void ResolvePlayerReference()
+    {
+        if (player != null)
+            return;
+
+        GameObject playerObject = GameObject.FindGameObjectWithTag("Player");
+        if (playerObject != null)
+        {
+            player = playerObject;
+            return;
+        }
+
+        PlayerInventory playerInventory = FindFirstObjectByType<PlayerInventory>();
+        if (playerInventory != null)
+            player = playerInventory.gameObject;
+    }
+
+    private void ResolveGamepadController()
+    {
+        if (gamepadController == null)
+            gamepadController = FindFirstObjectByType<GamepadController>();
     }
 }

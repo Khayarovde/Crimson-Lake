@@ -16,13 +16,16 @@ public class InsertButtonHandler : MonoBehaviour, IPointerDownHandler, IPointerU
 
     public void OnPointerDown(PointerEventData eventData)
     {
-        if (manager != null)
-            manager.BeginInsertHold();
+        if (manager != null && eventData != null && eventData.button == PointerEventData.InputButton.Left)
+        {
+            manager.StartInserting();
+            manager.BeginInsertHold(true);
+        }
     }
 
     public void OnPointerUp(PointerEventData eventData)
     {
-        if (manager != null)
+        if (manager != null && eventData != null && eventData.button == PointerEventData.InputButton.Left)
             manager.EndInsertHold();
     }
 

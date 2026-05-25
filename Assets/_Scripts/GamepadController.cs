@@ -37,6 +37,7 @@ public class GamepadController : MonoBehaviour
     private ActiveInputDevice activeInputDevice = ActiveInputDevice.KeyboardMouse;
     private GUIStyle inputModeLabelStyle;
     private bool ignoreMouseMotionOnce;
+    private int externalCursorOverrideCount;
 
     private void Awake()
     {
@@ -204,6 +205,16 @@ public class GamepadController : MonoBehaviour
 
     public bool IsGamepadModeActive => activeInputDevice == ActiveInputDevice.Gamepad;
 
+    public void PushExternalCursorOverride()
+    {
+        externalCursorOverrideCount = Mathf.Max(0, externalCursorOverrideCount + 1);
+    }
+
+    public void PopExternalCursorOverride()
+    {
+        externalCursorOverrideCount = Mathf.Max(0, externalCursorOverrideCount - 1);
+    }
+
     private void UpdateActiveDevice(bool uiOpen)
     {
         Gamepad gamepad = Gamepad.current;
@@ -325,7 +336,7 @@ public class GamepadController : MonoBehaviour
 
     private void UpdateCursorState(bool uiOpen, bool gamepadActive)
     {
-        bool cursorVisible = uiOpen || !gamepadActive;
+        bool cursorVisible = uiOpen || externalCursorOverrideCount > 0 || !gamepadActive;
 
         if (cursorVisible)
         {
