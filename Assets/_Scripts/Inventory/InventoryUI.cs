@@ -79,6 +79,7 @@ public class InventoryUI : MonoBehaviour
     public Button contextSelectButton;
     public Button contextCombineButton;
     public Button contextDestroyButton;
+    public Button contextStoreButton;
     public Button contextCancelButton;
 
     [Header("Рецепты соединения")]
@@ -103,7 +104,9 @@ public class InventoryUI : MonoBehaviour
     [SerializeField] private int craftFailShakeVibrato = 14;
     private bool isCombineSelectionMode;
     private int combineSourceSlotIndex = -1;
+    private bool combineSourceIsChest;
     private int contextMenuSlotIndex = -1;
+    private bool contextMenuIsChest;
     private int contextMenuSelectionIndex;
     private readonly List<Button> contextMenuButtons = new List<Button>();
     private readonly Color contextMenuButtonColor = Color.white;
@@ -131,6 +134,7 @@ public class InventoryUI : MonoBehaviour
     [SerializeField] private float triggerSwitchThreshold = 0.5f;
     private bool leftTriggerWasPressed;
     private bool rightTriggerWasPressed;
+    [SerializeField] private int chestGridColumns = 4;
 
     private enum HpVideoState
     {
@@ -388,6 +392,8 @@ public class InventoryUI : MonoBehaviour
             contextCombineButton = FindButtonInContextMenu("CombineButton");
         if (contextDestroyButton == null)
             contextDestroyButton = FindButtonInContextMenu("DestroyButton");
+        if (contextStoreButton == null)
+            contextStoreButton = FindButtonInContextMenu("StoreButton");
         if (contextCancelButton == null)
             contextCancelButton = FindButtonInContextMenu("CancelButton");
 
@@ -409,6 +415,12 @@ public class InventoryUI : MonoBehaviour
             contextDestroyButton.onClick.AddListener(OnContextDestroyClicked);
         }
 
+        if (contextStoreButton != null)
+        {
+            contextStoreButton.onClick.RemoveAllListeners();
+            contextStoreButton.onClick.AddListener(OnContextStoreClicked);
+        }
+
         if (contextCancelButton != null)
         {
             contextCancelButton.onClick.RemoveAllListeners();
@@ -424,13 +436,15 @@ public class InventoryUI : MonoBehaviour
     {
         contextMenuButtons.Clear();
 
-        if (contextSelectButton != null)
+        if (contextSelectButton != null && contextSelectButton.gameObject.activeSelf)
             contextMenuButtons.Add(contextSelectButton);
-        if (contextCombineButton != null)
+        if (contextCombineButton != null && contextCombineButton.gameObject.activeSelf)
             contextMenuButtons.Add(contextCombineButton);
-        if (contextDestroyButton != null)
+        if (contextDestroyButton != null && contextDestroyButton.gameObject.activeSelf)
             contextMenuButtons.Add(contextDestroyButton);
-        if (contextCancelButton != null)
+        if (contextStoreButton != null && contextStoreButton.gameObject.activeSelf)
+            contextMenuButtons.Add(contextStoreButton);
+        if (contextCancelButton != null && contextCancelButton.gameObject.activeSelf)
             contextMenuButtons.Add(contextCancelButton);
 
         if (contextMenuButtons.Count > 0)
@@ -467,6 +481,7 @@ public class InventoryUI : MonoBehaviour
         contextSelectButton = CreateContextMenuButton(panelObj.transform, "SelectButton", "Выбрать");
         contextCombineButton = CreateContextMenuButton(panelObj.transform, "CombineButton", "Соединить");
         contextDestroyButton = CreateContextMenuButton(panelObj.transform, "DestroyButton", "Уничтожить");
+        contextStoreButton = CreateContextMenuButton(panelObj.transform, "StoreButton", "Положить");
         contextCancelButton = CreateContextMenuButton(panelObj.transform, "CancelButton", "Отмена");
 
         return panelObj;
@@ -512,6 +527,67 @@ public class InventoryUI : MonoBehaviour
         return contextMenuPanel.transform.Find(buttonName)?.GetComponent<Button>();
     }
 
+    private void EnsureContextMenuParent(GameObject targetCanvas)
+    {
+        if (contextMenuPanel == null || targetCanvas == null)
+            return;
+
+        if (contextMenuPanel.transform.parent != targetCanvas.transform)
+            contextMenuPanel.transform.SetParent(targetCanvas.transform, false);
+    }
+
+    private void SetContextMenuButtonActive(Button button, bool active)
+    {
+        if (button != null)
+            button.gameObject.SetActive(active);
+    }
+
+    private void SetContextMenuButtonLabel(Button button, string label)
+    {
+        if (button == null)
+            return;
+
+        TMP_Text tmpText = button.GetComponentInChildren<TMP_Text>(true);
+        if (tmpText != null)
+            tmpText.text = label;
+
+        Text legacyText = button.GetComponentInChildren<Text>(true);
+        if (legacyText != null)
+            legacyText.text = label;
+    }
+
+    private void ConfigureContextMenuForInventory()
+    {
+        contextMenuIsChest = false;
+
+        SetContextMenuButtonLabel(contextSelectButton, "Выбрать");
+        SetContextMenuButtonLabel(contextStoreButton, "Положить");
+
+        bool nearChest = playerInventory != null && playerInventory.IsNearChest();
+        SetContextMenuButtonActive(contextSelectButton, true);
+        SetContextMenuButtonActive(contextCombineButton, true);
+        SetContextMenuButtonActive(contextDestroyButton, true);
+        SetContextMenuButtonActive(contextStoreButton, nearChest);
+        SetContextMenuButtonActive(contextCancelButton, true);
+
+        RebuildContextMenuButtons();
+    }
+
+    private void ConfigureContextMenuForChest()
+    {
+        contextMenuIsChest = true;
+
+        SetContextMenuButtonLabel(contextSelectButton, "Взять");
+
+        SetContextMenuButtonActive(contextSelectButton, true);
+        SetContextMenuButtonActive(contextCombineButton, true);
+        SetContextMenuButtonActive(contextDestroyButton, true);
+        SetContextMenuButtonActive(contextStoreButton, false);
+        SetContextMenuButtonActive(contextCancelButton, false);
+
+        RebuildContextMenuButtons();
+    }
+
     private void OnInventorySlotPointerClicked(int slotIndex, PointerEventData.InputButton mouseButton)
     {
         var slots = inventoryData != null ? inventoryData.GetSlots() : null;
@@ -525,7 +601,7 @@ public class InventoryUI : MonoBehaviour
         {
             if (mouseButton == PointerEventData.InputButton.Left || mouseButton == PointerEventData.InputButton.Right)
             {
-                TryCombineWithSecondSlot(slotIndex);
+                TryCombineWithSecondSlot(slotIndex, false);
             }
             return;
         }
@@ -554,6 +630,30 @@ public class InventoryUI : MonoBehaviour
         if (contextMenuPanel == null)
             return;
 
+        EnsureContextMenuParent(inventoryCanvas);
+        ConfigureContextMenuForInventory();
+        contextMenuSlotIndex = slotIndex;
+        contextMenuSelectionIndex = 0;
+        contextMenuPanel.SetActive(true);
+
+        RectTransform panelRect = contextMenuPanel.GetComponent<RectTransform>();
+        if (panelRect != null)
+        {
+            panelRect.position = centerOnScreen
+                ? new Vector3(Screen.width * 0.5f - 120f, Screen.height * 0.5f, 0f)
+                : Input.mousePosition;
+        }
+
+        UpdateContextMenuSelectionVisual();
+    }
+
+    private void ShowContextMenuForChestSlot(int slotIndex, bool centerOnScreen = false)
+    {
+        if (contextMenuPanel == null)
+            return;
+
+        EnsureContextMenuParent(chestCanvas);
+        ConfigureContextMenuForChest();
         contextMenuSlotIndex = slotIndex;
         contextMenuSelectionIndex = 0;
         contextMenuPanel.SetActive(true);
@@ -575,6 +675,7 @@ public class InventoryUI : MonoBehaviour
             contextMenuPanel.SetActive(false);
 
         contextMenuSlotIndex = -1;
+        contextMenuIsChest = false;
     }
 
     public bool IsContextMenuOpen()
@@ -602,6 +703,20 @@ public class InventoryUI : MonoBehaviour
             return false;
 
         ShowContextMenuForSlot(slotIndex, centerOnScreen);
+        return true;
+    }
+
+    public bool ShowContextMenuForSelectedChestItem(bool centerOnScreen)
+    {
+        if (currentChest == null || currentChest.chestData == null)
+            return false;
+
+        int slotIndex = Mathf.Clamp(selectedChestIndex, 0, currentChest.chestData.GetSlotCount() - 1);
+        InventoryItem item = currentChest.chestData.GetItemAt(slotIndex);
+        if (item == null || item.type == InventoryItem.ItemType.Empty)
+            return false;
+
+        ShowContextMenuForChestSlot(slotIndex, centerOnScreen);
         return true;
     }
 
@@ -663,7 +778,21 @@ public class InventoryUI : MonoBehaviour
             return false;
         }
 
-        TryCombineWithSecondSlot(activeIndex);
+        TryCombineWithSecondSlot(activeIndex, false);
+        return true;
+    }
+
+    public bool TryCombineWithSelectedChestItem()
+    {
+        if (!isCombineSelectionMode || currentChest == null || currentChest.chestData == null)
+            return false;
+
+        int slotIndex = Mathf.Clamp(selectedChestIndex, 0, currentChest.chestData.GetSlotCount() - 1);
+        InventoryItem item = currentChest.chestData.GetItemAt(slotIndex);
+        if (item == null || item.type == InventoryItem.ItemType.Empty)
+            return false;
+
+        TryCombineWithSecondSlot(slotIndex, true);
         return true;
     }
 
@@ -671,6 +800,7 @@ public class InventoryUI : MonoBehaviour
     {
         isCombineSelectionMode = false;
         combineSourceSlotIndex = -1;
+        combineSourceIsChest = false;
 
         if (activeItemInfoText != null)
             activeItemInfoText.text = "Соединение отменено";
@@ -704,6 +834,12 @@ public class InventoryUI : MonoBehaviour
             return;
         }
 
+        if (selectedButton == contextStoreButton)
+        {
+            OnContextStoreClicked();
+            return;
+        }
+
         HideContextMenu();
     }
 
@@ -712,7 +848,10 @@ public class InventoryUI : MonoBehaviour
         if (contextMenuSlotIndex < 0)
             return;
 
-        OnInventorySlotClicked(contextMenuSlotIndex);
+        if (contextMenuIsChest)
+            OnChestTakeButtonClicked(contextMenuSlotIndex);
+        else
+            OnInventorySlotClicked(contextMenuSlotIndex);
         HideContextMenu();
     }
 
@@ -723,6 +862,7 @@ public class InventoryUI : MonoBehaviour
 
         isCombineSelectionMode = true;
         combineSourceSlotIndex = contextMenuSlotIndex;
+        combineSourceIsChest = contextMenuIsChest;
         HideContextMenu();
 
         if (activeItemInfoText != null)
@@ -755,14 +895,33 @@ public class InventoryUI : MonoBehaviour
         if (contextMenuSlotIndex < 0)
             return;
 
-        OnDestroyButtonClicked(contextMenuSlotIndex);
+        if (contextMenuIsChest)
+            OnChestDestroyButtonClicked(contextMenuSlotIndex);
+        else
+            OnDestroyButtonClicked(contextMenuSlotIndex);
         HideContextMenu();
     }
 
-    private void TryCombineWithSecondSlot(int secondSlotIndex)
+    private void OnContextStoreClicked()
+    {
+        if (contextMenuSlotIndex < 0)
+            return;
+
+        OnStoreButtonClicked(contextMenuSlotIndex);
+        HideContextMenu();
+    }
+
+    private void TryCombineWithSecondSlot(int secondSlotIndex, bool isChestSlot)
     {
         if (!isCombineSelectionMode)
             return;
+
+        if (combineSourceIsChest != isChestSlot)
+        {
+            if (activeItemInfoText != null)
+                activeItemInfoText.text = "Выберите предмет в той же сумке";
+            return;
+        }
 
         int sourceSlot = combineSourceSlotIndex;
         if (sourceSlot < 0 || secondSlotIndex < 0 || sourceSlot == secondSlotIndex)
@@ -773,11 +932,12 @@ public class InventoryUI : MonoBehaviour
             return;
         }
 
-        if (inventoryData == null)
+        InventoryData sourceData = combineSourceIsChest ? currentChest?.chestData : inventoryData;
+        if (sourceData == null)
             return;
 
-        InventoryItem firstItem = inventoryData.GetItemAt(sourceSlot);
-        InventoryItem secondItem = inventoryData.GetItemAt(secondSlotIndex);
+        InventoryItem firstItem = sourceData.GetItemAt(sourceSlot);
+        InventoryItem secondItem = sourceData.GetItemAt(secondSlotIndex);
 
         if (firstItem == null || secondItem == null ||
             firstItem.type == InventoryItem.ItemType.Empty || secondItem.type == InventoryItem.ItemType.Empty)
@@ -797,15 +957,19 @@ public class InventoryUI : MonoBehaviour
             return;
         }
 
+        bool sourceWasChest = combineSourceIsChest;
         isCombineSelectionMode = false;
         combineSourceSlotIndex = -1;
+        combineSourceIsChest = false;
 
-        inventoryData.ClearSlot(sourceSlot);
-        inventoryData.ClearSlot(secondSlotIndex);
-        inventoryData.SetItemAt(sourceSlot, recipe.resultItem);
+        sourceData.ClearSlot(sourceSlot);
+        sourceData.ClearSlot(secondSlotIndex);
+        sourceData.SetItemAt(sourceSlot, recipe.resultItem);
 
-        playerInventory.SetActiveItemByIndex(sourceSlot);
+        if (!sourceWasChest)
+            playerInventory.SetActiveItemByIndex(sourceSlot);
         UpdateInventoryUI();
+        UpdateChestUI();
 
         if (activeItemInfoText != null)
             activeItemInfoText.text = $"Создано: {recipe.resultItem.itemName}";
@@ -877,6 +1041,14 @@ public class InventoryUI : MonoBehaviour
                 outlines[i].effectColor = outlineColor;
             }
         }
+
+        if (chestOutlines == null) return;
+
+        for (int i = 0; i < chestOutlines.Length; i++)
+        {
+            if (chestOutlines[i] != null)
+                chestOutlines[i].effectColor = outlineColor;
+        }
     }
 
     private void InitializeChestSlots()
@@ -920,7 +1092,7 @@ public class InventoryUI : MonoBehaviour
                 chestOutlines[i] = icon.GetComponent<UIOutline>();
                 if (chestOutlines[i] != null)
                 {
-                    chestOutlines[i].effectColor = Color.red;
+                    chestOutlines[i].effectColor = outlineColor;
                     chestOutlines[i].enabled = false;
                 }
             }
@@ -1382,6 +1554,7 @@ public class InventoryUI : MonoBehaviour
         if (currentChest == null || chestSlotIcons == null) return;
 
         var chestItems = currentChest.GetChestItems();
+        EnsureChestSelectionValid(chestItems);
 
         for (int i = 0; i < chestSlotIcons.Length; i++)
         {
@@ -1392,6 +1565,9 @@ public class InventoryUI : MonoBehaviour
                     chestSlotIcons[i].sprite = chestItems[i].icon;
                     chestSlotIcons[i].enabled = true;
                 }
+
+                if (chestOutlines[i] != null)
+                    chestOutlines[i].enabled = i == selectedChestIndex;
                 
                 if (chestTakeButtons[i] != null)
                     chestTakeButtons[i].gameObject.SetActive(true);
@@ -1403,6 +1579,9 @@ public class InventoryUI : MonoBehaviour
             {
                 if (chestSlotIcons[i] != null)
                     chestSlotIcons[i].enabled = false;
+
+                if (chestOutlines[i] != null)
+                    chestOutlines[i].enabled = false;
                 
                 if (chestTakeButtons[i] != null)
                     chestTakeButtons[i].gameObject.SetActive(false);
@@ -1411,6 +1590,155 @@ public class InventoryUI : MonoBehaviour
                     chestDestroyButtons[i].gameObject.SetActive(false);
             }
         }
+    }
+
+    private void EnsureChestSelectionValid(List<InventoryItem> chestItems)
+    {
+        if (chestItems == null || chestItems.Count == 0)
+        {
+            selectedChestIndex = 0;
+            return;
+        }
+
+        bool currentValid = selectedChestIndex >= 0 && selectedChestIndex < chestItems.Count &&
+                            chestItems[selectedChestIndex] != null &&
+                            chestItems[selectedChestIndex].type != InventoryItem.ItemType.Empty;
+
+        if (currentValid)
+            return;
+
+        int nextIndex = 0;
+        for (int i = 0; i < chestItems.Count; i++)
+        {
+            if (chestItems[i] != null && chestItems[i].type != InventoryItem.ItemType.Empty)
+            {
+                nextIndex = i;
+                break;
+            }
+        }
+
+        selectedChestIndex = nextIndex;
+    }
+
+    private int GetChestColumns()
+    {
+        if (chestGridTransform != null)
+        {
+            GridLayoutGroup layout = chestGridTransform.GetComponent<GridLayoutGroup>();
+            if (layout != null)
+            {
+                if (layout.constraint == GridLayoutGroup.Constraint.FixedColumnCount)
+                    return Mathf.Max(1, layout.constraintCount);
+                if (layout.constraint == GridLayoutGroup.Constraint.FixedRowCount)
+                {
+                    int rows = Mathf.Max(1, layout.constraintCount);
+                    int total = chestSlotIcons != null ? chestSlotIcons.Length : 0;
+                    return Mathf.Max(1, Mathf.CeilToInt((float)total / rows));
+                }
+            }
+        }
+
+        return Mathf.Max(1, chestGridColumns);
+    }
+
+    private void SelectInitialChestSlot()
+    {
+        if (currentChest == null || currentChest.chestData == null)
+        {
+            selectedChestIndex = 0;
+            return;
+        }
+
+        int count = currentChest.chestData.GetSlotCount();
+        selectedChestIndex = 0;
+
+        for (int i = 0; i < count; i++)
+        {
+            InventoryItem item = currentChest.chestData.GetItemAt(i);
+            if (item != null && item.type != InventoryItem.ItemType.Empty)
+            {
+                selectedChestIndex = i;
+                return;
+            }
+        }
+    }
+
+    public void MoveChestSelection(int deltaX, int deltaY)
+    {
+        if (currentChest == null || currentChest.chestData == null)
+            return;
+
+        if (Time.unscaledTime - lastChestNav < chestNavCooldown)
+            return;
+
+        int totalSlots = currentChest.chestData.GetSlotCount();
+        if (totalSlots <= 0)
+            return;
+
+        int columns = GetChestColumns();
+        int rows = Mathf.CeilToInt((float)totalSlots / columns);
+
+        int currentRow = Mathf.Clamp(selectedChestIndex / columns, 0, rows - 1);
+        int currentCol = Mathf.Clamp(selectedChestIndex % columns, 0, columns - 1);
+
+        int nextIndex = selectedChestIndex;
+        bool found = false;
+
+        if (deltaX != 0)
+        {
+            for (int col = currentCol + deltaX; col >= 0 && col < columns; col += deltaX)
+            {
+                int candidate = currentRow * columns + col;
+                if (candidate < 0 || candidate >= totalSlots)
+                    break;
+
+                InventoryItem item = currentChest.chestData.GetItemAt(candidate);
+                if (item != null && item.type != InventoryItem.ItemType.Empty)
+                {
+                    nextIndex = candidate;
+                    found = true;
+                    break;
+                }
+            }
+        }
+        else if (deltaY != 0)
+        {
+            for (int row = currentRow + deltaY; row >= 0 && row < rows; row += deltaY)
+            {
+                int candidate = row * columns + currentCol;
+                if (candidate < 0 || candidate >= totalSlots)
+                    continue;
+
+                InventoryItem item = currentChest.chestData.GetItemAt(candidate);
+                if (item != null && item.type != InventoryItem.ItemType.Empty)
+                {
+                    nextIndex = candidate;
+                    found = true;
+                    break;
+                }
+            }
+        }
+
+        if (!found || nextIndex == selectedChestIndex)
+            return;
+
+        selectedChestIndex = nextIndex;
+        lastChestNav = Time.unscaledTime;
+        UpdateChestUI();
+    }
+
+    public bool TryTakeSelectedChestItem()
+    {
+        if (currentChest == null || currentChest.chestData == null)
+            return false;
+
+        int slotIndex = Mathf.Clamp(selectedChestIndex, 0, currentChest.chestData.GetSlotCount() - 1);
+        InventoryItem item = currentChest.chestData.GetItemAt(slotIndex);
+        if (item == null || item.type == InventoryItem.ItemType.Empty)
+            return false;
+
+        OnChestTakeButtonClicked(slotIndex);
+        return true;
     }
 
     private void OnStoreButtonClicked(int slotIndex)
@@ -1507,6 +1835,7 @@ public class InventoryUI : MonoBehaviour
                 UpdateHpVideoByCurrentHealth(force: true);
                 isCombineSelectionMode = false;
                 combineSourceSlotIndex = -1;
+                combineSourceIsChest = false;
                 HideContextMenu();
                 // Cursor.lockState = CursorLockMode.None;
                 // Cursor.visible = true;
@@ -1515,6 +1844,7 @@ public class InventoryUI : MonoBehaviour
             {
                 isCombineSelectionMode = false;
                 combineSourceSlotIndex = -1;
+                combineSourceIsChest = false;
                 HideContextMenu();
                 if (!IsChestUIOpen()) // Если сундук не открыт, сбрасываем флаг
                 {
@@ -1540,6 +1870,7 @@ public class InventoryUI : MonoBehaviour
 
         isCombineSelectionMode = false;
         combineSourceSlotIndex = -1;
+        combineSourceIsChest = false;
         HideContextMenu();
 
         wasInventoryOpenBeforeChest = IsInventoryOpen();
@@ -1555,6 +1886,7 @@ public class InventoryUI : MonoBehaviour
         if (chestCanvas != null)
         {
             chestCanvas.SetActive(true);
+            SelectInitialChestSlot();
             UpdateChestUI();
             ApplyChestCursorState(true);
         }
@@ -1608,6 +1940,7 @@ public class InventoryUI : MonoBehaviour
 
         isCombineSelectionMode = false;
         combineSourceSlotIndex = -1;
+        combineSourceIsChest = false;
         HideContextMenu();
 
         wasInventoryOpenBeforeChest = false;
@@ -1631,6 +1964,7 @@ public class InventoryUI : MonoBehaviour
 
         isCombineSelectionMode = false;
         combineSourceSlotIndex = -1;
+        combineSourceIsChest = false;
         HideContextMenu();
 
         if (inventoryCanvas != null && wasInventoryOpenBeforeChest)

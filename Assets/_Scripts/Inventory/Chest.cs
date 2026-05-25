@@ -61,11 +61,6 @@ public class Chest : MonoBehaviour
                 isChestOpen = false;
                 RestoreCursorState();
             }
-
-            if (inventoryUI != null)
-            {
-                HandleGamepadInput(inventoryUI);
-            }
         }
     }
 

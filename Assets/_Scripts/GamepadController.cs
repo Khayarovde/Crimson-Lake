@@ -466,7 +466,34 @@ public class GamepadController : MonoBehaviour
         if (inventoryUI == null)
             return;
 
-        if (gamepad.buttonSouth.wasPressedThisFrame || gamepad.buttonEast.wasPressedThisFrame)
+        if (gamepad.dpad.left.wasPressedThisFrame)
+            inventoryUI.MoveChestSelection(-1, 0);
+        else if (gamepad.dpad.right.wasPressedThisFrame)
+            inventoryUI.MoveChestSelection(1, 0);
+        else if (gamepad.dpad.up.wasPressedThisFrame)
+            inventoryUI.MoveChestSelection(0, -1);
+        else if (gamepad.dpad.down.wasPressedThisFrame)
+            inventoryUI.MoveChestSelection(0, 1);
+
+        if (gamepad.buttonNorth.wasPressedThisFrame)
+        {
+            inventoryUI.ShowContextMenuForSelectedChestItem(true);
+            return;
+        }
+
+        if (inventoryUI.IsCombineSelectionMode() && gamepad.buttonSouth.wasPressedThisFrame)
+        {
+            inventoryUI.TryCombineWithSelectedChestItem();
+            return;
+        }
+
+        if (gamepad.buttonSouth.wasPressedThisFrame)
+        {
+            inventoryUI.TryTakeSelectedChestItem();
+            return;
+        }
+
+        if (gamepad.buttonEast.wasPressedThisFrame)
             inventoryUI.CloseChestUI();
     }
 
@@ -530,6 +557,13 @@ public class GamepadController : MonoBehaviour
         if (!gamepadActive || gamepad == null)
             return false;
 
+        if (contextMenuOpen)
+        {
+            HandleContextMenuInput(gamepad);
+            ClearCombatInput();
+            return true;
+        }
+
         if (inventoryOpen)
         {
             MoveUiCursor(lookInput);
@@ -541,14 +575,6 @@ public class GamepadController : MonoBehaviour
         if (chestOpen)
         {
             HandleChestInput(gamepad);
-            ClearCombatInput();
-            return true;
-        }
-
-        if (contextMenuOpen)
-        {
-            MoveUiCursor(lookInput);
-            HandleContextMenuInput(gamepad);
             ClearCombatInput();
             return true;
         }

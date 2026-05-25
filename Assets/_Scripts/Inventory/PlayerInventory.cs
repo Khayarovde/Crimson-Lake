@@ -250,8 +250,8 @@ public class PlayerInventory : MonoBehaviour
             if (addedToChest)
             {
                 Debug.Log($"[PlayerInventory] Предмет {item.itemName} перемещен в сундук.");
-                
-                inventoryData.RemoveItem(item);
+
+                inventoryData.ClearSlot(slotIndex);
                 if (activeItemIndex == slotIndex) activeItemIndex = -1;
                 AutoSelectActiveItem();
                 inventoryUI.UpdateInventoryUI();
@@ -268,7 +268,7 @@ public class PlayerInventory : MonoBehaviour
         if (item == null || item.type == InventoryItem.ItemType.Empty) return;
 
         Debug.Log($"[PlayerInventory] Предмет {item.itemName} уничтожен.");
-        inventoryData.RemoveItem(item);
+        inventoryData.ClearSlot(slotIndex);
         if (activeItemIndex == slotIndex) activeItemIndex = -1;
         AutoSelectActiveItem();
         inventoryUI.UpdateInventoryUI();

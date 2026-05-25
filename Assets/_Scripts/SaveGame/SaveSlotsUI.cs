@@ -63,6 +63,8 @@ public class SaveSlotsUI : MonoBehaviour
     private int selectedSlotIndex = 0;
     private float lastNavTime = 0f;
     private float navCooldown = 0.12f;
+    private int confirmSelectionIndex = 0;
+    private int deleteConfirmSelectionIndex = 0;
 
     public bool IsOpen => isOpen;
     public static bool IsSaveMenuOpen { get; private set; }
@@ -121,25 +123,44 @@ public class SaveSlotsUI : MonoBehaviour
         // Gamepad navigation: dpad to move, A to activate, B to cancel
         if (Gamepad.current != null)
         {
-            if (Gamepad.current.dpad.up.wasPressedThisFrame)
+            Gamepad gamepad = Gamepad.current;
+
+            if (confirmPanel != null && confirmPanel.activeSelf)
             {
-                selectedSlotIndex = (selectedSlotIndex - 1 + slotButtons.Length) % slotButtons.Length;
-                if (EventSystem.current != null && slotButtons[selectedSlotIndex] != null)
-                    EventSystem.current.SetSelectedGameObject(slotButtons[selectedSlotIndex].gameObject);
-            }
-            else if (Gamepad.current.dpad.down.wasPressedThisFrame)
-            {
-                selectedSlotIndex = (selectedSlotIndex + 1) % slotButtons.Length;
-                if (EventSystem.current != null && slotButtons[selectedSlotIndex] != null)
-                    EventSystem.current.SetSelectedGameObject(slotButtons[selectedSlotIndex].gameObject);
+                HandleConfirmOverwriteInput(gamepad);
+                return;
             }
 
-            if (Gamepad.current.buttonSouth.wasPressedThisFrame)
+            if (deleteConfirmPanel != null && deleteConfirmPanel.activeSelf)
             {
-                OnSlotPressed(selectedSlotIndex);
+                HandleDeleteConfirmInput(gamepad);
+                return;
             }
 
-            if (Gamepad.current.buttonEast.wasPressedThisFrame)
+            if (Time.unscaledTime - lastNavTime >= navCooldown)
+            {
+                if (gamepad.dpad.up.wasPressedThisFrame || gamepad.dpad.left.wasPressedThisFrame)
+                {
+                    selectedSlotIndex = (selectedSlotIndex - 1 + slotButtons.Length) % slotButtons.Length;
+                    lastNavTime = Time.unscaledTime;
+                    if (EventSystem.current != null && slotButtons[selectedSlotIndex] != null)
+                        EventSystem.current.SetSelectedGameObject(slotButtons[selectedSlotIndex].gameObject);
+                }
+                else if (gamepad.dpad.down.wasPressedThisFrame || gamepad.dpad.right.wasPressedThisFrame)
+                {
+                    selectedSlotIndex = (selectedSlotIndex + 1) % slotButtons.Length;
+                    lastNavTime = Time.unscaledTime;
+                    if (EventSystem.current != null && slotButtons[selectedSlotIndex] != null)
+                        EventSystem.current.SetSelectedGameObject(slotButtons[selectedSlotIndex].gameObject);
+                }
+            }
+
+            if (gamepad.buttonSouth.wasPressedThisFrame)
+            {
+                OnSlotPressed(GetSelectedSlotIndex());
+            }
+
+            if (gamepad.buttonEast.wasPressedThisFrame)
             {
                 Hide();
             }
@@ -285,6 +306,9 @@ public class SaveSlotsUI : MonoBehaviour
             pendingOverwriteSlot = slotIndex;
             if (confirmPanel != null)
                 confirmPanel.SetActive(true);
+            confirmSelectionIndex = 0;
+            SelectConfirmButton(confirmYesButton, confirmNoButton, confirmSelectionIndex);
+            ForcePanelsToTop();
             return;
         }
 
@@ -325,6 +349,10 @@ public class SaveSlotsUI : MonoBehaviour
     {
         if (deleteConfirmPanel != null)
             deleteConfirmPanel.SetActive(true);
+
+        deleteConfirmSelectionIndex = 0;
+        SelectConfirmButton(deleteConfirmYesButton, deleteConfirmNoButton, deleteConfirmSelectionIndex);
+        ForcePanelsToTop();
     }
 
     private void ConfirmDeleteAll()
@@ -342,6 +370,116 @@ public class SaveSlotsUI : MonoBehaviour
     {
         if (deleteConfirmPanel != null)
             deleteConfirmPanel.SetActive(false);
+    }
+
+    private void HandleConfirmOverwriteInput(Gamepad gamepad)
+    {
+        if (gamepad == null)
+            return;
+
+        if (Time.unscaledTime - lastNavTime >= navCooldown)
+        {
+            if (gamepad.dpad.left.wasPressedThisFrame || gamepad.dpad.up.wasPressedThisFrame)
+            {
+                confirmSelectionIndex = Mathf.Max(0, confirmSelectionIndex - 1);
+                lastNavTime = Time.unscaledTime;
+                SelectConfirmButton(confirmYesButton, confirmNoButton, confirmSelectionIndex);
+            }
+            else if (gamepad.dpad.right.wasPressedThisFrame || gamepad.dpad.down.wasPressedThisFrame)
+            {
+                confirmSelectionIndex = Mathf.Min(1, confirmSelectionIndex + 1);
+                lastNavTime = Time.unscaledTime;
+                SelectConfirmButton(confirmYesButton, confirmNoButton, confirmSelectionIndex);
+            }
+        }
+
+        if (gamepad.buttonSouth.wasPressedThisFrame)
+        {
+            Button target = confirmSelectionIndex == 0 ? confirmYesButton : confirmNoButton;
+            if (target != null)
+                target.onClick.Invoke();
+        }
+
+        if (gamepad.buttonEast.wasPressedThisFrame)
+            CancelOverwrite();
+    }
+
+    private void HandleDeleteConfirmInput(Gamepad gamepad)
+    {
+        if (gamepad == null)
+            return;
+
+        if (Time.unscaledTime - lastNavTime >= navCooldown)
+        {
+            if (gamepad.dpad.left.wasPressedThisFrame || gamepad.dpad.up.wasPressedThisFrame)
+            {
+                deleteConfirmSelectionIndex = Mathf.Max(0, deleteConfirmSelectionIndex - 1);
+                lastNavTime = Time.unscaledTime;
+                SelectConfirmButton(deleteConfirmYesButton, deleteConfirmNoButton, deleteConfirmSelectionIndex);
+            }
+            else if (gamepad.dpad.right.wasPressedThisFrame || gamepad.dpad.down.wasPressedThisFrame)
+            {
+                deleteConfirmSelectionIndex = Mathf.Min(1, deleteConfirmSelectionIndex + 1);
+                lastNavTime = Time.unscaledTime;
+                SelectConfirmButton(deleteConfirmYesButton, deleteConfirmNoButton, deleteConfirmSelectionIndex);
+            }
+        }
+
+        if (gamepad.buttonSouth.wasPressedThisFrame)
+        {
+            Button target = deleteConfirmSelectionIndex == 0 ? deleteConfirmYesButton : deleteConfirmNoButton;
+            if (target != null)
+                target.onClick.Invoke();
+        }
+
+        if (gamepad.buttonEast.wasPressedThisFrame)
+            CancelDeleteAll();
+    }
+
+    private void SelectConfirmButton(Button yesButton, Button noButton, int index)
+    {
+        if (EventSystem.current == null)
+            return;
+
+        Button target = index == 0 ? yesButton : noButton;
+        if (target != null)
+            EventSystem.current.SetSelectedGameObject(target.gameObject);
+    }
+
+    private int GetSelectedSlotIndex()
+    {
+        if (EventSystem.current != null)
+        {
+            GameObject selected = EventSystem.current.currentSelectedGameObject;
+            if (selected != null)
+            {
+                for (int i = 0; i < slotButtons.Length; i++)
+                {
+                    if (slotButtons[i] != null && slotButtons[i].gameObject == selected)
+                        return i;
+                }
+            }
+        }
+
+        return selectedSlotIndex;
+    }
+
+    private void ForcePanelsToTop()
+    {
+        if (canvasRoot == null) return;
+
+        Canvas canvas = canvasRoot.GetComponentInParent<Canvas>();
+        if (canvas != null)
+        {
+            canvas.sortingOrder = 1000;
+            canvas.overrideSorting = true;
+        }
+
+        canvasRoot.transform.SetAsLastSibling();
+        if (confirmPanel != null && confirmPanel.activeSelf)
+            confirmPanel.transform.SetAsLastSibling();
+        if (deleteConfirmPanel != null && deleteConfirmPanel.activeSelf)
+            deleteConfirmPanel.transform.SetAsLastSibling();
     }
 
     private void ContinueWithoutSaving()

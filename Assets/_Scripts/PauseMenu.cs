@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -37,6 +38,10 @@ public class PauseMenu : MonoBehaviour
     private readonly Dictionary<AudioLowPassFilter, Coroutine> filterFades = new Dictionary<AudioLowPassFilter, Coroutine>();
 
     private bool isPaused = false;
+    private int selectedPauseButtonIndex = 0;
+    private int selectedExitConfirmIndex = 0;
+    private float lastPauseNavTime = 0f;
+    [SerializeField] private float pauseNavCooldown = 0.12f;
 
     public static float CurrentMusicAttenuation =>
         Instance != null && Instance.isPaused ? Mathf.Clamp01(Instance.pauseMusicVolumeMultiplier) : 1f;
@@ -80,6 +85,7 @@ public class PauseMenu : MonoBehaviour
         {
             if (Input.GetKeyDown(KeyCode.Escape))
                 CancelExitToMainMenu();
+            HandlePauseGamepadInput();
             return;
         }
 
@@ -87,6 +93,80 @@ public class PauseMenu : MonoBehaviour
         {
             if (isPaused) Resume();
             else Pause();
+        }
+
+        if (isPaused)
+            HandlePauseGamepadInput();
+    }
+
+    private void HandlePauseGamepadInput()
+    {
+        Gamepad gamepad = Gamepad.current;
+        if (gamepad == null)
+            return;
+
+        if (exitWithoutSaveConfirmPanel != null && exitWithoutSaveConfirmPanel.activeSelf)
+        {
+            HandleExitConfirmInput(gamepad);
+            return;
+        }
+
+        HandlePausePanelInput(gamepad);
+    }
+
+    private void HandlePausePanelInput(Gamepad gamepad)
+    {
+        List<Button> buttons = GetPauseButtons();
+        if (buttons.Count == 0)
+            return;
+
+        if (Time.unscaledTime - lastPauseNavTime >= pauseNavCooldown)
+        {
+            if (gamepad.dpad.left.wasPressedThisFrame || gamepad.dpad.up.wasPressedThisFrame)
+            {
+                selectedPauseButtonIndex = (selectedPauseButtonIndex - 1 + buttons.Count) % buttons.Count;
+                lastPauseNavTime = Time.unscaledTime;
+                SelectPauseButton(buttons, selectedPauseButtonIndex);
+            }
+            else if (gamepad.dpad.right.wasPressedThisFrame || gamepad.dpad.down.wasPressedThisFrame)
+            {
+                selectedPauseButtonIndex = (selectedPauseButtonIndex + 1) % buttons.Count;
+                lastPauseNavTime = Time.unscaledTime;
+                SelectPauseButton(buttons, selectedPauseButtonIndex);
+            }
+        }
+
+        if (gamepad.buttonSouth.wasPressedThisFrame)
+        {
+            Button target = buttons[Mathf.Clamp(selectedPauseButtonIndex, 0, buttons.Count - 1)];
+            if (target != null)
+                target.onClick.Invoke();
+        }
+    }
+
+    private void HandleExitConfirmInput(Gamepad gamepad)
+    {
+        if (Time.unscaledTime - lastPauseNavTime >= pauseNavCooldown)
+        {
+            if (gamepad.dpad.left.wasPressedThisFrame || gamepad.dpad.up.wasPressedThisFrame)
+            {
+                selectedExitConfirmIndex = Mathf.Max(0, selectedExitConfirmIndex - 1);
+                lastPauseNavTime = Time.unscaledTime;
+                SelectExitConfirmButton(selectedExitConfirmIndex);
+            }
+            else if (gamepad.dpad.right.wasPressedThisFrame || gamepad.dpad.down.wasPressedThisFrame)
+            {
+                selectedExitConfirmIndex = Mathf.Min(1, selectedExitConfirmIndex + 1);
+                lastPauseNavTime = Time.unscaledTime;
+                SelectExitConfirmButton(selectedExitConfirmIndex);
+            }
+        }
+
+        if (gamepad.buttonSouth.wasPressedThisFrame)
+        {
+            Button target = selectedExitConfirmIndex == 0 ? exitWithoutSaveYesButton : exitWithoutSaveNoButton;
+            if (target != null)
+                target.onClick.Invoke();
         }
     }
 
@@ -182,6 +262,48 @@ public class PauseMenu : MonoBehaviour
             EventSystem.current.SetSelectedGameObject(null);
             EventSystem.current.SetSelectedGameObject(first.gameObject);
         }
+
+        selectedPauseButtonIndex = 0;
+    }
+
+    private List<Button> GetPauseButtons()
+    {
+        if (pausePanel == null)
+            return new List<Button>();
+
+        Button[] buttons = pausePanel.GetComponentsInChildren<Button>(true);
+        List<Button> result = new List<Button>();
+        for (int i = 0; i < buttons.Length; i++)
+        {
+            Button button = buttons[i];
+            if (button == null || !button.gameObject.activeInHierarchy)
+                continue;
+
+            result.Add(button);
+        }
+
+        return result;
+    }
+
+    private void SelectPauseButton(List<Button> buttons, int index)
+    {
+        if (EventSystem.current == null || buttons == null || buttons.Count == 0)
+            return;
+
+        int clamped = Mathf.Clamp(index, 0, buttons.Count - 1);
+        Button target = buttons[clamped];
+        if (target != null)
+            EventSystem.current.SetSelectedGameObject(target.gameObject);
+    }
+
+    private void SelectExitConfirmButton(int index)
+    {
+        if (EventSystem.current == null)
+            return;
+
+        Button target = index == 0 ? exitWithoutSaveYesButton : exitWithoutSaveNoButton;
+        if (target != null)
+            EventSystem.current.SetSelectedGameObject(target.gameObject);
     }
 
     // === УНИВЕРСАЛЬНОЕ УПРАВЛЕНИЕ ЗВУКОМ ===
@@ -280,6 +402,8 @@ public class PauseMenu : MonoBehaviour
             {
                 exitWithoutSaveConfirmPanel.SetActive(true);
                 ForcePausePanelToTop();
+                selectedExitConfirmIndex = 0;
+                SelectExitConfirmButton(selectedExitConfirmIndex);
             }
             else
             {
