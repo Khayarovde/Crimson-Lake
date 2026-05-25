@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 using System.Collections;
 using System.Collections.Generic; 
 using TheDeveloperTrain.SciFiGuns;
@@ -146,6 +147,8 @@ public class WeaponHandler : MonoBehaviour
     private float finisherStartSpeedThreshold = 0.2f;
     [SerializeField, Tooltip("Запрещать прицеливание (ПКМ), если рядом есть оглушённый враг для добивания")]
     private bool blockRightMouseNearStunnedEnemy = true;
+    [SerializeField, Range(0.05f, 0.5f), Tooltip("Порог нажатия RT для запуска добивания с геймпада")]
+    private float finisherGamepadTriggerThreshold = 0.2f;
     [SerializeField, Tooltip("Задержка перед запуском смерти врага (сек)")]
     private float finisherEnemyDeathDelay = 0.6f;
     [SerializeField, Tooltip("Если строгие условия не прошли, автоматически ослаблять проверки (скорость), но не угол фронта")]
@@ -231,6 +234,7 @@ public class WeaponHandler : MonoBehaviour
     private bool gamepadAimHeld;
     private bool gamepadFireHeld;
     private bool gamepadModeActive;
+    private bool wasFinisherGamepadTriggerHeld;
 
     private void Awake()
     {
@@ -331,7 +335,10 @@ public class WeaponHandler : MonoBehaviour
     private bool TryFinisherAttack()
     {
         if (isFinisherInProgress) return false;
-        if (!Input.GetMouseButtonDown(0)) return false;
+
+        bool mouseFinisherPressed = Input.GetMouseButtonDown(0);
+        bool gamepadFinisherPressed = IsFinisherGamepadPressedThisFrame();
+        if (!mouseFinisherPressed && !gamepadFinisherPressed) return false;
 
         bool allowLowSpeedCheck = requireLowSpeedForFinisher;
         bool allowFrontCheck = requireFrontForFinisher;
@@ -365,6 +372,15 @@ public class WeaponHandler : MonoBehaviour
 
         finisherSequenceCoroutine = StartCoroutine(BeginFinisherSequence(enemy));
         return true;
+    }
+
+    private bool IsFinisherGamepadPressedThisFrame()
+    {
+        Gamepad gamepad = Gamepad.current;
+        bool triggerHeld = gamepadModeActive && gamepad != null && gamepad.rightTrigger.ReadValue() >= Mathf.Max(0.05f, finisherGamepadTriggerThreshold);
+        bool pressedThisFrame = triggerHeld && !wasFinisherGamepadTriggerHeld;
+        wasFinisherGamepadTriggerHeld = triggerHeld;
+        return pressedThisFrame;
     }
 
     private IEnumerator BeginFinisherSequence(FinisherTarget enemy)

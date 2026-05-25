@@ -1,7 +1,6 @@
 using UnityEngine;
 
 [RequireComponent(typeof(Collider))]
-// Компонент-триггер: при входе игрока запускает катсцену через CutsceneManager
 public class CutsceneTrigger : MonoBehaviour
 {
     [Tooltip("Ключ катсцены из CutsceneManager")]
@@ -10,8 +9,10 @@ public class CutsceneTrigger : MonoBehaviour
     [Tooltip("Тег объекта, который будет инициировать катсцену")]
     public string playerTag = "Player";
 
-    [Tooltip("Если true — отключить этот компонент после первого срабатывания")]
+    [Tooltip("Если true — сработает только один раз")]
     public bool singleUse = true;
+
+    private bool _triggered = false;
 
     private void OnValidate()
     {
@@ -27,6 +28,10 @@ public class CutsceneTrigger : MonoBehaviour
         if (!other.CompareTag(playerTag))
             return;
 
+        // Если одноразовый и уже сработал — игнорируем
+        if (singleUse && _triggered)
+            return;
+
         if (CutsceneManager.Instance == null)
         {
             Debug.LogWarning("CutsceneManager.Instance == null при попытке запустить катсцену.");
@@ -36,6 +41,9 @@ public class CutsceneTrigger : MonoBehaviour
         CutsceneManager.Instance.StartCutscene(cutsceneKey);
 
         if (singleUse)
-            enabled = false;
+        {
+            _triggered = true;
+            enabled = false; // OnTriggerEnter больше не будет вызываться
+        }
     }
 }
