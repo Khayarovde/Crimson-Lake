@@ -23,6 +23,8 @@ public class AmmoPickup : MonoBehaviour
     [Header("Inventory")]
     [SerializeField] private bool addAmmoItemToInventory = true;
     [SerializeField] private InventoryItem ammoInventoryItem;
+    [PickupId]
+    [SerializeField] private string pickupId;
 
     private WeaponHandler targetWeaponHandler;
     private PlayerInventory targetInventory;
@@ -40,6 +42,14 @@ public class AmmoPickup : MonoBehaviour
 
     private void Awake()
     {
+        if (!string.IsNullOrWhiteSpace(pickupId) && SaveManager.HasPickedUpItem(pickupId))
+        {
+            pickedUp = true;
+            SetInteractionHintVisible(false);
+            Destroy(gameObject);
+            return;
+        }
+
         if (interactionHint != null)
         {
             EnsureHintState();
@@ -147,6 +157,10 @@ public class AmmoPickup : MonoBehaviour
         }
 
         targetWeaponHandler.AddAmmo(ammoType, amount);
+
+        if (!string.IsNullOrWhiteSpace(pickupId))
+            SaveManager.MarkItemPickedUp(pickupId);
+
         return true;
     }
 

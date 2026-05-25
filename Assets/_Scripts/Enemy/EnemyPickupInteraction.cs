@@ -7,6 +7,8 @@ public class EnemyPickupInteraction : MonoBehaviour
 {
     [Header("Предмет (инвентарь)")]
     [SerializeField] private InventoryItem item; // Ссылка на ScriptableObject дискеты (если используешь инвентарь)
+    [PickupId]
+    [SerializeField] private string pickupId;
 
     [Header("Враг")]
     [SerializeField] private AdvancedEnemyAI enemyAI;
@@ -74,6 +76,11 @@ public class EnemyPickupInteraction : MonoBehaviour
 
         if (triggerCollider != null && !triggerCollider.isTrigger)
             Debug.LogWarning($"[DiskettePickup] Коллайдер на {gameObject.name} не является триггером! Рекомендуется установить isTrigger = true.");
+
+        ApplyPersistenceState();
+
+        if (alreadyPickedUp)
+            return;
 
         ResolveEnemyReferences();
         CachePlayerInventory();
@@ -277,6 +284,9 @@ public class EnemyPickupInteraction : MonoBehaviour
 
         Debug.Log($"[DiskettePickup] Кассета подтверждена в инвентаре. Запускаем погоню ({gameObject.name})");
 
+        if (!string.IsNullOrWhiteSpace(pickupId))
+            SaveManager.MarkItemPickedUp(pickupId);
+
         alreadyPickedUp = true;
         HidePickupVisual();
         if (triggerCollider != null) triggerCollider.enabled = false;
@@ -303,6 +313,22 @@ public class EnemyPickupInteraction : MonoBehaviour
         }
 
         visualObject.SetActive(false);
+    }
+
+    private void ApplyPersistenceState()
+    {
+        if (string.IsNullOrWhiteSpace(pickupId))
+            return;
+
+        if (!SaveManager.HasPickedUpItem(pickupId))
+            return;
+
+        alreadyPickedUp = true;
+        HidePickupVisual();
+        if (triggerCollider != null)
+            triggerCollider.enabled = false;
+        isPlayerNearby = false;
+        player = null;
     }
 
     private void ActivateEnemyChase()

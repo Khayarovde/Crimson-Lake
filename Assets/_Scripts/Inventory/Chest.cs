@@ -35,6 +35,16 @@ public class Chest : MonoBehaviour
     private bool leftTriggerWasPressed;
     private bool rightTriggerWasPressed;
 
+    private void OnEnable()
+    {
+        SaveManager.RegisterChest(this);
+    }
+
+    private void OnDisable()
+    {
+        SaveManager.UnregisterChest(this);
+    }
+
     private void Start()
     {
         InitializeChest();

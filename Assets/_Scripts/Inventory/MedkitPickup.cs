@@ -13,6 +13,8 @@ public class MedkitPickup : MonoBehaviour
     [SerializeField] private MedkitProfile medkitProfile;
     [SerializeField] private bool destroyObjectAfterPickup = true;
     [SerializeField] private GameObject pickupEffect;
+    [PickupId]
+    [SerializeField] private string pickupId;
 
     [Header("Interaction Hint")]
     [SerializeField] private GameObject interactionHint;
@@ -40,6 +42,21 @@ public class MedkitPickup : MonoBehaviour
 
     private void Awake()
     {
+        if (!string.IsNullOrWhiteSpace(pickupId) && SaveManager.HasPickedUpItem(pickupId))
+        {
+            pickedUp = true;
+            SetInteractionHintVisible(false);
+            if (destroyObjectAfterPickup)
+            {
+                Destroy(gameObject);
+            }
+            else
+            {
+                gameObject.SetActive(false);
+            }
+            return;
+        }
+
         if (interactionHint != null)
         {
             EnsureHintState();
@@ -161,6 +178,9 @@ public class MedkitPickup : MonoBehaviour
         bool added = targetPlayerInventory.AddItemToInventory(medkitItem);
         if (!added)
             return false;
+
+        if (!string.IsNullOrWhiteSpace(pickupId))
+            SaveManager.MarkItemPickedUp(pickupId);
 
         Debug.Log($"[MedkitPickup] Аптечка '{medkitItem.itemName}' добавлена в инвентарь.");
         return true;

@@ -12,6 +12,8 @@ public class Interact : MonoBehaviour {
     [Header("Pickup")]
     [SerializeField] private InventoryItem itemToPickup;
     [SerializeField] private bool destroyObjectAfterPickup = true;
+    [PickupId]
+    [SerializeField] private string pickupId;
 
     [Header("Interaction Hint")]
     [SerializeField] private GameObject interactionHint;
@@ -42,6 +44,18 @@ public class Interact : MonoBehaviour {
     private const float RunnerResolveTimeoutSeconds = 1.5f;
 
     private void Awake() {
+        if (!string.IsNullOrWhiteSpace(pickupId) && SaveManager.HasPickedUpItem(pickupId)) {
+            isCollected = true;
+            SetInteractionHintVisible(false);
+            if (destroyObjectAfterPickup) {
+                Destroy(gameObject);
+            }
+            else {
+                gameObject.SetActive(false);
+            }
+            return;
+        }
+
         if (interactionHint != null) {
             EnsureHintState();
             interactionHint.SetActive(false);
@@ -241,6 +255,9 @@ public class Interact : MonoBehaviour {
             Debug.LogWarning($"[Interact] Не удалось добавить предмет {itemToPickup.itemName} (инвентарь полон или недоступен).");
             return false;
         }
+
+        if (!string.IsNullOrWhiteSpace(pickupId))
+            SaveManager.MarkItemPickedUp(pickupId);
 
         ItemPickedUp?.Invoke(itemToPickup, playerInventory, this);
 

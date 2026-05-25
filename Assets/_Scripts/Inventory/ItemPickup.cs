@@ -5,12 +5,21 @@ public class ItemPickup : MonoBehaviour
 {
     public InventoryItem item; // Ссылка на ScriptableObject предмета
     public float interactionDistance = 2f; // Дистанция для подбора
+    [Header("Save")]
+    [PickupId]
+    [SerializeField] private string pickupId;
     private bool isPlayerNearby = false;
     private Transform player;
     private PlayerInventory playerInventory;
 
     private void Start()
     {
+        if (!string.IsNullOrWhiteSpace(pickupId) && SaveManager.HasPickedUpItem(pickupId))
+        {
+            Destroy(gameObject);
+            return;
+        }
+
         if (item == null)
             Debug.LogError($"[ItemPickup] Предмет не назначен на объекте {gameObject.name}!");
         if (!gameObject.GetComponent<Collider>())
@@ -75,6 +84,8 @@ public class ItemPickup : MonoBehaviour
                 bool added = playerInventory.AddItemToInventory(item);
                 if (added)
                 {
+                    if (!string.IsNullOrWhiteSpace(pickupId))
+                        SaveManager.MarkItemPickedUp(pickupId);
                     // Debug.Log($"[ItemPickup] Предмет {item.itemName} успешно подобран!");
                     Destroy(gameObject);
                     return true;

@@ -6,25 +6,29 @@ using UnityEngine.SceneManagement;
 public class SaveManager : MonoBehaviour
 {
     public static SaveManager Instance;
-    private static readonly HashSet<string> seenEventIds = new HashSet<string>();
-    private static readonly HashSet<string> solvedPuzzles = new HashSet<string>();
-    private static readonly HashSet<string> unlockedDoors = new HashSet<string>();
-    private static readonly HashSet<string> deadEnemies = new HashSet<string>();
-    private static readonly HashSet<string> pickedUpItems = new HashSet<string>();
+    private readonly HashSet<string> seenEventIds = new HashSet<string>();
+    private readonly HashSet<string> solvedPuzzles = new HashSet<string>();
+    private readonly HashSet<string> unlockedDoors = new HashSet<string>();
+    private readonly HashSet<string> deadEnemies = new HashSet<string>();
+    private readonly HashSet<string> pickedUpItems = new HashSet<string>();
+    private static readonly HashSet<Chest> registeredChests = new HashSet<Chest>();
 
     private const string SaveSlotFilePrefix = "save_slot_";
     private const string PendingWarningKey = "PendingSaveWarning";
+    private const int CurrentSaveVersion = 1;
 
     private bool hasUnsavedChanges;
     private GameSaveData pendingLoadData;
     private bool hasPendingLoad;
     private string pendingLoadSceneName;
+    private int loadedPlaySeconds;
     private float sessionPlaySeconds;
     private Coroutine pendingApplyRoutine;
     private Coroutine postLoadStabilizeRoutine;
 
     private const float PendingLoadMaxWaitSeconds = 15f;
     private const int PostLoadStabilizeFrames = 8;
+    private int pendingApplyRequestId;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     private static void BootstrapBeforeFirstScene()
@@ -82,24 +86,16 @@ public class SaveManager : MonoBehaviour
         }
     }
     
-    // Сохранение игры
+    [System.Obsolete("Use SaveSlot(slotIndex) instead.")]
     public void SaveGame()
     {
-        // Находим все сундуки на сцене и сохраняем их
-        Chest[] allChests = FindObjectsByType<Chest>(FindObjectsSortMode.InstanceID);
-        foreach (Chest chest in allChests)
-        {
-            // Данные сохраняются автоматически в классе Chest
-        }
-        
-        Debug.Log("[SaveManager] Игра сохранена");
+        SaveSlot(0);
     }
     
-    // Загрузка игры
+    [System.Obsolete("Use LoadSlot(slotIndex) or LoadLatestSaveOrDefault instead.")]
     public void LoadGame()
     {
-        // Данные загружаются автоматически при старте каждого сундука
-        Debug.Log("[SaveManager] Игра загружена");
+        LoadSlot(0);
     }
 
     public bool HasSave(int slotIndex)
@@ -111,12 +107,7 @@ public class SaveManager : MonoBehaviour
     {
         if (!HasSave(slotIndex)) return "Пусто";
 
-        string path = GetSlotPath(slotIndex);
-        string json = File.ReadAllText(path);
-        if (string.IsNullOrEmpty(json)) return "Пусто";
-
-        GameSaveData data = JsonUtility.FromJson<GameSaveData>(json);
-        if (data == null) return "Пусто";
+        if (!TryReadSaveData(slotIndex, out GameSaveData data)) return "Пусто";
 
         string timeText = FormatPlayTime(data.playSeconds);
         if (string.IsNullOrEmpty(data.savedAt))
@@ -134,9 +125,17 @@ public class SaveManager : MonoBehaviour
             return;
         }
 
-        string json = JsonUtility.ToJson(data);
-        string path = GetSlotPath(slotIndex);
-        File.WriteAllText(path, json);
+        try
+        {
+            string json = JsonUtility.ToJson(data);
+            string path = GetSlotPath(slotIndex);
+            File.WriteAllText(path, json);
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogWarning($"[SaveManager] Ошибка записи сохранения: {ex.Message}");
+            return;
+        }
 
         hasUnsavedChanges = false;
         Debug.Log($"[SaveManager] ФАЙЛ {slotIndex + 1} сохранен");
@@ -160,14 +159,7 @@ public class SaveManager : MonoBehaviour
 
     public bool LoadSlot(int slotIndex)
     {
-        if (!HasSave(slotIndex)) return false;
-
-        string path = GetSlotPath(slotIndex);
-        string json = File.ReadAllText(path);
-        if (string.IsNullOrEmpty(json)) return false;
-
-        GameSaveData data = JsonUtility.FromJson<GameSaveData>(json);
-        if (data == null) return false;
+        if (!TryReadSaveData(slotIndex, out GameSaveData data)) return false;
 
         if (!string.IsNullOrEmpty(data.sceneName) && SceneManager.GetActiveScene().name != data.sceneName)
         {
@@ -184,6 +176,7 @@ public class SaveManager : MonoBehaviour
 
     public void StartNewGameSession()
     {
+        loadedPlaySeconds = 0;
         sessionPlaySeconds = 0f;
         hasUnsavedChanges = false;
         seenEventIds.Clear();
@@ -221,7 +214,7 @@ public class SaveManager : MonoBehaviour
         if (string.IsNullOrWhiteSpace(eventId))
             return false;
 
-        return seenEventIds.Contains(eventId);
+        return Instance != null && Instance.seenEventIds.Contains(eventId);
     }
 
     public static void MarkEventSeen(string eventId)
@@ -229,23 +222,38 @@ public class SaveManager : MonoBehaviour
         if (string.IsNullOrWhiteSpace(eventId))
             return;
 
-        if (seenEventIds.Add(eventId))
-            Instance?.MarkUnsaved();
+        if (Instance == null)
+            return;
+
+        if (Instance.seenEventIds.Add(eventId))
+            Instance.MarkUnsaved();
     }
 
     #region New Tracking Methods
-    public static bool HasPuzzleSolved(string puzzleId) => !string.IsNullOrEmpty(puzzleId) && solvedPuzzles.Contains(puzzleId);
-    public static void MarkPuzzleSolved(string puzzleId) { if (!string.IsNullOrEmpty(puzzleId) && solvedPuzzles.Add(puzzleId)) Instance?.MarkUnsaved(); }
+    public static bool HasPuzzleSolved(string puzzleId) => Instance != null && !string.IsNullOrEmpty(puzzleId) && Instance.solvedPuzzles.Contains(puzzleId);
+    public static void MarkPuzzleSolved(string puzzleId) { if (Instance != null && !string.IsNullOrEmpty(puzzleId) && Instance.solvedPuzzles.Add(puzzleId)) Instance.MarkUnsaved(); }
 
-    public static bool HasDoorUnlocked(string doorId) => !string.IsNullOrEmpty(doorId) && unlockedDoors.Contains(doorId);
-    public static void MarkDoorUnlocked(string doorId) { if (!string.IsNullOrEmpty(doorId) && unlockedDoors.Add(doorId)) Instance?.MarkUnsaved(); }
+    public static bool HasDoorUnlocked(string doorId) => Instance != null && !string.IsNullOrEmpty(doorId) && Instance.unlockedDoors.Contains(doorId);
+    public static void MarkDoorUnlocked(string doorId) { if (Instance != null && !string.IsNullOrEmpty(doorId) && Instance.unlockedDoors.Add(doorId)) Instance.MarkUnsaved(); }
 
-    public static bool IsEnemyDead(string enemyId) => !string.IsNullOrEmpty(enemyId) && deadEnemies.Contains(enemyId);
-    public static void MarkEnemyDead(string enemyId) { if (!string.IsNullOrEmpty(enemyId) && deadEnemies.Add(enemyId)) Instance?.MarkUnsaved(); }
+    public static bool IsEnemyDead(string enemyId) => Instance != null && !string.IsNullOrEmpty(enemyId) && Instance.deadEnemies.Contains(enemyId);
+    public static void MarkEnemyDead(string enemyId) { if (Instance != null && !string.IsNullOrEmpty(enemyId) && Instance.deadEnemies.Add(enemyId)) Instance.MarkUnsaved(); }
 
-    public static bool HasPickedUpItem(string itemId) => !string.IsNullOrEmpty(itemId) && pickedUpItems.Contains(itemId);
-    public static void MarkItemPickedUp(string itemId) { if (!string.IsNullOrEmpty(itemId) && pickedUpItems.Add(itemId)) Instance?.MarkUnsaved(); }
+    public static bool HasPickedUpItem(string itemId) => Instance != null && !string.IsNullOrEmpty(itemId) && Instance.pickedUpItems.Contains(itemId);
+    public static void MarkItemPickedUp(string itemId) { if (Instance != null && !string.IsNullOrEmpty(itemId) && Instance.pickedUpItems.Add(itemId)) Instance.MarkUnsaved(); }
     #endregion
+
+    public static void RegisterChest(Chest chest)
+    {
+        if (chest != null)
+            registeredChests.Add(chest);
+    }
+
+    public static void UnregisterChest(Chest chest)
+    {
+        if (chest != null)
+            registeredChests.Remove(chest);
+    }
 
     public void RequestWarningOnNextScene(string message)
     {
@@ -290,11 +298,12 @@ public class SaveManager : MonoBehaviour
 
         var data = new GameSaveData
         {
+            saveVersion = CurrentSaveVersion,
             sceneName = SceneManager.GetActiveScene().name,
             playerPosition = SerializableVector3.FromVector3(playerTransform.position),
             playerRotationEuler = SerializableVector3.FromVector3(playerTransform.rotation.eulerAngles),
             savedAt = System.DateTime.Now.ToString("yyyy-MM-dd HH:mm"),
-            playSeconds = Mathf.FloorToInt(sessionPlaySeconds),
+            playSeconds = Mathf.Max(0, loadedPlaySeconds) + Mathf.FloorToInt(sessionPlaySeconds),
             seenEventIds = new List<string>(seenEventIds),
             solvedPuzzles = new List<string>(solvedPuzzles),
             unlockedDoors = new List<string>(unlockedDoors),
@@ -316,9 +325,8 @@ public class SaveManager : MonoBehaviour
             new WeaponSaveData { weaponId = "pistol", currentAmmoCount = PlayerAmmoData.pistolInMag, reserveAmmoCount = PlayerAmmoData.pistolReserve, isUnlocked = true }
         };
 
-        Chest[] allChests = FindObjectsByType<Chest>(FindObjectsSortMode.InstanceID);
         data.chests = new List<ChestSlotData>();
-        foreach (var chest in allChests)
+        foreach (var chest in registeredChests)
         {
             if (chest == null || string.IsNullOrEmpty(chest.chestId))
                 continue;
@@ -350,7 +358,8 @@ public class SaveManager : MonoBehaviour
 
     private void ApplySaveData(GameSaveData data)
     {
-        sessionPlaySeconds = Mathf.Max(0, data.playSeconds);
+        loadedPlaySeconds = Mathf.Max(0, data.playSeconds);
+        sessionPlaySeconds = 0f;
 
         seenEventIds.Clear();
         if (data.seenEventIds != null)
@@ -456,9 +465,8 @@ public class SaveManager : MonoBehaviour
 
         if (data.chests != null && data.chests.Count > 0)
         {
-            Chest[] sceneChests = FindObjectsByType<Chest>(FindObjectsSortMode.InstanceID);
             Dictionary<string, Chest> chestById = new Dictionary<string, Chest>();
-            foreach (var chest in sceneChests)
+            foreach (var chest in registeredChests)
             {
                 if (chest == null || string.IsNullOrEmpty(chest.chestId))
                     continue;
@@ -579,7 +587,9 @@ public class SaveManager : MonoBehaviour
         if (pendingApplyRoutine != null)
             StopCoroutine(pendingApplyRoutine);
 
-        pendingApplyRoutine = StartCoroutine(ApplyPendingWhenReady());
+        pendingApplyRequestId++;
+        int requestId = pendingApplyRequestId;
+        pendingApplyRoutine = StartCoroutine(ApplyPendingWhenReady(requestId));
     }
 
     private bool TryApplyNow(GameSaveData data)
@@ -607,10 +617,12 @@ public class SaveManager : MonoBehaviour
         if (pendingApplyRoutine != null)
             StopCoroutine(pendingApplyRoutine);
 
-        pendingApplyRoutine = StartCoroutine(ApplyPendingWhenReady());
+        pendingApplyRequestId++;
+        int requestId = pendingApplyRequestId;
+        pendingApplyRoutine = StartCoroutine(ApplyPendingWhenReady(requestId));
     }
 
-    private System.Collections.IEnumerator ApplyPendingWhenReady()
+    private System.Collections.IEnumerator ApplyPendingWhenReady(int requestId)
     {
         float startedAt = Time.realtimeSinceStartup;
         bool targetSceneReached = string.IsNullOrEmpty(pendingLoadSceneName)
@@ -618,6 +630,12 @@ public class SaveManager : MonoBehaviour
 
         while (hasPendingLoad && pendingLoadData != null)
         {
+            if (requestId != pendingApplyRequestId)
+            {
+                pendingApplyRoutine = null;
+                yield break;
+            }
+
             if (!targetSceneReached)
             {
                 targetSceneReached = SceneManager.GetActiveScene().name == pendingLoadSceneName;
@@ -661,6 +679,79 @@ public class SaveManager : MonoBehaviour
         }
 
         pendingApplyRoutine = null;
+    }
+
+    private bool TryReadSaveData(int slotIndex, out GameSaveData data)
+    {
+        data = null;
+        if (!HasSave(slotIndex)) return false;
+
+        string path = GetSlotPath(slotIndex);
+        string json;
+        try
+        {
+            json = File.ReadAllText(path);
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogWarning($"[SaveManager] Ошибка чтения сохранения: {ex.Message}");
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(json)) return false;
+        if (!LooksLikeSaveJson(json))
+        {
+            Debug.LogWarning("[SaveManager] Поврежденное сохранение: отсутствуют обязательные поля");
+            return false;
+        }
+
+        try
+        {
+            data = JsonUtility.FromJson<GameSaveData>(json);
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogWarning($"[SaveManager] Ошибка парсинга сохранения: {ex.Message}");
+            data = null;
+            return false;
+        }
+
+        if (!ValidateSaveData(data))
+        {
+            Debug.LogWarning("[SaveManager] Поврежденное сохранение: валидация не пройдена");
+            data = null;
+            return false;
+        }
+
+        return true;
+    }
+
+    private static bool LooksLikeSaveJson(string json)
+    {
+        if (string.IsNullOrEmpty(json)) return false;
+        return json.Contains("\"sceneName\"")
+            && json.Contains("\"playerPosition\"")
+            && json.Contains("\"playerRotationEuler\"");
+    }
+
+    private static bool ValidateSaveData(GameSaveData data)
+    {
+        if (data == null) return false;
+        if (string.IsNullOrWhiteSpace(data.sceneName)) return false;
+
+        Vector3 position = data.playerPosition.ToVector3();
+        Vector3 rotation = data.playerRotationEuler.ToVector3();
+        return IsFinite(position) && IsFinite(rotation);
+    }
+
+    private static bool IsFinite(Vector3 v)
+    {
+        return IsFinite(v.x) && IsFinite(v.y) && IsFinite(v.z);
+    }
+
+    private static bool IsFinite(float value)
+    {
+        return !float.IsNaN(value) && !float.IsInfinity(value);
     }
 
     private static string GetSlotPath(int slotIndex)
@@ -729,6 +820,7 @@ public class SaveManager : MonoBehaviour
 [System.Serializable]
 public class GameSaveData
 {
+    public int saveVersion = 0;
     public string sceneName;
     public SerializableVector3 playerPosition;
     public SerializableVector3 playerRotationEuler;
