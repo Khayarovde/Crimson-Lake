@@ -67,7 +67,8 @@ MonoBehaviour:
   m_RendererFeatures:
   - {fileID: -4466676370213498992}
   - {fileID: -160211992240848050}
-  m_RendererFeatureMap: 900fcbba812d03c24e03bab90ad0c6fd
+  - {fileID: 5159593758510434476}
+  m_RendererFeatureMap: 900fcbba812d03c24e03bab90ad0c6fdac4856c92f8f9a47
   m_UseNativeRenderPass: 0
   xrSystemData: {fileID: 0}
   postProcessData: {fileID: 11400000, guid: 41439944d30ece34e96484bdb6645b55, type: 2}
@@ -93,3 +94,21 @@ MonoBehaviour:
   m_DepthTextureFormat: 0
   m_AccurateGbufferNormals: 0
   m_IntermediateTextureMode: 0
+--- !u!114 &5159593758510434476
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4f4c864618e38a54da9346024a1af87d, type: 3}
+  m_Name: RDERendererFeature
+  m_EditorClassIdentifier: 
+  m_Active: 1
+  settings:
+    material: {fileID: 2100000, guid: 2c468e556b583c74f92e3a1a491f7677, type: 2}
+    ditherSpread: 0
+    colorResolution: 80
+    renderPassEvent: 550
