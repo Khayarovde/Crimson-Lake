@@ -24,9 +24,10 @@ Shader "Custom/BloodPulse"
 
     SubShader
     {
+        // ФИХ: "UniversalPipeline" вместо "UniversalRenderPipeline" — правильный тег для Unity 6
         Tags
         {
-            "RenderPipeline"="UniversalRenderPipeline"
+            "RenderPipeline"="UniversalPipeline"
             "Queue"="Transparent"
             "RenderType"="Transparent"
         }
@@ -43,6 +44,7 @@ Shader "Custom/BloodPulse"
             HLSLPROGRAM
             #pragma vertex vert
             #pragma fragment frag
+            #pragma multi_compile_instancing
 
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
 
@@ -50,33 +52,35 @@ Shader "Custom/BloodPulse"
             {
                 float3 positionOS : POSITION;
                 float2 uv : TEXCOORD0;
+                UNITY_VERTEX_INPUT_INSTANCE_ID
             };
 
             struct Varyings
             {
                 float4 positionCS : SV_POSITION;
                 float2 uv : TEXCOORD0;
+                UNITY_VERTEX_OUTPUT_STEREO
             };
 
             CBUFFER_START(UnityPerMaterial)
-            float4 _BaseMap_ST;
-            float4 _BaseColor;
-            float4 _EmissionColor;
-            float4 _PulseColor;
-            float _PulseSpeed;
-            float _PulseStrength;
-            float _PulseEmission;
-            float _PulsePhase;
-            float _FleshWarpStrength;
-            float _FleshWarpSpeed;
-            float _FleshWarpScale;
-            float _FleshWarpStrength2;
-            float _FleshWarpSpeed2;
-            float _FleshWarpScale2;
-            float _FleshWarpMaskStrength;
-            float _ObjectScale;
-            float _RandomUVOffsetStrength;
-            float _RandomUVRotationStrength;
+                float4 _BaseMap_ST;
+                float4 _BaseColor;
+                float4 _EmissionColor;
+                float4 _PulseColor;
+                float _PulseSpeed;
+                float _PulseStrength;
+                float _PulseEmission;
+                float _PulsePhase;
+                float _FleshWarpStrength;
+                float _FleshWarpSpeed;
+                float _FleshWarpScale;
+                float _FleshWarpStrength2;
+                float _FleshWarpSpeed2;
+                float _FleshWarpScale2;
+                float _FleshWarpMaskStrength;
+                float _ObjectScale;
+                float _RandomUVOffsetStrength;
+                float _RandomUVRotationStrength;
             CBUFFER_END
 
             TEXTURE2D(_BaseMap);
@@ -85,7 +89,9 @@ Shader "Custom/BloodPulse"
             Varyings vert(Attributes input)
             {
                 Varyings output;
-                // Scale geometry in object space around pivot
+                UNITY_SETUP_INSTANCE_ID(input);
+                UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(output);
+
                 float3 scaledPos = input.positionOS * _ObjectScale;
                 output.positionCS = TransformObjectToHClip(scaledPos);
                 output.uv = TRANSFORM_TEX(input.uv, _BaseMap);
@@ -94,7 +100,8 @@ Shader "Custom/BloodPulse"
 
             float4 frag(Varyings input) : SV_Target
             {
-                // Per-object random UV offset & rotation based on object world origin
+                UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
+
                 float3 objOriginWS = mul(unity_ObjectToWorld, float4(0,0,0,1)).xyz;
                 float seed = frac(sin(dot(objOriginWS, float3(12.9898,78.233,37.719))) * 43758.5453);
 
@@ -102,14 +109,18 @@ Shader "Custom/BloodPulse"
                     frac(sin(seed * 12.9898) * 43758.5453) - 0.5,
                     frac(sin(seed * 78.233) * 43758.5453) - 0.5
                 ) * _RandomUVOffsetStrength;
+
                 float rotSeed = frac(sin(seed * 37.719) * 43758.5453);
-                float rotAngle = (rotSeed - 0.5) * 3.14159 * _RandomUVRotationStrength; // [-pi/2,pi/2]*strength
+                float rotAngle = (rotSeed - 0.5) * 3.14159 * _RandomUVRotationStrength;
 
                 float2 warpUV = input.uv + randOffset;
                 float2 uvCentered = warpUV - 0.5;
                 float ca = cos(rotAngle);
                 float sa = sin(rotAngle);
-                warpUV = float2(uvCentered.x * ca - uvCentered.y * sa, uvCentered.x * sa + uvCentered.y * ca) + 0.5;
+                warpUV = float2(
+                    uvCentered.x * ca - uvCentered.y * sa,
+                    uvCentered.x * sa + uvCentered.y * ca
+                ) + 0.5;
 
                 float warpTime = _Time.y * _FleshWarpSpeed + _PulsePhase;
                 float2 warpWave = float2(
@@ -142,5 +153,6 @@ Shader "Custom/BloodPulse"
             ENDHLSL
         }
     }
+
     FallBack Off
 }
