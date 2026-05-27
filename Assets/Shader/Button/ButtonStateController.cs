@@ -5,7 +5,8 @@ using System.Collections;
 
 public class ButtonStateController : MonoBehaviour,
     IPointerEnterHandler, IPointerExitHandler,
-    IPointerDownHandler,  IPointerUpHandler
+    IPointerDownHandler,  IPointerUpHandler,
+    ISelectHandler, IDeselectHandler
 {
     enum BtnState { Normal = 0, Hover = 1, Pressed = 2, Selected = 3, Disabled = 4 }
 
@@ -59,12 +60,31 @@ public class ButtonStateController : MonoBehaviour,
         TransitionTo(_isPointerInside ? BtnState.Hover : BtnState.Normal);
     }
 
+    public void OnSelect(BaseEventData _) {
+        if (!interactable) return;
+        if (_current == BtnState.Selected) return;
+        // Выделение с геймпада отображаем как Hover
+        TransitionTo(BtnState.Hover);
+    }
+
+    public void OnDeselect(BaseEventData _) {
+        if (!interactable) return;
+        if (_current == BtnState.Selected) return;
+        if (_isPressed) return;
+        TransitionTo(BtnState.Normal);
+    }
+
     // Вызови это когда панель открылась — кнопка сразу сбросится в Normal
     public void ForceNormal() {
         _isPressed       = false;
         _isPointerInside = false;
         if (_current == BtnState.Selected) return; // Selected не трогаем
-        TransitionTo(interactable ? BtnState.Normal : BtnState.Disabled);
+        BtnState target = interactable ? BtnState.Normal : BtnState.Disabled;
+        if (!isActiveAndEnabled) {
+            SetStateImmediate(target);
+            return;
+        }
+        TransitionTo(target);
     }
 
     public void SetInteractable(bool value) {
@@ -76,6 +96,11 @@ public class ButtonStateController : MonoBehaviour,
         TransitionTo(value ? BtnState.Selected : BtnState.Normal);
 
     void TransitionTo(BtnState next) {
+        if (!isActiveAndEnabled) {
+            SetStateImmediate(next);
+            return;
+        }
+
         if (_tween != null) StopCoroutine(_tween);
         _tween = StartCoroutine(Tween(_current, next));
         _current = next;
