@@ -4,8 +4,9 @@ using TMPro;
 
 public class GamepadController : MonoBehaviour
 {
-    private enum ActiveInputDevice
+    private enum DeviceLockState
     {
+        Unselected,
         KeyboardMouse,
         Gamepad
     }
@@ -20,9 +21,15 @@ public class GamepadController : MonoBehaviour
     [SerializeField, Range(0.05f, 0.5f)] private float moveDeadzone = 0.2f;
     [SerializeField, Range(0.05f, 0.5f)] private float lookDeadzone = 0.2f;
     [SerializeField, Range(0.05f, 0.5f)] private float triggerThreshold = 0.2f;
-    [SerializeField, Range(0.1f, 5f)] private float gamepadActiveTimeout = 1.5f;
     [SerializeField, Range(200f, 2500f)] private float uiCursorMoveSpeed = 1100f;
     [SerializeField, Range(0f, 80f)] private float uiCursorEdgePadding = 18f;
+
+    [Header("Device Select Screen")]
+    [SerializeField] private bool showDeviceSelectScreen = true;
+    [SerializeField] private string deviceSelectMessage = "Нажмите любую клавишу или кнопку геймпада";
+    [SerializeField] private string deviceSelectedKeyboardMessage = "Клавиатура и мышь";
+    [SerializeField] private string deviceSelectedGamepadMessage = "Геймпад";
+    [SerializeField, Range(0.5f, 3f)] private float deviceSelectedMessageDuration = 1.5f;
 
     [Header("HUD")]
     [SerializeField] private bool showInputModeLabel = true;
@@ -34,14 +41,39 @@ public class GamepadController : MonoBehaviour
     [SerializeField, Range(28f, 72f)] private float inputModeLabelHeight = 36f;
     [SerializeField] private TextMeshProUGUI inputModeLabelText;
 
-    private float lastGamepadInputTime = -10f;
-    private float lastMouseKeyboardInputTime = -10f;
-    private ActiveInputDevice activeInputDevice = ActiveInputDevice.KeyboardMouse;
+    private DeviceLockState deviceLock = DeviceLockState.Unselected;
     private RectTransform inputModeLabelRect;
-    private bool ignoreMouseMotionOnce;
     private int externalCursorOverrideCount;
+    private string deviceSelectedMessageOverride;
+    private Coroutine deviceSelectedMessageRoutine;
+
+    #region Gamepad UI Cursor
+    // Used only while deviceLock == DeviceLockState.Gamepad.
     private Vector2 virtualCursorPosition;
     private bool virtualCursorInitialized;
+
+    private void MoveUiCursor(Vector2 lookInput)
+    {
+        if (!virtualCursorInitialized)
+        {
+            virtualCursorPosition = new Vector2(Screen.width / 2f, Screen.height / 2f);
+            virtualCursorInitialized = true;
+        }
+
+        if (lookInput.sqrMagnitude < lookDeadzone * lookDeadzone)
+            return;
+
+        float deltaTime = Mathf.Max(0f, Time.unscaledDeltaTime);
+        Vector2 nextPosition = virtualCursorPosition + lookInput * uiCursorMoveSpeed * deltaTime;
+
+        float maxX = Mathf.Max(uiCursorEdgePadding, Screen.width - uiCursorEdgePadding);
+        float maxY = Mathf.Max(uiCursorEdgePadding, Screen.height - uiCursorEdgePadding);
+        nextPosition.x = Mathf.Clamp(nextPosition.x, uiCursorEdgePadding, maxX);
+        nextPosition.y = Mathf.Clamp(nextPosition.y, uiCursorEdgePadding, maxY);
+
+        virtualCursorPosition = nextPosition;
+    }
+    #endregion
 
     private ItemPickup[] cachedItemPickups;
     private MedkitPickup[] cachedMedkitPickups;
@@ -52,22 +84,15 @@ public class GamepadController : MonoBehaviour
     private void Awake()
     {
         ResolveReferences();
-        lastMouseKeyboardInputTime = Time.unscaledTime;
+        deviceLock = showDeviceSelectScreen ? DeviceLockState.Unselected : DeviceLockState.KeyboardMouse;
         RefreshInteractables();
         EnsureInputModeLabel();
         UpdateInputModeLabel();
     }
 
-    private void OnEnable()
-    {
-        InputSystem.onDeviceChange += HandleDeviceChange;
-    }
-
     private void OnDisable()
     {
-        InputSystem.onDeviceChange -= HandleDeviceChange;
         externalCursorOverrideCount = 0;
-        ignoreMouseMotionOnce = false;
         Cursor.visible = true;
         Cursor.lockState = CursorLockMode.None;
         ClearGamepadState();
@@ -80,7 +105,17 @@ public class GamepadController : MonoBehaviour
         bool chestOpen = inventoryUI != null && inventoryUI.IsChestUIOpen();
         bool contextMenuOpen = inventoryUI != null && inventoryUI.IsContextMenuOpen();
 
-        UpdateActiveDevice(uiOpen);
+        if (deviceLock == DeviceLockState.Unselected)
+        {
+            HandleDeviceSelection(uiOpen);
+            UpdateInputModeLabel();
+            return;
+        }
+
+        UpdateCursorState(uiOpen);
+
+        if (deviceLock == DeviceLockState.KeyboardMouse && uiOpen)
+            SendMessage("HandleKeyboardUIInput", SendMessageOptions.DontRequireReceiver);
 
         Gamepad gamepad = Gamepad.current;
         bool gamepadAvailable = gamepad != null;
@@ -175,6 +210,18 @@ public class GamepadController : MonoBehaviour
         inputModeLabelRect.sizeDelta = new Vector2(inputModeLabelWidth, inputModeLabelHeight);
         inputModeLabelRect.anchoredPosition = new Vector2(0f, inputModeLabelBottomOffset);
         inputModeLabelText.fontSize = inputModeLabelFontSize;
+        if (!string.IsNullOrEmpty(deviceSelectedMessageOverride))
+        {
+            inputModeLabelText.text = deviceSelectedMessageOverride;
+            return;
+        }
+
+        if (deviceLock == DeviceLockState.Unselected && showDeviceSelectScreen)
+        {
+            inputModeLabelText.text = deviceSelectMessage;
+            return;
+        }
+
         inputModeLabelText.text = IsGamepadModeActive ? gamepadModeLabel : keyboardMouseModeLabel;
     }
 
@@ -242,9 +289,7 @@ public class GamepadController : MonoBehaviour
             HandleWorldInput(gamepad);
     }
 
-    public bool IsGamepadModeActive => activeInputDevice == ActiveInputDevice.Gamepad;
-
-    public Vector2 VirtualCursorPosition => virtualCursorPosition;
+    public bool IsGamepadModeActive => deviceLock == DeviceLockState.Gamepad;
 
     public void PushExternalCursorOverride()
     {
@@ -256,133 +301,97 @@ public class GamepadController : MonoBehaviour
         externalCursorOverrideCount = Mathf.Max(0, externalCursorOverrideCount - 1);
     }
 
-    private void UpdateActiveDevice(bool uiOpen)
+    private void HandleDeviceSelection(bool uiOpen)
     {
         Gamepad gamepad = Gamepad.current;
-        bool gamepadAvailable = gamepad != null;
-
-        if (!gamepadAvailable)
+        if (gamepad != null && IsGamepadSelectionInput(gamepad))
         {
-            if (activeInputDevice != ActiveInputDevice.KeyboardMouse)
-            {
-                ClearGamepadState();
-                activeInputDevice = ActiveInputDevice.KeyboardMouse;
-            }
-
-            UpdateCursorState(uiOpen, false);
+            SetDeviceLock(DeviceLockState.Gamepad, uiOpen);
             return;
         }
 
-        if (HasMouseKeyboardInputThisFrame())
-            lastMouseKeyboardInputTime = Time.unscaledTime;
-
-        if (gamepadAvailable)
+        if (IsKeyboardMouseSelectionInput())
         {
-            Vector2 moveInput = gamepad.leftStick.ReadValue();
-            Vector2 lookInput = gamepad.rightStick.ReadValue();
-            bool runHeld = gamepad.leftShoulder.isPressed;
-            bool aimHeld = gamepad.leftTrigger.ReadValue() >= triggerThreshold;
-            bool fireHeld = gamepad.rightTrigger.ReadValue() >= triggerThreshold;
-
-            bool anyGamepadInput = moveInput.sqrMagnitude >= moveDeadzone * moveDeadzone ||
-                                   lookInput.sqrMagnitude >= lookDeadzone * lookDeadzone ||
-                                   runHeld ||
-                                   aimHeld ||
-                                   fireHeld ||
-                                   gamepad.startButton.wasPressedThisFrame ||
-                                   gamepad.buttonSouth.wasPressedThisFrame ||
-                                   gamepad.buttonEast.wasPressedThisFrame ||
-                                   gamepad.buttonWest.wasPressedThisFrame ||
-                                   gamepad.buttonNorth.wasPressedThisFrame ||
-                                   gamepad.leftShoulder.wasPressedThisFrame ||
-                                   gamepad.rightShoulder.wasPressedThisFrame ||
-                                   gamepad.dpad.left.wasPressedThisFrame ||
-                                   gamepad.dpad.right.wasPressedThisFrame ||
-                                   gamepad.dpad.up.wasPressedThisFrame ||
-                                   gamepad.dpad.down.wasPressedThisFrame;
-
-            if (anyGamepadInput)
-                lastGamepadInputTime = Time.unscaledTime;
+            SetDeviceLock(DeviceLockState.KeyboardMouse, uiOpen);
+            return;
         }
 
-        bool gamepadRecent = gamepadAvailable && Time.unscaledTime - lastGamepadInputTime <= gamepadActiveTimeout;
-        bool mouseKeyboardRecent = Time.unscaledTime - lastMouseKeyboardInputTime <= gamepadActiveTimeout;
-        ActiveInputDevice nextActiveDevice = gamepadRecent && (!mouseKeyboardRecent || lastGamepadInputTime >= lastMouseKeyboardInputTime)
-            ? ActiveInputDevice.Gamepad
-            : ActiveInputDevice.KeyboardMouse;
-
-        if (nextActiveDevice != activeInputDevice)
-        {
-            ClearGamepadState();
-            activeInputDevice = nextActiveDevice;
-        }
-
-        UpdateCursorState(uiOpen, IsGamepadModeActive);
+        UpdateCursorState(uiOpen);
     }
 
-    private bool HasMouseKeyboardInputThisFrame()
+    private bool IsGamepadSelectionInput(Gamepad gamepad)
     {
-        if (Keyboard.current != null && IsGameplayKeyPressed())
+        Vector2 moveInput = gamepad.leftStick.ReadValue();
+        Vector2 lookInput = gamepad.rightStick.ReadValue();
+
+        if (moveInput.sqrMagnitude >= moveDeadzone * moveDeadzone)
+            return true;
+
+        if (lookInput.sqrMagnitude >= lookDeadzone * lookDeadzone)
+            return true;
+
+        if (gamepad.leftTrigger.ReadValue() >= triggerThreshold || gamepad.rightTrigger.ReadValue() >= triggerThreshold)
+            return true;
+
+        return gamepad.startButton.wasPressedThisFrame ||
+               gamepad.selectButton.wasPressedThisFrame ||
+               gamepad.buttonSouth.wasPressedThisFrame ||
+               gamepad.buttonEast.wasPressedThisFrame ||
+               gamepad.buttonWest.wasPressedThisFrame ||
+               gamepad.buttonNorth.wasPressedThisFrame ||
+               gamepad.leftShoulder.wasPressedThisFrame ||
+               gamepad.rightShoulder.wasPressedThisFrame ||
+               gamepad.leftStickButton.wasPressedThisFrame ||
+               gamepad.rightStickButton.wasPressedThisFrame ||
+               gamepad.dpad.left.wasPressedThisFrame ||
+               gamepad.dpad.right.wasPressedThisFrame ||
+               gamepad.dpad.up.wasPressedThisFrame ||
+               gamepad.dpad.down.wasPressedThisFrame;
+    }
+
+    private bool IsKeyboardMouseSelectionInput()
+    {
+        if (Keyboard.current != null && Keyboard.current.anyKey.wasPressedThisFrame)
             return true;
 
         if (Mouse.current == null)
             return false;
 
-        if (Mouse.current.leftButton.isPressed ||
-            Mouse.current.rightButton.isPressed ||
-            Mouse.current.middleButton.isPressed ||
-            Mouse.current.forwardButton.isPressed ||
-            Mouse.current.backButton.isPressed ||
-            Mouse.current.scroll.ReadValue().sqrMagnitude > 0.01f)
-        {
-            return true;
-        }
-
-        if (ignoreMouseMotionOnce)
-        {
-            ignoreMouseMotionOnce = false;
-            return false;
-        }
-
-        if (Gamepad.current == null)
-            return true;
-
-        return Mouse.current.delta.ReadValue().sqrMagnitude > 0.01f;
+        return Mouse.current.leftButton.wasPressedThisFrame ||
+               Mouse.current.rightButton.wasPressedThisFrame ||
+               Mouse.current.middleButton.wasPressedThisFrame ||
+               Mouse.current.forwardButton.wasPressedThisFrame ||
+               Mouse.current.backButton.wasPressedThisFrame;
     }
 
-    private bool IsGameplayKeyPressed()
+    private void SetDeviceLock(DeviceLockState nextState, bool uiOpen)
     {
-        Keyboard keyboard = Keyboard.current;
-        if (keyboard == null)
-            return false;
+        deviceLock = nextState;
 
-        return keyboard.wKey.isPressed ||
-               keyboard.aKey.isPressed ||
-               keyboard.sKey.isPressed ||
-               keyboard.dKey.isPressed ||
-               keyboard.upArrowKey.isPressed ||
-               keyboard.downArrowKey.isPressed ||
-               keyboard.leftArrowKey.isPressed ||
-               keyboard.rightArrowKey.isPressed ||
-               keyboard.eKey.isPressed ||
-               keyboard.tabKey.isPressed ||
-               keyboard.escapeKey.isPressed ||
-               keyboard.backspaceKey.isPressed ||
-               keyboard.enterKey.isPressed ||
-               keyboard.spaceKey.isPressed ||
-               keyboard.leftShiftKey.isPressed;
+        string message = deviceLock == DeviceLockState.Gamepad
+            ? deviceSelectedGamepadMessage
+            : deviceSelectedKeyboardMessage;
+
+        StartDeviceSelectedMessage(message);
+        UpdateCursorState(uiOpen);
     }
 
-    private void HandleDeviceChange(InputDevice device, InputDeviceChange change)
+    private void StartDeviceSelectedMessage(string message)
     {
-        if (device is not Gamepad)
-            return;
+        if (deviceSelectedMessageRoutine != null)
+            StopCoroutine(deviceSelectedMessageRoutine);
 
-        if (change == InputDeviceChange.Disconnected || change == InputDeviceChange.Removed)
-        {
-            lastGamepadInputTime = -10f;
-            ClearGamepadState();
-        }
+        deviceSelectedMessageRoutine = StartCoroutine(DeviceSelectedMessageRoutine(message));
+    }
+
+    private System.Collections.IEnumerator DeviceSelectedMessageRoutine(string message)
+    {
+        deviceSelectedMessageOverride = message;
+        UpdateInputModeLabel();
+        yield return new WaitForSecondsRealtime(deviceSelectedMessageDuration);
+        deviceSelectedMessageOverride = null;
+        deviceSelectedMessageRoutine = null;
+        UpdateInputModeLabel();
     }
 
     private void ClearCombatInput()
@@ -425,9 +434,16 @@ public class GamepadController : MonoBehaviour
         }
     }
 
-    private void UpdateCursorState(bool uiOpen, bool gamepadActive)
+    private void UpdateCursorState(bool uiOpen)
     {
-        bool cursorVisible = uiOpen || externalCursorOverrideCount > 0 || !gamepadActive;
+        if (deviceLock == DeviceLockState.KeyboardMouse)
+        {
+            Cursor.visible = true;
+            Cursor.lockState = CursorLockMode.None;
+            return;
+        }
+
+        bool cursorVisible = uiOpen || externalCursorOverrideCount > 0;
 
         if (cursorVisible)
         {
@@ -441,27 +457,6 @@ public class GamepadController : MonoBehaviour
         }
     }
 
-    private void MoveUiCursor(Vector2 lookInput)
-    {
-        if (!virtualCursorInitialized)
-        {
-            virtualCursorPosition = new Vector2(Screen.width / 2f, Screen.height / 2f);
-            virtualCursorInitialized = true;
-        }
-
-        if (lookInput.sqrMagnitude < lookDeadzone * lookDeadzone)
-            return;
-
-        float deltaTime = Mathf.Max(0f, Time.unscaledDeltaTime);
-        Vector2 nextPosition = virtualCursorPosition + lookInput * uiCursorMoveSpeed * deltaTime;
-
-        float maxX = Mathf.Max(uiCursorEdgePadding, Screen.width - uiCursorEdgePadding);
-        float maxY = Mathf.Max(uiCursorEdgePadding, Screen.height - uiCursorEdgePadding);
-        nextPosition.x = Mathf.Clamp(nextPosition.x, uiCursorEdgePadding, maxX);
-        nextPosition.y = Mathf.Clamp(nextPosition.y, uiCursorEdgePadding, maxY);
-
-        virtualCursorPosition = nextPosition;
-    }
 
     private bool TryInteractWithPickup()
     {
@@ -537,6 +532,19 @@ public class GamepadController : MonoBehaviour
     public void NotifyInteractablesChanged()
     {
         RefreshInteractables();
+    }
+
+    public void ResetDeviceLock()
+    {
+        deviceLock = DeviceLockState.Unselected;
+        if (deviceSelectedMessageRoutine != null)
+        {
+            StopCoroutine(deviceSelectedMessageRoutine);
+            deviceSelectedMessageRoutine = null;
+        }
+
+        deviceSelectedMessageOverride = null;
+        UpdateInputModeLabel();
     }
 
     private void HandleChestInput(Gamepad gamepad)
