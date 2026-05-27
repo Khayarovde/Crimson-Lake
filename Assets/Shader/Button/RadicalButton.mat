@@ -1,5 +1,18 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!114 &-2520850903649527937
+MonoBehaviour:
+  m_ObjectHideFlags: 11
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0353a89b1f911e48b9e16bdc9f2e058, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  version: 10
 --- !u!21 &2100000
 Material:
   serializedVersion: 8
@@ -7,15 +20,15 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: M_Soft Hills
-  m_Shader: {fileID: -6465566751694194690, guid: 693efe36f91d0be4398ded764f430036, type: 3}
+  m_Name: RadicalButton
+  m_Shader: {fileID: 4800000, guid: b71dd1d400ee14c4abe8c86702f7d80f, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
   m_InvalidKeywords:
-  - _NORMALMAP
+  - _ZWRITE_ON
   m_LightmapFlags: 4
-  m_EnableInstancingVariants: 1
+  m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
   m_CustomRenderQueue: -1
   stringTagMap: {}
@@ -25,12 +38,16 @@ Material:
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
+    - _AlphaTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _BaseMap:
-        m_Texture: {fileID: 2800000, guid: 7767a177c7f8e39498c0aaab0c0e07d1, type: 3}
+        m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _BumpMap:
-        m_Texture: {fileID: 2800000, guid: 5af0a2108935473448a7e38437ac1970, type: 3}
+        m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _DetailAlbedoMap:
@@ -50,10 +67,18 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
-        m_Texture: {fileID: 2800000, guid: 7767a177c7f8e39498c0aaab0c0e07d1, type: 3}
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MaskTex:
+        m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MetallicGlossMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _NormalMap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
@@ -86,7 +111,6 @@ Material:
     - _AddPrecomputedVelocity: 0
     - _AlphaClip: 0
     - _AlphaToMask: 0
-    - _Amplitude_Wave: 0.24
     - _Blend: 0
     - _BlendModePreserveSpecular: 1
     - _BumpScale: 1
@@ -98,50 +122,39 @@ Material:
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
     - _DstBlendAlpha: 0
+    - _EnableExternalAlpha: 0
     - _EnvironmentReflections: 1
-    - _Fall_Off: 1.06
-    - _Frequency_Wave: 0.63
     - _GlossMapScale: 0
     - _Glossiness: 0
     - _GlossyReflections: 0
-    - _Max_Depth: 2.45
     - _Metallic: 0
     - _OcclusionStrength: 1
     - _Parallax: 0.005
-    - _QueueControl: 0
     - _QueueOffset: 0
+    - _Radius: 0.47
     - _ReceiveShadows: 1
-    - _Refration_Intensity: 0.133
-    - _Scale_Noise: 2.13
-    - _Smoothness: 0
+    - _Smoothness: 0.5
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
-    - _Speed_Noise: 1
-    - _Speed_Wave: 1
     - _SrcBlend: 1
     - _SrcBlendAlpha: 1
+    - _State: 0
     - _Surface: 0
     - _WorkflowMode: 1
     - _ZWrite: 1
     m_Colors:
-    - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
-    - _Color: {r: 1, g: 1, b: 1, a: 1}
-    - _Deep_Water_Color: {r: 1, g: 0, b: 0, a: 1}
+    - _BaseColor: {r: 0.654902, g: 0.1137255, b: 0.1137255, a: 1}
+    - _Color: {r: 0.654902, g: 0.11372546, b: 0.11372546, a: 1}
+    - _ColorCenter: {r: 0.84313726, g: 0.1764706, b: 0.21176471, a: 1}
+    - _ColorEdge: {r: 0.4433962, g: 0.102483094, b: 0.120531484, a: 1}
+    - _DisabledCenter: {r: 0.41999996, g: 0.37999994, b: 0.37999994, a: 1}
+    - _DisabledEdge: {r: 0.27999997, g: 0.25999996, b: 0.25999996, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _Shallow_Water_Color: {r: 1, g: 0, b: 0, a: 1}
+    - _HoverCenter: {r: 0.96, g: 0.25999996, b: 0.29999998, a: 1}
+    - _HoverEdge: {r: 0.72, g: 0.21999997, b: 0.23999995, a: 1}
+    - _PressCenter: {r: 0.65, g: 0.12999997, b: 0.15999997, a: 1}
+    - _PressEdge: {r: 0.41999996, g: 0.09999997, b: 0.12999997, a: 1}
+    - _RendererColor: {r: 1, g: 1, b: 1, a: 1}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
---- !u!114 &2073819733025104996
-MonoBehaviour:
-  m_ObjectHideFlags: 11
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d0353a89b1f911e48b9e16bdc9f2e058, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  version: 10
