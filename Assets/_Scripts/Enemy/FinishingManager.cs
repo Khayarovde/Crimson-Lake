@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
+using System;
 
 public class FinishingManager : MonoBehaviour
 {
@@ -64,6 +65,14 @@ public class FinishingManager : MonoBehaviour
     public AudioClip playerHitSound;
     public AudioClip enemyHitSound;
 
+    [Header("Weapon Visibility")]
+    public GameObject[] weaponObjectsToHide;
+    public Renderer[] weaponRenderersToHide;
+
+    [Header("Animator Layer Override")]
+    public int upperBodyLayerIndex = 1;
+    [Range(0f, 1f)] public float upperBodyLayerWeightDuringFinishing = 0f;
+
     private Animator playerAnim;
     private Animator enemyAnim;
     private Coroutine automaticSequenceRoutine;
@@ -77,6 +86,12 @@ public class FinishingManager : MonoBehaviour
     private readonly List<Behaviour> temporarilyDisabledControls = new List<Behaviour>();
     private RenderTexture runtimeFinishingTexture;
     private FinishingHitDetector hitDetector;
+    private readonly List<GameObject> hiddenWeaponObjects = new List<GameObject>();
+    private readonly List<Renderer> disabledWeaponRenderers = new List<Renderer>();
+    private float previousUpperBodyLayerWeight = 1f;
+    private bool isEffectActive;
+
+    public event Action FinishingEnded;
 
     public bool IsFinishingActive => isFinishingActive;
 
@@ -183,6 +198,8 @@ public class FinishingManager : MonoBehaviour
         {
             enemyAnim.Play(enemyAnimationState, 0, 0f);
         }
+        ApplyWeaponVisibility(false);
+        ApplyUpperBodyLayerWeight(upperBodyLayerWeightDuringFinishing);
         playerAnim.ResetTrigger(playerAttackTrigger);
         playerAnim.SetTrigger(playerAttackTrigger);
 
@@ -222,6 +239,11 @@ public class FinishingManager : MonoBehaviour
             return;
         }
 
+        if (isEffectActive)
+        {
+            return;
+        }
+
         if (finishingCam != null)
         {
             EnsureRenderTextureHasDepthBuffer();
@@ -238,6 +260,7 @@ public class FinishingManager : MonoBehaviour
         }
 
         Time.timeScale = slowMotionScale;
+        isEffectActive = true;
         Debug.Log("FinishingManager: Finishing effect ON.");
     }
 
@@ -249,6 +272,11 @@ public class FinishingManager : MonoBehaviour
             return;
         }
 
+        if (!isEffectActive)
+        {
+            return;
+        }
+
         EndAutomaticRoutine();
         RestoreSceneState();
 
@@ -256,6 +284,8 @@ public class FinishingManager : MonoBehaviour
         enemy = null;
         playerAnim = null;
         enemyAnim = null;
+        isEffectActive = false;
+        FinishingEnded?.Invoke();
 
         Debug.Log("FinishingManager: Finishing effect OFF. Scene restored.");
     }
@@ -317,7 +347,7 @@ public class FinishingManager : MonoBehaviour
         {
             if (duration > 0f)
             {
-                yield return new WaitForSeconds(duration);
+                yield return new WaitForSecondsRealtime(duration);
             }
 
             EndFinishingEffect();
@@ -329,14 +359,14 @@ public class FinishingManager : MonoBehaviour
 
         if (firstPart > 0f)
         {
-            yield return new WaitForSeconds(firstPart);
+            yield return new WaitForSecondsRealtime(firstPart);
         }
 
         StartFinishingEffect();
 
         if (secondPart > 0f)
         {
-            yield return new WaitForSeconds(secondPart);
+            yield return new WaitForSecondsRealtime(secondPart);
         }
 
         EndFinishingEffect();
@@ -407,6 +437,8 @@ public class FinishingManager : MonoBehaviour
 
         RestorePlayerControl();
         RestorePlayerCamera();
+        RestoreWeaponVisibility();
+        RestoreUpperBodyLayerWeight();
 
         if (wasFinishingActive)
         {
@@ -419,6 +451,7 @@ public class FinishingManager : MonoBehaviour
         }
 
         isFinishingActive = false;
+        isEffectActive = false;
     }
 
     private void CacheAndSetLayerRecursively(Transform root, int layer)
@@ -653,6 +686,12 @@ public class FinishingManager : MonoBehaviour
             return;
         }
 
+        if (runtimeFinishingTexture != null)
+        {
+            runtimeFinishingTexture.Release();
+            runtimeFinishingTexture = null;
+        }
+
         RenderTexture replacement = new RenderTexture(
             Mathf.Max(1, current.width),
             Mathf.Max(1, current.height),
@@ -692,6 +731,99 @@ public class FinishingManager : MonoBehaviour
             runtimeFinishingTexture.Release();
             runtimeFinishingTexture = null;
         }
+    }
+
+    private void ApplyWeaponVisibility(bool visible)
+    {
+        if (visible)
+        {
+            RestoreWeaponVisibility();
+            return;
+        }
+
+        hiddenWeaponObjects.Clear();
+        disabledWeaponRenderers.Clear();
+
+        if (weaponObjectsToHide != null)
+        {
+            for (int i = 0; i < weaponObjectsToHide.Length; i++)
+            {
+                GameObject weaponObject = weaponObjectsToHide[i];
+                if (weaponObject == null)
+                {
+                    continue;
+                }
+
+                if (weaponObject.activeSelf)
+                {
+                    weaponObject.SetActive(false);
+                    hiddenWeaponObjects.Add(weaponObject);
+                }
+            }
+        }
+
+        if (weaponRenderersToHide != null)
+        {
+            for (int i = 0; i < weaponRenderersToHide.Length; i++)
+            {
+                Renderer rendererToHide = weaponRenderersToHide[i];
+                if (rendererToHide == null)
+                {
+                    continue;
+                }
+
+                if (rendererToHide.enabled)
+                {
+                    rendererToHide.enabled = false;
+                    disabledWeaponRenderers.Add(rendererToHide);
+                }
+            }
+        }
+    }
+
+    private void RestoreWeaponVisibility()
+    {
+        for (int i = 0; i < hiddenWeaponObjects.Count; i++)
+        {
+            GameObject weaponObject = hiddenWeaponObjects[i];
+            if (weaponObject != null)
+            {
+                weaponObject.SetActive(true);
+            }
+        }
+
+        for (int i = 0; i < disabledWeaponRenderers.Count; i++)
+        {
+            Renderer rendererToRestore = disabledWeaponRenderers[i];
+            if (rendererToRestore != null)
+            {
+                rendererToRestore.enabled = true;
+            }
+        }
+
+        hiddenWeaponObjects.Clear();
+        disabledWeaponRenderers.Clear();
+    }
+
+    private void ApplyUpperBodyLayerWeight(float weight)
+    {
+        if (playerAnim == null || upperBodyLayerIndex < 0 || upperBodyLayerIndex >= playerAnim.layerCount)
+        {
+            return;
+        }
+
+        previousUpperBodyLayerWeight = playerAnim.GetLayerWeight(upperBodyLayerIndex);
+        playerAnim.SetLayerWeight(upperBodyLayerIndex, Mathf.Clamp01(weight));
+    }
+
+    private void RestoreUpperBodyLayerWeight()
+    {
+        if (playerAnim == null || upperBodyLayerIndex < 0 || upperBodyLayerIndex >= playerAnim.layerCount)
+        {
+            return;
+        }
+
+        playerAnim.SetLayerWeight(upperBodyLayerIndex, previousUpperBodyLayerWeight);
     }
 
     private void ValidateSetup()
@@ -751,6 +883,7 @@ public class FinishingManager : MonoBehaviour
 
         if (autoDetectPlayerControlScripts)
         {
+            playerControlScripts.Clear();
             TryAutoDetectPlayerControlScripts();
         }
 
@@ -961,34 +1094,6 @@ public class FinishingManager : MonoBehaviour
             {
                 velocity.y = x;
                 velocity.z = x;
-            }
-        }
-    }
-}
-
-public class FinishingHitDetector : MonoBehaviour
-{
-    [HideInInspector] public Transform targetEnemy;
-    [HideInInspector] public FinishingManager manager;
-
-    private void OnTriggerEnter(Collider other)
-    {
-//        CheckHit(other.transform, other.ClosestPoint(transform.position));
-    }
-
-    private void OnCollisionEnter(Collision collision)
-    {
-        CheckHit(collision.transform, collision.contacts[0].point);
-    }
-
-    private void CheckHit(Transform hitTransform, Vector3 hitPoint)
-    {
-        if (targetEnemy != null && manager != null && manager.IsFinishingActive)
-        {
-            if (hitTransform == targetEnemy || hitTransform.IsChildOf(targetEnemy))
-            {
-                manager.OnWeaponHit(hitPoint);
-                targetEnemy = null; // Сброс, чтобы не срабатывало несколько раз за одно добивание
             }
         }
     }
