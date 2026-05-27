@@ -4834,15 +4834,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 290632965567463538, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -305.9
+      value: -365.1
       objectReference: {fileID: 0}
     - target: {fileID: 290632965567463538, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.48
+      value: -0.31
       objectReference: {fileID: 0}
     - target: {fileID: 290632965567463538, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 25.37
+      value: 34.2
       objectReference: {fileID: 0}
     - target: {fileID: 290632965567463538, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}
       propertyPath: m_LocalRotation.w
@@ -5723,7 +5723,7 @@ SphereCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Radius: 0.85
+  m_Radius: 1
   m_Center: {x: 0, y: 0.8, z: 0.3}
 --- !u!114 &9088604346388668586
 MonoBehaviour:
@@ -5955,9 +5955,24 @@ MonoBehaviour:
   moveDeadzone: 0.2
   lookDeadzone: 0.2
   triggerThreshold: 0.2
-  gamepadActiveTimeout: 1.5
   uiCursorMoveSpeed: 1100
   uiCursorEdgePadding: 18
+  showDeviceSelectScreen: 1
+  deviceSelectMessage: "\u041D\u0430\u0436\u043C\u0438\u0442\u0435 \u043B\u044E\u0431\u0443\u044E
+    \u043A\u043B\u0430\u0432\u0438\u0448\u0443 \u0438\u043B\u0438 \u043A\u043D\u043E\u043F\u043A\u0443
+    \u0433\u0435\u0439\u043C\u043F\u0430\u0434\u0430"
+  deviceSelectedKeyboardMessage: "\u041A\u043B\u0430\u0432\u0438\u0430\u0442\u0443\u0440\u0430
+    \u0438 \u043C\u044B\u0448\u044C"
+  deviceSelectedGamepadMessage: "\u0413\u0435\u0439\u043C\u043F\u0430\u0434"
+  deviceSelectedMessageDuration: 1.5
+  showInputModeLabel: 1
+  gamepadModeLabel: "\u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D \u0433\u0435\u0439\u043C\u043F\u0430\u0434"
+  keyboardMouseModeLabel: "\u041A\u043B\u0430\u0432\u0430 + \u043C\u044B\u0448\u044C"
+  inputModeLabelFontSize: 22
+  inputModeLabelBottomOffset: 24
+  inputModeLabelWidth: 280
+  inputModeLabelHeight: 36
+  inputModeLabelText: {fileID: 0}
 --- !u!95 &2448681510951377980 stripped
 Animator:
   m_CorrespondingSourceObject: {fileID: 636205799131586819, guid: 4a40008620cbe2a47b92e8d1d9166808, type: 3}

@@ -411,7 +411,7 @@ MonoBehaviour:
   itemSpriteImage: {fileID: 0}
   itemSprite: {fileID: 21300000, guid: d967d518c99ccf3418b3bd255f02c6ea, type: 3}
   arrowHintText: {fileID: 0}
-  arrowHintValue: '>'
+  arrowHintValue: "A - \u0432\u043B\u0435\u0432\u043E | D -\u0432\u043F\u0440\u0430\u0432\u043E"
   pageCounterText: {fileID: 0}
   darkOverlayImage: {fileID: 0}
   darkOverlayGroup: {fileID: 0}
@@ -3658,6 +3658,7 @@ MonoBehaviour:
   startNode: item
   itemToPickup: {fileID: 11400000, guid: c5f9a2c576d74a54490865808364d56e, type: 2}
   destroyObjectAfterPickup: 1
+  pickupId: 
   interactionHint: {fileID: 0}
   hintScaleMultiplier: 1.1
   hintDuration: 0.55
@@ -4109,6 +4110,7 @@ MonoBehaviour:
   pickupEffect: {fileID: 0}
   addAmmoItemToInventory: 1
   ammoInventoryItem: {fileID: 11400000, guid: 1e5bd7e6c14684e4796a5b18e96d0e36, type: 2}
+  pickupId: 
 --- !u!114 &8655006156354367528
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6507,6 +6509,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   item: {fileID: 11400000, guid: c5f9a2c576d74a54490865808364d56e, type: 2}
   interactionDistance: 2
+  pickupId: 
 --- !u!1 &4859996989099152511
 GameObject:
   m_ObjectHideFlags: 0
@@ -7693,6 +7696,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   item: {fileID: 11400000, guid: c5f9a2c576d74a54490865808364d56e, type: 2}
+  pickupId: 
   enemyAI: {fileID: 0}
   enemyTest: {fileID: 0}
   enemySpawnPoint: {fileID: 0}
@@ -9653,7 +9657,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1.06, y: 1, z: 6.17}
+  m_Size: {x: 1.06, y: 1, z: 2.64}
   m_Center: {x: 0.0000019073486, y: 0, z: -0.0000076293945}
 --- !u!114 &795677633580594832
 MonoBehaviour:
@@ -10315,7 +10319,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   outlineColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
-  outlineWidth: 2
+  outlineWidth: 5
 --- !u!65 &7666763873077219849
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -10335,7 +10339,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.31794837, y: 0.64, z: 0.79}
+  m_Size: {x: 0.31794837, y: 0.64, z: 0.45}
   m_Center: {x: 0, y: 0.16882388, z: 0.049231805}
 --- !u!1001 &6240275736696615438
 PrefabInstance:
@@ -10388,6 +10392,10 @@ PrefabInstance:
     - target: {fileID: 4598387843060336754, guid: eb5c895000c687241a604f5916b3f94d, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8706341524059241952, guid: eb5c895000c687241a604f5916b3f94d, type: 3}
+      propertyPath: pickupId
+      value: a5ece723f1641bf48875ea513b832b00
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

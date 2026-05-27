@@ -3762,7 +3762,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1089692825380449616
 Transform:
   m_ObjectHideFlags: 0
@@ -3813,7 +3813,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cutsceneKey: Cast
   playerTag: Player
-  singleUse: 0
+  singleUse: 1
 --- !u!1 &4363804868466654823
 GameObject:
   m_ObjectHideFlags: 0
@@ -8161,7 +8161,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5114662874806635327, guid: 70735b687686e644f8f256fb21aeaa51, type: 3}
       propertyPath: ramSpeed
-      value: 10
+      value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 5114662874806635327, guid: 70735b687686e644f8f256fb21aeaa51, type: 3}
       propertyPath: deathClip
@@ -8169,11 +8169,11 @@ PrefabInstance:
       objectReference: {fileID: 8300000, guid: 669702c38b1c8504f9d40fa40509b937, type: 3}
     - target: {fileID: 5114662874806635327, guid: 70735b687686e644f8f256fb21aeaa51, type: 3}
       propertyPath: maxHealth
-      value: 80
+      value: 100
       objectReference: {fileID: 0}
     - target: {fileID: 5114662874806635327, guid: 70735b687686e644f8f256fb21aeaa51, type: 3}
       propertyPath: chaseSpeed
-      value: 4
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 5114662874806635327, guid: 70735b687686e644f8f256fb21aeaa51, type: 3}
       propertyPath: showGizmos
@@ -8185,7 +8185,23 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5114662874806635327, guid: 70735b687686e644f8f256fb21aeaa51, type: 3}
       propertyPath: leskaDamage
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 5114662874806635327, guid: 70735b687686e644f8f256fb21aeaa51, type: 3}
+      propertyPath: ramSpeedMax
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 5114662874806635327, guid: 70735b687686e644f8f256fb21aeaa51, type: 3}
+      propertyPath: ramSpeedMin
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 5114662874806635327, guid: 70735b687686e644f8f256fb21aeaa51, type: 3}
+      propertyPath: leskaCooldown
       value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 5114662874806635327, guid: 70735b687686e644f8f256fb21aeaa51, type: 3}
+      propertyPath: leskaLifetime
+      value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 5114662874806635327, guid: 70735b687686e644f8f256fb21aeaa51, type: 3}
       propertyPath: armorBreakClip
@@ -8196,8 +8212,16 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5114662874806635327, guid: 70735b687686e644f8f256fb21aeaa51, type: 3}
+      propertyPath: armorRegenDelay
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 5114662874806635327, guid: 70735b687686e644f8f256fb21aeaa51, type: 3}
       propertyPath: showGizmoLabels
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5114662874806635327, guid: 70735b687686e644f8f256fb21aeaa51, type: 3}
+      propertyPath: tryaskaDuration
+      value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 5114662874806635327, guid: 70735b687686e644f8f256fb21aeaa51, type: 3}
       propertyPath: closeAttackDistance
@@ -8205,7 +8229,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5114662874806635327, guid: 70735b687686e644f8f256fb21aeaa51, type: 3}
       propertyPath: predictedLeskaChance
-      value: 1
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5114662874806635327, guid: 70735b687686e644f8f256fb21aeaa51, type: 3}
+      propertyPath: leskaSpawnAnimDuration
+      value: 1.5
       objectReference: {fileID: 0}
     - target: {fileID: 5114662874806635327, guid: 70735b687686e644f8f256fb21aeaa51, type: 3}
       propertyPath: leskaSpawnOffsetBack.z
@@ -8221,7 +8249,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5114662874806635327, guid: 70735b687686e644f8f256fb21aeaa51, type: 3}
       propertyPath: predictedLeskaSideOffset
-      value: 4
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 5709727445875696020, guid: 70735b687686e644f8f256fb21aeaa51, type: 3}
       propertyPath: m_Name
