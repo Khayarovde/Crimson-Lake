@@ -40,16 +40,32 @@ public class GamepadController : MonoBehaviour
     private RectTransform inputModeLabelRect;
     private bool ignoreMouseMotionOnce;
     private int externalCursorOverrideCount;
+    private Vector2 virtualCursorPosition;
+    private bool virtualCursorInitialized;
+
+    private ItemPickup[] cachedItemPickups;
+    private MedkitPickup[] cachedMedkitPickups;
+    private AmmoPickup[] cachedAmmoPickups;
+    private EnemyPickupInteraction[] cachedEnemyPickups;
+    private Interact[] cachedInteractables;
 
     private void Awake()
     {
         ResolveReferences();
+        lastMouseKeyboardInputTime = Time.unscaledTime;
+        RefreshInteractables();
         EnsureInputModeLabel();
         UpdateInputModeLabel();
     }
 
+    private void OnEnable()
+    {
+        InputSystem.onDeviceChange += HandleDeviceChange;
+    }
+
     private void OnDisable()
     {
+        InputSystem.onDeviceChange -= HandleDeviceChange;
         externalCursorOverrideCount = 0;
         ignoreMouseMotionOnce = false;
         Cursor.visible = true;
@@ -228,6 +244,8 @@ public class GamepadController : MonoBehaviour
 
     public bool IsGamepadModeActive => activeInputDevice == ActiveInputDevice.Gamepad;
 
+    public Vector2 VirtualCursorPosition => virtualCursorPosition;
+
     public void PushExternalCursorOverride()
     {
         externalCursorOverrideCount = Mathf.Max(0, externalCursorOverrideCount + 1);
@@ -242,6 +260,18 @@ public class GamepadController : MonoBehaviour
     {
         Gamepad gamepad = Gamepad.current;
         bool gamepadAvailable = gamepad != null;
+
+        if (!gamepadAvailable)
+        {
+            if (activeInputDevice != ActiveInputDevice.KeyboardMouse)
+            {
+                ClearGamepadState();
+                activeInputDevice = ActiveInputDevice.KeyboardMouse;
+            }
+
+            UpdateCursorState(uiOpen, false);
+            return;
+        }
 
         if (HasMouseKeyboardInputThisFrame())
             lastMouseKeyboardInputTime = Time.unscaledTime;
@@ -292,7 +322,7 @@ public class GamepadController : MonoBehaviour
 
     private bool HasMouseKeyboardInputThisFrame()
     {
-        if (Keyboard.current != null && Keyboard.current.anyKey.isPressed)
+        if (Keyboard.current != null && IsGameplayKeyPressed())
             return true;
 
         if (Mouse.current == null)
@@ -314,7 +344,45 @@ public class GamepadController : MonoBehaviour
             return false;
         }
 
+        if (Gamepad.current == null)
+            return true;
+
         return Mouse.current.delta.ReadValue().sqrMagnitude > 0.01f;
+    }
+
+    private bool IsGameplayKeyPressed()
+    {
+        Keyboard keyboard = Keyboard.current;
+        if (keyboard == null)
+            return false;
+
+        return keyboard.wKey.isPressed ||
+               keyboard.aKey.isPressed ||
+               keyboard.sKey.isPressed ||
+               keyboard.dKey.isPressed ||
+               keyboard.upArrowKey.isPressed ||
+               keyboard.downArrowKey.isPressed ||
+               keyboard.leftArrowKey.isPressed ||
+               keyboard.rightArrowKey.isPressed ||
+               keyboard.eKey.isPressed ||
+               keyboard.tabKey.isPressed ||
+               keyboard.escapeKey.isPressed ||
+               keyboard.backspaceKey.isPressed ||
+               keyboard.enterKey.isPressed ||
+               keyboard.spaceKey.isPressed ||
+               keyboard.leftShiftKey.isPressed;
+    }
+
+    private void HandleDeviceChange(InputDevice device, InputDeviceChange change)
+    {
+        if (device is not Gamepad)
+            return;
+
+        if (change == InputDeviceChange.Disconnected || change == InputDeviceChange.Removed)
+        {
+            lastGamepadInputTime = -10f;
+            ClearGamepadState();
+        }
     }
 
     private void ClearCombatInput()
@@ -375,23 +443,24 @@ public class GamepadController : MonoBehaviour
 
     private void MoveUiCursor(Vector2 lookInput)
     {
+        if (!virtualCursorInitialized)
+        {
+            virtualCursorPosition = new Vector2(Screen.width / 2f, Screen.height / 2f);
+            virtualCursorInitialized = true;
+        }
+
         if (lookInput.sqrMagnitude < lookDeadzone * lookDeadzone)
             return;
 
-        if (Mouse.current == null)
-            return;
-
-        Vector2 currentPosition = Mouse.current.position.ReadValue();
         float deltaTime = Mathf.Max(0f, Time.unscaledDeltaTime);
-        Vector2 nextPosition = currentPosition + lookInput * uiCursorMoveSpeed * deltaTime;
+        Vector2 nextPosition = virtualCursorPosition + lookInput * uiCursorMoveSpeed * deltaTime;
 
         float maxX = Mathf.Max(uiCursorEdgePadding, Screen.width - uiCursorEdgePadding);
         float maxY = Mathf.Max(uiCursorEdgePadding, Screen.height - uiCursorEdgePadding);
         nextPosition.x = Mathf.Clamp(nextPosition.x, uiCursorEdgePadding, maxX);
         nextPosition.y = Mathf.Clamp(nextPosition.y, uiCursorEdgePadding, maxY);
 
-        Mouse.current.WarpCursorPosition(nextPosition);
-        ignoreMouseMotionOnce = true;
+        virtualCursorPosition = nextPosition;
     }
 
     private bool TryInteractWithPickup()
@@ -405,28 +474,23 @@ public class GamepadController : MonoBehaviour
 
         const float interactionRange = 2.5f;
 
-        ItemPickup[] itemPickups = FindObjectsByType<ItemPickup>(FindObjectsSortMode.InstanceID);
-        ItemPickup closestItemPickup = FindClosestInRange(itemPickups, playerTransform.position, interactionRange);
+        ItemPickup closestItemPickup = FindClosestInRange(cachedItemPickups, playerTransform.position, interactionRange);
         if (closestItemPickup != null && closestItemPickup.TryPickupFromGamepad())
             return true;
 
-        MedkitPickup[] medkitPickups = FindObjectsByType<MedkitPickup>(FindObjectsSortMode.InstanceID);
-        MedkitPickup closestMedkitPickup = FindClosestInRange(medkitPickups, playerTransform.position, interactionRange);
+        MedkitPickup closestMedkitPickup = FindClosestInRange(cachedMedkitPickups, playerTransform.position, interactionRange);
         if (closestMedkitPickup != null && closestMedkitPickup.TryPickupFromGamepad())
             return true;
 
-        AmmoPickup[] ammoPickups = FindObjectsByType<AmmoPickup>(FindObjectsSortMode.InstanceID);
-        AmmoPickup closestAmmoPickup = FindClosestInRange(ammoPickups, playerTransform.position, interactionRange);
+        AmmoPickup closestAmmoPickup = FindClosestInRange(cachedAmmoPickups, playerTransform.position, interactionRange);
         if (closestAmmoPickup != null && closestAmmoPickup.TryPickupFromGamepad())
             return true;
 
-        EnemyPickupInteraction[] enemyPickups = FindObjectsByType<EnemyPickupInteraction>(FindObjectsSortMode.InstanceID);
-        EnemyPickupInteraction closestEnemyPickup = FindClosestInRange(enemyPickups, playerTransform.position, interactionRange);
+        EnemyPickupInteraction closestEnemyPickup = FindClosestInRange(cachedEnemyPickups, playerTransform.position, interactionRange);
         if (closestEnemyPickup != null && closestEnemyPickup.TryPickupFromGamepad())
             return true;
 
-        Interact[] interactables = FindObjectsByType<Interact>(FindObjectsSortMode.InstanceID);
-        Interact closestInteract = FindClosestInRange(interactables, playerTransform.position, interactionRange);
+        Interact closestInteract = FindClosestInRange(cachedInteractables, playerTransform.position, interactionRange);
         if (closestInteract != null)
         {
             closestInteract.StartDialogue();
@@ -459,6 +523,20 @@ public class GamepadController : MonoBehaviour
         }
 
         return closest;
+    }
+
+    private void RefreshInteractables()
+    {
+        cachedItemPickups = FindObjectsByType<ItemPickup>(FindObjectsSortMode.InstanceID);
+        cachedMedkitPickups = FindObjectsByType<MedkitPickup>(FindObjectsSortMode.InstanceID);
+        cachedAmmoPickups = FindObjectsByType<AmmoPickup>(FindObjectsSortMode.InstanceID);
+        cachedEnemyPickups = FindObjectsByType<EnemyPickupInteraction>(FindObjectsSortMode.InstanceID);
+        cachedInteractables = FindObjectsByType<Interact>(FindObjectsSortMode.InstanceID);
+    }
+
+    public void NotifyInteractablesChanged()
+    {
+        RefreshInteractables();
     }
 
     private void HandleChestInput(Gamepad gamepad)
