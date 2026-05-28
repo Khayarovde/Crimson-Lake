@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.Video;
+using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(Collider))]
 public class CutsceneVideoTrigger : MonoBehaviour
@@ -26,6 +27,7 @@ public class CutsceneVideoTrigger : MonoBehaviour
     [Header("Skip (Optional)")]
     [SerializeField] private bool allowSkip = false;
     [SerializeField] private KeyCode skipKey = KeyCode.Space;
+    [SerializeField] private bool allowGamepadSkip = true;
 
     private bool isPlaying;
     private float previousTimeScale = 1f;
@@ -63,6 +65,12 @@ public class CutsceneVideoTrigger : MonoBehaviour
             return;
 
         if (Input.GetKeyDown(skipKey))
+        {
+            FinishPlayback(markAsSeen: true);
+            return;
+        }
+
+        if (allowGamepadSkip && Gamepad.current != null && Gamepad.current.buttonSouth.wasPressedThisFrame)
             FinishPlayback(markAsSeen: true);
     }
 
