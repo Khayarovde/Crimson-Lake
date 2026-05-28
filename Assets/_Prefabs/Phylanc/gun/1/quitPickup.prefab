@@ -10,56 +10,68 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: 579e0cd9498ae824f83f5d8bee008a5b, type: 3}
       propertyPath: m_LocalScale.x
-      value: 1
+      value: 4.055295
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 579e0cd9498ae824f83f5d8bee008a5b, type: 3}
       propertyPath: m_LocalScale.y
-      value: 1
+      value: 4.055295
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 579e0cd9498ae824f83f5d8bee008a5b, type: 3}
       propertyPath: m_LocalScale.z
-      value: 1
+      value: 4.055295
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 579e0cd9498ae824f83f5d8bee008a5b, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -214.64108
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 579e0cd9498ae824f83f5d8bee008a5b, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 5.7199526
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 579e0cd9498ae824f83f5d8bee008a5b, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 521.18005
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 579e0cd9498ae824f83f5d8bee008a5b, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 0.8695341
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 579e0cd9498ae824f83f5d8bee008a5b, type: 3}
       propertyPath: m_LocalRotation.x
-      value: -0.11471149
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 579e0cd9498ae824f83f5d8bee008a5b, type: 3}
       propertyPath: m_LocalRotation.y
-      value: -0.29959184
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 579e0cd9498ae824f83f5d8bee008a5b, type: 3}
       propertyPath: m_LocalRotation.z
-      value: 0.375495
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 579e0cd9498ae824f83f5d8bee008a5b, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
-      value: 1.461
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 579e0cd9498ae824f83f5d8bee008a5b, type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
-      value: -37.399
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 579e0cd9498ae824f83f5d8bee008a5b, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
-      value: 46.218
+      value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 579e0cd9498ae824f83f5d8bee008a5b, type: 3}
+      propertyPath: m_ConstrainProportionsScale
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: -7511558181221131132, guid: 579e0cd9498ae824f83f5d8bee008a5b, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 828871a9542a67746a560f6c71ff5328, type: 2}
+    - target: {fileID: -5754084199372789682, guid: 579e0cd9498ae824f83f5d8bee008a5b, type: 3}
+      propertyPath: m_Mesh
+      value: 
+      objectReference: {fileID: 3698369822778895461, guid: 8cfe9a8377a9e6c40be21cc8502ac52b, type: 3}
     - target: {fileID: 919132149155446097, guid: 579e0cd9498ae824f83f5d8bee008a5b, type: 3}
       propertyPath: m_Name
       value: quitPickup
@@ -94,6 +106,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   item: {fileID: 11400000, guid: c8dfe12ed7ac5b341bbb1520afb3d77d, type: 2}
   interactionDistance: 2
+  pickupId: 
 --- !u!65 &3375739483946909061
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -113,5 +126,5 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 3, y: 3, z: 3}
+  m_Size: {x: 1.4, y: 1.4, z: 1.4}
   m_Center: {x: 0.000000043743057, y: -0.0000028961222, z: 0.0000009199139}
