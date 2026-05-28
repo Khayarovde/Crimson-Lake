@@ -1016,33 +1016,96 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   weaponHoldPoint: {fileID: 3348004520985068418}
+  pistolHoldPoint: {fileID: 0}
+  shotgunHoldPoint: {fileID: 0}
   defaultMuzzlePoint: {fileID: 3258925818660538281}
+  pistolHoldVisualPoint: {fileID: 0}
+  gunHoldVisualPoint: {fileID: 0}
+  pistolHoldVisualPrefab: {fileID: 0}
+  gunHoldVisualPrefab: {fileID: 0}
   gunPrefab: {fileID: 919132149155446097, guid: 70535b26246036340aa2ef374ac6351c, type: 3}
   gunScale: {x: 0.8, y: 0.8, z: 0.8}
   pistolPrefab: {fileID: 7018287897960650172, guid: 5ee2311ae1bcda243a4809a18e46850e, type: 3}
   pistolScale: {x: 0.5, y: 0.5, z: 0.5}
   audioSource: {fileID: 4290675931133547782}
   emptyMagSound: {fileID: 0}
-  gunFireRate: 2
-  gunMagazineSize: 7
-  gunStartReserve: 35
-  gunReloadTime: 2
+  emptyMagSoundCooldown: 0.2
+  pistolShotLoudness: 1
+  gunShotLoudness: 1.35
   gunShootSounds:
   - {fileID: 8300000, guid: 3dc7b4438e9f788479f2eba0e75191b1, type: 3}
   - {fileID: 8300000, guid: 08f78eba48bb21c44ac5a74ca84efc83, type: 3}
   - {fileID: 8300000, guid: e196615aab553a14ab4e1aeb462c195c, type: 3}
   - {fileID: 8300000, guid: 159aa6b3153429349b06479ba4bcb8fc, type: 3}
   gunReloadSound: {fileID: 8300000, guid: 6a32a0d49cd240b4cb9934adf37a49a5, type: 3}
-  pistolFireRate: 0.09
-  pistolMagazineSize: 12
-  pistolStartReserve: 120
-  pistolReloadTime: 50
   pistolShootSounds:
   - {fileID: 8300000, guid: 92d35fe1c59bbd14eaee9e3d3b54cea7, type: 3}
   - {fileID: 8300000, guid: 5207b2a445fcb144281ab5395fe95c1d, type: 3}
   - {fileID: 8300000, guid: 1e940d15337ad1e43b0cc1b2430d7c06, type: 3}
   - {fileID: 8300000, guid: 70c97e425596b8142b7b9163256c0868, type: 3}
   pistolReloadSound: {fileID: 8300000, guid: 2868e580baee45d449931dc35a5ace81, type: 3}
+  shotgunStats: {fileID: 0}
+  shotgunRecoilProfile: {fileID: 0}
+  shotgunGlowProfile:
+    materialIndex: 0
+    glowBaseIntensity: 0.2
+    glowMaxIntensity: 2
+    glowScaling:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 0
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 1
+        value: 1
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    invertGlow: 0
+  pistolStats: {fileID: 0}
+  pistolRecoilProfile: {fileID: 0}
+  pistolGlowProfile:
+    materialIndex: 0
+    glowBaseIntensity: 0.2
+    glowMaxIntensity: 2
+    glowScaling:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 0
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 1
+        value: 1
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    invertGlow: 0
   gunTracerPrefab: {fileID: 3362828033073246495, guid: 5302ede08a1785844a451f2179d9587b, type: 3}
   gunTracerDuration: 0.02
   gunTracerThickness: 0.02
@@ -1053,6 +1116,8 @@ MonoBehaviour:
   tracerLengthFactor: 0.6
   tracerMuzzleOffset: 0.02
   maxTracerDistance: 300
+  shootByMuzzleForward: 1
+  muzzleForwardSpread: 0.1
   gunHitEffect: {fileID: 3795546933579711327, guid: e7e13463951036e42b31baa71fbee684, type: 3}
   pistolHitEffect: {fileID: 3795546933579711327, guid: e7e13463951036e42b31baa71fbee684, type: 3}
   aimWalkSpeed: 0.2
@@ -1060,13 +1125,41 @@ MonoBehaviour:
   enemyLayerMask:
     serializedVersion: 2
     m_Bits: 512
+  lockOnSpreadReduction: 0.85
   playerAnimator: {fileID: 636205799131586819}
   meleeTrigger: MeleePush
   finisherAnimation: attack_stun_enemy
+  defaultIdleAnimation: Idle
+  finisherReturnToIdleDelay: 0.8
+  finisherEnterStateTimeout: 0.35
+  finisherMaxWaitForAnimationEnd: 3
   finisherRange: 1.4
+  autoSnapToFinisherPosition: 1
+  finisherSnapDistance: 0.9
+  finisherSnapDuration: 0.12
+  finisherSnapMinDistance: 0.45
+  finisherSnapPositionProbeSteps: 6
+  finisherSnapObstacleMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  finisherSnapClearancePadding: 0.03
+  requireFrontForFinisher: 1
+  finisherFrontMaxAngle: 85
+  requireLowSpeedForFinisher: 1
+  finisherStartSpeedThreshold: 0.2
+  blockRightMouseNearStunnedEnemy: 1
+  finisherGamepadTriggerThreshold: 0.2
   finisherEnemyDeathDelay: 0.6
+  finisherAutoRelaxConstraints: 1
+  finisherFallbackExtraRange: 0.7
+  finisherFallbackIgnoreLayerMask: 1
+  useFinisherManagerCamera: 1
+  finisherManager: {fileID: 0}
+  ignoreFrontSideForFinisherManager: 0
   pistolHitsToStun: 12
   gunHitsToStun: 3
+  pistolDamageToEnemytest: 20
+  gunDamageToEnemytest: 30
   gunHitRadius: 0.18
   gunPellets: 7
   gunPelletSpread: 6
@@ -1095,6 +1188,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe5f7850a4ce65b4eae44961e70e8672, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  hitReturnDelay: 0.25
 --- !u!114 &5721163794523407143
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1107,33 +1201,42 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c7872b330a13f6c488a3c35335e4870f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  animator: {fileID: 636205799131586819}
-  animatorController: {fileID: 9100000, guid: ef6403663453e6a4cb106814a81e72b4, type: 2}
-  animationTransition: 0.1
-  blendParameterDampTime: 0.12
-  blendTreeWalkState: Blend Tree_WALK
-  blendTreeAimWalkState: Blend Tree_AIM_WALK
-  blendTreeXParam: v
-  blendTreeYParam: h
-  baseIdleAnimation: Idle
-  idleAnimation0: Idle
-  idleAnimation1: Idle 1
-  idleAnimation2: Idle 3
-  idleAnimation3: Idle 4
-  idleAnimation4: Idle 5
-  currentIdle: 0
-  idleSwitchInterval: 20
-  cycleIdles: 0
-  randomizeIdles: 1
-  idleStartDelay: 10
-  idleSwitchDelayAfterComplete: 10
-  hitAnimation: hit
-  gameoverAnimation: gameover_player
   moveSpeed: 3
+  runMoveSpeed: 4.2
   aimMoveSpeed: 1.5
+  acceleration: 8.5
+  deceleration: 11.5
+  aimAcceleration: 6.5
+  aimDeceleration: 13.5
+  movingVelocityThreshold: 0.08
+  autoConfigureRigidbody: 1
+  rigidbodyMass: 75
+  rigidbodyLinearDamping: 4
   rotateSpeed: 10000
   rotationSmoothTime: 0.2
+  aimRotationSmoothTime: 0.07
+  strictCursorAimRotation: 1
+  updateDrivenAimRotation: 0
+  updateAimTurnSpeed: 1440
+  aimSnapAngle: 0.35
+  preferCursorPlaneForRotation: 1
+  rotationCursorPlaneHeightOffset: 0
+  aimYawOffsetDegrees: 0
+  minTurnSpeed: 240
+  minAimTurnSpeed: 720
+  cursorAimMaxDistance: 300
+  cursorAimMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  mouseRotationEnabled: 1
+  cameraRelativeMovement: 1
+  gamepadMoveDeadzone: 0.2
+  gamepadLookDeadzone: 0.2
+  clampGamepadLookWhileMoving: 1
+  maxLookOffsetAngleWhileMoving: 70
   playerInventory: {fileID: 4713129000737303339}
+  inputHorizontal: 0
+  inputVertical: 0
 --- !u!114 &4713129000737303339
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1149,6 +1252,8 @@ MonoBehaviour:
   inventoryData: {fileID: 11400000, guid: b1155147f489c59408f700383ea07d3a, type: 2}
   inventoryUI: {fileID: 0}
   activeItemIndex: -1
+  useRuntimeInventoryCopy: 1
+  clearInventoryOnSceneStart: 1
   itemPrefabs:
   - item: {fileID: 0}
     prefab: {fileID: 919132149155446097, guid: 6a029e7674ddfa64dbe41e611c598329, type: 3}
@@ -1173,7 +1278,6 @@ MonoBehaviour:
     clips:
     - {fileID: 8300000, guid: 5e265270fb85126479eef52d8fce3b08, type: 3}
     - {fileID: 8300000, guid: 3701a5fdf99882f40bc00eb9053eec92, type: 3}
-    fadeInDuration: 0.4
     baseVolume: 1
     minPitch: 0.4
     maxPitch: 0.65
@@ -1182,7 +1286,6 @@ MonoBehaviour:
     - {fileID: 8300000, guid: 2f949b40b7283404099a802630fb2077, type: 3}
     - {fileID: 8300000, guid: dfff2b3c7dfb43c419592789f0a6ab81, type: 3}
     - {fileID: 8300000, guid: 812100e3982e56842adb6ba5be867b7a, type: 3}
-    fadeInDuration: 0.4
     baseVolume: 1
     minPitch: 0.8
     maxPitch: 0.9
@@ -1190,7 +1293,6 @@ MonoBehaviour:
     clips:
     - {fileID: 8300000, guid: 83c58d64f2e240c41b1f2c2885b253a6, type: 3}
     - {fileID: 8300000, guid: 3610d597db7918e44906d575bd074616, type: 3}
-    fadeInDuration: 0.4
     baseVolume: 2
     minPitch: 0.9
     maxPitch: 1
@@ -1198,7 +1300,6 @@ MonoBehaviour:
     clips:
     - {fileID: 8300000, guid: 149e8ca9df68d744e9722158daa78ab1, type: 3}
     - {fileID: 8300000, guid: d25a8335420d09f43bedf446e2deffa0, type: 3}
-    fadeInDuration: 0.5
     baseVolume: 1
     minPitch: 0.9
     maxPitch: 1
@@ -1206,7 +1307,6 @@ MonoBehaviour:
     clips:
     - {fileID: 8300000, guid: cb111f071b2e63844afba5ac99aceb2b, type: 3}
     - {fileID: 8300000, guid: 2c32dcddf9cd3a944a54728c2c878557, type: 3}
-    fadeInDuration: 0.5
     baseVolume: 1
     minPitch: 0.9
     maxPitch: 1
@@ -1216,10 +1316,12 @@ MonoBehaviour:
   surfaceCheckDistance: 1.5
   surfaceCheckStartOffset: 0.2
   logSurfaceHit: 1
+  surfaceCacheInterval: 0.3
   requireMovement: 1
   moveSpeedThreshold: 0.01
   useInputFallback: 1
   inputThreshold: 0.1
+  logStepEvents: 0
 --- !u!82 &8480610302918087437
 AudioSource:
   m_ObjectHideFlags: 0
@@ -1329,6 +1431,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8406951c5c90afd40ba077029a80d422, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  maxHealth: 100
+  currentHealth: 100
   hitsToDie: 4
   overlayCanvas: {fileID: 0}
   overlayImage: {fileID: 0}
@@ -1339,6 +1443,10 @@ MonoBehaviour:
   deathDelayBeforeFade: 0.75
   deathFadeDuration: 0.65
   deathMenuDelay: 1.2
+  turretMaxRedAlpha: 0.85
+  turretRedBuildSpeed: 0.3
+  turretRedFadeSpeed: 0.3
+  turretDamageHoldTime: 0.3
 --- !u!114 &8412696754332258902
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1351,8 +1459,28 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 64b5028295034814299707f20d86cfab, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  enableTargetAssist: 0
   captureRange: 10
   correctionFactor: 0.1
+  minCorrectionFactor: 0.02
+  timeToFullAccuracy: 1.1
+  maxAimDistance: 300
+  maxAssistAngle: 12
+  aimRayMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  preferCursorPlaneAim: 1
+  cursorPlaneHeightOffset: 0
+  aimingSpreadMin: 0
+  aimingSpreadMax: 0.05
+  showLockMarker: 1
+  lockMarkerPrefab: {fileID: 0}
+  lockMarkerMinScale: 0.2
+  lockMarkerMaxScale: 1
+  lockMarkerCubeSize: 0.2
+  lockMarkerEdgeThickness: 0.03
+  lockMarkerColor: {r: 0.2, g: 0.65, b: 1, a: 1}
+  lockMarkerGrowthEase: 3
 --- !u!114 &1059375786991201131
 MonoBehaviour:
   m_ObjectHideFlags: 0
