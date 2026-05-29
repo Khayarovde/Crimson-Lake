@@ -2390,7 +2390,7 @@ Transform:
   m_GameObject: {fileID: 2192536543541177772}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: 0.9646698, z: -0, w: -0.2634618}
-  m_LocalPosition: {x: 9.54, y: 0.95, z: -3.26}
+  m_LocalPosition: {x: 10.96, y: 0.657, z: -1.801}
   m_LocalScale: {x: 0.004304402, y: 0.004304402, z: 0.004304402}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2691,7 +2691,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &4897202988540130697
 Transform:
   m_ObjectHideFlags: 0
@@ -4358,7 +4358,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 1
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &8401981479711721976
 RectTransform:
   m_ObjectHideFlags: 0
@@ -4459,7 +4459,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 1
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &2433490824393142669
 Transform:
   m_ObjectHideFlags: 0
@@ -4520,10 +4520,10 @@ MonoBehaviour:
   - {fileID: 8665980327069575625}
   lightsToTurnOff:
   - {fileID: 3389341452132461014}
-  - {fileID: 5564280057731748118}
+  - {fileID: 249579866125918690}
   - {fileID: 2588828069114846460}
-  - {fileID: 8657027353310730079}
-  - {fileID: 0}
+  - {fileID: 884305846460776712}
+  - {fileID: 5109527083532653132}
   delayBeforeLightsOff: 0.5
   delayBeforeObjectsDisappear: 1
   lightsOffDuration: 5
@@ -4879,7 +4879,7 @@ Transform:
   m_GameObject: {fileID: 5226855558628569399}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 28.304996, y: -0.87, z: -51.190002}
+  m_LocalPosition: {x: 32.57, y: -2.08, z: -52.56}
   m_LocalScale: {x: 5, y: 5, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -6838,7 +6838,7 @@ Transform:
   m_GameObject: {fileID: 8562216080266117331}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 5.53, y: -0, z: -0.14}
+  m_LocalPosition: {x: 9.64, y: 0.01, z: -9.01}
   m_LocalScale: {x: 3.2564306, y: 3.2564306, z: 3.2564306}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -6863,7 +6863,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 1}
+  m_Size: {x: 2.95, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &7947918893130866665
 MonoBehaviour:
@@ -9174,13 +9174,48 @@ PrefabInstance:
     - {fileID: 54439717729162364, guid: 126b2c575cf932341a8f0414ccd5b254, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 8170962087039567002, guid: 126b2c575cf932341a8f0414ccd5b254, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8358236002595501605}
   m_SourcePrefab: {fileID: 100100000, guid: 126b2c575cf932341a8f0414ccd5b254, type: 3}
 --- !u!4 &1104747433974773563 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 5133627903560087177, guid: 126b2c575cf932341a8f0414ccd5b254, type: 3}
   m_PrefabInstance: {fileID: 5218148668584772018}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &4111645897572599080 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8170962087039567002, guid: 126b2c575cf932341a8f0414ccd5b254, type: 3}
+  m_PrefabInstance: {fileID: 5218148668584772018}
+  m_PrefabAsset: {fileID: 0}
+--- !u!54 &8358236002595501605
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4111645897572599080}
+  serializedVersion: 4
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 1
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
 --- !u!1001 &5282351532358803495
 PrefabInstance:
   m_ObjectHideFlags: 0

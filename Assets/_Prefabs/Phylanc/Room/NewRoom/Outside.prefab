@@ -305,7 +305,7 @@ GameObject:
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
 --- !u!4 &628282052278857309
 Transform:
@@ -608,7 +608,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &6066813885353616456
 Transform:
   m_ObjectHideFlags: 0
@@ -618,7 +618,7 @@ Transform:
   m_GameObject: {fileID: 1375249772832380006}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 17.4, y: 4.45, z: -5.16}
+  m_LocalPosition: {x: 32.9, y: 4.45, z: -5.16}
   m_LocalScale: {x: 10, y: 1, z: 1.2}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -668,6 +668,7 @@ MonoBehaviour:
   pauseGameWhilePlaying: 1
   allowSkip: 1
   skipKey: 32
+  allowGamepadSkip: 1
 --- !u!1 &1762223018413530860
 GameObject:
   m_ObjectHideFlags: 0
@@ -684,7 +685,7 @@ GameObject:
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
 --- !u!4 &7491692441965360833
 Transform:
@@ -2067,7 +2068,7 @@ GameObject:
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
 --- !u!4 &4348325352579429908
 Transform:
@@ -2720,7 +2721,7 @@ GameObject:
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
 --- !u!4 &9054601072489647928
 Transform:
@@ -2962,6 +2963,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Skelet6
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 4e97c46a4a21d5f42ab3417302ef25eb, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -3039,6 +3044,10 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: f1add1538a4650c469965115ca092907, type: 3}
       propertyPath: m_Name
       value: Skelet1
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: f1add1538a4650c469965115ca092907, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -3316,7 +3325,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   outlineColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
-  outlineWidth: 1.4
+  outlineWidth: 12
 --- !u!64 &4604952458762410788
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -3358,7 +3367,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.3, y: 0.19, z: 0.4}
+  m_Size: {x: 0.44, y: 0.19, z: 0.58}
   m_Center: {x: 0.0000009533494, y: -4.8739013e-10, z: -0.14}
 --- !u!4 &1813272969253519327 stripped
 Transform:
@@ -3576,6 +3585,10 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: 5c60d825d1771e84da396922d0e9b4c0, type: 3}
       propertyPath: m_Name
       value: Skelet2
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 5c60d825d1771e84da396922d0e9b4c0, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -3842,6 +3855,10 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: 4e97c46a4a21d5f42ab3417302ef25eb, type: 3}
       propertyPath: m_Name
       value: Skelet6
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 4e97c46a4a21d5f42ab3417302ef25eb, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -4188,6 +4205,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Skelet4
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 1b1ac860821bf1549a8bc86cde47de1e, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -4373,7 +4394,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   outlineColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
-  outlineWidth: 1.4
+  outlineWidth: 12
 --- !u!65 &8350410400828181049
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -4389,12 +4410,12 @@ BoxCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.8, y: 0.86, z: 0.76}
-  m_Center: {x: 0.0105936825, y: 0.0039483313, z: -0.0123230005}
+  m_Size: {x: 1.12, y: 0.86, z: 0.85}
+  m_Center: {x: 0.2, y: 0.0039483313, z: -0.0123230005}
 --- !u!1001 &8466741785304947007
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4458,6 +4479,10 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: 9c0f8f2313786da4aa6132ce298d57dc, type: 3}
       propertyPath: m_Name
       value: Skelet3
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 9c0f8f2313786da4aa6132ce298d57dc, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
