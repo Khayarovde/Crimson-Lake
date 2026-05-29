@@ -46,6 +46,12 @@ public class FinishingManager : MonoBehaviour
     public bool requireFrontSide = true;
     [Range(1f, 179f)] public float maxFrontAngle = 85f;
 
+    [Header("Persistence")]
+    [PickupId]
+    [SerializeField] private string enemyId;
+    [SerializeField] private bool markEnemyDeadOnFinishingEnd = true;
+    [SerializeField] private bool preventFinishingIfEnemyAlreadyDead = true;
+
     [Header("Gameplay")]
     [Range(0.1f, 1f)] public float slowMotionScale = 0.5f;
 
@@ -147,6 +153,12 @@ public class FinishingManager : MonoBehaviour
         if (isFinishingActive)
         {
             Debug.Log("FinishingManager: Start ignored because finishing is already active.");
+            return;
+        }
+
+        if (preventFinishingIfEnemyAlreadyDead && IsEnemyMarkedDead())
+        {
+            Debug.Log("FinishingManager: Start ignored because enemy is already marked dead.");
             return;
         }
 
@@ -278,6 +290,7 @@ public class FinishingManager : MonoBehaviour
         }
 
         EndAutomaticRoutine();
+        MarkEnemyDeadIfNeeded();
         RestoreSceneState();
 
         player = null;
@@ -288,6 +301,22 @@ public class FinishingManager : MonoBehaviour
         FinishingEnded?.Invoke();
 
         Debug.Log("FinishingManager: Finishing effect OFF. Scene restored.");
+    }
+
+    private bool IsEnemyMarkedDead()
+    {
+        return !string.IsNullOrWhiteSpace(enemyId) && SaveManager.IsEnemyDead(enemyId);
+    }
+
+    private void MarkEnemyDeadIfNeeded()
+    {
+        if (!markEnemyDeadOnFinishingEnd)
+            return;
+
+        if (string.IsNullOrWhiteSpace(enemyId))
+            return;
+
+        SaveManager.MarkEnemyDead(enemyId);
     }
 
     private IEnumerator AutomaticSequence(bool effectAlreadyStarted)

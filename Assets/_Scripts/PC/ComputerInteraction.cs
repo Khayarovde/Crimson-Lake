@@ -38,6 +38,11 @@ public class ComputerInteraction : MonoBehaviour
     public float randomFailureChance = 0.15f;
     public float randomFailureDrop = 20f;
 
+    [Header("Persistence")]
+    [PickupId]
+    [SerializeField] private string disketteInsertedId;
+    [SerializeField] private bool invokeSuccessEventOnLoad = true;
+
     [Header("Gamepad")]
     [SerializeField] private float gamepadCursorSpeed = 1200f;
     [SerializeField, Range(0.05f, 0.75f)] private float triggerThreshold = 0.5f;
@@ -56,6 +61,8 @@ public class ComputerInteraction : MonoBehaviour
     private float progress = 0f;
     private float failureTimer = 0f;
     private bool insertSuccess = false;
+    private bool insertSuccessPersisted = false;
+    private bool persistenceApplied = false;
     private bool insertHoldStartedByMouse = false;
     private Vector2 gamepadCursorPosition;
     private bool gamepadCursorInitialized;
@@ -87,6 +94,14 @@ public class ComputerInteraction : MonoBehaviour
 
     void Update()
     {
+        if (!persistenceApplied && !string.IsNullOrWhiteSpace(disketteInsertedId))
+        {
+            if (SaveManager.HasPickedUpItem(disketteInsertedId))
+            {
+                ApplyPersistenceState();
+            }
+        }
+
         // Input handling separated for clarity and symmetry
         HandleInput();
     }
@@ -213,10 +228,13 @@ public class ComputerInteraction : MonoBehaviour
         // Звук открытия интерфейса (подход к ПК)
         if (openInterfaceSound != null) audioSource.PlayOneShot(openInterfaceSound);
 
+        bool shouldShowInserted = insertSuccessPersisted || insertSuccess;
+
         // Сброс...
         isOn = false;
         inserting = false;
-        insertSuccess = false;
+        if (!insertSuccessPersisted)
+            insertSuccess = false;
         holding = false;
         insertHoldStartedByMouse = false;
         isInsertHeld = false;
@@ -233,6 +251,11 @@ public class ComputerInteraction : MonoBehaviour
         if (disketteIcon != null)
         {
             disketteIcon.gameObject.SetActive(hasDiskette);
+        }
+
+        if (shouldShowInserted)
+        {
+            ApplyInsertedVisualState(false);
         }
     }
 
@@ -408,6 +431,52 @@ public class ComputerInteraction : MonoBehaviour
 
         // <<< ВАЖНО: Сообщаем, что лифт теперь можно открыть >>>
         onDisketteInsertedSuccess?.Invoke();
+
+        if (!string.IsNullOrWhiteSpace(disketteInsertedId))
+            SaveManager.MarkItemPickedUp(disketteInsertedId);
+    }
+
+    private void ApplyPersistenceState()
+    {
+        if (persistenceApplied)
+            return;
+
+        if (string.IsNullOrWhiteSpace(disketteInsertedId))
+            return;
+
+        if (!SaveManager.HasPickedUpItem(disketteInsertedId))
+            return;
+
+        persistenceApplied = true;
+
+        insertSuccessPersisted = true;
+        insertSuccess = true;
+        isOn = true;
+        inserting = false;
+        holding = false;
+        isInsertHeld = false;
+        progress = 100f;
+
+        ApplyInsertedVisualState(false);
+
+        if (invokeSuccessEventOnLoad)
+            onDisketteInsertedSuccess?.Invoke();
+    }
+
+    private void ApplyInsertedVisualState(bool showStatus)
+    {
+        if (pcInsertedSprite != null)
+            pcImage.sprite = pcInsertedSprite;
+        else if (pcOnSprite != null)
+            pcImage.sprite = pcOnSprite;
+
+        if (powerButton != null) powerButton.gameObject.SetActive(false);
+        if (insertButton != null) insertButton.gameObject.SetActive(false);
+        if (progressBar != null) progressBar.gameObject.SetActive(false);
+        if (disketteIcon != null) disketteIcon.gameObject.SetActive(false);
+
+        if (showStatus && statusText != null)
+            statusText.text = "";
     }
 
     private InventoryData ResolveInventoryData()

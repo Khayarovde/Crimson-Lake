@@ -16,7 +16,13 @@ public class ElevatorController : MonoBehaviour
     [Header("Игрок")]
     public Transform player;
 
+    [Header("Persistence")]
+    [PickupId]
+    [SerializeField] private string disketteInsertedId;
+    [SerializeField] private bool autoOpenOnLoad = true;
+
     private bool isOpen = false;
+    private bool persistenceApplied = false;
 
     private void Start()
     {
@@ -29,6 +35,14 @@ public class ElevatorController : MonoBehaviour
 
     private void Update()
     {
+        if (!persistenceApplied && autoOpenOnLoad && !string.IsNullOrWhiteSpace(disketteInsertedId))
+        {
+            if (SaveManager.HasPickedUpItem(disketteInsertedId))
+            {
+                OpenElevator();
+            }
+        }
+
         // Показываем подсказку "Закрыто", только если лифт закрыт и игрок рядом
         if (!isOpen && hintText != null && player != null)
         {
@@ -52,6 +66,11 @@ public class ElevatorController : MonoBehaviour
 
         isOpen = true;
         SetElevatorState(true);
+
+        persistenceApplied = true;
+
+        if (!string.IsNullOrWhiteSpace(disketteInsertedId))
+            SaveManager.MarkItemPickedUp(disketteInsertedId);
 
         // Скрываем подсказку навсегда
         if (hintText != null)

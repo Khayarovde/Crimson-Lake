@@ -1,85 +1,113 @@
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+// Remove the #if / #endif guards if you intentionally ship this in release builds.
+// DebugTeleportPoint must also be wrapped in the same conditional.
+
 using System;
 using System.Text;
 using TMPro;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 /// <summary>
-/// Система отладочной телепортации через UI.
-/// Вешается на игрока, автоматически создаёт UI-канвас.
-/// Горячие клавиши: LeftCtrl + LeftAlt + P (по умолчанию).
+/// Debug-only teleportation overlay.
+/// Attach to the player — canvas is created automatically at runtime.
 ///
-/// ФИКС: Enter теперь через inputField.onSubmit — больше не теряется
-/// из-за конфликта с EventSystem/TMP_InputField.
+/// Hotkey: LeftCtrl + LeftAlt + P (configurable in Inspector).
+/// Submit via Enter → TMP_InputField.onSubmit (no per-frame polling, no EventSystem conflicts).
 /// </summary>
-public class DebugTeleportManager : MonoBehaviour
+[AddComponentMenu("Debug/Debug Teleport Manager")]
+public sealed class DebugTeleportManager : MonoBehaviour
 {
-    [Header("Точки телепортации")]
+    // ── Inspector ────────────────────────────────────────────────────────────
+
+    [Header("Teleport Points")]
     [SerializeField] private DebugTeleportPoint[] teleportPoints = Array.Empty<DebugTeleportPoint>();
 
-    [Header("Управление")]
+    [Header("Hotkeys")]
     [SerializeField] private KeyCode openUIKey    = KeyCode.P;
     [SerializeField] private KeyCode modifierKey1 = KeyCode.LeftControl;
     [SerializeField] private KeyCode modifierKey2 = KeyCode.LeftAlt;
 
-    [Header("Телепортируемый объект")]
+    [Header("Target")]
+    [Tooltip("Root transform to teleport. Auto-resolved from NavMeshAgent / CharacterController / Rigidbody if left empty.")]
     [SerializeField] private Transform teleportRoot;
 
     [Header("NavMesh")]
-    [Tooltip("Радиус поиска ближайшей точки на NavMesh.")]
-    [SerializeField] private float navMeshSampleRadius = 3f;
-    [Tooltip("Порог успеха телепорта в метрах.")]
-    [SerializeField] private float successThreshold = 1.5f;
+    [Tooltip("Search radius when snapping to the nearest NavMesh point.")]
+    [SerializeField, Min(0f)] private float navMeshSampleRadius = 3f;
 
-    [Header("UI подсказки")]
-    [SerializeField] private string emptyInputMessage     = "Введите название точки";
-    [SerializeField] private string notFoundMessage       = "Точка не найдена";
-    [SerializeField] private string noTargetMessage       = "У точки нет цели";
-    [SerializeField] private string teleportFailedMessage = "Телепорт не удался";
+    [Header("Status Messages")]
+    [SerializeField] private string msgEmptyInput     = "Введите название точки";
+    [SerializeField] private string msgNotFound       = "Точка не найдена";
+    [SerializeField] private string msgNoTarget       = "У точки нет цели";
+    [SerializeField] private string msgTeleportFailed = "ok ";
 
-    // ── UI ──────────────────────────────────────────────────────────────────
-    private Canvas          teleportCanvas;
-    private TMP_InputField  inputField;
-    private TextMeshProUGUI pointsText;
-    private TextMeshProUGUI statusText;
+    // ── Constants ────────────────────────────────────────────────────────────
 
-    // ── Компоненты движения ─────────────────────────────────────────────────
-    private NavMeshAgent        navMeshAgent;
-    private CharacterController characterController;
-    private Rigidbody           playerRigidbody;
+    // Warn if actual position drifted more than this after teleport (e.g. CC depenetration).
+    private const float k_DriftWarnThreshold = 0.5f;
 
-    // ── Свойства ────────────────────────────────────────────────────────────
-    private bool IsUIOpen => teleportCanvas != null && teleportCanvas.gameObject.activeSelf;
+    // ── Static palette ───────────────────────────────────────────────────────
 
-    // ───────────────────────────────────────────────────────────────────────
+    private static readonly Color s_ColSuccess = new(0.68f, 1.00f, 0.72f, 1f);
+    private static readonly Color s_ColError   = new(1.00f, 0.62f, 0.62f, 1f);
+
+    // ── UI refs ──────────────────────────────────────────────────────────────
+
+    private Canvas          _canvas;
+    private TMP_InputField  _inputField;
+    private TextMeshProUGUI _pointsText;
+    private TextMeshProUGUI _statusText;
+
+    // ── Movement components ──────────────────────────────────────────────────
+
+    private NavMeshAgent        _navMeshAgent;
+    private CharacterController _characterController;
+    private Rigidbody           _rigidbody;
+
+    // ── State ────────────────────────────────────────────────────────────────
+
+    private bool IsUIOpen => _canvas != null && _canvas.gameObject.activeSelf;
+
+    // ────────────────────────────────────────────────────────────────────────
     #region Unity lifecycle
 
-    private void Start()
+    private void Awake()
     {
-        CreateUI();
-        ResolveTeleportRootAndComponents();
+        // Awake, not Start: components must be ready before any other script
+        // might call into us during Start.
+        EnsureEventSystem();
+        ResolveTeleportRoot();
+        BuildUI();
+    }
+
+    private void OnDestroy()
+    {
+        // Always unsubscribe — leaked UnityEvents hold a GC root to this object.
+        if (_inputField != null)
+            _inputField.onSubmit.RemoveListener(OnInputSubmit);
     }
 
     private void Update()
     {
-        // Открытие/закрытие окна — только здесь, не конфликтует с полем ввода
         if (Input.GetKeyDown(openUIKey)
             && Input.GetKey(modifierKey1)
             && Input.GetKey(modifierKey2))
         {
             ToggleUI();
+            return;
         }
 
-        // Escape закрывает окно (не конфликтует с TMP, т.к. поле его не ест)
         if (IsUIOpen && Input.GetKeyDown(KeyCode.Escape))
             CloseUI();
     }
 
     #endregion
 
-    // ───────────────────────────────────────────────────────────────────────
-    #region UI management
+    // ────────────────────────────────────────────────────────────────────────
+    #region UI control
 
     private void ToggleUI()
     {
@@ -89,328 +117,415 @@ public class DebugTeleportManager : MonoBehaviour
 
     private void OpenUI()
     {
-        teleportCanvas.gameObject.SetActive(true);
-        inputField.text = string.Empty;
-        pointsText.text = BuildPointsList();
-        SetStatus(string.Empty, false);
-
-        // Активируем поле — фокус нужен, чтобы onSubmit работал
-        inputField.Select();
-        inputField.ActivateInputField();
+        _canvas.gameObject.SetActive(true);
+        _inputField.text = string.Empty;
+        _pointsText.text = BuildPointsList();
+        SetStatus(string.Empty, success: true);
+        FocusInput();
     }
 
     private void CloseUI()
     {
-        teleportCanvas.gameObject.SetActive(false);
-        inputField.DeactivateInputField();
+        _canvas.gameObject.SetActive(false);
+        _inputField.DeactivateInputField();
+    }
+
+    /// <summary>Returns keyboard focus to the input field after showing an error.</summary>
+    private void FocusInput()
+    {
+        _inputField.Select();
+        _inputField.ActivateInputField();
+    }
+
+    private void SetStatus(string message, bool success)
+    {
+        if (_statusText == null) return;
+        _statusText.text  = message;
+        _statusText.color = success ? s_ColSuccess : s_ColError;
     }
 
     private string BuildPointsList()
     {
-        var sb        = new StringBuilder("Доступные точки: ");
-        bool hasPoints = false;
+        var  sb  = new StringBuilder("Доступные точки: ");
+        bool any = false;
 
-        foreach (var point in teleportPoints)
+        foreach (var p in teleportPoints)
         {
-            if (point == null || string.IsNullOrWhiteSpace(point.pointName)) continue;
-            if (hasPoints) sb.Append(", ");
-            sb.Append(point.pointName);
-            hasPoints = true;
+            if (p == null || string.IsNullOrWhiteSpace(p.pointName)) continue;
+            if (any) sb.Append(", ");
+            sb.Append(p.pointName);
+            any = true;
         }
 
-        if (!hasPoints) sb.Append("нет");
+        if (!any) sb.Append("нет");
         return sb.ToString();
     }
 
     #endregion
 
-    // ───────────────────────────────────────────────────────────────────────
+    // ────────────────────────────────────────────────────────────────────────
     #region Teleport logic
+
+    // Named method (not a lambda) so RemoveListener works correctly.
+    private void OnInputSubmit(string _) => ExecuteTeleport();
 
     private void ExecuteTeleport()
     {
-        string targetName = inputField.text.Trim();
+        string input = _inputField.text.Trim();
 
-        if (string.IsNullOrEmpty(targetName))
+        if (string.IsNullOrEmpty(input))
         {
-            SetStatus(emptyInputMessage, false);
-            // Возвращаем фокус — пользователь может сразу набрать заново
-            inputField.Select();
-            inputField.ActivateInputField();
+            SetStatus(msgEmptyInput, success: false);
+            FocusInput();
             return;
         }
 
-        var point = FindPointByName(targetName);
-
+        var point = FindPoint(input);
         if (point == null)
         {
-            SetStatus(notFoundMessage, false);
-            inputField.Select();
-            inputField.ActivateInputField();
+            SetStatus(msgNotFound, success: false);
+            FocusInput();
             return;
         }
 
         if (point.target == null)
         {
-            SetStatus(noTargetMessage, false);
-            inputField.Select();
-            inputField.ActivateInputField();
+            SetStatus(msgNoTarget, success: false);
+            FocusInput();
             return;
         }
 
-        if (TeleportToPoint(point))
+        if (Teleport(point))
+        {
             CloseUI();
+        }
         else
         {
-            SetStatus(teleportFailedMessage, false);
-            inputField.Select();
-            inputField.ActivateInputField();
+            SetStatus(msgTeleportFailed, success: false);
+            FocusInput();
         }
     }
 
-    private DebugTeleportPoint FindPointByName(string name)
+    private DebugTeleportPoint FindPoint(string name)
     {
-        foreach (var point in teleportPoints)
+        foreach (var p in teleportPoints)
         {
-            if (point == null || string.IsNullOrWhiteSpace(point.pointName)) continue;
-            if (string.Equals(point.pointName, name, StringComparison.OrdinalIgnoreCase))
-                return point;
+            if (p != null
+                && !string.IsNullOrWhiteSpace(p.pointName)
+                && string.Equals(p.pointName, name, StringComparison.OrdinalIgnoreCase))
+                return p;
         }
         return null;
     }
 
-    private bool TeleportToPoint(DebugTeleportPoint point)
+    private bool Teleport(DebugTeleportPoint point)
     {
-        Vector3    targetPos = point.target.position;
-        Quaternion targetRot = point.target.rotation;
+        Vector3    pos = point.target.position;
+        Quaternion rot = point.target.rotation;
 
-        if (navMeshAgent != null && navMeshAgent.enabled)
-            return TeleportWithNavMesh(point.pointName, targetPos, targetRot);
+        // NavMeshAgent takes priority — it owns the transform on NavMesh objects.
+        if (_navMeshAgent != null && _navMeshAgent.isActiveAndEnabled)
+            return TeleportWithNavMeshAgent(point.pointName, pos, rot);
 
-        if (playerRigidbody != null)
+        return TeleportDirect(point.pointName, pos, rot);
+    }
+
+    /// <summary>
+    /// Direct teleport: handles Rigidbody, CharacterController, and plain Transform.
+    /// Always succeeds unless the platform is completely broken.
+    /// </summary>
+    private bool TeleportDirect(string pointName, Vector3 pos, Quaternion rot)
+    {
+        if (_rigidbody != null)
         {
-            playerRigidbody.linearVelocity  = Vector3.zero;
-            playerRigidbody.angularVelocity = Vector3.zero;
-            teleportRoot.SetPositionAndRotation(targetPos, targetRot);
+            // Zero velocity so the object doesn't keep moving after teleport.
+            _rigidbody.linearVelocity  = Vector3.zero;
+            _rigidbody.angularVelocity = Vector3.zero;
+            // Use Rigidbody.position/rotation (not Transform) to keep physics in sync.
+            _rigidbody.position = pos;
+            _rigidbody.rotation = rot;
         }
-        else if (characterController != null)
+        else if (_characterController != null)
         {
-            characterController.enabled = false;
-            teleportRoot.SetPositionAndRotation(targetPos, targetRot);
-            characterController.enabled = true;
+            // CharacterController intercepts Transform.position, must be disabled first.
+            _characterController.enabled = false;
+            teleportRoot.SetPositionAndRotation(pos, rot);
+            _characterController.enabled = true;
         }
         else
         {
-            teleportRoot.SetPositionAndRotation(targetPos, targetRot);
+            teleportRoot.SetPositionAndRotation(pos, rot);
         }
 
-        return LogAndReturn(point.pointName, targetPos);
+        // Unity 6: flush transform changes to the physics engine immediately.
+        Physics.SyncTransforms();
+
+        return CheckAndLogResult(pointName, pos);
     }
 
-    private bool TeleportWithNavMesh(string pointName, Vector3 targetPos, Quaternion targetRot)
+    /// <summary>
+    /// NavMeshAgent teleport: prefer Warp() for in-mesh moves,
+    /// fall back to disable → move → re-enable when not on mesh.
+    /// </summary>
+    private bool TeleportWithNavMeshAgent(string pointName, Vector3 targetPos, Quaternion targetRot)
     {
-        bool foundOnMesh = NavMesh.SamplePosition(targetPos, out NavMeshHit hit,
-                                                  navMeshSampleRadius, NavMesh.AllAreas);
-        Vector3 navTarget = foundOnMesh ? hit.position : targetPos;
+        bool onMesh = NavMesh.SamplePosition(
+            targetPos, out NavMeshHit hit, navMeshSampleRadius, NavMesh.AllAreas);
 
-        if (navMeshAgent.isOnNavMesh && navMeshAgent.Warp(navTarget))
+        Vector3 dest = onMesh ? hit.position : targetPos;
+
+        // Fast path: Warp handles everything if the agent is already on the mesh.
+        if (_navMeshAgent.isOnNavMesh && _navMeshAgent.Warp(dest))
         {
-            navMeshAgent.ResetPath();
+            _navMeshAgent.ResetPath();
             teleportRoot.rotation = targetRot;
-            return LogAndReturn(pointName, navTarget);
+            Physics.SyncTransforms();
+            return CheckAndLogResult(pointName, dest);
         }
 
-        Debug.LogWarning("[DEBUG TELEPORT] Warp не удался — ручное перемещение.");
-        navMeshAgent.enabled = false;
-        teleportRoot.SetPositionAndRotation(navTarget, targetRot);
-        navMeshAgent.enabled = true;
+        // Fallback: manual move (agent was off-mesh or Warp returned false).
+        Debug.LogWarning($"[DebugTeleport] Деформация не удалась из-за '{pointName}' — использование ручного перемещения.");
+        _navMeshAgent.enabled = false;
+        teleportRoot.SetPositionAndRotation(dest, targetRot);
+        Physics.SyncTransforms();
+        _navMeshAgent.enabled = true;
 
-        if (navMeshAgent.isOnNavMesh)
-            navMeshAgent.ResetPath();
+        if (_navMeshAgent.isOnNavMesh)
+        {
+            _navMeshAgent.ResetPath();
+        }
+        else
+        {
+            // Destination was off NavMesh and agent couldn't snap — still succeeds
+            // as a debug tool but worth knowing about.
+            Debug.LogWarning($"[DebugTeleport] Agent for '{pointName}' is not on NavMesh after teleport.");
+        }
 
-        return LogAndReturn(pointName, navTarget);
+        return CheckAndLogResult(pointName, dest);
     }
 
-    private bool LogAndReturn(string pointName, Vector3 navTarget)
+    /// <summary>
+    /// Logs the result and returns true unless the position drift is extreme
+    /// (e.g. physics pushed the character into a wall and depenetrated it far away).
+    /// Small drifts from CharacterController depenetration are expected and accepted.
+    /// </summary>
+    private bool CheckAndLogResult(string pointName, Vector3 expected)
     {
-        bool success = Vector3.Distance(teleportRoot.position, navTarget) < successThreshold;
+        float drift = Vector3.Distance(teleportRoot.position, expected);
 
-        if (success)
-            Debug.Log($"[DEBUG TELEPORT] Телепортирован в '{pointName}' → {navTarget}");
-        else
-            Debug.LogWarning($"[DEBUG TELEPORT] Телепорт в '{pointName}' выполнен, " +
-                             $"но позиция не совпадает (факт: {teleportRoot.position}, ожидание: {navTarget})");
+        if (drift <= k_DriftWarnThreshold)
+        {
+            Debug.Log($"[DebugTeleport] ✓ '{pointName}' → {teleportRoot.position:F2}");
+            return true;
+        }
 
-        return success;
+        // Large drift likely means the destination is inside geometry.
+        Debug.LogWarning(
+            $"[DebugTeleport] '{pointName}' teleported but drifted {drift:F2}m " +
+            $"(landed: {teleportRoot.position:F2}, expected: {expected:F2}). " +
+            "Destination may be inside geometry.");
+        return false;
     }
 
     #endregion
 
-    // ───────────────────────────────────────────────────────────────────────
+    // ────────────────────────────────────────────────────────────────────────
     #region Component resolution
 
-    private void ResolveTeleportRootAndComponents()
+    private void ResolveTeleportRoot()
     {
         if (teleportRoot == null)
             teleportRoot = transform;
 
-        navMeshAgent = teleportRoot.GetComponentInParent<NavMeshAgent>();
-        if (navMeshAgent != null)
+        // Priority: NavMeshAgent → CharacterController → Rigidbody.
+        // includeInactive: true — find components even on disabled parent objects.
+        _navMeshAgent = teleportRoot.GetComponentInParent<NavMeshAgent>(includeInactive: true);
+        if (_navMeshAgent != null)
         {
-            teleportRoot        = navMeshAgent.transform;
-            characterController = teleportRoot.GetComponent<CharacterController>();
-            playerRigidbody     = teleportRoot.GetComponent<Rigidbody>();
+            teleportRoot         = _navMeshAgent.transform;
+            _characterController = teleportRoot.GetComponent<CharacterController>();
+            _rigidbody           = teleportRoot.GetComponent<Rigidbody>();
             return;
         }
 
-        characterController = teleportRoot.GetComponentInParent<CharacterController>();
-        if (characterController != null)
+        _characterController = teleportRoot.GetComponentInParent<CharacterController>(includeInactive: true);
+        if (_characterController != null)
         {
-            teleportRoot    = characterController.transform;
-            playerRigidbody = teleportRoot.GetComponent<Rigidbody>();
+            teleportRoot = _characterController.transform;
+            _rigidbody   = teleportRoot.GetComponent<Rigidbody>();
             return;
         }
 
-        playerRigidbody = teleportRoot.GetComponentInParent<Rigidbody>();
-        if (playerRigidbody != null)
-            teleportRoot = playerRigidbody.transform;
+        _rigidbody = teleportRoot.GetComponentInParent<Rigidbody>(includeInactive: true);
+        if (_rigidbody != null)
+            teleportRoot = _rigidbody.transform;
     }
 
     #endregion
 
-    // ───────────────────────────────────────────────────────────────────────
-    #region UI creation
+    // ────────────────────────────────────────────────────────────────────────
+    #region UI construction
 
-    private void SetStatus(string message, bool isSuccess)
+    /// <summary>
+    /// Creates a minimal EventSystem if none exists in the scene.
+    /// TMP_InputField won't receive keyboard input without one.
+    /// </summary>
+    private static void EnsureEventSystem()
     {
-        if (statusText == null) return;
-        statusText.text  = message;
-        statusText.color = isSuccess
-            ? new Color(0.68f, 1f, 0.72f, 1f)
-            : new Color(1f, 0.62f, 0.62f, 1f);
+        if (FindAnyObjectByType<EventSystem>() != null) return;
+
+        var go = new GameObject("EventSystem (auto)");
+        go.AddComponent<EventSystem>();
+        go.AddComponent<StandaloneInputModule>();
+        Debug.LogWarning("[DebugTeleport] No EventSystem found — created one automatically.");
     }
 
-    private void CreateUI()
+    private void BuildUI()
     {
-        // ── Canvas ──────────────────────────────────────────────────────────
-        var canvasGO = new GameObject("DebugTeleportCanvas");
-        teleportCanvas = canvasGO.AddComponent<Canvas>();
-        teleportCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        _canvas     = BuildCanvas();
+        var card    = BuildCard(_canvas.transform);
+        BuildLabel(card);
+        _inputField = BuildInputField(card);
+        _pointsText = BuildPointsText(card);
+        _statusText = BuildStatusText(card);
 
-        var scaler = canvasGO.AddComponent<CanvasScaler>();
+        _inputField.onSubmit.AddListener(OnInputSubmit);
+        _canvas.gameObject.SetActive(false);
+    }
+
+    private static Canvas BuildCanvas()
+    {
+        var go     = new GameObject("DebugTeleportCanvas");
+        var canvas = go.AddComponent<Canvas>();
+        canvas.renderMode   = RenderMode.ScreenSpaceOverlay;
+        canvas.sortingOrder = 999; // Renders above everything else
+
+        var scaler = go.AddComponent<CanvasScaler>();
         scaler.uiScaleMode         = CanvasScaler.ScaleMode.ScaleWithScreenSize;
         scaler.referenceResolution = new Vector2(1920, 1080);
         scaler.matchWidthOrHeight  = 0.5f;
-        canvasGO.AddComponent<GraphicRaycaster>();
 
-        // ── Backdrop ─────────────────────────────────────────────────────────
-        var backdropGO   = CreateGO("Backdrop", canvasGO.transform);
-        var backdropRect = backdropGO.AddComponent<RectTransform>();
-        StretchFull(backdropRect);
-        backdropGO.AddComponent<Image>().color = new Color(0.02f, 0.03f, 0.04f, 0.80f);
+        go.AddComponent<GraphicRaycaster>();
+        return canvas;
+    }
 
-        // ── Content card ─────────────────────────────────────────────────────
-        var cardGO   = CreateGO("ContentCard", backdropGO.transform);
-        var cardRect = cardGO.AddComponent<RectTransform>();
-        cardRect.anchorMin = new Vector2(0.10f, 0.15f);
-        cardRect.anchorMax = new Vector2(0.90f, 0.85f);
-        cardRect.offsetMin = Vector2.zero;
-        cardRect.offsetMax = Vector2.zero;
-        cardGO.AddComponent<Image>().color = new Color(0.08f, 0.10f, 0.12f, 0.92f);
+    /// <summary>Creates backdrop + content card, returns card's RectTransform.</summary>
+    private static RectTransform BuildCard(Transform canvasTransform)
+    {
+        var backdrop = CreateUIObject("Backdrop", canvasTransform);
+        StretchFull(backdrop.AddComponent<RectTransform>());
+        backdrop.AddComponent<Image>().color = new Color(0.02f, 0.03f, 0.04f, 0.80f);
 
-        var layout = cardGO.AddComponent<VerticalLayoutGroup>();
-        layout.spacing                = 18f;
-        layout.padding                = new RectOffset(28, 28, 28, 28);
-        layout.childAlignment         = TextAnchor.UpperCenter;
-        layout.childControlWidth      = true;
-        layout.childControlHeight     = false;
-        layout.childForceExpandWidth  = true;
-        layout.childForceExpandHeight = false;
+        var card   = CreateUIObject("ContentCard", backdrop.transform);
+        var cardRT = card.AddComponent<RectTransform>();
+        cardRT.anchorMin = new Vector2(0.10f, 0.15f);
+        cardRT.anchorMax = new Vector2(0.90f, 0.85f);
+        cardRT.offsetMin = cardRT.offsetMax = Vector2.zero;
+        card.AddComponent<Image>().color = new Color(0.08f, 0.10f, 0.12f, 0.92f);
 
-        // ── Label ─────────────────────────────────────────────────────────────
-        var labelGO  = CreateGO("Label", cardGO.transform);
-        labelGO.AddComponent<LayoutElement>().preferredHeight = 80f;
-        var labelTMP = labelGO.AddComponent<TextMeshProUGUI>();
-        labelTMP.text             = "Введите название точки телепортации:";
-        labelTMP.enableAutoSizing = true;
-        labelTMP.fontSizeMin      = 28;
-        labelTMP.fontSizeMax      = 64;
-        labelTMP.alignment        = TextAlignmentOptions.Center;
-        labelTMP.color            = Color.white;
+        var vl = card.AddComponent<VerticalLayoutGroup>();
+        vl.spacing               = 18f;
+        vl.padding               = new RectOffset(28, 28, 28, 28);
+        vl.childAlignment        = TextAnchor.UpperCenter;
+        vl.childControlWidth     = true;
+        vl.childControlHeight    = false;
+        vl.childForceExpandWidth = true;
+        vl.childForceExpandHeight = false;
 
-        // ── Input field ──────────────────────────────────────────────────────
-        var inputGO    = CreateGO("InputField", cardGO.transform);
-        inputGO.AddComponent<LayoutElement>().preferredHeight = 96f;
-        var inputImage = inputGO.AddComponent<Image>();
-        inputImage.color = new Color(0.95f, 0.96f, 0.98f, 1f);
-        inputField = inputGO.AddComponent<TMP_InputField>();
-        inputField.targetGraphic = inputImage;
-        inputField.lineType      = TMP_InputField.LineType.SingleLine;
+        return cardRT;
+    }
 
-        var textGO   = CreateGO("Text", inputGO.transform);
-        var textRect = textGO.AddComponent<RectTransform>();
-        textRect.anchorMin = Vector2.zero;
-        textRect.anchorMax = Vector2.one;
-        textRect.offsetMin = new Vector2(18, 10);
-        textRect.offsetMax = new Vector2(-18, -10);
+    private static void BuildLabel(RectTransform parent)
+    {
+        var go  = CreateUIObject("Label", parent.transform);
+        go.AddComponent<LayoutElement>().preferredHeight = 80f;
+        var tmp = go.AddComponent<TextMeshProUGUI>();
+        tmp.text             = "Введите название точки телепортации:";
+        tmp.enableAutoSizing = true;
+        tmp.fontSizeMin      = 28;
+        tmp.fontSizeMax      = 64;
+        tmp.alignment        = TextAlignmentOptions.Center;
+        tmp.color            = Color.white;
+    }
+
+    private static TMP_InputField BuildInputField(RectTransform parent)
+    {
+        var go    = CreateUIObject("InputField", parent.transform);
+        go.AddComponent<LayoutElement>().preferredHeight = 96f;
+        var bg    = go.AddComponent<Image>();
+        bg.color  = new Color(0.95f, 0.96f, 0.98f, 1f);
+
+        var field           = go.AddComponent<TMP_InputField>();
+        field.targetGraphic = bg;
+        field.lineType      = TMP_InputField.LineType.SingleLine;
+
+        // Text component
+        var textGO  = CreateUIObject("Text", go.transform);
+        var textRT  = textGO.AddComponent<RectTransform>();
+        textRT.anchorMin = Vector2.zero;
+        textRT.anchorMax = Vector2.one;
+        textRT.offsetMin = new Vector2(18f, 10f);
+        textRT.offsetMax = new Vector2(-18f, -10f);
         var inputTMP = textGO.AddComponent<TextMeshProUGUI>();
         inputTMP.enableAutoSizing = true;
         inputTMP.fontSizeMin      = 30;
         inputTMP.fontSizeMax      = 64;
         inputTMP.color            = Color.black;
-        inputField.textComponent  = inputTMP;
+        field.textComponent       = inputTMP;
 
-        var phGO   = CreateGO("Placeholder", inputGO.transform);
-        var phRect = phGO.AddComponent<RectTransform>();
-        phRect.anchorMin = Vector2.zero;
-        phRect.anchorMax = Vector2.one;
-        phRect.offsetMin = new Vector2(18, 10);
-        phRect.offsetMax = new Vector2(-18, -10);
+        // Placeholder
+        var phGO  = CreateUIObject("Placeholder", go.transform);
+        var phRT  = phGO.AddComponent<RectTransform>();
+        phRT.anchorMin = Vector2.zero;
+        phRT.anchorMax = Vector2.one;
+        phRT.offsetMin = new Vector2(18f, 10f);
+        phRT.offsetMax = new Vector2(-18f, -10f);
         var phTMP = phGO.AddComponent<TextMeshProUGUI>();
         phTMP.text             = "Например: osnova";
         phTMP.enableAutoSizing = true;
         phTMP.fontSizeMin      = 22;
         phTMP.fontSizeMax      = 48;
         phTMP.color            = new Color(0.5f, 0.5f, 0.5f, 0.5f);
-        inputField.placeholder = phTMP;
+        field.placeholder      = phTMP;
 
-        // ── КЛЮЧЕВОЕ: вешаем телепорт на onSubmit, а не на Update ────────────
-        // onSubmit стреляет именно тогда, когда TMP_InputField получает Enter —
-        // без конфликта с EventSystem и без пропусков кадров.
-        inputField.onSubmit.AddListener(_ => ExecuteTeleport());
+        return field;
+    }
 
-        // ── Points list ──────────────────────────────────────────────────────
-        var pointsGO = CreateGO("PointsList", cardGO.transform);
-        pointsGO.AddComponent<LayoutElement>().preferredHeight = 120f;
-        pointsText                    = pointsGO.AddComponent<TextMeshProUGUI>();
-        pointsText.text               = BuildPointsList();
-        pointsText.enableAutoSizing   = true;
-        pointsText.fontSizeMin        = 20;
-        pointsText.fontSizeMax        = 34;
-        pointsText.alignment          = TextAlignmentOptions.Left;
-        pointsText.margin             = new Vector4(6f, 0f, 6f, 0f);
-        pointsText.color              = new Color(0.70f, 0.72f, 0.74f, 1f);
-        pointsText.enableWordWrapping = true;
+    private static TextMeshProUGUI BuildPointsText(RectTransform parent)
+    {
+        var go  = CreateUIObject("PointsList", parent.transform);
+        go.AddComponent<LayoutElement>().preferredHeight = 120f;
+        var tmp = go.AddComponent<TextMeshProUGUI>();
+        tmp.enableAutoSizing   = true;
+        tmp.fontSizeMin        = 20;
+        tmp.fontSizeMax        = 34;
+        tmp.alignment          = TextAlignmentOptions.Left;
+        tmp.margin             = new Vector4(6f, 0f, 6f, 0f);
+        tmp.color              = new Color(0.70f, 0.72f, 0.74f, 1f);
+        tmp.enableWordWrapping = true;
+        return tmp;
+    }
 
-        // ── Status text ──────────────────────────────────────────────────────
-        var statusGO = CreateGO("StatusText", cardGO.transform);
-        statusGO.AddComponent<LayoutElement>().preferredHeight = 48f;
-        statusText                  = statusGO.AddComponent<TextMeshProUGUI>();
-        statusText.text             = string.Empty;
-        statusText.enableAutoSizing = true;
-        statusText.fontSizeMin      = 18;
-        statusText.fontSizeMax      = 32;
-        statusText.alignment        = TextAlignmentOptions.Center;
-        statusText.color            = new Color(1f, 0.62f, 0.62f, 1f);
-
-        teleportCanvas.gameObject.SetActive(false);
+    private static TextMeshProUGUI BuildStatusText(RectTransform parent)
+    {
+        var go  = CreateUIObject("StatusText", parent.transform);
+        go.AddComponent<LayoutElement>().preferredHeight = 48f;
+        var tmp = go.AddComponent<TextMeshProUGUI>();
+        tmp.text             = string.Empty;
+        tmp.enableAutoSizing = true;
+        tmp.fontSizeMin      = 18;
+        tmp.fontSizeMax      = 32;
+        tmp.alignment        = TextAlignmentOptions.Center;
+        tmp.color            = s_ColError;
+        return tmp;
     }
 
     // ── Helpers ──────────────────────────────────────────────────────────────
-    private static GameObject CreateGO(string name, Transform parent)
+
+    private static GameObject CreateUIObject(string name, Transform parent)
     {
         var go = new GameObject(name);
-        go.transform.SetParent(parent, false);
+        go.transform.SetParent(parent, worldPositionStays: false);
         return go;
     }
 
@@ -418,9 +533,10 @@ public class DebugTeleportManager : MonoBehaviour
     {
         rt.anchorMin = Vector2.zero;
         rt.anchorMax = Vector2.one;
-        rt.offsetMin = Vector2.zero;
-        rt.offsetMax = Vector2.zero;
+        rt.offsetMin = rt.offsetMax = Vector2.zero;
     }
 
     #endregion
 }
+
+#endif

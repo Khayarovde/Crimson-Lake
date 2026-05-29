@@ -80,6 +80,11 @@ public class PumpPuzzleController : MonoBehaviour
     [SerializeField] private bool stepwiseTransfer = true;
     [SerializeField] private float levelTolerance = 0.001f;
 
+    [Header("Persistence")]
+    [PickupId]
+    [SerializeField] private string puzzleId;
+    [SerializeField] private bool invokeSolvedEventOnLoad = true;
+
     // ─── Gamepad / Input debounce ─────────────────────────────────────────────
     [Header("Input Protection")]
     [SerializeField] private float actionCooldown = 0.4f;
@@ -120,7 +125,21 @@ public class PumpPuzzleController : MonoBehaviour
         ConfigureRuntimeButtonBindings();
         ValidateButtonBindings();
         ValidateAndPrepareTankImages();
-        ResetPuzzle();
+        if (!ApplyPersistenceState())
+        {
+            ResetPuzzle();
+        }
+    }
+
+    private void Update()
+    {
+        if (!isSolved && !string.IsNullOrWhiteSpace(puzzleId))
+        {
+            if (SaveManager.HasPuzzleSolved(puzzleId))
+            {
+                ApplyPersistenceState();
+            }
+        }
     }
 
     public void ResetPuzzle() => ResetPuzzleInternal(false);
@@ -238,6 +257,9 @@ public class PumpPuzzleController : MonoBehaviour
     {
         isSolved = true;
 
+        if (!string.IsNullOrWhiteSpace(puzzleId))
+            SaveManager.MarkPuzzleSolved(puzzleId);
+
         if (!allowInfinitePlayAfterSuccess)
         {
             SetButtonsInteractable(false);
@@ -261,6 +283,48 @@ public class PumpPuzzleController : MonoBehaviour
         {
             DOVirtual.DelayedCall(autoResetDelay, () => ResetPuzzleInternal(true));
         }
+    }
+
+    private bool ApplyPersistenceState()
+    {
+        if (string.IsNullOrWhiteSpace(puzzleId))
+            return false;
+
+        if (!SaveManager.HasPuzzleSolved(puzzleId))
+            return false;
+
+        isSolved = true;
+        lastActionTime = -999f;
+
+        for (int i = 0; i < levels.Length; i++)
+        {
+            levels[i] = Mathf.Clamp01(targetLevels[i]);
+            SetTankVisual(i, levels[i], false);
+        }
+
+        if (resetOptionRoot != null) resetOptionRoot.SetActive(false);
+
+        if (fadeToBlackCanvasGroup != null)
+        {
+            fadeToBlackCanvasGroup.alpha = 0f;
+            fadeToBlackCanvasGroup.blocksRaycasts = false;
+        }
+
+        if (!allowInfinitePlayAfterSuccess)
+        {
+            SetButtonsInteractable(false);
+            SetStatus("Успех! Ток есть!");
+        }
+        else
+        {
+            SetButtonsInteractable(true);
+            SetStatus("Успех! Бесконечный режим активен.");
+        }
+
+        if (invokeSolvedEventOnLoad)
+            onPuzzleSolved?.Invoke();
+
+        return true;
     }
 
     private void TriggerOverflow(int tankIndex)
