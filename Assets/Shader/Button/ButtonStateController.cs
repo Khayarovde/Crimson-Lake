@@ -63,8 +63,7 @@ public class ButtonStateController : MonoBehaviour,
     public void OnSelect(BaseEventData _) {
         if (!interactable) return;
         if (_current == BtnState.Selected) return;
-        // Выделение с геймпада отображаем как Hover
-        TransitionTo(BtnState.Hover);
+        TransitionTo(BtnState.Selected);
     }
 
     public void OnDeselect(BaseEventData _) {

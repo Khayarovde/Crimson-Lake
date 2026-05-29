@@ -122,6 +122,8 @@ public class DoorTeleportTrigger : MonoBehaviour
     private bool _isInteracting;
     private Vector3 _doorClosedWorldPos;
     private Tween _hintTween;
+    private int _playerOverlapCount;
+    private bool _hintVisible;
 
     // ─────────────────────────────────────────────────────────────────────────
     // Unity lifecycle
@@ -158,6 +160,8 @@ public class DoorTeleportTrigger : MonoBehaviour
         if (!IsPlayer(other) || _isInteracting)
             return;
 
+        _playerOverlapCount++;
+
         _player = GetPlayerRoot(other);
         _playerRb = _player != null ? _player.GetComponentInParent<Rigidbody>() : null;
         _playerInRange = true;
@@ -165,7 +169,10 @@ public class DoorTeleportTrigger : MonoBehaviour
         if (playerAnimator == null && _player != null)
             playerAnimator = _player.GetComponentInChildren<Animator>();
 
-        ShowHint();
+        if (!_hintVisible)
+            ShowHint();
+        else
+            UpdateHintSprite();
     }
 
     private void OnTriggerExit(Collider other)
@@ -173,8 +180,13 @@ public class DoorTeleportTrigger : MonoBehaviour
         if (!IsPlayer(other) || _isInteracting)
             return;
 
+        _playerOverlapCount = Mathf.Max(0, _playerOverlapCount - 1);
+
+        if (_playerOverlapCount > 0)
+            return;
+
         _playerInRange = false;
-        SetHintVisible(false);
+        HideHint();
     }
 
     private void OnDisable()
@@ -182,6 +194,8 @@ public class DoorTeleportTrigger : MonoBehaviour
         DOTween.Kill(gameObject);
         _playerInRange = false;
         _isInteracting = false;
+        _playerOverlapCount = 0;
+        _hintVisible = false;
         HideHintImmediate();
         ResetFade();
     }
@@ -196,7 +210,7 @@ public class DoorTeleportTrigger : MonoBehaviour
             yield break;
 
         _isInteracting = true;
-        SetHintVisible(false);
+        HideHint();
         LockPlayerInput(true);
 
         // 1. Повернуться к двери (стоя на месте)
@@ -514,6 +528,17 @@ public class DoorTeleportTrigger : MonoBehaviour
     /// </summary>
     private void ShowHint()
     {
+        if (_hintVisible)
+            return;
+
+        UpdateHintSprite();
+        SetHintVisible(true);
+        PlayHintReveal();
+        _hintVisible = true;
+    }
+
+    private void UpdateHintSprite()
+    {
         if (hintStateImage != null)
         {
             if (doorState == DoorState.LockedNeedKey)
@@ -548,9 +573,6 @@ public class DoorTeleportTrigger : MonoBehaviour
                 };
             }
         }
-
-        SetHintVisible(true);
-        PlayHintReveal();
     }
 
     private void SetHintVisible(bool visible)
@@ -559,11 +581,23 @@ public class DoorTeleportTrigger : MonoBehaviour
 
         if (!visible)
         {
-            PlayHintHide();
+            hintRoot.SetActive(false);
             return;
         }
 
         hintRoot.SetActive(true);
+    }
+
+    private void HideHint()
+    {
+        if (!_hintVisible)
+        {
+            SetHintVisible(false);
+            return;
+        }
+
+        _hintVisible = false;
+        PlayHintHide();
     }
 
     /// <summary>
@@ -572,6 +606,7 @@ public class DoorTeleportTrigger : MonoBehaviour
     private void HideHintImmediate()
     {
         _hintTween?.Kill();
+        _hintVisible = false;
 
         if (hintStateImage != null)
         {

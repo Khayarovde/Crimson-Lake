@@ -405,7 +405,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 1
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1505655159961590377
 Transform:
   m_ObjectHideFlags: 0
@@ -415,7 +415,7 @@ Transform:
   m_GameObject: {fileID: 1350050016207417884}
   serializedVersion: 2
   m_LocalRotation: {x: 0.061567143, y: -0.5299457, z: 0.06361581, w: 0.84339803}
-  m_LocalPosition: {x: 7.57, y: 2.4, z: -1.59}
+  m_LocalPosition: {x: 6.37, y: 2.4, z: -0.58}
   m_LocalScale: {x: 1.0192101, y: 1, z: 0.95469}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -430,9 +430,9 @@ Light:
   m_GameObject: {fileID: 1350050016207417884}
   m_Enabled: 1
   serializedVersion: 11
-  m_Type: 0
+  m_Type: 2
   m_Color: {r: 0.654902, g: 0.8862745, b: 0.52156866, a: 1}
-  m_Intensity: 9.36
+  m_Intensity: 0.06
   m_Range: 45.7
   m_SpotAngle: 116.83902
   m_InnerSpotAngle: 36.6
@@ -1729,13 +1729,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4987272837400113202}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.05030366, y: -0.38449234, z: 0.072849326, w: 0.9188733}
-  m_LocalPosition: {x: 7, y: 4.26, z: -1.84}
+  m_LocalRotation: {x: 0.071613416, y: -0.058055304, z: 0.052047964, w: 0.9943803}
+  m_LocalPosition: {x: 7.360001, y: 5.13, z: -4.7}
   m_LocalScale: {x: 1.0192101, y: 1, z: 0.95469}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1917085988310698854}
-  m_LocalEulerAnglesHint: {x: 8.538, y: 33.078, z: 5.524}
+  m_LocalEulerAnglesHint: {x: 8.538, y: 18.625, z: 5.524}
 --- !u!108 &7759232748724767220
 Light:
   m_ObjectHideFlags: 0
@@ -1745,12 +1745,12 @@ Light:
   m_GameObject: {fileID: 4987272837400113202}
   m_Enabled: 1
   serializedVersion: 11
-  m_Type: 2
+  m_Type: 0
   m_Color: {r: 0.65521353, g: 0.8862745, b: 0.52156866, a: 1}
-  m_Intensity: 10.34
-  m_Range: 4.07
-  m_SpotAngle: 176.7706
-  m_InnerSpotAngle: 78.56611
+  m_Intensity: 23.28
+  m_Range: 6.46
+  m_SpotAngle: 148.07596
+  m_InnerSpotAngle: 0
   m_CookieSize: 10
   m_Shadows:
     m_Type: 0
@@ -4229,7 +4229,7 @@ MonoBehaviour:
     _entity: {fileID: 11400000, guid: 8f1cfa9d7809a6748a254f6c3dd66192, type: 2}
     ID: 1073741839
     <DebugObject>k__BackingField: {fileID: 5922823764018524464}
-  _overrideGroup: {fileID: 0}
+  _overrideGroup: {fileID: 11400000, guid: b63579e42821f3641828ae0da2724d12, type: 2}
   _positionMode: 0
   _delay: 0
 --- !u!114 &8875746876698902366
@@ -4448,6 +4448,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 5243138781545252105, guid: 785b08d6af4bd664788e9aef080ccfdf, type: 3}
       insertIndex: -1
       addedObject: {fileID: 8129647620742992606}
+    - targetCorrespondingSourceObject: {fileID: 5243138781545252105, guid: 785b08d6af4bd664788e9aef080ccfdf, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1510147804771130327}
   m_SourcePrefab: {fileID: 100100000, guid: 785b08d6af4bd664788e9aef080ccfdf, type: 3}
 --- !u!4 &7079630104431917546 stripped
 Transform:
@@ -4532,6 +4535,36 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1.92, z: 1}
   m_Center: {x: 0, y: 0, z: 0.83}
+--- !u!114 &1510147804771130327
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7079630104432010698}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9c3e3e00e040c754faae7d3c4790c744, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  hintImage: {fileID: 0}
+  additionalHintImages: []
+  playerTag: Player
+  playMultiPressSequence: 1
+  multiStepDelay: 0.15
+  multiPressScale: 0.88
+  multiPressTime: 0.12
+  multiReleaseTime: 0.18
+  multiPressEase: 2
+  multiReleaseEase: 6
+  fadeDuration: 0.3
+  usePulse: 1
+  pulseScale: 0.88
+  pressTime: 0.15
+  releaseTime: 0.25
+  pauseBetween: 0.7
+  pressEase: 2
+  releaseEase: 24
 --- !u!1001 &3449069440671440377
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -6141,7 +6174,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 1666edd8171dfc84ab62ab72cb7910f7, type: 3}
       propertyPath: m_Name
-      value: ElectricShield
+      value: MINIgame
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 1666edd8171dfc84ab62ab72cb7910f7, type: 3}
       propertyPath: m_Layer
@@ -6221,7 +6254,7 @@ MonoBehaviour:
   puzzleCanvasRoot: {fileID: 0}
   interactionHint: {fileID: 0}
   interactionKey: 101
-  closeKey: 32
+  closeKey: 101
   resetPuzzleOnOpen: 1
   resetPuzzleOnClose: 0
   autoCloseOnSolved: 1
