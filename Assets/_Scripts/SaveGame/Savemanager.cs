@@ -138,7 +138,11 @@ public class SaveManager : MonoBehaviour
         }
 
         hasUnsavedChanges = false;
-        Debug.Log($"[SaveManager] ФАЙЛ {slotIndex + 1} сохранен");
+        // Debug output: show solved puzzles contained in saved data for diagnosis
+        if (data.solvedPuzzles != null)
+            Debug.Log($"[SaveManager] ФАЙЛ {slotIndex + 1} сохранен. solvedPuzzles count={data.solvedPuzzles.Count} sample=[{(data.solvedPuzzles.Count>0?data.solvedPuzzles[0]:string.Empty)}]");
+        else
+            Debug.Log($"[SaveManager] ФАЙЛ {slotIndex + 1} сохранен. solvedPuzzles=null");
     }
 
     public bool LoadLatestSaveOrDefault(string defaultScene)
@@ -231,7 +235,20 @@ public class SaveManager : MonoBehaviour
 
     #region New Tracking Methods
     public static bool HasPuzzleSolved(string puzzleId) => Instance != null && !string.IsNullOrEmpty(puzzleId) && Instance.solvedPuzzles.Contains(puzzleId);
-    public static void MarkPuzzleSolved(string puzzleId) { if (Instance != null && !string.IsNullOrEmpty(puzzleId) && Instance.solvedPuzzles.Add(puzzleId)) Instance.MarkUnsaved(); }
+    public static void MarkPuzzleSolved(string puzzleId)
+    {
+        if (string.IsNullOrEmpty(puzzleId) || Instance == null) return;
+        bool added = Instance.solvedPuzzles.Add(puzzleId);
+        if (added)
+        {
+            Instance.MarkUnsaved();
+            Debug.Log($"[SaveManager] MarkPuzzleSolved: {puzzleId}");
+        }
+        else
+        {
+            Debug.Log($"[SaveManager] MarkPuzzleSolved (already present): {puzzleId}");
+        }
+    }
 
     public static bool HasDoorUnlocked(string doorId) => Instance != null && !string.IsNullOrEmpty(doorId) && Instance.unlockedDoors.Contains(doorId);
     public static void MarkDoorUnlocked(string doorId) { if (Instance != null && !string.IsNullOrEmpty(doorId) && Instance.unlockedDoors.Add(doorId)) Instance.MarkUnsaved(); }

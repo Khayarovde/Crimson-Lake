@@ -2,6 +2,7 @@ using DG.Tweening;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
+using System;
 
 /// <summary>
 /// Контроллер пазла с переливанием жидкости (A, B, C).
@@ -82,8 +83,13 @@ public class PumpPuzzleController : MonoBehaviour
 
     [Header("Persistence")]
     [PickupId]
-    [SerializeField] private string puzzleId;
+    [SerializeField]
+    [Tooltip("Уникальный ID пазла для сохранения/восстановления состояния. Если оставить пустым, можно сгенерировать через Context Menu -> Generate Persistence ID или будет создан автоматически в редакторе при валидации.")]
+    private string puzzleId;
     [SerializeField] private bool invokeSolvedEventOnLoad = true;
+    
+    // (Поведение persistence аналогично EnemyPickupInteraction: отмечаем пазл решённым в SaveManager.
+    // Сохранение слота выполняется централизованно из меню или другими системами.)
 
     // ─── Gamepad / Input debounce ─────────────────────────────────────────────
     [Header("Input Protection")]
@@ -109,6 +115,7 @@ public class PumpPuzzleController : MonoBehaviour
     private readonly float[] levels = new float[3];
     private readonly Vector3[] tankBaseScales = new Vector3[3];
     private bool isSolved;
+    private bool persistenceApplied = false;
     private float lastActionTime = -999f;
 
     public bool IsSolved => isSolved;
@@ -125,15 +132,64 @@ public class PumpPuzzleController : MonoBehaviour
         ConfigureRuntimeButtonBindings();
         ValidateButtonBindings();
         ValidateAndPrepareTankImages();
-        if (!ApplyPersistenceState())
+
+        // Устанавливаем начальное состояние; реальное состояние может быть применено позже,
+        // когда SaveManager завершит применение отложенного сохранения. Update() будет опрашивать SaveManager.
+        ResetPuzzle();
+
+        if (string.IsNullOrWhiteSpace(puzzleId))
         {
-            ResetPuzzle();
+            Debug.LogWarning($"[PumpPuzzle] puzzleId is empty on {gameObject.name}. Persistence will not work unless an ID is assigned.", this);
         }
     }
 
+#if UNITY_EDITOR
+    // В редакторе: при валидации автоматически создаём ID, если поле пустое.
+    private void OnValidate()
+    {
+        // Не трогаем поле во время игры
+        if (Application.isPlaying) return;
+
+        if (string.IsNullOrWhiteSpace(puzzleId))
+        {
+            try
+            {
+                // Формируем короткий, читаемый ID по сцене/объекту + случайный суффикс
+                string sceneName = gameObject.scene.name;
+                string baseName = string.IsNullOrWhiteSpace(sceneName) ? gameObject.name : sceneName + "_" + gameObject.name;
+                puzzleId = $"puzzle_{baseName}_{Guid.NewGuid().ToString().Substring(0,8)}";
+                UnityEditor.EditorUtility.SetDirty(this);
+                Debug.Log($"[PumpPuzzle] Auto-generated puzzleId='{puzzleId}' for {gameObject.name} (OnValidate)", this);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogWarning($"[PumpPuzzle] Failed to auto-generate puzzleId: {ex.Message}");
+            }
+        }
+    }
+
+    [ContextMenu("Generate Persistence ID")]
+    private void GeneratePersistenceIdContext()
+    {
+        try
+        {
+            string sceneName = gameObject.scene.name;
+            string baseName = string.IsNullOrWhiteSpace(sceneName) ? gameObject.name : sceneName + "_" + gameObject.name;
+            puzzleId = $"puzzle_{baseName}_{Guid.NewGuid().ToString().Substring(0,8)}";
+            UnityEditor.EditorUtility.SetDirty(this);
+            Debug.Log($"[PumpPuzzle] Generated puzzleId='{puzzleId}' for {gameObject.name}", this);
+        }
+        catch (Exception ex)
+        {
+            Debug.LogWarning($"[PumpPuzzle] Failed to generate puzzleId: {ex.Message}");
+        }
+    }
+#endif
+
     private void Update()
     {
-        if (!isSolved && !string.IsNullOrWhiteSpace(puzzleId))
+        // Если сохранённое состояние ещё не применено, опрашиваем SaveManager (работает надежно при отложенном применении).
+        if (!persistenceApplied && !string.IsNullOrWhiteSpace(puzzleId))
         {
             if (SaveManager.HasPuzzleSolved(puzzleId))
             {
@@ -258,7 +314,14 @@ public class PumpPuzzleController : MonoBehaviour
         isSolved = true;
 
         if (!string.IsNullOrWhiteSpace(puzzleId))
+        {
+            Debug.Log($"[PumpPuzzle] OnSolved: marking puzzleId={puzzleId}", this);
             SaveManager.MarkPuzzleSolved(puzzleId);
+        }
+        else
+        {
+            Debug.LogWarning($"[PumpPuzzle] OnSolved called but puzzleId is empty on {gameObject.name}; nothing will be saved.", this);
+        }
 
         if (!allowInfinitePlayAfterSuccess)
         {
@@ -293,7 +356,11 @@ public class PumpPuzzleController : MonoBehaviour
         if (!SaveManager.HasPuzzleSolved(puzzleId))
             return false;
 
+        // Обозначаем, что состояние применено, чтобы не опрашивать повторно
+        persistenceApplied = true;
+
         isSolved = true;
+        Debug.Log($"[PumpPuzzle] ApplyPersistenceState: applied puzzleId={puzzleId}", this);
         lastActionTime = -999f;
 
         for (int i = 0; i < levels.Length; i++)
