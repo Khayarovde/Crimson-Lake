@@ -443,7 +443,9 @@ public class GamepadController : MonoBehaviour
             return;
         }
 
-        bool cursorVisible = uiOpen || externalCursorOverrideCount > 0;
+        // Добавить проверку паузы
+        bool pauseOpen = PauseMenu.Instance != null && PauseMenu.Instance.IsPaused;
+        bool cursorVisible = uiOpen || pauseOpen || externalCursorOverrideCount > 0;
 
         if (cursorVisible)
         {
