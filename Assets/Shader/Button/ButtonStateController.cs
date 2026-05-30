@@ -116,7 +116,7 @@ public class ButtonStateController : MonoBehaviour,
         _mat.SetFloat("_Blend", 0f);
         float t = 0f;
         while (t < 1f) {
-            t += Time.deltaTime / transitionDuration;
+            t += Time.unscaledDeltaTime / transitionDuration;
             _mat.SetFloat("_Blend", Mathf.SmoothStep(0f, 1f, t));
             yield return null;
         }

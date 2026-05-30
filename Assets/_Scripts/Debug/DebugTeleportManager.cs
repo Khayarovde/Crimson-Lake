@@ -1,4 +1,4 @@
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
+// #if UNITY_EDITOR || DEVELOPMENT_BUILD
 // Remove the #if / #endif guards if you intentionally ship this in release builds.
 // DebugTeleportPoint must also be wrapped in the same conditional.
 
@@ -539,4 +539,4 @@ public sealed class DebugTeleportManager : MonoBehaviour
     #endregion
 }
 
-#endif
+// #endif

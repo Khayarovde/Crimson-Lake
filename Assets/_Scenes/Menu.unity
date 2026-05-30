@@ -1492,7 +1492,7 @@ MonoBehaviour:
   priority: 0
   blendDistance: 0
   weight: 1
-  sharedProfile: {fileID: 11400000, guid: c3010e99e7acf484e9cef0c8828f46ca, type: 2}
+  sharedProfile: {fileID: 11400000, guid: 2ff9d55867b3f5e4ab469a868ec77815, type: 2}
 --- !u!4 &1034814134
 Transform:
   m_ObjectHideFlags: 0
@@ -2697,6 +2697,28 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1936168587 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5749065190188430584, guid: dee411587d023444387a39c976f3e216, type: 3}
+  m_PrefabInstance: {fileID: 3373783723351495083}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1936168591
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1936168587}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5a3617b900029f641affa26dc6f489f1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  menuRoot: {fileID: 1936168587}
+  cursorSpeed: 1100
+  moveDeadzone: 0.2
+  clickThreshold: 0.2
+  edgePadding: 18
 --- !u!1 &1955449592
 GameObject:
   m_ObjectHideFlags: 0
@@ -3734,6 +3756,10 @@ PrefabInstance:
       propertyPath: m_Delegates.Array.data[1].callback.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
       value: 
       objectReference: {fileID: 0}
+    - target: {fileID: 7820323965741447286, guid: dee411587d023444387a39c976f3e216, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 8035470302009488150, guid: dee411587d023444387a39c976f3e216, type: 3}
       propertyPath: m_Enabled
       value: 0
@@ -3914,6 +3940,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 8595598171859359860, guid: dee411587d023444387a39c976f3e216, type: 3}
       insertIndex: -1
       addedObject: {fileID: 741333585}
+    - targetCorrespondingSourceObject: {fileID: 5749065190188430584, guid: dee411587d023444387a39c976f3e216, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1936168591}
     - targetCorrespondingSourceObject: {fileID: 7820323965741447286, guid: dee411587d023444387a39c976f3e216, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1659734872}

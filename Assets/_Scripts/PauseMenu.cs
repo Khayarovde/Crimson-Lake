@@ -35,6 +35,9 @@ public class PauseMenu : MonoBehaviour
     [SerializeField] private float pauseLowPassFadeTime = 0.15f;
     [SerializeField, Range(0f, 1f)] private float pauseMusicVolumeMultiplier = 0.45f;
 
+    // Gamepad navigation
+    public bool IsPaused => isPaused; // добавить свойство
+
     private readonly List<AudioLowPassFilter> pauseMusicFilters = new List<AudioLowPassFilter>();
     private readonly Dictionary<AudioLowPassFilter, Coroutine> filterFades = new Dictionary<AudioLowPassFilter, Coroutine>();
 
@@ -43,6 +46,8 @@ public class PauseMenu : MonoBehaviour
     private int selectedExitConfirmIndex = 0;
     private int selectedSettingsButtonIndex = 0;
     private float lastPauseNavTime = 0f;
+    private readonly List<Button> cachedPauseButtons = new List<Button>();
+    private readonly List<Button> cachedSettingsButtons = new List<Button>();
     [SerializeField] private float pauseNavCooldown = 0.12f;
 
     [Header("Gamepad Shortcuts")]
@@ -140,38 +145,41 @@ public class PauseMenu : MonoBehaviour
             return;
         }
 
-        HandlePausePanelInput(gamepad);
+        // HandlePausePanelInput(gamepad);
     }
 
-    private void HandlePausePanelInput(Gamepad gamepad)
-    {
-        List<Button> buttons = GetPauseButtons();
-        if (buttons.Count == 0)
-            return;
+    // private void HandlePausePanelInput(Gamepad gamepad)
+    // {
+    //     if (cachedPauseButtons.Count == 0)
+    //         return;
 
-        if (Time.unscaledTime - lastPauseNavTime >= pauseNavCooldown)
-        {
-            if (gamepad.dpad.left.wasPressedThisFrame || gamepad.dpad.up.wasPressedThisFrame)
-            {
-                selectedPauseButtonIndex = (selectedPauseButtonIndex - 1 + buttons.Count) % buttons.Count;
-                lastPauseNavTime = Time.unscaledTime;
-                SelectPauseButton(buttons, selectedPauseButtonIndex);
-            }
-            else if (gamepad.dpad.right.wasPressedThisFrame || gamepad.dpad.down.wasPressedThisFrame)
-            {
-                selectedPauseButtonIndex = (selectedPauseButtonIndex + 1) % buttons.Count;
-                lastPauseNavTime = Time.unscaledTime;
-                SelectPauseButton(buttons, selectedPauseButtonIndex);
-            }
-        }
+    //     if (Time.unscaledTime - lastPauseNavTime >= pauseNavCooldown)
+    //     {
+    //         Vector2 stick = gamepad.leftStick.ReadValue();
+    //         bool up = gamepad.dpad.left.wasPressedThisFrame || gamepad.dpad.up.wasPressedThisFrame || stick.y > 0.5f;
+    //         bool down = gamepad.dpad.right.wasPressedThisFrame || gamepad.dpad.down.wasPressedThisFrame || stick.y < -0.5f;
 
-        if (gamepad.buttonSouth.wasPressedThisFrame)
-        {
-            Button target = buttons[Mathf.Clamp(selectedPauseButtonIndex, 0, buttons.Count - 1)];
-            if (target != null)
-                target.onClick.Invoke();
-        }
-    }
+    //         if (up)
+    //         {
+    //             selectedPauseButtonIndex = (selectedPauseButtonIndex - 1 + cachedPauseButtons.Count) % cachedPauseButtons.Count;
+    //             lastPauseNavTime = Time.unscaledTime;
+    //             SelectPauseButton(cachedPauseButtons, selectedPauseButtonIndex);
+    //         }
+    //         else if (down)
+    //         {
+    //             selectedPauseButtonIndex = (selectedPauseButtonIndex + 1) % cachedPauseButtons.Count;
+    //             lastPauseNavTime = Time.unscaledTime;
+    //             SelectPauseButton(cachedPauseButtons, selectedPauseButtonIndex);
+    //         }
+    //     }
+
+    //     if (gamepad.buttonSouth.wasPressedThisFrame)
+    //     {
+    //         Button target = cachedPauseButtons[Mathf.Clamp(selectedPauseButtonIndex, 0, cachedPauseButtons.Count - 1)];
+    //         if (target != null)
+    //             target.onClick.Invoke();
+    //     }
+    // }
 
     private void HandleExitConfirmInput(Gamepad gamepad)
     {
@@ -209,6 +217,21 @@ public class PauseMenu : MonoBehaviour
         EnableAllButtonsInPause();
 
         ApplyPauseMusicEffect(true);
+
+        cachedPauseButtons.Clear();
+        if (pausePanel != null)
+        {
+            Button[] buttons = pausePanel.GetComponentsInChildren<Button>(false);
+            for (int i = 0; i < buttons.Length; i++)
+            {
+                Button button = buttons[i];
+                if (button != null && button.gameObject.activeInHierarchy && button.interactable)
+                    cachedPauseButtons.Add(button);
+            }
+        }
+
+        selectedPauseButtonIndex = 0;
+        SelectPauseButton(cachedPauseButtons, selectedPauseButtonIndex);
     }
 
     public void Resume()
@@ -218,6 +241,9 @@ public class PauseMenu : MonoBehaviour
         if (exitWithoutSaveConfirmPanel != null) exitWithoutSaveConfirmPanel.SetActive(false);
         Time.timeScale = 1f;
         isPaused = false;
+
+        cachedPauseButtons.Clear();
+        cachedSettingsButtons.Clear();
 
         ApplyPauseMusicEffect(false);
     }
@@ -294,35 +320,49 @@ public class PauseMenu : MonoBehaviour
 
     private void SelectPauseButton(List<Button> buttons, int index)
     {
+        if (buttons == null || buttons.Count == 0)
+            return;
+
+        index = Mathf.Clamp(index, 0, buttons.Count - 1);
+        if (EventSystem.current != null)
+            EventSystem.current.SetSelectedGameObject(buttons[index].gameObject);
     }
 
     private void SelectExitConfirmButton(int index)
     {
+        Button target = index == 0 ? exitWithoutSaveYesButton : exitWithoutSaveNoButton;
+        if (target != null && EventSystem.current != null)
+            EventSystem.current.SetSelectedGameObject(target.gameObject);
     }
 
     private void HandleSettingsPanelInput(Gamepad gamepad)
     {
-        List<Button> buttons = GetSettingsButtons();
-        if (buttons.Count == 0)
+        if (cachedSettingsButtons.Count == 0)
             return;
 
         if (Time.unscaledTime - lastPauseNavTime >= pauseNavCooldown)
         {
-            if (gamepad.dpad.left.wasPressedThisFrame || gamepad.dpad.up.wasPressedThisFrame)
+            Vector2 stick = gamepad.leftStick.ReadValue();
+            bool up = gamepad.dpad.left.wasPressedThisFrame || gamepad.dpad.up.wasPressedThisFrame || stick.y > 0.5f;
+            bool down = gamepad.dpad.right.wasPressedThisFrame || gamepad.dpad.down.wasPressedThisFrame || stick.y < -0.5f;
+
+            if (up)
             {
-                selectedSettingsButtonIndex = (selectedSettingsButtonIndex - 1 + buttons.Count) % buttons.Count;
+                selectedSettingsButtonIndex = (selectedSettingsButtonIndex - 1 + cachedSettingsButtons.Count) % cachedSettingsButtons.Count;
                 lastPauseNavTime = Time.unscaledTime;
+                SelectSettingsButton(cachedSettingsButtons, selectedSettingsButtonIndex);
             }
-            else if (gamepad.dpad.right.wasPressedThisFrame || gamepad.dpad.down.wasPressedThisFrame)
+            else if (down)
             {
-                selectedSettingsButtonIndex = (selectedSettingsButtonIndex + 1) % buttons.Count;
+                selectedSettingsButtonIndex = (selectedSettingsButtonIndex + 1) % cachedSettingsButtons.Count;
                 lastPauseNavTime = Time.unscaledTime;
+                SelectSettingsButton(cachedSettingsButtons, selectedSettingsButtonIndex);
             }
         }
 
         if (gamepad.buttonSouth.wasPressedThisFrame)
         {
-            Button target = buttons[Mathf.Clamp(selectedSettingsButtonIndex, 0, buttons.Count - 1)];
+            Button target = cachedSettingsButtons[Mathf.Clamp(selectedSettingsButtonIndex, 0, cachedSettingsButtons.Count - 1)];
             if (target != null)
                 target.onClick.Invoke();
         }
@@ -349,16 +389,33 @@ public class PauseMenu : MonoBehaviour
 
     private void SelectSettingsButton(List<Button> buttons, int index)
     {
+        if (buttons == null || buttons.Count == 0)
+            return;
+
+        index = Mathf.Clamp(index, 0, buttons.Count - 1);
+        if (EventSystem.current != null)
+            EventSystem.current.SetSelectedGameObject(buttons[index].gameObject);
     }
 
     private void SelectFirstSettingsButton()
     {
-        List<Button> buttons = GetSettingsButtons();
-        if (buttons.Count == 0)
+        cachedSettingsButtons.Clear();
+        if (settingsPanel != null)
+        {
+            Button[] buttons = settingsPanel.GetComponentsInChildren<Button>(false);
+            for (int i = 0; i < buttons.Length; i++)
+            {
+                Button button = buttons[i];
+                if (button != null && button.gameObject.activeInHierarchy && button.interactable)
+                    cachedSettingsButtons.Add(button);
+            }
+        }
+
+        if (cachedSettingsButtons.Count == 0)
             return;
 
         selectedSettingsButtonIndex = 0;
-        SelectSettingsButton(buttons, selectedSettingsButtonIndex);
+        SelectSettingsButton(cachedSettingsButtons, selectedSettingsButtonIndex);
     }
 
     // === УНИВЕРСАЛЬНОЕ УПРАВЛЕНИЕ ЗВУКОМ ===
@@ -439,7 +496,15 @@ public class PauseMenu : MonoBehaviour
         {
             settingsPanel.SetActive(!settingsPanel.activeSelf);
             if (settingsPanel.activeSelf)
+            {
                 settingsPanel.transform.SetAsLastSibling();
+                SelectFirstSettingsButton();
+            }
+            else
+            {
+                cachedSettingsButtons.Clear();
+                SelectPauseButton(cachedPauseButtons, selectedPauseButtonIndex);
+            }
         }
     }
 

@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class PlayerStepSound : MonoBehaviour
 {
@@ -30,12 +31,15 @@ public class PlayerStepSound : MonoBehaviour
     [Header("Movement Gate")]
     public bool requireMovement = true;
     public float moveSpeedThreshold = 0.05f;
+    [Tooltip("Небольшое окно времени, чтобы шаг не пропадал на каждом втором событии анимации")]
+    public float movementGraceTime = 0.12f;
     public bool useInputFallback = true;
     public float inputThreshold = 0.1f;
     [Tooltip("Выводить в консоль факт вызова Step_sound_play и причины блокировки")]
     public bool logStepEvents = false;
     private Vector3 lastPosition;
     private float estimatedPlanarSpeed;
+    private float lastMovingTime = -Mathf.Infinity;
     private float lastSurfaceCheckTime = -Mathf.Infinity;
     private AudioClip[] cachedSurfaceClips = EmptyClips;
     private SurfaceStepSounds cachedSurfaceSettings;
@@ -111,6 +115,8 @@ public class PlayerStepSound : MonoBehaviour
 
     private bool IsMoving()
     {
+        bool movingNow = false;
+
         if (rb != null)
         {
 #if UNITY_6000_0_OR_NEWER
@@ -120,20 +126,40 @@ public class PlayerStepSound : MonoBehaviour
 #endif
             v.y = 0f;
             if (v.sqrMagnitude > moveSpeedThreshold * moveSpeedThreshold)
-                return true;
+                movingNow = true;
         }
 
         if (estimatedPlanarSpeed > moveSpeedThreshold)
-            return true;
+            movingNow = true;
 
         if (useInputFallback)
         {
+            // Legacy Input Manager fallback.
             float vertical = Input.GetAxisRaw("Vertical");
             float horizontal = Input.GetAxisRaw("Horizontal");
-            return Mathf.Abs(vertical) > inputThreshold || Mathf.Abs(horizontal) > inputThreshold;
+
+            if (Mathf.Abs(vertical) > inputThreshold || Mathf.Abs(horizontal) > inputThreshold)
+                movingNow = true;
+
+            // Input System fallback for gamepad/keyboard projects without old axes.
+            if (!movingNow)
+            {
+                Vector2 stick = Vector2.zero;
+                if (Gamepad.current != null)
+                    stick = Gamepad.current.leftStick.ReadValue();
+
+                if (stick.sqrMagnitude > inputThreshold * inputThreshold)
+                    movingNow = true;
+            }
         }
 
-        return false;
+        if (movingNow)
+        {
+            lastMovingTime = Time.time;
+            return true;
+        }
+
+        return Time.time - lastMovingTime <= movementGraceTime;
     }
 
     private AudioClip[] GetSurfaceClips(out SurfaceStepSounds settings)
