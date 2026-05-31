@@ -306,7 +306,7 @@ Transform:
   m_GameObject: {fileID: 824576347546003700}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 2.47, y: -0.37, z: -16.42}
+  m_LocalPosition: {x: 12.23, y: -0.37, z: 3.64}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -528,7 +528,7 @@ Light:
   m_Type: 0
   m_Color: {r: 1, g: 0, b: 0, a: 1}
   m_Intensity: 395
-  m_Range: 36.3
+  m_Range: 32.5
   m_SpotAngle: 106.5
   m_InnerSpotAngle: 18
   m_CookieSize: 32.9
@@ -564,7 +564,7 @@ Light:
   m_RenderMode: 0
   m_CullingMask:
     serializedVersion: 2
-    m_Bits: 2096887
+    m_Bits: 4294967295
   m_RenderingLayerMask: 1
   m_Lightmapping: 1
   m_LightShadowCasterMode: 0
@@ -1391,7 +1391,7 @@ Transform:
   m_GameObject: {fileID: 3886300286636535559}
   serializedVersion: 2
   m_LocalRotation: {x: 0.079387344, y: -0.026911518, z: 0.0021439723, w: 0.99647826}
-  m_LocalPosition: {x: 3.18, y: 4.5000005, z: -10.37}
+  m_LocalPosition: {x: 8.1, y: 2.16, z: -11.56}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2226,7 +2226,7 @@ Transform:
   m_GameObject: {fileID: 4801513232411933638}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: -0.13, y: -2.35, z: -0.1}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -3770,7 +3770,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 1
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &6555815232799811383
 Transform:
   m_ObjectHideFlags: 0
@@ -4966,7 +4966,8 @@ MonoBehaviour:
   enemySpawnPoint: {fileID: 3710982649374605283}
   spawnEnemyOnlyAfterPickup: 1
   yarnInteractSource: {fileID: 0}
-  lightsToChangeColor: []
+  lightsToChangeColor:
+  - {fileID: 2472523600350234846}
   chaseMusicClip: {fileID: 8300000, guid: 588ae12aaa3df504382dab49ca9857fc, type: 3}
   chaseVolume: 0.778
   chaseFadeTime: 1.5
@@ -5735,7 +5736,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 400006, guid: 1b74ff2139ba6ea47803d0c80ee0702a, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -4.849997
+      value: -6.45
       objectReference: {fileID: 0}
     - target: {fileID: 400006, guid: 1b74ff2139ba6ea47803d0c80ee0702a, type: 3}
       propertyPath: m_LocalPosition.y
@@ -5743,7 +5744,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 400006, guid: 1b74ff2139ba6ea47803d0c80ee0702a, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -7.899995
+      value: -7.9
       objectReference: {fileID: 0}
     - target: {fileID: 400006, guid: 1b74ff2139ba6ea47803d0c80ee0702a, type: 3}
       propertyPath: m_LocalRotation.w
@@ -5835,7 +5836,7 @@ BoxCollider:
   m_Enabled: 1
   serializedVersion: 3
   m_Size: {x: 3.22, y: 5.92, z: 4.908103}
-  m_Center: {x: 0.1867287, y: 2.350721, z: 3.0000768}
+  m_Center: {x: -2.98, y: 2.350721, z: 3.0000768}
 --- !u!65 &2516751004138955817
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -5856,7 +5857,7 @@ BoxCollider:
   m_Enabled: 1
   serializedVersion: 3
   m_Size: {x: 1.2517902, y: 5.7053785, z: 4.908103}
-  m_Center: {x: 0.18663715, y: 2.350721, z: 3.0000787}
+  m_Center: {x: -4.2, y: 2.350721, z: 3.0000787}
 --- !u!82 &1250435084172472312
 AudioSource:
   m_ObjectHideFlags: 0
@@ -6039,7 +6040,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6486304971803204733, guid: 0fb82bf996957bf48b7f40b717ca2026, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -4.05
+      value: -2.45
       objectReference: {fileID: 0}
     - target: {fileID: 6486304971803204733, guid: 0fb82bf996957bf48b7f40b717ca2026, type: 3}
       propertyPath: m_LocalPosition.y
