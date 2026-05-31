@@ -10236,6 +10236,11 @@ Rigidbody:
   m_CorrespondingSourceObject: {fileID: 6694293217616909699, guid: ebc4bac64a24a7f42a07cb2499345bc4, type: 3}
   m_PrefabInstance: {fileID: 127583857525048118}
   m_PrefabAsset: {fileID: 0}
+--- !u!82 &1834082594 stripped
+AudioSource:
+  m_CorrespondingSourceObject: {fileID: 7846983316453671933, guid: ebc4bac64a24a7f42a07cb2499345bc4, type: 3}
+  m_PrefabInstance: {fileID: 127583857525048118}
+  m_PrefabAsset: {fileID: 0}
 --- !u!114 &1840133690 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 4467117207788835404, guid: d1719739a6045c744b1191b7a29de9ee, type: 3}
@@ -11757,9 +11762,33 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 58014318}
     - target: {fileID: 8063142102929690703, guid: ebc4bac64a24a7f42a07cb2499345bc4, type: 3}
+      propertyPath: deathSound
+      value: 
+      objectReference: {fileID: 8300000, guid: b69ae7d1fb5415e4b9a5b9137bff34d8, type: 3}
+    - target: {fileID: 8063142102929690703, guid: ebc4bac64a24a7f42a07cb2499345bc4, type: 3}
+      propertyPath: audioSource
+      value: 
+      objectReference: {fileID: 1834082594}
+    - target: {fileID: 8063142102929690703, guid: ebc4bac64a24a7f42a07cb2499345bc4, type: 3}
       propertyPath: loseScreenCanvas
       value: 
       objectReference: {fileID: 1266368031}
+    - target: {fileID: 8063142102929690703, guid: ebc4bac64a24a7f42a07cb2499345bc4, type: 3}
+      propertyPath: damageSounds.Array.size
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 8063142102929690703, guid: ebc4bac64a24a7f42a07cb2499345bc4, type: 3}
+      propertyPath: 'damageSounds.Array.data[0]'
+      value: 
+      objectReference: {fileID: 8300000, guid: e5923fc1718e2b042b70bbda190caef6, type: 3}
+    - target: {fileID: 8063142102929690703, guid: ebc4bac64a24a7f42a07cb2499345bc4, type: 3}
+      propertyPath: 'damageSounds.Array.data[1]'
+      value: 
+      objectReference: {fileID: 8300000, guid: 918e02c9193c1524e8b2739e5cfc09ab, type: 3}
+    - target: {fileID: 8063142102929690703, guid: ebc4bac64a24a7f42a07cb2499345bc4, type: 3}
+      propertyPath: 'damageSounds.Array.data[2]'
+      value: 
+      objectReference: {fileID: 8300000, guid: dd3bbe1482f9f9e43823ae43adfd5283, type: 3}
     - target: {fileID: 9088604346388668586, guid: ebc4bac64a24a7f42a07cb2499345bc4, type: 3}
       propertyPath: defaultCamera
       value: 
@@ -11900,6 +11929,22 @@ PrefabInstance:
       propertyPath: player
       value: 
       objectReference: {fileID: 1479789140}
+    - target: {fileID: 3081904561249758675, guid: 6b0b42be7f7d9e849b9b07d23d2ebd7e, type: 3}
+      propertyPath: deathSound
+      value: 
+      objectReference: {fileID: 8300000, guid: a59f73fd2ce71a44b80b1b1dbe4cb6ed, type: 3}
+    - target: {fileID: 3081904561249758675, guid: 6b0b42be7f7d9e849b9b07d23d2ebd7e, type: 3}
+      propertyPath: damageSounds.Array.size
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 3081904561249758675, guid: 6b0b42be7f7d9e849b9b07d23d2ebd7e, type: 3}
+      propertyPath: 'damageSounds.Array.data[0]'
+      value: 
+      objectReference: {fileID: 8300000, guid: 8e815b479902a8b458abaea0ddc7cb95, type: 3}
+    - target: {fileID: 3081904561249758675, guid: 6b0b42be7f7d9e849b9b07d23d2ebd7e, type: 3}
+      propertyPath: 'damageSounds.Array.data[1]'
+      value: 
+      objectReference: {fileID: 8300000, guid: 7078e8c8ede6c5c4d8c756379c7c96d1, type: 3}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -12861,6 +12906,22 @@ PrefabInstance:
       propertyPath: player
       value: 
       objectReference: {fileID: 1479789140}
+    - target: {fileID: 8160354181297800617, guid: ce1f430e12097a849bc304f7c98e1840, type: 3}
+      propertyPath: deathSound
+      value: 
+      objectReference: {fileID: 8300000, guid: a59f73fd2ce71a44b80b1b1dbe4cb6ed, type: 3}
+    - target: {fileID: 8160354181297800617, guid: ce1f430e12097a849bc304f7c98e1840, type: 3}
+      propertyPath: damageSounds.Array.size
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 8160354181297800617, guid: ce1f430e12097a849bc304f7c98e1840, type: 3}
+      propertyPath: 'damageSounds.Array.data[0]'
+      value: 
+      objectReference: {fileID: 8300000, guid: 8e815b479902a8b458abaea0ddc7cb95, type: 3}
+    - target: {fileID: 8160354181297800617, guid: ce1f430e12097a849bc304f7c98e1840, type: 3}
+      propertyPath: 'damageSounds.Array.data[1]'
+      value: 
+      objectReference: {fileID: 8300000, guid: 7078e8c8ede6c5c4d8c756379c7c96d1, type: 3}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

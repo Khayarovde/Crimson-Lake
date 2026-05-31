@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
 using System;
+using UnityEngine.AI;
 
 public class FinishingManager : MonoBehaviour
 {
@@ -31,6 +32,13 @@ public class FinishingManager : MonoBehaviour
     [Range(0.05f, 0.95f)] public float effectStartNormalizedTime = 0.5f;
     public bool useAutomaticTiming = true;
     public float customFinishingDuration = 2.5f; // Резервное время на случай, если длину анимации не удастся определить
+
+    [Header("Enemy Grounding")]
+    public bool keepEnemyOnGroundDuringFinishing = true;
+    public LayerMask enemyGroundMask = ~0;
+    [Min(0.1f)] public float enemyGroundRayStartHeight = 1.2f;
+    [Min(0.2f)] public float enemyGroundRayDistance = 4f;
+    public float enemyGroundOffset = 0f;
 
     [Header("Покадрово для игрока")]
     public bool useFrameBasedPlayerDuration = false;
@@ -96,6 +104,7 @@ public class FinishingManager : MonoBehaviour
     private readonly List<Renderer> disabledWeaponRenderers = new List<Renderer>();
     private float previousUpperBodyLayerWeight = 1f;
     private bool isEffectActive;
+    private NavMeshAgent enemyNavAgent;
 
     public event Action FinishingEnded;
 
@@ -136,6 +145,12 @@ public class FinishingManager : MonoBehaviour
 
     private void Update()
     {
+        if (!isFinishingActive || !keepEnemyOnGroundDuringFinishing)
+        {
+            return;
+        }
+
+        SnapEnemyToGround();
     }
 
     public void StartFinishing(Transform p, Transform e)
@@ -168,6 +183,21 @@ public class FinishingManager : MonoBehaviour
             return;
         }
 
+        // Prevent starting finishing against an enemy that's no longer finishable
+        var advEnemy = e.GetComponentInParent<AdvancedEnemyAI>();
+        if (advEnemy != null && !advEnemy.CanBeFinished())
+        {
+            Debug.Log("FinishingManager: Start ignored because target AdvancedEnemyAI is not finishable.");
+            return;
+        }
+
+        var simpleEnemy = e.GetComponentInParent<Enemytest>();
+        if (simpleEnemy != null && !simpleEnemy.CanBeFinished())
+        {
+            Debug.Log("FinishingManager: Start ignored because target Enemytest is not finishable.");
+            return;
+        }
+
         EndAutomaticRoutine();
         RestoreSceneState();
 
@@ -182,6 +212,7 @@ public class FinishingManager : MonoBehaviour
 
         playerAnim = player.GetComponent<Animator>();
         enemyAnim = enemy.GetComponent<Animator>();
+        enemyNavAgent = enemy.GetComponentInParent<NavMeshAgent>();
 
         if (playerAnim == null || enemyAnim == null)
         {
@@ -209,6 +240,7 @@ public class FinishingManager : MonoBehaviour
         if (playEnemyAnimation)
         {
             enemyAnim.Play(enemyAnimationState, 0, 0f);
+            SnapEnemyToGround();
         }
         ApplyWeaponVisibility(false);
         ApplyUpperBodyLayerWeight(upperBodyLayerWeightDuringFinishing);
@@ -297,6 +329,7 @@ public class FinishingManager : MonoBehaviour
         enemy = null;
         playerAnim = null;
         enemyAnim = null;
+        enemyNavAgent = null;
         isEffectActive = false;
         FinishingEnded?.Invoke();
 
@@ -1028,6 +1061,37 @@ public class FinishingManager : MonoBehaviour
             if (!playerControlScripts.Contains(behaviour))
             {
                 playerControlScripts.Add(behaviour);
+            }
+        }
+    }
+
+    private void SnapEnemyToGround()
+    {
+        if (enemy == null)
+        {
+            return;
+        }
+
+        Vector3 origin = enemy.position + Vector3.up * Mathf.Max(0.1f, enemyGroundRayStartHeight);
+        if (!Physics.Raycast(origin, Vector3.down, out RaycastHit hit, Mathf.Max(0.2f, enemyGroundRayDistance), enemyGroundMask, QueryTriggerInteraction.Ignore))
+        {
+            return;
+        }
+
+        Vector3 target = enemy.position;
+        target.y = hit.point.y + enemyGroundOffset;
+
+        enemy.position = target;
+
+        if (enemyNavAgent != null)
+        {
+            if (enemyNavAgent.isOnNavMesh)
+            {
+                enemyNavAgent.Warp(target);
+            }
+            else
+            {
+                enemyNavAgent.nextPosition = target;
             }
         }
     }

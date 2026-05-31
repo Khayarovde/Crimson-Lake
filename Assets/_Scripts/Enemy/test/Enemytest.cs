@@ -142,6 +142,10 @@ public class Enemytest : MonoBehaviour
     public Animator animator;
     public ParticleSystem hitEffect;
     public AudioSource audioSource;
+    [Tooltip("Случайные звуки получения урона")]
+    public AudioClip[] damageSounds;
+    [Tooltip("Звук смерти врага")]
+    public AudioClip deathSound;
     public AudioClip screamClip;
 
     [Header("Persistence")]
@@ -155,7 +159,7 @@ public class Enemytest : MonoBehaviour
     [SerializeField] private string attackRecoveryStateName = "Idle";
     [SerializeField] private string screamStateName = "Scream";
     [SerializeField] private string deathFallStateName = "death_padaet";
-    [SerializeField] private string deathEndStateName = "death_end";
+    
     [SerializeField] private string wakeUpStateName = "wakeUp_stun";
     [SerializeField] private string staggerStateName = "Stun";
     [SerializeField] private string staggerFallbackStateName = "Hit";
@@ -224,6 +228,9 @@ public class Enemytest : MonoBehaviour
                 player = playerObject.transform;
         }
 
+        // Align visual to ground to avoid "hovering" pose caused by animation root offsets.
+        SnapToGround();
+
         if (player != null)
         {
             player.TryGetComponent(out playerHealth);
@@ -232,6 +239,9 @@ public class Enemytest : MonoBehaviour
             lastKnownPlayerPosition = player.position;
             lastPlayerPosition = player.position;
         }
+
+        // Align visual to ground after finisher knockback + animation freeze.
+        SnapToGround();
 
         if (navAgent == null)
             Debug.LogError("Enemytest: NavMeshAgent not found on this GameObject.", this);
@@ -1115,6 +1125,8 @@ public class Enemytest : MonoBehaviour
         if (hitEffect != null)
             hitEffect.Play();
 
+        PlayRandomDamageSound();
+
         if (health <= 0f)
         {
             knockoutCount++;
@@ -1128,6 +1140,7 @@ public class Enemytest : MonoBehaviour
             else
             {
                 LogDamage("result: permanent death");
+                PlayDeathSound();
                 EnterPermanentDeath();
             }
             return;
@@ -1155,6 +1168,24 @@ public class Enemytest : MonoBehaviour
             return;
 
         Debug.Log($"Enemytest[{name}] state: {from} -> {to}", this);
+    }
+
+    private void PlayRandomDamageSound()
+    {
+        if (audioSource == null || damageSounds == null || damageSounds.Length == 0)
+            return;
+
+        AudioClip clip = damageSounds[Random.Range(0, damageSounds.Length)];
+        if (clip != null)
+            audioSource.PlayOneShot(clip);
+    }
+
+    private void PlayDeathSound()
+    {
+        if (audioSource == null || deathSound == null)
+            return;
+
+        audioSource.PlayOneShot(deathSound);
     }
 
     private void UpdatePlayerSpeedEstimate()
@@ -1238,24 +1269,41 @@ public class Enemytest : MonoBehaviour
         navAgent.isStopped = true;
         navAgent.ResetPath();
 
-        // Play the falling animation
-        PlayState(deathFallStateName, baseAnimLayer);
-
-        // Wait completely for it to finish (or wait for transition)
-        // Since we don't know the exact length, we can grab it if needed, or just wait for the current state to be deathFallStateName
-        yield return null; // wait a frame for animator to transition
-        AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(baseAnimLayer);
-        if (stateInfo.IsName(deathFallStateName))
+        // Play the falling animation from the start and wait until it finishes,
+        // accounting for transitions and ensuring animator is unpaused.
+        if (animator != null)
         {
-            yield return new WaitForSeconds(stateInfo.length);
-        }
-        else
-        {
-            // fallback if it didn't transition
-            yield return new WaitForSeconds(1.0f);
+            animator.speed = 1f;
+            animator.Play(deathFallStateName, baseAnimLayer, 0f);
+            // wait for animator to enter the state
+            yield return null;
+
+            // wait until not in transition and the state has played to the end
+            while (animator.IsInTransition(baseAnimLayer))
+                yield return null;
+
+            AnimatorStateInfo si = animator.GetCurrentAnimatorStateInfo(baseAnimLayer);
+            // if state is the fall, wait until normalizedTime >= 1 (played to end)
+            if (si.IsName(deathFallStateName))
+            {
+                while (si.normalizedTime < 1f)
+                {
+                    yield return null;
+                    si = animator.GetCurrentAnimatorStateInfo(baseAnimLayer);
+                }
+            }
+            else
+            {
+                // fallback timing
+                yield return new WaitForSeconds(1.0f);
+            }
+
+            // snap to final frame and pause
+            animator.Play(deathFallStateName, baseAnimLayer, 1f);
+            animator.Update(0f);
+            animator.speed = 0f;
         }
 
-        PlayState(deathEndStateName, baseAnimLayer);
         isKnockoutStunActive = true; // Enemy is now finishable on the ground
 
         if (permanentAfterKnockout)
@@ -1288,6 +1336,9 @@ public class Enemytest : MonoBehaviour
 
         health = Mathf.Max(1f, maxHealth * Mathf.Clamp01(reviveHealthPercent));
         isKnockoutStunActive = false;
+        // Ensure animator is unpaused before waking up
+        if (animator != null)
+            animator.speed = 1f;
         PlayState(wakeUpStateName, baseAnimLayer);
         yield return new WaitForSeconds(1.1f);
 
@@ -1419,12 +1470,53 @@ public class Enemytest : MonoBehaviour
             navAgent.nextPosition = transform.position;
 
         SetState(EnemyState.FakeDeath);
-        PlayState(deathEndStateName, baseAnimLayer);
+        // Do NOT replay deathFall on finisher. If the animator is already frozen at the final
+        // death frame, keep it. Otherwise snap to the final frame without playing.
+        if (animator != null)
+        {
+            AnimatorStateInfo si = animator.GetCurrentAnimatorStateInfo(baseAnimLayer);
+            bool alreadyFrozen = si.IsName(deathFallStateName) && animator.speed == 0f;
+            if (!alreadyFrozen)
+            {
+                // Snap to final frame (normalizedTime = 1) without playing from start.
+                animator.Play(deathFallStateName, baseAnimLayer, 1f);
+                animator.Update(0f);
+                animator.speed = 0f;
+            }
+        }
 
         if (!keepBodyAfterPermanentDeath)
             Destroy(gameObject, permanentDeathDestroyDelay);
 
         finisherDeathRoutine = null;
+    }
+
+    private void SnapToGround()
+    {
+        // Try raycast down to ground layer first, fallback to any collider.
+        float castDistance = 3f;
+        Vector3 origin = transform.position + Vector3.up * 0.5f;
+        RaycastHit hit;
+        int mask = Physics.DefaultRaycastLayers;
+        // if a groundLayer was provided in inspector, use it
+        if (groundLayer.value != 0)
+            mask = groundLayer;
+
+        if (Physics.Raycast(origin, Vector3.down, out hit, castDistance, mask))
+        {
+            Vector3 p = transform.position;
+            p.y = hit.point.y;
+            transform.position = p;
+
+            if (navAgent != null)
+            {
+                // if agent on navmesh, warp it to avoid snapping issues
+                if (navAgent.isOnNavMesh)
+                    navAgent.Warp(transform.position);
+                else
+                    navAgent.nextPosition = transform.position;
+            }
+        }
     }
 
     private void FacePlayerOnY()
