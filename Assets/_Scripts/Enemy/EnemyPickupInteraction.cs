@@ -58,6 +58,7 @@ public class EnemyPickupInteraction : MonoBehaviour
             yarnInteractSource = GetComponent<Interact>();
 
         ResolveEnemyReferences();
+        ConfigureEnemyPersistenceIds();
         CachePlayerInventory();
         CacheMusicZones();
         InitializeChaseAudio();
@@ -83,6 +84,7 @@ public class EnemyPickupInteraction : MonoBehaviour
             return;
 
         ResolveEnemyReferences();
+        ConfigureEnemyPersistenceIds();
         CachePlayerInventory();
         CacheMusicZones();
         PrepareEnemyForDiskettePickup();
@@ -329,6 +331,54 @@ public class EnemyPickupInteraction : MonoBehaviour
             triggerCollider.enabled = false;
         isPlayerNearby = false;
         player = null;
+
+        RestoreSpawnedEnemyAfterPickup();
+    }
+
+    private void ConfigureEnemyPersistenceIds()
+    {
+        string spawnedEnemyId = GetSpawnedEnemyPersistenceId();
+
+        if (enemyTest != null)
+            enemyTest.SetPersistenceId(spawnedEnemyId);
+    }
+
+    private string GetSpawnedEnemyPersistenceId()
+    {
+        if (string.IsNullOrWhiteSpace(pickupId))
+            return string.Empty;
+
+        return pickupId + "_spawned_enemy";
+    }
+
+    private void RestoreSpawnedEnemyAfterPickup()
+    {
+        if (enemyTest == null)
+            return;
+
+        string spawnedEnemyId = GetSpawnedEnemyPersistenceId();
+        if (!string.IsNullOrWhiteSpace(spawnedEnemyId) && SaveManager.IsEnemyDead(spawnedEnemyId))
+        {
+            enemyTest.gameObject.SetActive(false);
+            return;
+        }
+
+        if (spawnEnemyOnlyAfterPickup && !enemyTest.gameObject.activeSelf)
+            enemyTest.gameObject.SetActive(true);
+
+        enemyTest.enabled = true;
+
+        if (enemySpawnPoint != null)
+        {
+            if (enemyTest.navAgent != null && enemyTest.navAgent.isOnNavMesh)
+                enemyTest.navAgent.Warp(enemySpawnPoint.position);
+            else
+                enemyTest.transform.position = enemySpawnPoint.position;
+
+            enemyTest.transform.rotation = enemySpawnPoint.rotation;
+        }
+
+        enemyTest.NotifyNoise(player != null ? player.position : enemyTest.transform.position, 999f);
     }
 
     private void ActivateEnemyChase()

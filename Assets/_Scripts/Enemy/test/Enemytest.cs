@@ -144,6 +144,10 @@ public class Enemytest : MonoBehaviour
     public AudioSource audioSource;
     public AudioClip screamClip;
 
+    [Header("Persistence")]
+    [PickupId]
+    [SerializeField] private string persistenceId;
+
     [Header("Animation")]
     [SerializeField] private string idleStateName = "Idle";
     [SerializeField] private string walkingStateName = "walking";
@@ -200,6 +204,7 @@ public class Enemytest : MonoBehaviour
     private float noStrafeUntilTime;
     private bool isFinisherExecutionLocked;
     private Coroutine finisherDeathRoutine;
+    private bool hasRecordedPermanentDeath;
 
     private void Awake()
     {
@@ -350,6 +355,11 @@ public class Enemytest : MonoBehaviour
     {
         WeaponHandler.PlayerShotFired -= HandlePlayerShotFired;
         AttackHitboxOff();
+    }
+
+    public void SetPersistenceId(string id)
+    {
+        persistenceId = id;
     }
 
     private void Update()
@@ -1264,6 +1274,7 @@ public class Enemytest : MonoBehaviour
 
     private void EnterPermanentDeath()
     {
+        RecordPermanentDeath();
         StartKnockoutFlow(true);
     }
 
@@ -1289,6 +1300,7 @@ public class Enemytest : MonoBehaviour
         if (isPermanentlyDead || isFinisherExecutionLocked)
             return;
 
+        RecordPermanentDeath();
         isKnockoutStunActive = false;
         isBurned = true;
         isPermanentlyDead = true;
@@ -1323,6 +1335,8 @@ public class Enemytest : MonoBehaviour
         if (!CanBeFinished() || isFinisherExecutionLocked)
             return;
 
+        RecordPermanentDeath();
+
         if (knockoutRoutine != null)
         {
             StopCoroutine(knockoutRoutine);
@@ -1353,6 +1367,15 @@ public class Enemytest : MonoBehaviour
         health = 0f;
         isFinisherExecutionLocked = true;
         finisherDeathRoutine = StartCoroutine(FinisherDeathRoutine());
+    }
+
+    private void RecordPermanentDeath()
+    {
+        if (hasRecordedPermanentDeath || string.IsNullOrWhiteSpace(persistenceId))
+            return;
+
+        SaveManager.MarkEnemyDead(persistenceId);
+        hasRecordedPermanentDeath = true;
     }
 
     private IEnumerator FinisherDeathRoutine()
