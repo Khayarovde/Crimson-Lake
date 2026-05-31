@@ -4,6 +4,11 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.InputSystem;
 
+public interface IInputLockable
+{
+    void SetInputLocked(bool locked);
+}
+
 /// <summary>
 /// Дверь в стиле Signalis:
 ///   1. Игрок входит в триггер → показывается подсказка [E] с иконкой состояния двери
@@ -18,6 +23,11 @@ using UnityEngine.InputSystem;
 public class DoorTeleportTrigger : MonoBehaviour
 {
     public Transform TeleportTarget => teleportTarget;
+
+    // Глобальная блокировка, чтобы одновременно работала только одна дверь.
+    private static bool _anyDoorInteracting;
+    private static DoorTeleportTrigger _activeDoor;
+    private static Image _sharedFadeImage;
 
     // ─── Состояние двери ────────────────────────────────────────────────────
 
@@ -36,6 +46,8 @@ public class DoorTeleportTrigger : MonoBehaviour
     [Header("Телепорт")]
     [Tooltip("Точка, куда телепортируется игрок (на другой стороне двери)")]
     [SerializeField] private Transform teleportTarget;
+    [Tooltip("Максимальная дистанция до двери для старта взаимодействия")]
+    [SerializeField] private float maxInteractDistance = 1.5f;
 
     // ─── Визуал двери ───────────────────────────────────────────────────────
 
@@ -113,6 +125,8 @@ public class DoorTeleportTrigger : MonoBehaviour
     [Header("Управление")]
     [SerializeField] private string playerTag = "Player";
     [SerializeField] private KeyCode interactKey = KeyCode.E;
+    [Tooltip("Компонент контроллера игрока с методом SetInputLocked(bool)")]
+    [SerializeField] private MonoBehaviour playerController;
 
     // ─── Приватные поля ───────────────────────────────────────────────────────
 
@@ -143,12 +157,18 @@ public class DoorTeleportTrigger : MonoBehaviour
         {
             fadeImage.color = Color.clear;
             fadeImage.gameObject.SetActive(false);
+
+            if (_sharedFadeImage == null)
+                _sharedFadeImage = fadeImage;
         }
     }
 
     private void Update()
     {
-        if (!_playerInRange || _isInteracting)
+        if (!_playerInRange || _isInteracting || _anyDoorInteracting)
+            return;
+
+        if (_player == null)
             return;
 
         if (Input.GetKeyDown(interactKey) || (Gamepad.current != null && Gamepad.current.buttonSouth.wasPressedThisFrame))
@@ -160,14 +180,20 @@ public class DoorTeleportTrigger : MonoBehaviour
         if (!IsPlayer(other) || _isInteracting)
             return;
 
-        _playerOverlapCount++;
+        Transform candidatePlayer = GetPlayerRoot(other);
+        if (candidatePlayer == null)   // ← убрали IsWithinInteractDistance отсюда
+            return;
 
-        _player = GetPlayerRoot(other);
-        _playerRb = _player != null ? _player.GetComponentInParent<Rigidbody>() : null;
+        _playerOverlapCount++;
+        _player = candidatePlayer;
+        _playerRb = _player.GetComponentInParent<Rigidbody>();
         _playerInRange = true;
 
         if (playerAnimator == null && _player != null)
             playerAnimator = _player.GetComponentInChildren<Animator>();
+
+        if (playerController == null && _player != null)
+            playerController = _player.GetComponentInChildren<MonoBehaviour>();
 
         if (!_hintVisible)
             ShowHint();
@@ -192,6 +218,13 @@ public class DoorTeleportTrigger : MonoBehaviour
     private void OnDisable()
     {
         DOTween.Kill(gameObject);
+
+        if (_activeDoor == this)
+        {
+            _activeDoor = null;
+            _anyDoorInteracting = false;
+        }
+
         _playerInRange = false;
         _isInteracting = false;
         _playerOverlapCount = 0;
@@ -209,7 +242,12 @@ public class DoorTeleportTrigger : MonoBehaviour
         if (teleportTarget == null || _player == null)
             yield break;
 
+        if (_anyDoorInteracting && _activeDoor != this)
+            yield break;
+
         _isInteracting = true;
+        _anyDoorInteracting = true;
+        _activeDoor = this;
         HideHint();
         LockPlayerInput(true);
 
@@ -242,6 +280,14 @@ public class DoorTeleportTrigger : MonoBehaviour
         yield return FadeTo(1f, fadeToDarkDuration);
         yield return new WaitForSeconds(holdDarkDuration);
         Teleport();
+
+        // После телепорта принудительно синхронизируем физику и обнуляем локальный триггер-контекст.
+        if (_playerRb != null)
+            _playerRb.linearVelocity = Vector3.zero;
+        Physics.SyncTransforms();
+        _playerOverlapCount = 0;
+        _playerInRange = false;
+
         yield return new WaitForSeconds(holdDarkDuration);
 
         // 7. Выйти из двери на другой стороне (только X/Z), без повторной walk-анимации
@@ -257,9 +303,10 @@ public class DoorTeleportTrigger : MonoBehaviour
         StartCoroutine(CloseDoorIfNeeded());
 
         _isInteracting = false;
-        _playerInRange = false;
         _player = null;
         _playerRb = null;
+        _activeDoor = null;
+        _anyDoorInteracting = false;
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -479,11 +526,30 @@ public class DoorTeleportTrigger : MonoBehaviour
             yield break;
 
         int hash = Animator.StringToHash(stateName);
-        if (playerAnimator.HasState(0, hash))
+        bool hasState = playerAnimator.HasState(0, hash);
+        if (hasState)
             playerAnimator.CrossFadeInFixedTime(stateName, animCrossFade, 0);
 
         if (waitDuration > 0f)
-            yield return new WaitForSeconds(waitDuration);
+        {
+            float timeout = Mathf.Max(0.1f, waitDuration + 0.5f);
+            if (!hasState)
+            {
+                yield return new WaitForSeconds(timeout);
+                yield break;
+            }
+
+            float elapsed = 0f;
+            while (elapsed < timeout)
+            {
+                AnimatorStateInfo state = playerAnimator.GetCurrentAnimatorStateInfo(0);
+                if (!playerAnimator.IsInTransition(0) && state.shortNameHash == hash && state.normalizedTime >= 1f)
+                    yield break;
+
+                elapsed += Time.deltaTime;
+                yield return null;
+            }
+        }
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -492,15 +558,22 @@ public class DoorTeleportTrigger : MonoBehaviour
 
     private IEnumerator FadeTo(float targetAlpha, float duration)
     {
-        if (fadeImage == null)
+        Image img = fadeImage != null ? fadeImage : _sharedFadeImage;
+        if (img == null)
             yield break;
 
-        fadeImage.gameObject.SetActive(true);
+        if (_sharedFadeImage == null)
+            _sharedFadeImage = img;
+
+        fadeImage = _sharedFadeImage;
+        img = fadeImage;
+
+        img.gameObject.SetActive(true);
         Color to = fadeColor;
         to.a = targetAlpha;
 
         bool done = false;
-        DOTween.To(() => fadeImage.color, c => fadeImage.color = c, to, Mathf.Max(0.05f, duration))
+        DOTween.To(() => img.color, c => img.color = c, to, Mathf.Max(0.05f, duration))
             .SetEase(Ease.Linear)
             .OnComplete(() => done = true)
             .SetLink(gameObject, LinkBehaviour.KillOnDisable);
@@ -508,7 +581,7 @@ public class DoorTeleportTrigger : MonoBehaviour
         yield return new WaitUntil(() => done);
 
         if (targetAlpha <= 0f)
-            fadeImage.gameObject.SetActive(false);
+            img.gameObject.SetActive(false);
     }
 
     private void ResetFade()
@@ -716,8 +789,27 @@ public class DoorTeleportTrigger : MonoBehaviour
 
     private void LockPlayerInput(bool locked)
     {
-        // Подключи сюда свой PlayerController
-        // Пример: playerController.SetInputLocked(locked);
+        if (playerController == null && _player != null)
+            playerController = _player.GetComponentInChildren<MonoBehaviour>();
+
+        if (playerController == null)
+            return;
+
+        if (playerController is IInputLockable lockable)
+        {
+            lockable.SetInputLocked(locked);
+            return;
+        }
+
+        playerController.SendMessage("SetInputLocked", locked, SendMessageOptions.DontRequireReceiver);
+    }
+
+    private bool IsWithinInteractDistance(Vector3 playerPosition)
+    {
+        Vector3 toDoor = transform.position - playerPosition;
+        toDoor.y = 0f;
+        float maxDist = Mathf.Max(0.1f, maxInteractDistance);
+        return toDoor.sqrMagnitude <= maxDist * maxDist;
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -741,6 +833,7 @@ public class DoorTeleportTrigger : MonoBehaviour
         DrawPoint(enterPoint,       Color.cyan,    "Enter");
         DrawPoint(exitPoint,        Color.green,   "Exit");
         DrawPoint(teleportTarget,   Color.magenta, "Teleport");
+        DrawTeleportToExitArrow();
     }
 
     private void DrawPoint(Transform t, Color color, string label)
@@ -749,6 +842,23 @@ public class DoorTeleportTrigger : MonoBehaviour
         Gizmos.color = color;
         Gizmos.DrawSphere(t.position, 0.1f);
         UnityEditor.Handles.Label(t.position + Vector3.up * 0.2f, label);
+    }
+
+    private void DrawTeleportToExitArrow()
+    {
+        if (teleportTarget == null || exitPoint == null)
+            return;
+
+        Vector3 from = teleportTarget.position;
+        Vector3 to = exitPoint.position;
+        Vector3 dir = to - from;
+        if (dir.sqrMagnitude < 0.0001f)
+            return;
+
+        UnityEditor.Handles.color = Color.yellow;
+        UnityEditor.Handles.DrawAAPolyLine(4f, from, to);
+        UnityEditor.Handles.ConeHandleCap(0, to, Quaternion.LookRotation(dir.normalized), 0.18f, EventType.Repaint);
+        UnityEditor.Handles.Label((from + to) * 0.5f + Vector3.up * 0.2f, "Teleport -> Exit");
     }
 #endif
 }
