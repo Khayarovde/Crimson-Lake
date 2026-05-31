@@ -12,6 +12,13 @@ public class PlayerHealth : MonoBehaviour
     [Header("Enemy Hits")]
     [SerializeField, Min(1)] private int hitsToDie = 2;
 
+    [Header("Sounds")]
+    [SerializeField] private AudioSource audioSource;
+    [SerializeField, Tooltip("Случайные звуки получения урона")]
+    private AudioClip[] damageSounds;
+    [SerializeField, Tooltip("Звук смерти игрока")]
+    private AudioClip deathSound;
+
     [Header("UI (optional)")]
     [Tooltip("Если не назначено, скрипт создаст оверлей сам.")]
     [SerializeField] private Canvas overlayCanvas;
@@ -54,6 +61,9 @@ public class PlayerHealth : MonoBehaviour
     {
         maxHealth = Mathf.Max(1, maxHealth);
         currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
+
+        if (audioSource == null)
+            audioSource = GetComponent<AudioSource>() ?? gameObject.AddComponent<AudioSource>();
 
         EnsureOverlay();
         TryResolveLoseCanvasIfMissing();
@@ -105,6 +115,8 @@ public class PlayerHealth : MonoBehaviour
             return;
         }
 
+        PlayRandomDamageSound();
+
         var animCon = GetComponent<PlayerAnimationCon>();
         if (animCon != null)
             animCon.PlayHit();
@@ -126,6 +138,8 @@ public class PlayerHealth : MonoBehaviour
             Die(null);
             return;
         }
+
+        PlayRandomDamageSound();
 
         var animCon = GetComponent<PlayerAnimationCon>();
         if (animCon != null)
@@ -152,6 +166,8 @@ public class PlayerHealth : MonoBehaviour
         var animCon = GetComponent<PlayerAnimationCon>();
         if (animCon != null)
             animCon.PlayGameOver();
+
+        PlayDeathSound();
 
         // Отключаем управление/оружие, чтобы игрок "умер".
         var weapon = GetComponent<WeaponHandler>();
@@ -358,5 +374,24 @@ public class PlayerHealth : MonoBehaviour
         var c = overlayImage.color;
         c.a = alpha;
         overlayImage.color = c;
+    }
+
+    private void PlayRandomDamageSound()
+    {
+        if (audioSource == null || damageSounds == null || damageSounds.Length == 0)
+            return;
+
+        int index = Random.Range(0, damageSounds.Length);
+        AudioClip clip = damageSounds[index];
+        if (clip != null)
+            audioSource.PlayOneShot(clip);
+    }
+
+    private void PlayDeathSound()
+    {
+        if (audioSource == null || deathSound == null)
+            return;
+
+        audioSource.PlayOneShot(deathSound);
     }
 }
