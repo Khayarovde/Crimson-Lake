@@ -25,6 +25,7 @@ public class InventoryUI : MonoBehaviour
     public Button leftArrowButton;
     public Button rightArrowButton;
     public TMP_Text activeItemInfoText;
+    public TMP_Text inventorySlotsInfoText;
 
     [Header("Канвасы")]
     public GameObject inventoryCanvas;
@@ -207,7 +208,12 @@ public class InventoryUI : MonoBehaviour
         {
             float scroll = Input.mouseScrollDelta.y;
             if (Mathf.Abs(scroll) > 0.01f)
-                SelectNextInventoryItem(scroll > 0f ? -1 : 1);
+            {
+                if (scroll > 0f)
+                    PreviousInventoryPage();
+                else
+                    NextInventoryPage();
+            }
         }
 
         if (contextMenuPanel != null && contextMenuPanel.activeSelf && Input.GetMouseButtonDown(0))
@@ -560,13 +566,17 @@ public class InventoryUI : MonoBehaviour
     {
         contextMenuIsChest = false;
 
+        InventoryItem item = GetInventoryItemAtContextSlot();
+        bool canSelect = item != null && item.type == InventoryItem.ItemType.Medkit;
+        bool canDestroy = CanDestroyItem(item);
+
         SetContextMenuButtonLabel(contextSelectButton, "Выбрать");
         SetContextMenuButtonLabel(contextStoreButton, "Положить");
 
         bool nearChest = playerInventory != null && playerInventory.IsNearChest();
-        SetContextMenuButtonActive(contextSelectButton, true);
+        SetContextMenuButtonActive(contextSelectButton, canSelect);
         SetContextMenuButtonActive(contextCombineButton, true);
-        SetContextMenuButtonActive(contextDestroyButton, true);
+        SetContextMenuButtonActive(contextDestroyButton, canDestroy);
         SetContextMenuButtonActive(contextStoreButton, nearChest);
         SetContextMenuButtonActive(contextCancelButton, true);
 
@@ -586,6 +596,23 @@ public class InventoryUI : MonoBehaviour
         SetContextMenuButtonActive(contextCancelButton, false);
 
         RebuildContextMenuButtons();
+    }
+
+    private InventoryItem GetInventoryItemAtContextSlot()
+    {
+        if (inventoryData == null || contextMenuSlotIndex < 0)
+            return null;
+
+        var slots = inventoryData.GetSlots();
+        if (slots == null || contextMenuSlotIndex >= slots.Count)
+            return null;
+
+        return slots[contextMenuSlotIndex];
+    }
+
+    private bool CanDestroyItem(InventoryItem item)
+    {
+        return item != null && item.type != InventoryItem.ItemType.Empty && !item.cannotBeDestroyed;
     }
 
     private void OnInventorySlotPointerClicked(int slotIndex, PointerEventData.InputButton mouseButton)
@@ -631,8 +658,8 @@ public class InventoryUI : MonoBehaviour
             return;
 
         EnsureContextMenuParent(inventoryCanvas);
-        ConfigureContextMenuForInventory();
         contextMenuSlotIndex = slotIndex;
+        ConfigureContextMenuForInventory();
         contextMenuSelectionIndex = 0;
         contextMenuPanel.SetActive(true);
 
@@ -653,8 +680,8 @@ public class InventoryUI : MonoBehaviour
             return;
 
         EnsureContextMenuParent(chestCanvas);
-        ConfigureContextMenuForChest();
         contextMenuSlotIndex = slotIndex;
+        ConfigureContextMenuForChest();
         contextMenuSelectionIndex = 0;
         contextMenuPanel.SetActive(true);
 
@@ -1228,10 +1255,21 @@ public class InventoryUI : MonoBehaviour
         var slots = inventoryData.GetSlots();
         int activeIndex = playerInventory.activeItemIndex;
         bool nearChest = playerInventory.IsNearChest();
-        if (useInventoryPagination && activeIndex >= 0)
+        int totalSlotCount = slots != null ? slots.Count : inventoryData.GetSlotCount();
+        int occupiedSlots = 0;
+
+        if (slots != null)
         {
-            int perPage = Mathf.Max(1, slotsPerPage);
-            currentInventoryPage = activeIndex / perPage;
+            for (int i = 0; i < slots.Count; i++)
+            {
+                if (slots[i] != null && slots[i].type != InventoryItem.ItemType.Empty)
+                    occupiedSlots++;
+            }
+        }
+
+        if (inventorySlotsInfoText != null)
+        {
+            inventorySlotsInfoText.text = $"{occupiedSlots} | {totalSlotCount}";
         }
 
         if (activeItemInfoText != null)
@@ -1319,7 +1357,7 @@ public class InventoryUI : MonoBehaviour
                     storeButtons[i].gameObject.SetActive(nearChest);
                 
                 if (destroyButtons[i] != null)
-                    destroyButtons[i].gameObject.SetActive(true);
+                    destroyButtons[i].gameObject.SetActive(CanDestroyItem(slots[i]));
                 
                 if (outlines[i] != null)
                     outlines[i].enabled = (i == activeIndex);
@@ -1372,12 +1410,15 @@ public class InventoryUI : MonoBehaviour
 
         int perPage = Mathf.Max(1, slotsPerPage);
         int totalPages = Mathf.Max(1, Mathf.CeilToInt((float)totalSlots / perPage));
-        bool showArrows = totalPages > 1;
+        currentInventoryPage = Mathf.Clamp(currentInventoryPage, 0, totalPages - 1);
+
+        bool showLeftArrow = currentInventoryPage > 0;
+        bool showRightArrow = currentInventoryPage < totalPages - 1;
 
         if (leftArrowButton != null)
-            leftArrowButton.gameObject.SetActive(showArrows);
+            leftArrowButton.gameObject.SetActive(showLeftArrow);
         if (rightArrowButton != null)
-            rightArrowButton.gameObject.SetActive(showArrows);
+            rightArrowButton.gameObject.SetActive(showRightArrow);
     }
 
     private void NextInventoryPage()
@@ -1388,7 +1429,8 @@ public class InventoryUI : MonoBehaviour
         int perPage = Mathf.Max(1, slotsPerPage);
         int totalSlots = inventoryData.maxSlots;
         int totalPages = Mathf.Max(1, Mathf.CeilToInt((float)totalSlots / perPage));
-        currentInventoryPage = (currentInventoryPage + 1) % totalPages;
+        if (currentInventoryPage < totalPages - 1)
+            currentInventoryPage++;
         UpdateInventoryUI();
     }
 
@@ -1400,7 +1442,8 @@ public class InventoryUI : MonoBehaviour
         int perPage = Mathf.Max(1, slotsPerPage);
         int totalSlots = inventoryData.maxSlots;
         int totalPages = Mathf.Max(1, Mathf.CeilToInt((float)totalSlots / perPage));
-        currentInventoryPage = (currentInventoryPage - 1 + totalPages) % totalPages;
+        if (currentInventoryPage > 0)
+            currentInventoryPage--;
         UpdateInventoryUI();
     }
 
@@ -1754,7 +1797,7 @@ public class InventoryUI : MonoBehaviour
     private void OnDestroyButtonClicked(int slotIndex)
     {
         var slots = inventoryData.GetSlots();
-        if (slotIndex < slots.Count && slots[slotIndex] != null && slots[slotIndex].type != InventoryItem.ItemType.Empty)
+        if (slotIndex < slots.Count && CanDestroyItem(slots[slotIndex]))
         {
             playerInventory.DestroyItem(slots[slotIndex], slotIndex);
             UpdateInventoryUI();
@@ -1807,7 +1850,7 @@ public class InventoryUI : MonoBehaviour
         if (currentChest != null)
         {
             var chestItems = currentChest.GetChestItems();
-            if (slotIndex < chestItems.Count && chestItems[slotIndex] != null)
+            if (slotIndex < chestItems.Count && CanDestroyItem(chestItems[slotIndex]))
             {
                 currentChest.DestroyItemInChest(chestItems[slotIndex]);
                 UpdateChestUI();

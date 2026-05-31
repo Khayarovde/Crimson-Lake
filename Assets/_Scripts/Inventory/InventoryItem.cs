@@ -8,6 +8,10 @@ public class InventoryItem : ScriptableObject
     public ItemType type;  // Тип: Gun, Disketa/Cassette, Character, Ammo и т.д.
     public MedkitProfile medkitProfile; // Профиль аптечки (используется, если type == Medkit)
 
+    [Header("Ограничения")]
+    [Tooltip("Если включено, предмет нельзя уничтожить из инвентаря или сундука")]
+    public bool cannotBeDestroyed;
+
     [Header("Описание")]
     [Tooltip("Если включено, в UI будет показываться текст из поля customDescription")]
     public bool useCustomDescription;
