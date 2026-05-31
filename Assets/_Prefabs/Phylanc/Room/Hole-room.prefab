@@ -1344,6 +1344,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   zoneMusic: {fileID: 8300000, guid: 0010442787c344743aa4fa5df76b833f, type: 3}
   zoneVolume: 0.304
+  useMultiTrack: 0
+  tracks: []
   loopMusic: 1
   playOnEnter: 1
   stopOnExit: 0
@@ -9699,6 +9701,8 @@ MonoBehaviour:
   dropSpeed: 15
   randomFailureChance: 0.5
   randomFailureDrop: 10
+  disketteInsertedId: SaveDiscket
+  invokeSuccessEventOnLoad: 1
   gamepadCursorSpeed: 1200
   triggerThreshold: 0.5
   onDisketteInsertedSuccess:
@@ -10254,6 +10258,7 @@ MonoBehaviour:
   consumeKeyOnUse: 1
   requiredKeyItem: {fileID: 0}
   teleportTarget: {fileID: 1924901281748640854}
+  maxInteractDistance: 1.5
   doorVisual: {fileID: 1006540702300883005}
   doorOpenOffset: 4
   doorOpenDuration: 0.1
@@ -10294,6 +10299,7 @@ MonoBehaviour:
   hintRevealEase: 27
   playerTag: Player
   interactKey: 101
+  playerController: {fileID: 0}
 --- !u!4 &1006540702300883001 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 400006, guid: 1b74ff2139ba6ea47803d0c80ee0702a, type: 3}

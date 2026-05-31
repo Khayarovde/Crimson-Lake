@@ -326,7 +326,7 @@ Light:
   m_Type: 2
   m_Color: {r: 0.9339623, g: 0.90098757, b: 0.66522783, a: 1}
   m_Intensity: 31.5
-  m_Range: 13.74
+  m_Range: 19.49
   m_SpotAngle: 51.509003
   m_InnerSpotAngle: 51.509003
   m_CookieSize: 32.22
@@ -1464,7 +1464,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 8, y: 5, z: 0}
+  m_Size: {x: 5, y: 5, z: 0}
   m_Center: {x: 0, y: 2, z: 0}
 --- !u!1 &3610599902175338191
 GameObject:
@@ -2050,6 +2050,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   zoneMusic: {fileID: 0}
   zoneVolume: 0.155
+  useMultiTrack: 0
+  tracks: []
   loopMusic: 1
   playOnEnter: 1
   stopOnExit: 0
@@ -2412,9 +2414,9 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6265569338725857010}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -2.8421706e-14, z: -0.70710677, w: 0.7071068}
-  m_LocalPosition: {x: -24.400013, y: 18.82, z: -18.4}
-  m_LocalScale: {x: 9.12, y: 10.4, z: 0.070539}
+  m_LocalRotation: {x: -2.842171e-14, y: -8.526513e-14, z: -0.70710677, w: 0.7071068}
+  m_LocalPosition: {x: -24.400024, y: 18.82, z: -18.4}
+  m_LocalScale: {x: 12.62, y: 10.4, z: 0.070539}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1689827216515662059}
@@ -2531,6 +2533,7 @@ MonoBehaviour:
   consumeKeyOnUse: 1
   requiredKeyItem: {fileID: 0}
   teleportTarget: {fileID: 0}
+  maxInteractDistance: 1.5
   doorVisual: {fileID: 7556418399007514532}
   doorOpenOffset: 0
   doorOpenDuration: 0.1
@@ -2571,6 +2574,7 @@ MonoBehaviour:
   hintRevealEase: 27
   playerTag: Player
   interactKey: 101
+  playerController: {fileID: 0}
 --- !u!82 &6702433963280520326
 AudioSource:
   m_ObjectHideFlags: 0
@@ -3452,6 +3456,7 @@ MonoBehaviour:
   consumeKeyOnUse: 1
   requiredKeyItem: {fileID: 0}
   teleportTarget: {fileID: 925371535231412801}
+  maxInteractDistance: 1.5
   doorVisual: {fileID: 3720337821134691191}
   doorOpenOffset: 0
   doorOpenDuration: 0.1
@@ -3492,6 +3497,7 @@ MonoBehaviour:
   hintRevealEase: 27
   playerTag: Player
   interactKey: 101
+  playerController: {fileID: 0}
 --- !u!82 &8365123291687236813
 AudioSource:
   m_ObjectHideFlags: 0
@@ -4665,6 +4671,7 @@ MonoBehaviour:
   consumeKeyOnUse: 1
   requiredKeyItem: {fileID: 0}
   teleportTarget: {fileID: 0}
+  maxInteractDistance: 1.5
   doorVisual: {fileID: 8784309631829857293}
   doorOpenOffset: 4
   doorOpenDuration: 0.1
@@ -4705,6 +4712,7 @@ MonoBehaviour:
   hintRevealEase: 27
   playerTag: Player
   interactKey: 101
+  playerController: {fileID: 0}
 --- !u!1001 &8943646530730099311
 PrefabInstance:
   m_ObjectHideFlags: 0

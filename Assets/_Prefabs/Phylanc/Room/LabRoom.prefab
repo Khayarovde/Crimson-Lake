@@ -1935,7 +1935,7 @@ Transform:
   m_GameObject: {fileID: 4513005716757885541}
   serializedVersion: 2
   m_LocalRotation: {x: 0.27059805, y: 0.6532815, z: -0.27059805, w: 0.6532815}
-  m_LocalPosition: {x: 327.20337, y: 4.176603, z: 109.00007}
+  m_LocalPosition: {x: -35.576633, y: 9.956602, z: 146.3}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -5971,6 +5971,7 @@ MonoBehaviour:
   consumeKeyOnUse: 1
   requiredKeyItem: {fileID: 0}
   teleportTarget: {fileID: 0}
+  maxInteractDistance: 1.5
   doorVisual: {fileID: 0}
   doorOpenOffset: 4
   doorOpenDuration: 0.1
@@ -6011,6 +6012,7 @@ MonoBehaviour:
   hintRevealEase: 27
   playerTag: Player
   interactKey: 101
+  playerController: {fileID: 0}
 --- !u!1001 &5037886383703287741
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -6507,6 +6509,7 @@ MonoBehaviour:
   consumeKeyOnUse: 1
   requiredKeyItem: {fileID: 0}
   teleportTarget: {fileID: 7656008893440001249}
+  maxInteractDistance: 1.5
   doorVisual: {fileID: 0}
   doorOpenOffset: 4
   doorOpenDuration: 0.1
@@ -6547,6 +6550,7 @@ MonoBehaviour:
   hintRevealEase: 27
   playerTag: Player
   interactKey: 101
+  playerController: {fileID: 0}
 --- !u!1001 &8666345447431078373
 PrefabInstance:
   m_ObjectHideFlags: 0

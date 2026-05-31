@@ -1452,6 +1452,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   zoneMusic: {fileID: 8300000, guid: aa8fc90e5732bef40bb65c48cf786f67, type: 3}
   zoneVolume: 0.155
+  useMultiTrack: 0
+  tracks: []
   loopMusic: 1
   playOnEnter: 1
   stopOnExit: 0
@@ -2208,6 +2210,8 @@ MonoBehaviour:
   closedHint: 
   hintShowDistance: 4
   player: {fileID: 0}
+  disketteInsertedId: SaveDiscket
+  autoOpenOnLoad: 1
 --- !u!114 &6983205761020130005
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2225,6 +2229,7 @@ MonoBehaviour:
   consumeKeyOnUse: 1
   requiredKeyItem: {fileID: 0}
   teleportTarget: {fileID: 0}
+  maxInteractDistance: 1.5
   doorVisual: {fileID: 0}
   doorOpenOffset: 4
   doorOpenDuration: 0.1
@@ -2265,6 +2270,7 @@ MonoBehaviour:
   hintRevealEase: 27
   playerTag: Player
   interactKey: 101
+  playerController: {fileID: 0}
 --- !u!1 &4761529106614513624
 GameObject:
   m_ObjectHideFlags: 0
@@ -5705,6 +5711,7 @@ MonoBehaviour:
   consumeKeyOnUse: 1
   requiredKeyItem: {fileID: 0}
   teleportTarget: {fileID: 0}
+  maxInteractDistance: 1.5
   doorVisual: {fileID: 3823791687488030429}
   doorOpenOffset: 4
   doorOpenDuration: 0.1
@@ -5745,6 +5752,7 @@ MonoBehaviour:
   hintRevealEase: 27
   playerTag: Player
   interactKey: 101
+  playerController: {fileID: 0}
 --- !u!82 &6904007590648543597
 AudioSource:
   m_ObjectHideFlags: 0

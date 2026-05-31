@@ -1012,7 +1012,7 @@ MonoBehaviour:
   onPuzzleSolved:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 8523503744797638227}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: PumpPuzzleInteraction, Assembly-CSharp
         m_MethodName: OnPuzzleSolved
         m_Mode: 1
@@ -1165,6 +1165,8 @@ MonoBehaviour:
   fillStep: 0.125
   stepwiseTransfer: 1
   levelTolerance: 0.005
+  puzzleId: puzzle_cameratest2_MANAGERMiniGame_ac7be530
+  invokeSolvedEventOnLoad: 1
   actionCooldown: 0.4
   allowInfinitePlayAfterSuccess: 0
   autoResetOnSuccessInInfiniteMode: 0
@@ -1172,7 +1174,7 @@ MonoBehaviour:
   fillTweenDuration: 0.35
   overflowShakeDuration: 0.35
   overflowShakeStrength: 20
-  enableDebugLogs: 0
+  enableDebugLogs: 1
 --- !u!1 &1179779557699463336
 GameObject:
   m_ObjectHideFlags: 0
@@ -2356,8 +2358,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 155deb94939d55b4e9cbed2b71c48d34, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  zoneMusic: {fileID: 8300000, guid: 564d0a027d2520b41beff0e4adc20c2a, type: 3}
+  zoneMusic: {fileID: 8300000, guid: 455cb63b1fdda7f489f588305ceca6dd, type: 3}
   zoneVolume: 0.155
+  useMultiTrack: 0
+  tracks: []
   loopMusic: 1
   playOnEnter: 1
   stopOnExit: 0
@@ -2810,6 +2814,7 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
+  lightsToEnableOnSolved: []
   unlockCursorWhileOpen: 1
   autoFindPlayerControllers: 1
   movementController: {fileID: 0}
@@ -7461,6 +7466,7 @@ MonoBehaviour:
   consumeKeyOnUse: 1
   requiredKeyItem: {fileID: 0}
   teleportTarget: {fileID: 4958927637337458546}
+  maxInteractDistance: 1.5
   doorVisual: {fileID: 0}
   doorOpenOffset: 4
   doorOpenDuration: 0.1
@@ -7501,6 +7507,7 @@ MonoBehaviour:
   hintRevealEase: 27
   playerTag: Player
   interactKey: 101
+  playerController: {fileID: 0}
 --- !u!82 &6040919962998704203
 AudioSource:
   m_ObjectHideFlags: 0
@@ -8961,6 +8968,7 @@ MonoBehaviour:
   consumeKeyOnUse: 1
   requiredKeyItem: {fileID: 0}
   teleportTarget: {fileID: 0}
+  maxInteractDistance: 1.5
   doorVisual: {fileID: 4847938676057972906}
   doorOpenOffset: 4
   doorOpenDuration: 0.1
@@ -9001,6 +9009,7 @@ MonoBehaviour:
   hintRevealEase: 27
   playerTag: Player
   interactKey: 101
+  playerController: {fileID: 0}
 --- !u!82 &6452844480436935870
 AudioSource:
   m_ObjectHideFlags: 0
@@ -10631,7 +10640,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   item: {fileID: 11400000, guid: c5f9a2c576d74a54490865808364d56e, type: 2}
-  pickupId: cf4cf22da3976254d9cba418c30e7042
+  pickupId: 10f5020d56dbc314796d3cd8a47fb13c
   enemyAI: {fileID: 0}
   enemyTest: {fileID: 0}
   enemySpawnPoint: {fileID: 2469915389970555662}
@@ -10950,6 +10959,7 @@ MonoBehaviour:
   consumeKeyOnUse: 1
   requiredKeyItem: {fileID: 0}
   teleportTarget: {fileID: 8154812770476172339}
+  maxInteractDistance: 1.5
   doorVisual: {fileID: 0}
   doorOpenOffset: 4
   doorOpenDuration: 0.1
@@ -10990,6 +11000,7 @@ MonoBehaviour:
   hintRevealEase: 27
   playerTag: Player
   interactKey: 101
+  playerController: {fileID: 0}
 --- !u!1001 &9123935113201615730
 PrefabInstance:
   m_ObjectHideFlags: 0

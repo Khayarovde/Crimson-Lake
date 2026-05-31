@@ -1060,6 +1060,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   zoneMusic: {fileID: 8300000, guid: d2169bee9ce0664419ddf6563172f8cb, type: 3}
   zoneVolume: 1
+  useMultiTrack: 1
+  tracks:
+  - clip: {fileID: 8300000, guid: d2169bee9ce0664419ddf6563172f8cb, type: 3}
+    volume: 0.52
+  - clip: {fileID: 8300000, guid: 564d0a027d2520b41beff0e4adc20c2a, type: 3}
+    volume: 0.2
   loopMusic: 1
   playOnEnter: 1
   stopOnExit: 0
@@ -5274,6 +5280,7 @@ MonoBehaviour:
   consumeKeyOnUse: 1
   requiredKeyItem: {fileID: 0}
   teleportTarget: {fileID: 3491730589856591906}
+  maxInteractDistance: 1.5
   doorVisual: {fileID: 26251621748070727}
   doorOpenOffset: 4
   doorOpenDuration: 0.1
@@ -5314,6 +5321,7 @@ MonoBehaviour:
   hintRevealEase: 27
   playerTag: Player
   interactKey: 101
+  playerController: {fileID: 0}
 --- !u!82 &5000585521116854865
 AudioSource:
   m_ObjectHideFlags: 0
