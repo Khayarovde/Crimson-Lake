@@ -1,9 +1,19 @@
 using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 [RequireComponent(typeof(Collider))]
 public class MusicZoneTrigger : MonoBehaviour
 {
+    [System.Serializable]
+    public class TrackEntry
+    {
+        public AudioClip clip;
+
+        [Range(0f, 1f)]
+        public float volume = 1f;
+    }
+
     private const float PlayerInsideGraceSeconds = 0.2f;
     private static readonly System.Collections.Generic.List<MusicZoneTrigger> Zones = new System.Collections.Generic.List<MusicZoneTrigger>(64);
 
@@ -11,6 +21,10 @@ public class MusicZoneTrigger : MonoBehaviour
     public AudioClip zoneMusic;             // Какой трек играть в этой зоне
     [Range(0f, 1f)]
     public float zoneVolume = 1f;           // Громкость в зоне
+
+    [Header("Multi-track")]
+    public bool useMultiTrack = false;
+    public List<TrackEntry> tracks = new List<TrackEntry>();
 
     [Header("Поведение")]
     public bool loopMusic = true;           // Зацикливать музыку?
@@ -23,10 +37,11 @@ public class MusicZoneTrigger : MonoBehaviour
     public float fadeOutTime = 1.5f;        // Время затухания старой/при выходе
 
     public AudioSource zoneAudioSource;
+    private readonly List<AudioSource> _trackSources = new List<AudioSource>();
 
     private static MusicZoneTrigger currentActiveZone;
 
-    private float currentLocalVolume = 0f; // 0..zoneVolume
+    private float _fadeMult = 0f; // 0..1
     private int playerContactsInTrigger;
     private float lastEnterTime;
     private float lastPlayerTouchTime;
@@ -34,16 +49,26 @@ public class MusicZoneTrigger : MonoBehaviour
 
     private void Awake()
     {
-        // Создаём отдельный AudioSource для этой зоны
-        if (zoneAudioSource == null)
+        if (useMultiTrack)
         {
-            GameObject audioObj = new GameObject("ZoneMusic_" + gameObject.name);
-            audioObj.transform.parent = transform;
-            zoneAudioSource = audioObj.AddComponent<AudioSource>();
+            EnsureTrackSources();
         }
-        zoneAudioSource.playOnAwake = false;
-        zoneAudioSource.loop = loopMusic;
-        currentLocalVolume = 0f;
+        else
+        {
+            // Создаём отдельный AudioSource для этой зоны
+            if (zoneAudioSource == null)
+            {
+                GameObject audioObj = new GameObject("ZoneMusic_" + gameObject.name);
+                audioObj.transform.parent = transform;
+                zoneAudioSource = audioObj.AddComponent<AudioSource>();
+            }
+
+            zoneAudioSource.playOnAwake = false;
+            zoneAudioSource.loop = loopMusic;
+        }
+
+        ConfigureAudioSources();
+        _fadeMult = 0f;
         playerContactsInTrigger = 0;
         lastEnterTime = -1f;
         lastPlayerTouchTime = -999f;
@@ -159,7 +184,22 @@ public class MusicZoneTrigger : MonoBehaviour
 
     private bool IsPlayableZone()
     {
-        return playOnEnter && zoneMusic != null;
+        if (!playOnEnter)
+            return false;
+
+        if (useMultiTrack)
+        {
+            for (int i = 0; i < tracks.Count; i++)
+            {
+                TrackEntry track = tracks[i];
+                if (track != null && track.clip != null)
+                    return true;
+            }
+
+            return false;
+        }
+
+        return zoneMusic != null;
     }
 
     private bool ShouldMuteBecauseSilentZoneIsActive()
@@ -172,11 +212,60 @@ public class MusicZoneTrigger : MonoBehaviour
         if (!IsPlayableZone())
             return;
 
+        if (useMultiTrack)
+        {
+            if (currentActiveZone == this && AreMultiTrackSourcesAlreadyPlaying())
+                return;
+
+            bool switchedFromAnotherZone = currentActiveZone != null && currentActiveZone != this;
+
+            StopAllOtherZoneMusic();
+            StopCurrentAudioSources(false);
+
+            double startTime = AudioSettings.dspTime + 0.1d;
+
+            for (int i = 0; i < _trackSources.Count; i++)
+            {
+                AudioSource source = _trackSources[i];
+                TrackEntry track = i < tracks.Count ? tracks[i] : null;
+
+                if (source == null)
+                    continue;
+
+                source.Stop();
+                source.clip = track != null ? track.clip : null;
+                source.loop = loopMusic;
+
+                if (source.clip != null)
+                    source.PlayScheduled(startTime);
+            }
+
+            StopAllCoroutines();
+
+            if (switchedFromAnotherZone)
+            {
+                _fadeMult = 1f;
+                ApplyCurrentVolume();
+            }
+            else
+            {
+                _fadeMult = 0f;
+                ApplyCurrentVolume();
+                StartCoroutine(FadeIn(1f, fadeInTime));
+            }
+
+            currentActiveZone = this;
+            isFadingBecausePlayerOutsideZones = false;
+
+            NotifyEnemyScriptsPlayerEnteredZone();
+            return;
+        }
+
         // Уже активная и правильная музыка играет — ничего не делаем.
         if (currentActiveZone == this && zoneAudioSource != null && zoneAudioSource.isPlaying && zoneAudioSource.clip == zoneMusic)
             return;
 
-        bool switchedFromAnotherZone = currentActiveZone != null && currentActiveZone != this;
+        bool switchedFromAnotherZoneAfterStop = currentActiveZone != null && currentActiveZone != this;
 
         // Останавливаем все другие зоны
         StopAllOtherZoneMusic();
@@ -189,16 +278,16 @@ public class MusicZoneTrigger : MonoBehaviour
         zoneAudioSource.Play();
 
         // При смене зоны переключаемся сразу, чтобы не оставался старый трек.
-        if (switchedFromAnotherZone)
+        if (switchedFromAnotherZoneAfterStop)
         {
-            currentLocalVolume = zoneVolume;
+            _fadeMult = 1f;
             ApplyCurrentVolume();
         }
         else
         {
-            currentLocalVolume = 0f;
+            _fadeMult = 0f;
             ApplyCurrentVolume();
-            StartCoroutine(FadeIn(zoneVolume, fadeInTime));
+            StartCoroutine(FadeIn(1f, fadeInTime));
         }
 
         currentActiveZone = this;
@@ -274,7 +363,7 @@ public class MusicZoneTrigger : MonoBehaviour
     {
         foreach (var zone in Zones)
         {
-            if (zone == null || zone.zoneAudioSource == null || !zone.zoneAudioSource.isPlaying)
+            if (zone == null || !zone.HasAnyAudioSourcePlaying())
                 continue;
 
             zone.StopAllCoroutines();
@@ -289,8 +378,7 @@ public class MusicZoneTrigger : MonoBehaviour
         isFadingBecausePlayerOutsideZones = true;
         yield return StartCoroutine(FadeOut(fadeOutTime));
 
-        if (zoneAudioSource != null)
-            zoneAudioSource.Stop();
+        StopCurrentAudioSources(false);
 
         if (currentActiveZone == this)
             currentActiveZone = null;
@@ -298,26 +386,26 @@ public class MusicZoneTrigger : MonoBehaviour
         isFadingBecausePlayerOutsideZones = false;
     }
 
-    public IEnumerator FadeIn(float targetVolume, float duration)
+    public IEnumerator FadeIn(float targetFadeMult, float duration)
     {
         if (duration <= 0f)
         {
-            currentLocalVolume = targetVolume;
+            _fadeMult = targetFadeMult;
             ApplyCurrentVolume();
             yield break;
         }
 
         float currentTime = 0f;
-        float startLocal = currentLocalVolume;
+        float startLocal = _fadeMult;
 
         while (currentTime < duration)
         {
             currentTime += Time.unscaledDeltaTime;
-            currentLocalVolume = Mathf.Lerp(startLocal, targetVolume, currentTime / duration);
+            _fadeMult = Mathf.Lerp(startLocal, targetFadeMult, currentTime / duration);
             ApplyCurrentVolume();
             yield return null;
         }
-        currentLocalVolume = targetVolume;
+        _fadeMult = targetFadeMult;
         ApplyCurrentVolume();
     }
 
@@ -325,47 +413,68 @@ public class MusicZoneTrigger : MonoBehaviour
     {
         if (duration <= 0f)
         {
-            currentLocalVolume = 0f;
+            _fadeMult = 0f;
             ApplyCurrentVolume();
             yield break;
         }
 
         float currentTime = 0f;
-        float startLocal = currentLocalVolume;
+        float startLocal = _fadeMult;
 
         while (currentTime < duration)
         {
             currentTime += Time.unscaledDeltaTime;
-            currentLocalVolume = Mathf.Lerp(startLocal, 0f, currentTime / duration);
+            _fadeMult = Mathf.Lerp(startLocal, 0f, currentTime / duration);
             ApplyCurrentVolume();
             yield return null;
         }
-        currentLocalVolume = 0f;
+        _fadeMult = 0f;
         ApplyCurrentVolume();
     }
 
     private IEnumerator FadeOutAndStop()
     {
         yield return StartCoroutine(FadeOut(fadeOutTime));
-        zoneAudioSource.Stop();
-        zoneAudioSource.clip = null;
+        StopCurrentAudioSources(true);
     }
 
     private void ApplyCurrentVolume()
     {
-        if (zoneAudioSource == null) return;
-
         float globalMusicVol = SettingsManager.Instance != null
             ? SettingsManager.Instance.GetMusicVolume()
             : PlayerPrefs.GetFloat("MusicVol", 0.8f);
 
-        zoneAudioSource.volume = Mathf.Clamp01(currentLocalVolume) * Mathf.Clamp01(globalMusicVol);
+        if (useMultiTrack)
+        {
+            int count = Mathf.Min(_trackSources.Count, tracks.Count);
+            for (int i = 0; i < count; i++)
+            {
+                AudioSource source = _trackSources[i];
+                TrackEntry track = tracks[i];
+
+                if (source == null)
+                    continue;
+
+                float trackVolume = track != null ? track.volume : 1f;
+                source.volume = Mathf.Clamp01(trackVolume) * Mathf.Clamp01(globalMusicVol) * Mathf.Clamp01(_fadeMult);
+            }
+
+            return;
+        }
+
+        if (zoneAudioSource == null)
+            return;
+
+        zoneAudioSource.volume = Mathf.Clamp01(zoneVolume) * Mathf.Clamp01(globalMusicVol) * Mathf.Clamp01(_fadeMult);
     }
 
     public static void RefreshAllZoneVolumes()
     {
         foreach (var z in Zones)
-            z.ApplyCurrentVolume();
+        {
+            if (z != null)
+                z.ApplyCurrentVolume();
+        }
     }
 
     // Останавливаем музыку во всех других зонах
@@ -373,26 +482,150 @@ public class MusicZoneTrigger : MonoBehaviour
     {
         foreach (var zone in Zones)
         {
-            if (zone != this && zone.zoneAudioSource != null && zone.zoneAudioSource.isPlaying)
+            if (zone == null || zone == this || !zone.HasAnyAudioSourcePlaying())
+                continue;
+
+            zone.StopAllCoroutines();
+
+            // Текущая ранее активная зона всегда останавливается сразу,
+            // чтобы новая зона звучала немедленно.
+            bool shouldStopImmediately = zone == currentActiveZone || !fadePreviousOnEnter;
+
+            if (!shouldStopImmediately)
             {
-                zone.StopAllCoroutines();
-
-                // Текущая ранее активная зона всегда останавливается сразу,
-                // чтобы новая зона звучала немедленно.
-                bool shouldStopImmediately = zone == currentActiveZone || !fadePreviousOnEnter;
-
-                if (!shouldStopImmediately)
-                {
-                    zone.StartCoroutine(zone.FadeOut(fadeOutTime));
-                }
-                else
-                {
-                    zone.zoneAudioSource.Stop();
-                    zone.currentLocalVolume = 0f;
-                    zone.ApplyCurrentVolume();
-                }
+                zone.StartCoroutine(zone.FadeOut(fadeOutTime));
+            }
+            else
+            {
+                zone.StopCurrentAudioSources(false);
+                zone._fadeMult = 0f;
+                zone.ApplyCurrentVolume();
             }
         }
+    }
+
+    private void EnsureTrackSources()
+    {
+        for (int i = 0; i < tracks.Count; i++)
+        {
+            if (i < _trackSources.Count && _trackSources[i] != null)
+                continue;
+
+            GameObject trackObj = new GameObject("ZoneTrack_" + i + "_" + gameObject.name);
+            trackObj.transform.SetParent(transform, false);
+
+            AudioSource trackSource = trackObj.AddComponent<AudioSource>();
+            trackSource.playOnAwake = false;
+            trackSource.loop = loopMusic;
+
+            if (i < _trackSources.Count)
+                _trackSources[i] = trackSource;
+            else
+                _trackSources.Add(trackSource);
+        }
+
+        for (int i = _trackSources.Count - 1; i >= tracks.Count; i--)
+        {
+            if (_trackSources[i] != null)
+            {
+                if (Application.isPlaying)
+                    Destroy(_trackSources[i].gameObject);
+                else
+                    DestroyImmediate(_trackSources[i].gameObject);
+            }
+
+            _trackSources.RemoveAt(i);
+        }
+    }
+
+    private void ConfigureAudioSources()
+    {
+        if (useMultiTrack)
+        {
+            for (int i = 0; i < _trackSources.Count; i++)
+            {
+                if (_trackSources[i] != null)
+                {
+                    _trackSources[i].playOnAwake = false;
+                    _trackSources[i].loop = loopMusic;
+                }
+            }
+
+            return;
+        }
+
+        if (zoneAudioSource != null)
+        {
+            zoneAudioSource.playOnAwake = false;
+            zoneAudioSource.loop = loopMusic;
+        }
+    }
+
+    private bool HasAnyAudioSourcePlaying()
+    {
+        if (useMultiTrack)
+        {
+            for (int i = 0; i < _trackSources.Count; i++)
+            {
+                AudioSource source = _trackSources[i];
+                if (source != null && source.isPlaying)
+                    return true;
+            }
+
+            return false;
+        }
+
+        return zoneAudioSource != null && zoneAudioSource.isPlaying;
+    }
+
+    private bool AreMultiTrackSourcesAlreadyPlaying()
+    {
+        if (!useMultiTrack)
+            return false;
+
+        if (_trackSources.Count == 0)
+            return false;
+
+        int count = Mathf.Min(_trackSources.Count, tracks.Count);
+        for (int i = 0; i < count; i++)
+        {
+            AudioSource source = _trackSources[i];
+            TrackEntry track = tracks[i];
+
+            if (source == null || track == null || track.clip == null)
+                continue;
+
+            if (!source.isPlaying || source.clip != track.clip)
+                return false;
+        }
+
+        return true;
+    }
+
+    private void StopCurrentAudioSources(bool clearClip)
+    {
+        if (useMultiTrack)
+        {
+            for (int i = 0; i < _trackSources.Count; i++)
+            {
+                AudioSource source = _trackSources[i];
+                if (source == null)
+                    continue;
+
+                source.Stop();
+                if (clearClip)
+                    source.clip = null;
+            }
+
+            return;
+        }
+
+        if (zoneAudioSource == null)
+            return;
+
+        zoneAudioSource.Stop();
+        if (clearClip)
+            zoneAudioSource.clip = null;
     }
 
     // Для удобства в редакторе
@@ -410,6 +643,12 @@ public class MusicZoneTrigger : MonoBehaviour
         if (zoneAudioSource != null)
         {
             zoneAudioSource.loop = loopMusic;
+        }
+
+        for (int i = 0; i < _trackSources.Count; i++)
+        {
+            if (_trackSources[i] != null)
+                _trackSources[i].loop = loopMusic;
         }
     }
 

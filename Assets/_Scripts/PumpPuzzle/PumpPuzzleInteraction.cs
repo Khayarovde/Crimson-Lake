@@ -31,6 +31,7 @@ public class PumpPuzzleInteraction : MonoBehaviour
 
     [Header("Lighting")]
     [SerializeField] private GameObject[] lightsToDisableOnSolved;
+    [SerializeField] private GameObject[] lightsToEnableOnSolved;
 
     [Header("Input Lock")]
     [SerializeField] private bool unlockCursorWhileOpen = true;
@@ -146,6 +147,12 @@ public class PumpPuzzleInteraction : MonoBehaviour
         {
             foreach (var go in lightsToDisableOnSolved)
                 if (go != null) go.SetActive(false);
+        }
+
+        if (lightsToEnableOnSolved != null)
+        {
+            foreach (var go in lightsToEnableOnSolved)
+                if (go != null) go.SetActive(true);
         }
 
         if (disableOnSolved != null)
