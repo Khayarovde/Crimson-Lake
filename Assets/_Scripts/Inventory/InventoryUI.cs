@@ -484,7 +484,7 @@ public class InventoryUI : MonoBehaviour
         panelRect.anchorMax = new Vector2(0f, 1f);
         panelRect.pivot = new Vector2(0f, 1f);
 
-        contextSelectButton = CreateContextMenuButton(panelObj.transform, "SelectButton", "Выбрать");
+        contextSelectButton = CreateContextMenuButton(panelObj.transform, "SelectButton", "Использовать");
         contextCombineButton = CreateContextMenuButton(panelObj.transform, "CombineButton", "Соединить");
         contextDestroyButton = CreateContextMenuButton(panelObj.transform, "DestroyButton", "Уничтожить");
         contextStoreButton = CreateContextMenuButton(panelObj.transform, "StoreButton", "Положить");
@@ -570,7 +570,7 @@ public class InventoryUI : MonoBehaviour
         bool canSelect = item != null && item.type == InventoryItem.ItemType.Medkit;
         bool canDestroy = CanDestroyItem(item);
 
-        SetContextMenuButtonLabel(contextSelectButton, "Выбрать");
+        SetContextMenuButtonLabel(contextSelectButton, "Использовать");
         SetContextMenuButtonLabel(contextStoreButton, "Положить");
 
         bool nearChest = playerInventory != null && playerInventory.IsNearChest();
