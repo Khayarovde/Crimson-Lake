@@ -23,6 +23,11 @@ public class EnemyStepSound : MonoBehaviour
     [Header("Surface Cache")]
     public float surfaceCacheInterval = 0.3f;
 
+    [Header("Occlusion")]
+    public Transform player;
+    public LayerMask wallMask;
+    public float occlusionCacheInterval = 0.4f;
+
     [Header("Movement Gate")]
     public bool requireMovement = true;
     public float moveSpeedThreshold = 0.05f;
@@ -37,8 +42,10 @@ public class EnemyStepSound : MonoBehaviour
     private Vector3 lastPosition;
     private float estimatedPlanarSpeed;
     private float lastSurfaceCheckTime = -Mathf.Infinity;
+    private float lastOcclusionCheckTime = -Mathf.Infinity;
     private AudioClip[] cachedSurfaceClips = EmptyClips;
     private SurfaceStepSounds cachedSurfaceSettings;
+    private bool cachedIsOccluded;
     private System.Collections.Generic.Dictionary<string, SurfaceStepSounds> surfaceLookup;
     private int surfaceClipsLength;
 
@@ -106,6 +113,13 @@ public class EnemyStepSound : MonoBehaviour
         {
             if (enableDebug)
                 Debug.Log("EnemyStepSound: шаг заблокирован, враг считается неподвижным", this);
+            return;
+        }
+
+        if (IsOccludedByWall())
+        {
+            if (enableDebug)
+                Debug.Log("EnemyStepSound: шаг заблокирован, игрок за стеной", this);
             return;
         }
 
@@ -194,5 +208,30 @@ public class EnemyStepSound : MonoBehaviour
         }
 
         return EmptyClips;
+    }
+
+    private bool IsOccludedByWall()
+    {
+        if (player == null)
+            return false;
+
+        if (Time.time - lastOcclusionCheckTime <= occlusionCacheInterval)
+            return cachedIsOccluded;
+
+        lastOcclusionCheckTime = Time.time;
+
+        Vector3 origin = transform.position + Vector3.up;
+        Vector3 toPlayer = player.position - origin;
+        float distance = toPlayer.magnitude;
+
+        if (distance <= 0.0001f)
+        {
+            cachedIsOccluded = false;
+            return false;
+        }
+
+        Vector3 direction = toPlayer / distance;
+        cachedIsOccluded = Physics.Raycast(origin, direction, distance, wallMask, QueryTriggerInteraction.Ignore);
+        return cachedIsOccluded;
     }
 }
