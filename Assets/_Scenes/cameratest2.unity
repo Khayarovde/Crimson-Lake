@@ -1233,7 +1233,7 @@ Transform:
   m_GameObject: {fileID: 236041458}
   serializedVersion: 2
   m_LocalRotation: {x: 0.38268343, y: 0, z: 0, w: 0.92387956}
-  m_LocalPosition: {x: -44.03, y: 20.324505, z: -13.3945055}
+  m_LocalPosition: {x: -392.7, y: 14.444504, z: 25.815495}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2939,7 +2939,7 @@ Transform:
   m_GameObject: {fileID: 448321591}
   serializedVersion: 2
   m_LocalRotation: {x: 0.38268343, y: 0, z: 0, w: 0.92387956}
-  m_LocalPosition: {x: -44.03, y: 12.771068, z: -9.371068}
+  m_LocalPosition: {x: -392.7, y: 6.8910666, z: 29.83893}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -3991,7 +3991,7 @@ Transform:
   m_GameObject: {fileID: 770004662}
   serializedVersion: 2
   m_LocalRotation: {x: 0.40694353, y: -0.0005859526, z: 0.0013152678, w: 0.91345227}
-  m_LocalPosition: {x: -44.03, y: 13.134484, z: -8.987931}
+  m_LocalPosition: {x: -392.7, y: 7.2544837, z: 30.222069}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -5001,7 +5001,7 @@ Transform:
   m_GameObject: {fileID: 939875348}
   serializedVersion: 2
   m_LocalRotation: {x: 0.27059805, y: 0.6532815, z: -0.27059805, w: 0.6532815}
-  m_LocalPosition: {x: -51.101063, y: 12.771066, z: -2.299999}
+  m_LocalPosition: {x: -399.7711, y: 6.8910685, z: 36.910004}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -5145,7 +5145,7 @@ Transform:
   m_GameObject: {fileID: 963194225}
   serializedVersion: 2
   m_LocalRotation: {x: 0.380126, y: -6.82121e-13, z: 0, w: 0.9249348}
-  m_LocalPosition: {x: 33.262672, y: 9.59625, z: 123.56897}
+  m_LocalPosition: {x: 33.262665, y: 6.8518343, z: 123.56896}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -7160,7 +7160,7 @@ Transform:
   m_GameObject: {fileID: 1307106430}
   serializedVersion: 2
   m_LocalRotation: {x: 0.21725646, y: 0.0000012773964, z: -0.0000007385178, w: 0.9761146}
-  m_LocalPosition: {x: -44.03002, y: 9.941343, z: -11.355992}
+  m_LocalPosition: {x: -392.7, y: 4.0613437, z: 27.854008}
   m_LocalScale: {x: 1.6378922, y: 1.637892, z: 1.6378922}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -7782,7 +7782,7 @@ Transform:
   m_GameObject: {fileID: 1453369967}
   serializedVersion: 2
   m_LocalRotation: {x: 0.18301274, y: 0.6830127, z: -0.18301274, w: 0.6830127}
-  m_LocalPosition: {x: -56.15435, y: 12.7, z: -2.2999983}
+  m_LocalPosition: {x: -404.82434, y: 6.819987, z: 36.910004}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -7965,7 +7965,7 @@ MonoBehaviour:
   player: {fileID: 1479789140}
   enemy: {fileID: 0}
   finishingCameraPlacementMode: 0
-  enemyAnimationState: death_end
+  enemyAnimationState: death-padaet
   playEnemyAnimation: 1
   playerAttackTrigger: VseTelo.attack_stun_enemy
   playerAnimationState: VseTelo.attack_stun_enemy
@@ -7975,6 +7975,13 @@ MonoBehaviour:
   effectStartNormalizedTime: 0.648
   useAutomaticTiming: 1
   customFinishingDuration: -0.1
+  keepEnemyOnGroundDuringFinishing: 1
+  enemyGroundMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  enemyGroundRayStartHeight: 1.2
+  enemyGroundRayDistance: 4
+  enemyGroundOffset: 0
   useFrameBasedPlayerDuration: 1
   playerFinishingFrameCount: 18
   playerFinishingFrameRate: 24
@@ -8233,7 +8240,7 @@ Transform:
   m_GameObject: {fileID: 1475511955}
   serializedVersion: 2
   m_LocalRotation: {x: -0.3826792, y: 0.0018023169, z: -0.004286477, w: -0.92386967}
-  m_LocalPosition: {x: -44.02946, y: 15.735748, z: -10.035748}
+  m_LocalPosition: {x: -392.69946, y: 9.855749, z: 29.174253}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -8325,7 +8332,7 @@ Transform:
   m_GameObject: {fileID: 1503534987}
   serializedVersion: 2
   m_LocalRotation: {x: 0.38268343, y: 0, z: 0, w: 0.92387956}
-  m_LocalPosition: {x: -44.03, y: 12.771068, z: -9.371068}
+  m_LocalPosition: {x: -392.7, y: 6.8910666, z: 29.83893}
   m_LocalScale: {x: 1, y: 1, z: 2}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -9141,7 +9148,7 @@ Transform:
   m_GameObject: {fileID: 1650395418}
   serializedVersion: 2
   m_LocalRotation: {x: 0.26431465, y: -0.6558489, z: 0.26431465, w: 0.6558489}
-  m_LocalPosition: {x: -40.787518, y: 8.820308, z: -2.2999995}
+  m_LocalPosition: {x: -389.45755, y: 2.9402874, z: 36.91}
   m_LocalScale: {x: 1.34745, y: 1, z: 3.134}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -9906,7 +9913,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1767890975}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.0017244153, y: 0.79208404, z: 0.002237663, w: 0.6104056}
+  m_LocalRotation: {x: 0.01293817, y: -0.78851897, z: 0.016598044, w: 0.6146503}
   m_LocalPosition: {x: -290.47, y: 6.6, z: 62.64}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -10121,7 +10128,7 @@ Transform:
   m_GameObject: {fileID: 1794886368}
   serializedVersion: 2
   m_LocalRotation: {x: -0.38268343, y: 0, z: -0, w: -0.92387956}
-  m_LocalPosition: {x: -44.03, y: 17.3866, z: -12.906601}
+  m_LocalPosition: {x: -392.7, y: 11.5066, z: 26.303396}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -10354,6 +10361,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 336748449680257680, guid: ef8a1ac8c271a1341abc6a662df67489, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 797513886334221944, guid: ef8a1ac8c271a1341abc6a662df67489, type: 3}
       propertyPath: hintImage
       value: 
@@ -10481,6 +10492,10 @@ PrefabInstance:
     - target: {fileID: 3428229864703373828, guid: ef8a1ac8c271a1341abc6a662df67489, type: 3}
       propertyPath: m_Name
       value: SafeRoom
+      objectReference: {fileID: 0}
+    - target: {fileID: 4781180853886736763, guid: ef8a1ac8c271a1341abc6a662df67489, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5109467399823831363, guid: ef8a1ac8c271a1341abc6a662df67489, type: 3}
       propertyPath: hintRoot
@@ -10649,7 +10664,7 @@ Transform:
   m_GameObject: {fileID: 1923403104}
   serializedVersion: 2
   m_LocalRotation: {x: 0.380126, y: -6.82121e-13, z: -0, w: 0.9249348}
-  m_LocalPosition: {x: -44.03, y: 12.731834, z: -9.410084}
+  m_LocalPosition: {x: -392.7, y: 6.8518343, z: 29.799917}
   m_LocalScale: {x: 3.0236895, y: 2.2905002, z: 2.2905006}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -11707,15 +11722,15 @@ PrefabInstance:
       objectReference: {fileID: 2034645046}
     - target: {fileID: 3253778392951045453, guid: ebc4bac64a24a7f42a07cb2499345bc4, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -44.03
+      value: -392.7
       objectReference: {fileID: 0}
     - target: {fileID: 3253778392951045453, guid: ebc4bac64a24a7f42a07cb2499345bc4, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 5.7
+      value: -0.18
       objectReference: {fileID: 0}
     - target: {fileID: 3253778392951045453, guid: ebc4bac64a24a7f42a07cb2499345bc4, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -2.3
+      value: 36.91
       objectReference: {fileID: 0}
     - target: {fileID: 3253778392951045453, guid: ebc4bac64a24a7f42a07cb2499345bc4, type: 3}
       propertyPath: m_LocalRotation.w
@@ -11945,6 +11960,14 @@ PrefabInstance:
       propertyPath: 'damageSounds.Array.data[1]'
       value: 
       objectReference: {fileID: 8300000, guid: 7078e8c8ede6c5c4d8c756379c7c96d1, type: 3}
+    - target: {fileID: 6678213285457445108, guid: 6b0b42be7f7d9e849b9b07d23d2ebd7e, type: 3}
+      propertyPath: m_AnimatePhysics
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6678213285457445108, guid: 6b0b42be7f7d9e849b9b07d23d2ebd7e, type: 3}
+      propertyPath: m_ApplyRootMotion
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -12109,6 +12132,18 @@ PrefabInstance:
       propertyPath: teleportTarget
       value: 
       objectReference: {fileID: 1488450636}
+    - target: {fileID: 4887417508818744006, guid: 70cbc7d701d7bc349886606e56a550c3, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 313.09338
+      objectReference: {fileID: 0}
+    - target: {fileID: 4887417508818744006, guid: 70cbc7d701d7bc349886606e56a550c3, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 4.0766025
+      objectReference: {fileID: 0}
+    - target: {fileID: 4887417508818744006, guid: 70cbc7d701d7bc349886606e56a550c3, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 107.090065
+      objectReference: {fileID: 0}
     - target: {fileID: 6283428792882644904, guid: 70cbc7d701d7bc349886606e56a550c3, type: 3}
       propertyPath: enemyTest
       value: 
@@ -12858,6 +12893,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: EnemyTestOsnova
       objectReference: {fileID: 0}
+    - target: {fileID: 2692999376847549320, guid: ce1f430e12097a849bc304f7c98e1840, type: 3}
+      propertyPath: m_AnimatePhysics
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2692999376847549320, guid: ce1f430e12097a849bc304f7c98e1840, type: 3}
+      propertyPath: m_ApplyRootMotion
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6174248359440569675, guid: ce1f430e12097a849bc304f7c98e1840, type: 3}
       propertyPath: imageCanvas
       value: 
@@ -12922,6 +12965,18 @@ PrefabInstance:
       propertyPath: 'damageSounds.Array.data[1]'
       value: 
       objectReference: {fileID: 8300000, guid: 7078e8c8ede6c5c4d8c756379c7c96d1, type: 3}
+    - target: {fileID: 8160354181297800617, guid: ce1f430e12097a849bc304f7c98e1840, type: 3}
+      propertyPath: deathFallStateNames.Array.size
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 8160354181297800617, guid: ce1f430e12097a849bc304f7c98e1840, type: 3}
+      propertyPath: 'deathFallStateNames.Array.data[1]'
+      value: death_padaet2
+      objectReference: {fileID: 0}
+    - target: {fileID: 8160354181297800617, guid: ce1f430e12097a849bc304f7c98e1840, type: 3}
+      propertyPath: 'deathFallStateNames.Array.data[2]'
+      value: death_padaet3
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
