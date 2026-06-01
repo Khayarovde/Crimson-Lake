@@ -559,7 +559,7 @@ public class SaveManager : MonoBehaviour
             if (playerTransform == null)
                 break;
 
-            yield return new WaitForEndOfFrame();
+            yield return null;
             ApplyPlayerTransform(playerTransform, savedPosition, savedRotation);
         }
 
@@ -605,6 +605,16 @@ public class SaveManager : MonoBehaviour
             StopCoroutine(pendingApplyRoutine);
 
         pendingApplyRequestId++;
+
+        if (TryApplyNow(pendingLoadData))
+        {
+            hasPendingLoad = false;
+            pendingLoadData = null;
+            pendingLoadSceneName = string.Empty;
+            pendingApplyRoutine = null;
+            return;
+        }
+
         int requestId = pendingApplyRequestId;
         pendingApplyRoutine = StartCoroutine(ApplyPendingWhenReady(requestId));
     }
@@ -669,9 +679,6 @@ public class SaveManager : MonoBehaviour
 
             if (ResolvePlayerTransform() != null)
             {
-                // Даем сцене инициализировать объекты (Start/OnEnable), затем применяем сохранение.
-                yield return null;
-
                 if (TryApplyNow(pendingLoadData))
                 {
                     hasPendingLoad = false;
