@@ -1635,13 +1635,13 @@ public class BossEnemy : MonoBehaviour
         if (!string.IsNullOrEmpty(stateName) && stateName != baseWalkAnim)
             SetRukaLayerWeight(0f);
 
-        PlayAnimOnLayer(stateName, baseLayerIndex, ref currentBaseAnimState);
+        PlayAnimOnLayer(stateName, baseLayerIndex, ref currentBaseAnimState, false);
     }
 
     private void PlayRukaAnim(string stateName)
     {
         SetRukaLayerWeight(1f);
-        PlayAnimOnLayer(stateName, rukaLayerIndex, ref currentRukaAnimState);
+        PlayAnimOnLayer(stateName, rukaLayerIndex, ref currentRukaAnimState, true);
     }
 
     private void SetRukaLayerWeight(float weight)
@@ -1655,7 +1655,7 @@ public class BossEnemy : MonoBehaviour
         animator.SetLayerWeight(rukaLayerIndex, Mathf.Clamp01(weight));
     }
 
-    private void PlayAnimOnLayer(string stateName, int layer, ref string currentState)
+    private void PlayAnimOnLayer(string stateName, int layer, ref string currentState, bool forceReplay = false)
     {
         if (animator == null || string.IsNullOrEmpty(stateName))
             return;
@@ -1663,13 +1663,17 @@ public class BossEnemy : MonoBehaviour
         if (layer < 0 || layer >= animator.layerCount)
             return;
 
-        if (stateName == currentState)
+        if (stateName == currentState && !forceReplay)
             return;
 
         if (!animator.HasState(layer, Animator.StringToHash(stateName)))
             return;
 
-        animator.CrossFadeInFixedTime(stateName, animCrossFade, layer);
+        if (forceReplay && stateName == currentState)
+            animator.Play(stateName, layer, 0f);
+        else
+            animator.CrossFadeInFixedTime(stateName, animCrossFade, layer);
+            
         currentState = stateName;
     }
 
