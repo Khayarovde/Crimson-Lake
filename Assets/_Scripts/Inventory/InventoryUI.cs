@@ -1447,7 +1447,7 @@ public class InventoryUI : MonoBehaviour
         UpdateInventoryUI();
     }
 
-    private void SelectNextInventoryItem(int direction)
+    public void SelectNextInventoryItem(int direction)
     {
         if (inventoryData == null || playerInventory == null)
             return;

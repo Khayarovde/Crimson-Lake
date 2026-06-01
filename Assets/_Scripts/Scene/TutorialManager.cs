@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
+using TMPro;
 
 public class TutorialManager : MonoBehaviour
 {
@@ -8,6 +9,7 @@ public class TutorialManager : MonoBehaviour
     [SerializeField] private GameObject hintIconGO;              // ← Объект с иконкой H (всегда виден)
     [SerializeField] private Image hintImage;                    // ← Image для спрайта клавиши H
     [SerializeField] private Sprite hintSprite;                  // ← Спрайт (например, клавиша H)
+    [SerializeField] private TextMeshProUGUI hintText;            // ← Текст рядом с иконкой H
 
     [SerializeField] private GameObject tutorialPanelGO;         // ← Панель с обучением
     [SerializeField] private CanvasGroup tutorialCanvasGroup;    // ← CanvasGroup на tutorialPanelGO (для fade)
@@ -96,6 +98,11 @@ public class TutorialManager : MonoBehaviour
         if (hintIconGO != null)
         {
             hintIconGO.SetActive(isHintIconVisible);
+        }
+
+        if (hintText != null)
+        {
+            hintText.gameObject.SetActive(isHintIconVisible);
         }
     }
 

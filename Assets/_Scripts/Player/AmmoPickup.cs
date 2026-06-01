@@ -71,7 +71,18 @@ public class AmmoPickup : MonoBehaviour
             return;
 
         if (Input.GetKeyDown(interactKey) || (Gamepad.current != null && Gamepad.current.buttonSouth.wasPressedThisFrame))
-            StartDialogue();
+        {
+            if (triggerYarnOnPickup)
+            {
+                TryStartDialogue();
+            }
+            else
+            {
+                bool success = TryResolvePickup();
+                if (success)
+                    CompletePickup();
+            }
+        }
 
         LateHintUpdate();
     }
@@ -81,6 +92,9 @@ public class AmmoPickup : MonoBehaviour
         if (!playerInRange || pickedUp)
             return false;
 
+        if (triggerYarnOnPickup)
+            return TryStartDialogue();
+
         bool success = TryResolvePickup();
         if (success)
             CompletePickup();
@@ -88,18 +102,19 @@ public class AmmoPickup : MonoBehaviour
         return success;
     }
 
-    private void StartDialogue()
+    private bool TryStartDialogue()
     {
         if (pickedUp)
-            return;
+            return false;
 
         DialogueRunner runner = GetDialogueRunner();
         if (runner == null || runner.IsDialogueRunning)
-            return;
+            return false;
 
         RegisterYarnCommands(runner);
         activeAmmoPickup = this;
         runner.StartDialogue(startNode);
+        return true;
     }
 
     private void LateHintUpdate()

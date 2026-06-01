@@ -290,6 +290,7 @@ public class GamepadController : MonoBehaviour
     }
 
     public bool IsGamepadModeActive => deviceLock == DeviceLockState.Gamepad;
+    public bool IsDeviceSelected => deviceLock != DeviceLockState.Unselected;
 
     public void PushExternalCursorOverride()
     {
@@ -721,6 +722,12 @@ public class GamepadController : MonoBehaviour
 
     private void CycleActiveItem(int direction)
     {
+        if (inventoryUI != null)
+        {
+            inventoryUI.SelectNextInventoryItem(direction);
+            return;
+        }
+
         if (playerInventory == null || playerInventory.inventoryData == null)
             return;
 
