@@ -106,6 +106,16 @@ public class WeaponHandler : MonoBehaviour
     private float muzzleForwardSpread = 0.1f;
     [SerializeField] private GameObject gunHitEffect;
     [SerializeField] private GameObject pistolHitEffect;
+    [SerializeField, Tooltip("Префаб вспышки выстрела (Gun)")]
+    private GameObject gunMuzzleFlashPrefab;
+    [SerializeField, Tooltip("Префаб вспышки выстрела (Pistol)")]
+    private GameObject pistolMuzzleFlashPrefab;
+    [SerializeField, Tooltip("Префаб света вспышки (Gun)")]
+    private GameObject gunMuzzleLightPrefab;
+    [SerializeField, Tooltip("Префаб света вспышки (Pistol)")]
+    private GameObject pistolMuzzleLightPrefab;
+    [SerializeField, Tooltip("Длительность вспышки (сек)")]
+    private float muzzleFlashLifetime = 0.06f;
 
     [Header("=== Прицел и Aim Assist ===")]
     [SerializeField] private float aimWalkSpeed = 1.5f; 
@@ -227,6 +237,8 @@ public class WeaponHandler : MonoBehaviour
     private bool hasGlowBaseColor;
     private float nextEmptyMagSoundTime;
     private static readonly int EmissionColorId = Shader.PropertyToID("_EmissionColor");
+    private readonly Dictionary<GameObject, Queue<GameObject>> muzzleFlashPool = new Dictionary<GameObject, Queue<GameObject>>();
+    private WaitForSeconds muzzleFlashWait;
     // Словарь для отслеживания количества попаданий по каждому врагу
     private Dictionary<AdvancedEnemyAI, int> enemyHitCount = new Dictionary<AdvancedEnemyAI, int>();
     private GameObject holdVisualInstance;
@@ -267,6 +279,7 @@ public class WeaponHandler : MonoBehaviour
 
         if (aimAssist == null) aimAssist = gameObject.AddComponent<AimAssist>();
         aimAssist.Initialize(enemyLayerMask);
+        muzzleFlashWait = new WaitForSeconds(Mathf.Max(0.01f, muzzleFlashLifetime));
     }
 
     private void Update()
@@ -963,6 +976,7 @@ public class WeaponHandler : MonoBehaviour
 
             currentAmmoInMag--;
             PlayShootSound();
+            SpawnMuzzleFlash();
             NotifyShotHeardByEnemies();
             PerformRaycastShot();
             ApplyWeaponRecoil();
@@ -1122,6 +1136,77 @@ public class WeaponHandler : MonoBehaviour
         var tracer = Instantiate(prefab, muzzlePoint.position, Quaternion.LookRotation(direction));
         tracer.transform.localScale = new Vector3(thickness, thickness, 0.05f);
         StartCoroutine(AnimateTracer(tracer, direction, finalDistance, thickness, duration));
+    }
+
+    private void SpawnMuzzleFlash()
+    {
+        if (defaultMuzzlePoint == null)
+            return;
+
+        GameObject prefab = currentWeaponType == InventoryItem.ItemType.Gun
+            ? gunMuzzleFlashPrefab
+            : pistolMuzzleFlashPrefab;
+        GameObject lightPrefab = currentWeaponType == InventoryItem.ItemType.Gun
+            ? gunMuzzleLightPrefab
+            : pistolMuzzleLightPrefab;
+
+        if (prefab == null)
+            return;
+
+        GameObject flash = GetMuzzleFlashFromPool(prefab);
+        flash.transform.SetPositionAndRotation(defaultMuzzlePoint.position, defaultMuzzlePoint.rotation);
+        flash.SetActive(true);
+        StartCoroutine(DisableMuzzleFlashAfterDelay(flash, prefab));
+
+        if (lightPrefab == null)
+            return;
+
+        GameObject lightObj = GetMuzzleFlashFromPool(lightPrefab);
+        lightObj.transform.SetPositionAndRotation(defaultMuzzlePoint.position, defaultMuzzlePoint.rotation);
+        lightObj.SetActive(true);
+        StartCoroutine(DisableMuzzleFlashAfterDelay(lightObj, lightPrefab));
+    }
+
+    private GameObject GetMuzzleFlashFromPool(GameObject prefab)
+    {
+        if (!muzzleFlashPool.TryGetValue(prefab, out Queue<GameObject> pool))
+        {
+            pool = new Queue<GameObject>();
+            muzzleFlashPool[prefab] = pool;
+        }
+
+        while (pool.Count > 0)
+        {
+            GameObject candidate = pool.Dequeue();
+            if (candidate != null)
+                return candidate;
+        }
+
+        GameObject instance = Instantiate(prefab);
+        instance.SetActive(false);
+        return instance;
+    }
+
+    private IEnumerator DisableMuzzleFlashAfterDelay(GameObject flash, GameObject prefab)
+    {
+        if (flash == null)
+            yield break;
+
+        if (muzzleFlashLifetime > 0f)
+            yield return muzzleFlashWait ?? new WaitForSeconds(Mathf.Max(0.01f, muzzleFlashLifetime));
+
+        if (flash == null)
+            yield break;
+
+        flash.SetActive(false);
+
+        if (!muzzleFlashPool.TryGetValue(prefab, out Queue<GameObject> pool))
+        {
+            pool = new Queue<GameObject>();
+            muzzleFlashPool[prefab] = pool;
+        }
+
+        pool.Enqueue(flash);
     }
 
     private IEnumerator AnimateTracer(GameObject tracer, Vector3 direction, float distance, float thickness, float duration)
