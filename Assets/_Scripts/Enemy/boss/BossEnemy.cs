@@ -237,6 +237,15 @@ public class BossEnemy : MonoBehaviour
     public Animator animator;
     public ParticleSystem hitEffect;
     public AudioSource audioSource;
+    [System.Serializable]
+    public struct BossMusicEntry
+    {
+        public AudioClip clip;
+        [Range(0f, 1f)] public float volume;
+    }
+
+    [Tooltip("Фоновая музыка, которая играет пока босс жив (первый валидный элемент массива).")]
+    public BossMusicEntry[] bossAliveMusic;
     public AudioClip ramRoarClip;
     public AudioClip leskaSpawnClip;
     public AudioClip armorBreakClip;
@@ -253,6 +262,7 @@ public class BossEnemy : MonoBehaviour
     private NavMeshAgent navAgent;
     private Transform player;
     private PlayerHealth playerHealth;
+    private AudioSource bossMusicSource;
 
     private BossPhase currentPhase = BossPhase.Phase1;
     private bool phase2Entered;
@@ -395,6 +405,9 @@ public class BossEnemy : MonoBehaviour
         if (audioSource == null)
             audioSource = GetComponent<AudioSource>();
 
+        if (bossMusicSource == null && HasBossMusic())
+            bossMusicSource = CreateBossMusicSource();
+
         // Поиск игрока по тегу
         GameObject playerObj = GameObject.FindWithTag("Player");
         if (playerObj == null)
@@ -449,6 +462,8 @@ public class BossEnemy : MonoBehaviour
 
         if (sceneTransitionTriggerObject != null)
             sceneTransitionTriggerObject.SetActive(false);
+
+        StartBossMusic();
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -1317,6 +1332,8 @@ public class BossEnemy : MonoBehaviour
         isDead = true;
         isStunSequence = false;
 
+        StopBossMusic();
+
         dodgeStreak = 0;
 
         StopAllCoroutines();
@@ -1840,6 +1857,65 @@ public class BossEnemy : MonoBehaviour
     private void LogBossEvent(string eventName, string details)
     {
         Debug.Log($"[BossEnemy] {eventName}: {details}");
+    }
+
+    private AudioSource CreateBossMusicSource()
+    {
+        GameObject musicObject = new GameObject("BossAliveMusic");
+        musicObject.transform.SetParent(transform, false);
+
+        AudioSource musicSource = musicObject.AddComponent<AudioSource>();
+        musicSource.playOnAwake = false;
+        musicSource.loop = true;
+        musicSource.spatialBlend = 0f;
+        musicSource.volume = 1f;
+        return musicSource;
+    }
+
+    private void StartBossMusic()
+    {
+        if (!TryGetBossMusicEntry(out BossMusicEntry entry))
+            return;
+
+        if (bossMusicSource == null)
+            bossMusicSource = CreateBossMusicSource();
+
+        if (bossMusicSource.clip != entry.clip)
+            bossMusicSource.clip = entry.clip;
+
+        bossMusicSource.volume = Mathf.Clamp01(entry.volume);
+
+        if (!bossMusicSource.isPlaying)
+            bossMusicSource.Play();
+    }
+
+    private void StopBossMusic()
+    {
+        if (bossMusicSource != null)
+            bossMusicSource.Stop();
+    }
+
+    private bool HasBossMusic()
+    {
+        return bossAliveMusic != null && bossAliveMusic.Length > 0 && bossAliveMusic[0].clip != null;
+    }
+
+    private bool TryGetBossMusicEntry(out BossMusicEntry entry)
+    {
+        entry = default;
+        if (bossAliveMusic == null || bossAliveMusic.Length == 0)
+            return false;
+
+        for (int i = 0; i < bossAliveMusic.Length; i++)
+        {
+            if (bossAliveMusic[i].clip != null)
+            {
+                entry = bossAliveMusic[i];
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private string GetCurrentAttackName()
