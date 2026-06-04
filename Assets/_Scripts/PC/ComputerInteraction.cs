@@ -171,7 +171,7 @@ public class ComputerInteraction : MonoBehaviour
                 {
                     holding = true;
                     if (buzzingSound != null) audioSource.PlayOneShot(buzzingSound);
-                    statusText.text = "Запуск мотора привода...";
+                    statusText.text = "Starting the drive motor...";
                 }
 
                 progress += Time.deltaTime * fillSpeed;
@@ -193,7 +193,7 @@ public class ComputerInteraction : MonoBehaviour
                 {
                     holding = false;
                     audioSource.Stop();
-                    if (progress < 100f) statusText.text = "Вставка приостановлена...";
+                    if (progress < 100f) statusText.text = "Insertion paused...";
                 }
 
                 progress -= Time.deltaTime * dropSpeed;
@@ -304,7 +304,7 @@ public class ComputerInteraction : MonoBehaviour
         {
             inserting = true;
             progressBar.gameObject.SetActive(true);
-            statusText.text = "Нажмите и удерживайте (Вставить)";
+            statusText.text = "Press and hold (Insert)";
         }
     }
 
@@ -406,7 +406,7 @@ public class ComputerInteraction : MonoBehaviour
 
         if (successSound != null) audioSource.PlayOneShot(successSound);
 
-        statusText.text = "Дискета успешно вставлена! Лифт разблокирован.";
+        statusText.text = "Diskette inserted successfully! The lift is now unlocked.";
 
         if (disketteItem != null)
         {

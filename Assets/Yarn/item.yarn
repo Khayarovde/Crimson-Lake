@@ -1,15 +1,15 @@
 ﻿title: item
 ---
-Player: Подобрать предмет? #line:028edb7 
--> Да #line:0b3d132 
+Player: Pick up an item? #line:028edb7 
+-> Yes #line:0b3d132 
     <<pickup_current_item>>
     <<if $pickup_success>>
         
     <<else>>
-        Player: Инвентарь полон. #line:0df2e03 
+        Player: The inventory is full. #line:0df2e03 
     <<endif>>
     <<stop>>
--> Нет #line:0674c69 
+-> No #line:0674c69 
     <<stop>>
     
 ===

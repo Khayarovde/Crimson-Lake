@@ -257,7 +257,7 @@ public class PumpPuzzleController : MonoBehaviour
 
         if (levels[from] <= levelTolerance)
         {
-            SetStatus("Источник пуст.");
+            SetStatus("The source is empty.");
             return;
         }
 
@@ -326,11 +326,11 @@ public class PumpPuzzleController : MonoBehaviour
         if (!allowInfinitePlayAfterSuccess)
         {
             SetButtonsInteractable(false);
-            SetStatus("Успех! Ток есть!");
+            SetStatus("Success! Power is available.");
         }
         else
         {
-            SetStatus("Успех! Бесконечный режим активен.");
+            SetStatus("Success! Infinite mode is active.");
         }
 
         onPuzzleSolved?.Invoke();
@@ -380,12 +380,12 @@ public class PumpPuzzleController : MonoBehaviour
         if (!allowInfinitePlayAfterSuccess)
         {
             SetButtonsInteractable(false);
-            SetStatus("Успех! Ток есть!");
+            SetStatus("Success! Power is available.");
         }
         else
         {
             SetButtonsInteractable(true);
-            SetStatus("Успех! Бесконечный режим активен.");
+            SetStatus("Success! Infinite mode is active.");
         }
 
         if (invokeSolvedEventOnLoad)
@@ -396,7 +396,7 @@ public class PumpPuzzleController : MonoBehaviour
 
     private void TriggerOverflow(int tankIndex)
     {
-        SetStatus("Переполнение! По блоку, можете нажать на Сброс.");
+        SetStatus("Overflow! On the block, you can click Reset.");
 
         if (tankIndex >= 0 && tankIndex < tankShakeTargets.Length && tankShakeTargets[tankIndex] != null)
         {

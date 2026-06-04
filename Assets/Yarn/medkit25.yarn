@@ -1,13 +1,13 @@
 ﻿title: medkit25
 ---
-Player: Подобрать аптечку25? #line:09adeb3 
--> Да #line:0ae5506 
+Player: Pick up a first-aid kit? #line:09adeb3 
+-> Yes #line:0ae5506 
     <<pickup_current_medkit>>
     <<if not $pickup_success>>
-        Player: Не удалось использовать аптечку. Возможно, HP уже полный. #line:0aa8eb0 
+        Player: Couldn't use the first-aid kit. Perhaps HP is already full #line:0aa8eb0 
     <<endif>>
     <<stop>>
--> Нет #line:09245c2 
+-> No #line:09245c2 
     <<stop>>
 
 ===

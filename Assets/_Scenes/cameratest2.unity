@@ -979,6 +979,25 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9f0deae18f389274fa72fd371738005b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!1 &175677622 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 6360929240649722162, guid: d1719739a6045c744b1191b7a29de9ee, type: 3}
+  m_PrefabInstance: {fileID: 1035920927}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &175677626
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 175677622}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dbf51be86e70d7941bd40914206e4ddc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  translationName: NextChest
+  FallbackText: "\u041F\u0435\u0440\u0435\u0439\u0442\u0438 \u0432 \u0441\u0443\u043D\u0434\u0443\u043A"
 --- !u!1001 &184428761
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1383,6 +1402,9 @@ Transform:
   - {fileID: 1739799134}
   - {fileID: 683747539}
   - {fileID: 566392118}
+  - {fileID: 1375862054}
+  - {fileID: 731825975}
+  - {fileID: 1279897399}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &212373661
@@ -2063,6 +2085,46 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2254201950130294331, guid: c4a5bef15dc18d541bac6042da6a7c24, type: 3}
+      propertyPath: m_text
+      value: "\u041F\u0435\u0440\u0435\u0439\u0442\u0438 \u0432 \u0438\u043D\u0432\u0435\u043D\u0442\u0430\u0440\u044C"
+      objectReference: {fileID: 0}
+    - target: {fileID: 2254201950130294331, guid: c4a5bef15dc18d541bac6042da6a7c24, type: 3}
+      propertyPath: m_fontSize
+      value: 12.75
+      objectReference: {fileID: 0}
+    - target: {fileID: 2254201950130294331, guid: c4a5bef15dc18d541bac6042da6a7c24, type: 3}
+      propertyPath: m_fontAsset
+      value: 
+      objectReference: {fileID: 11400000, guid: fe66d40ffc1b09b4f8a2d327f398c404, type: 2}
+    - target: {fileID: 2254201950130294331, guid: c4a5bef15dc18d541bac6042da6a7c24, type: 3}
+      propertyPath: m_fontColor.b
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2254201950130294331, guid: c4a5bef15dc18d541bac6042da6a7c24, type: 3}
+      propertyPath: m_fontColor.g
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2254201950130294331, guid: c4a5bef15dc18d541bac6042da6a7c24, type: 3}
+      propertyPath: m_fontColor.r
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2254201950130294331, guid: c4a5bef15dc18d541bac6042da6a7c24, type: 3}
+      propertyPath: m_fontSizeBase
+      value: 12.75
+      objectReference: {fileID: 0}
+    - target: {fileID: 2254201950130294331, guid: c4a5bef15dc18d541bac6042da6a7c24, type: 3}
+      propertyPath: m_sharedMaterial
+      value: 
+      objectReference: {fileID: 2125502733569394247, guid: fe66d40ffc1b09b4f8a2d327f398c404, type: 2}
+    - target: {fileID: 2254201950130294331, guid: c4a5bef15dc18d541bac6042da6a7c24, type: 3}
+      propertyPath: m_fontColor32.rgba
+      value: 4294967295
+      objectReference: {fileID: 0}
+    - target: {fileID: 2254201950130294331, guid: c4a5bef15dc18d541bac6042da6a7c24, type: 3}
+      propertyPath: m_hasFontAssetChanged
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 3201353481483939190, guid: c4a5bef15dc18d541bac6042da6a7c24, type: 3}
       propertyPath: m_Intensity
       value: 50.3
@@ -2223,6 +2285,10 @@ PrefabInstance:
       propertyPath: m_Intensity
       value: 0.9
       objectReference: {fileID: 0}
+    - target: {fileID: 5414674033723852185, guid: c4a5bef15dc18d541bac6042da6a7c24, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5692133548831189851, guid: c4a5bef15dc18d541bac6042da6a7c24, type: 3}
       propertyPath: hintRoot
       value: 
@@ -2252,6 +2318,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 1662031901}
     - target: {fileID: 8164296439391978258, guid: c4a5bef15dc18d541bac6042da6a7c24, type: 3}
+      propertyPath: pickupId
+      value: SaveDiscket
+      objectReference: {fileID: 0}
+    - target: {fileID: 8164296439391978258, guid: c4a5bef15dc18d541bac6042da6a7c24, type: 3}
       propertyPath: enemyTest
       value: 
       objectReference: {fileID: 6421020360206225397}
@@ -2280,6 +2350,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 2068495459}
     - target: {fileID: 8396703910536335374, guid: c4a5bef15dc18d541bac6042da6a7c24, type: 3}
+      propertyPath: arrowHintValue
+      value: A - left | D - right
+      objectReference: {fileID: 0}
+    - target: {fileID: 8396703910536335374, guid: c4a5bef15dc18d541bac6042da6a7c24, type: 3}
       propertyPath: itemSpriteImage
       value: 
       objectReference: {fileID: 290313743}
@@ -2303,6 +2377,53 @@ PrefabInstance:
       propertyPath: darkOverlayImage
       value: 
       objectReference: {fileID: 1469333872}
+    - target: {fileID: 8396703910536335374, guid: c4a5bef15dc18d541bac6042da6a7c24, type: 3}
+      propertyPath: 'pages.Array.data[0]'
+      value: 'Document in folder:'
+      objectReference: {fileID: 0}
+    - target: {fileID: 8396703910536335374, guid: c4a5bef15dc18d541bac6042da6a7c24, type: 3}
+      propertyPath: 'pages.Array.data[1]'
+      value: 'Resuscitation and Disposal Complex Regulations
+
+
+        Note: Due
+        to the current situation, all employees are required to strictly follow these
+        instructions. Our delicate work has reached a new level, so everyone working
+        directly with objects must complete the procedure themselves beforehand.'
+      objectReference: {fileID: 0}
+    - target: {fileID: 8396703910536335374, guid: c4a5bef15dc18d541bac6042da6a7c24, type: 3}
+      propertyPath: 'pages.Array.data[2]'
+      value: 'Step 1: Remove the object from the patient room.
+
+        Step 2: Ensure
+        the room and equipment are sterile.
+
+        Step 3: Use the manipulators
+        to grasp the object.
+
+        Step 4: Clean the object, ensuring that blood,
+        debris, bones in unsuitable areas, etc. are removed.'
+      objectReference: {fileID: 0}
+    - target: {fileID: 8396703910536335374, guid: c4a5bef15dc18d541bac6042da6a7c24, type: 3}
+      propertyPath: 'pages.Array.data[3]'
+      value: 'Step 5: Use the manipulator to install the exoskeleton, being careful
+        not to damage the object''s tissue.
+
+        Step 6: Process and pack the
+        object, trying to minimize contamination in the room.
+
+        Step 7: Prepare
+        the object for transfer to level 0 for core installation.
+
+        We wish
+        you good luck in your duties, employee.'
+      objectReference: {fileID: 0}
+    - target: {fileID: 8396703910536335374, guid: c4a5bef15dc18d541bac6042da6a7c24, type: 3}
+      propertyPath: 'pages.Array.data[4]'
+      value: 'Note written in marker: "The last shift was fined for creating so-called
+        dirt, which, of course, came to life and began to penetrate the ventilation,
+        so be careful.'
+      objectReference: {fileID: 0}
     - target: {fileID: 8396703910536335374, guid: c4a5bef15dc18d541bac6042da6a7c24, type: 3}
       propertyPath: 'playerComponentsToDisable.Array.data[0]'
       value: 
@@ -2342,7 +2463,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 7641117567345873032, guid: c4a5bef15dc18d541bac6042da6a7c24, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2099308133}
   m_SourcePrefab: {fileID: 100100000, guid: c4a5bef15dc18d541bac6042da6a7c24, type: 3}
 --- !u!1001 &325643120
 PrefabInstance:
@@ -2647,6 +2771,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 2068495459}
     - target: {fileID: 6251230858776747470, guid: c24574a12ba9d2941b14862ad28044c9, type: 3}
+      propertyPath: arrowHintValue
+      value: A - left | D - right
+      objectReference: {fileID: 0}
+    - target: {fileID: 6251230858776747470, guid: c24574a12ba9d2941b14862ad28044c9, type: 3}
       propertyPath: itemSpriteImage
       value: 
       objectReference: {fileID: 290313743}
@@ -2670,6 +2798,30 @@ PrefabInstance:
       propertyPath: darkOverlayImage
       value: 
       objectReference: {fileID: 1469333872}
+    - target: {fileID: 6251230858776747470, guid: c24574a12ba9d2941b14862ad28044c9, type: 3}
+      propertyPath: 'pages.Array.data[1]'
+      value: A scrap of newspaper, such cheap print, feels like it's from the last
+        century.
+      objectReference: {fileID: 0}
+    - target: {fileID: 6251230858776747470, guid: c24574a12ba9d2941b14862ad28044c9, type: 3}
+      propertyPath: 'pages.Array.data[2]'
+      value: '"COLLAPSE"
+
+        According to experts, the planet will soon reach
+        the outermost orbit in the solar system; no one can yet determine the cause
+        of this; the world has lost contact with the rest of humanity, and will soon
+        be encased in dark ice.
+
+'
+      objectReference: {fileID: 0}
+    - target: {fileID: 6251230858776747470, guid: c24574a12ba9d2941b14862ad28044c9, type: 3}
+      propertyPath: 'pages.Array.data[3]'
+      value: 'Don''t panic, there is a solution - universal servitorization.
+
+        Know
+        this: you will die while participating in this glorious demonstration of
+        our power.'
+      objectReference: {fileID: 0}
     - target: {fileID: 6251230858776747470, guid: c24574a12ba9d2941b14862ad28044c9, type: 3}
       propertyPath: 'playerComponentsToDisable.Array.data[0]'
       value: 
@@ -2877,6 +3029,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 2068495459}
     - target: {fileID: 7626337035250213626, guid: e33ede25ed40768488c7f6fef0712667, type: 3}
+      propertyPath: arrowHintValue
+      value: A - left | D - right
+      objectReference: {fileID: 0}
+    - target: {fileID: 7626337035250213626, guid: e33ede25ed40768488c7f6fef0712667, type: 3}
       propertyPath: itemSpriteImage
       value: 
       objectReference: {fileID: 290313743}
@@ -2900,6 +3056,31 @@ PrefabInstance:
       propertyPath: darkOverlayImage
       value: 
       objectReference: {fileID: 1469333872}
+    - target: {fileID: 7626337035250213626, guid: e33ede25ed40768488c7f6fef0712667, type: 3}
+      propertyPath: 'pages.Array.data[0]'
+      value: WELCOME TO THE GAUS-215 COMPLEX
+      objectReference: {fileID: 0}
+    - target: {fileID: 7626337035250213626, guid: e33ede25ed40768488c7f6fef0712667, type: 3}
+      propertyPath: 'pages.Array.data[1]'
+      value: The poster is covered in marker, making it almost illegible.
+      objectReference: {fileID: 0}
+    - target: {fileID: 7626337035250213626, guid: e33ede25ed40768488c7f6fef0712667, type: 3}
+      propertyPath: 'pages.Array.data[2]'
+      value: 'At the very bottom, written in the same marker, it reads:
+
+        "To
+        all new arrivals, the complex is under quarantine.
+
+        Better save yourself.'
+      objectReference: {fileID: 0}
+    - target: {fileID: 7626337035250213626, guid: e33ede25ed40768488c7f6fef0712667, type: 3}
+      propertyPath: 'pages.Array.data[3]'
+      value: 'If you want to reach the lower levels, you must shut down the turret
+        and unlock the elevator.
+
+        Otherwise, you won''t be able to reach
+        the lake."'
+      objectReference: {fileID: 0}
     - target: {fileID: 7626337035250213626, guid: e33ede25ed40768488c7f6fef0712667, type: 3}
       propertyPath: 'playerComponentsToDisable.Array.data[0]'
       value: 
@@ -3494,7 +3675,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\u041F\u043E\u043B\u043E\u0436\u0438\u0442\u044C"
+  m_text: Put
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: fe66d40ffc1b09b4f8a2d327f398c404, type: 2}
   m_sharedMaterial: {fileID: 2125502733569394247, guid: fe66d40ffc1b09b4f8a2d327f398c404, type: 2}
@@ -3724,6 +3905,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 2068495459}
     - target: {fileID: 1926445828233501768, guid: f4f0c64cb36d59e438ed9159fc73bb63, type: 3}
+      propertyPath: arrowHintValue
+      value: A - left | D - right
+      objectReference: {fileID: 0}
+    - target: {fileID: 1926445828233501768, guid: f4f0c64cb36d59e438ed9159fc73bb63, type: 3}
       propertyPath: itemSpriteImage
       value: 
       objectReference: {fileID: 290313743}
@@ -3747,6 +3932,25 @@ PrefabInstance:
       propertyPath: darkOverlayImage
       value: 
       objectReference: {fileID: 1469333872}
+    - target: {fileID: 1926445828233501768, guid: f4f0c64cb36d59e438ed9159fc73bb63, type: 3}
+      propertyPath: 'pages.Array.data[0]'
+      value: A note in the elevator room
+      objectReference: {fileID: 0}
+    - target: {fileID: 1926445828233501768, guid: f4f0c64cb36d59e438ed9159fc73bb63, type: 3}
+      propertyPath: 'pages.Array.data[1]'
+      value: Some idiot blocked the elevator by activating the emergency security
+        system.
+      objectReference: {fileID: 0}
+    - target: {fileID: 1926445828233501768, guid: f4f0c64cb36d59e438ed9159fc73bb63, type: 3}
+      propertyPath: 'pages.Array.data[2]'
+      value: 'He probably ran off to the lake himself. Anyway, the only way is to
+        reboot the system (alliance detection) through the mainframe in the server
+        room. Find the diskette, it''s labeled, we can''t do anything without it.
+
+
+        -
+        Security Officer K.'
+      objectReference: {fileID: 0}
     - target: {fileID: 1926445828233501768, guid: f4f0c64cb36d59e438ed9159fc73bb63, type: 3}
       propertyPath: 'playerComponentsToDisable.Array.data[0]'
       value: 
@@ -3808,6 +4012,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 2068495459}
     - target: {fileID: 6980505617597841709, guid: f4f0c64cb36d59e438ed9159fc73bb63, type: 3}
+      propertyPath: arrowHintValue
+      value: A - left | D - right
+      objectReference: {fileID: 0}
+    - target: {fileID: 6980505617597841709, guid: f4f0c64cb36d59e438ed9159fc73bb63, type: 3}
       propertyPath: itemSpriteImage
       value: 
       objectReference: {fileID: 290313743}
@@ -3831,6 +4039,49 @@ PrefabInstance:
       propertyPath: darkOverlayImage
       value: 
       objectReference: {fileID: 1469333872}
+    - target: {fileID: 6980505617597841709, guid: f4f0c64cb36d59e438ed9159fc73bb63, type: 3}
+      propertyPath: 'pages.Array.data[0]'
+      value: 'Faded Journal
+
+        "Path to the Stars"'
+      objectReference: {fileID: 0}
+    - target: {fileID: 6980505617597841709, guid: f4f0c64cb36d59e438ed9159fc73bb63, type: 3}
+      propertyPath: 'pages.Array.data[1]'
+      value: Some idiot blocked the elevator by activating the emergency security
+        system.
+      objectReference: {fileID: 0}
+    - target: {fileID: 6980505617597841709, guid: f4f0c64cb36d59e438ed9159fc73bb63, type: 3}
+      propertyPath: 'pages.Array.data[2]'
+      value: 'On their carbon shoulders, servitors pulled human civilization to the
+        stars, giving birth to the modern order.
+
+
+        - Historical background:
+        One of the first human-colonized worlds brought a ray of enlightenment, revealing
+        to humanity the secret of servitor creation.
+
+
+        Only the best of the
+        best: Each of them is as much a citizen of our state as any passerby; but
+        only special training and skills helped them overcome all the difficulties
+        of their transformation.'
+      objectReference: {fileID: 0}
+    - target: {fileID: 6980505617597841709, guid: f4f0c64cb36d59e438ed9159fc73bb63, type: 3}
+      propertyPath: 'pages.Array.data[3]'
+      value: '- Outstanding and distinctive: You will easily recognize these heroes
+        of labor by their spacesuits with glass helmets and segmented armor.
+
+
+        -
+        Have no doubt: each of them is the pinnacle of human technology, capable
+        of surviving both in the vacuum of cold space and the scorching deserts of
+        our colonies.'
+      objectReference: {fileID: 0}
+    - target: {fileID: 6980505617597841709, guid: f4f0c64cb36d59e438ed9159fc73bb63, type: 3}
+      propertyPath: 'pages.Array.data[4]'
+      value: '-Join us: All inspired citizens are asked to fill out Form #1512 at
+        the Bureau of Enlightenment.'
+      objectReference: {fileID: 0}
     - target: {fileID: 6980505617597841709, guid: f4f0c64cb36d59e438ed9159fc73bb63, type: 3}
       propertyPath: 'playerComponentsToDisable.Array.data[0]'
       value: 
@@ -4334,6 +4585,11 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 8377492515512381484, guid: c4a5bef15dc18d541bac6042da6a7c24, type: 3}
   m_PrefabInstance: {fileID: 323975518}
   m_PrefabAsset: {fileID: 0}
+--- !u!224 &641899045 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 1967966432225324233, guid: 84d0380db7b9a32409726e620379f90e, type: 3}
+  m_PrefabInstance: {fileID: 4244686074526164055}
+  m_PrefabAsset: {fileID: 0}
 --- !u!224 &642306909 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 7181212048520119477, guid: 84d0380db7b9a32409726e620379f90e, type: 3}
@@ -4461,7 +4717,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: f686e0f32b672a347bbd4f3e393a62f9, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 327b0244c7cfd544b802b3bd749be79e, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -4736,93 +4992,58 @@ MonoBehaviour:
   - Language: English
     Text: FILE 1
     Object: {fileID: 0}
---- !u!1 &741613261 stripped
+--- !u!1 &731825974
 GameObject:
-  m_CorrespondingSourceObject: {fileID: 3872279704291209083, guid: 84d0380db7b9a32409726e620379f90e, type: 3}
-  m_PrefabInstance: {fileID: 4244686074526164055}
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &741613265
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 731825975}
+  - component: {fileID: 731825976}
+  m_Layer: 0
+  m_Name: Vstavit
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &731825975
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 731825974}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 211759120}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &731825976
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 741613261}
+  m_GameObject: {fileID: 731825974}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 365897690d9e7c54f9fd65401bffb0d3, type: 3}
+  m_Script: {fileID: 11500000, guid: eb15fa0e7301ff849bf4d6dcede7c12b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  translationName: ZagadkaVoltazh
-  FallbackText: "\u041D\u0430\u0441\u0442\u043E\u0439\u0442\u0435 \u0432\u043E\u043B\u044C\u0442\u0430\u0436
-    A=62.5%, B=75% C=12.5%."
---- !u!102 &741613266
-TextMesh:
-  serializedVersion: 3
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 741613261}
-  m_Text: Set voltage A=62.5%, B=75% C=12.5%.
-  m_OffsetZ: 0
-  m_CharacterSize: 1
-  m_LineSpacing: 1
-  m_Anchor: 0
-  m_Alignment: 0
-  m_TabSize: 4
-  m_FontSize: 0
-  m_FontStyle: 0
-  m_RichText: 1
-  m_Font: {fileID: 0}
-  m_Color:
-    serializedVersion: 2
-    rgba: 4294967295
---- !u!23 &741613267
-MeshRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 741613261}
-  m_Enabled: 1
-  m_CastShadows: 1
-  m_ReceiveShadows: 1
-  m_DynamicOccludee: 1
-  m_StaticShadowCaster: 0
-  m_MotionVectors: 1
-  m_LightProbeUsage: 1
-  m_ReflectionProbeUsage: 1
-  m_RayTracingMode: 2
-  m_RayTraceProcedural: 0
-  m_RayTracingAccelStructBuildFlagsOverride: 0
-  m_RayTracingAccelStructBuildFlags: 1
-  m_SmallMeshCulling: 1
-  m_RenderingLayerMask: 1
-  m_RendererPriority: 0
-  m_Materials:
-  - {fileID: 10100, guid: 0000000000000000e000000000000000, type: 0}
-  m_StaticBatchInfo:
-    firstSubMesh: 0
-    subMeshCount: 0
-  m_StaticBatchRoot: {fileID: 0}
-  m_ProbeAnchor: {fileID: 0}
-  m_LightProbeVolumeOverride: {fileID: 0}
-  m_ScaleInLightmap: 1
-  m_ReceiveGI: 1
-  m_PreserveUVs: 0
-  m_IgnoreNormalsForChartDetection: 0
-  m_ImportantGI: 0
-  m_StitchLightmapSeams: 1
-  m_SelectedEditorRenderState: 3
-  m_MinimumChartSize: 4
-  m_AutoUVMaxDistance: 0.5
-  m_AutoUVMaxAngle: 89
-  m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
-  m_SortingOrder: 0
-  m_AdditionalVertexStreams: {fileID: 0}
+  data: 0
+  entries:
+  - Language: Russian
+    Text: "\u0412\u0421\u0422\u0410\u0412\u0418\u0422\u042C"
+    Object: {fileID: 0}
+  - Language: English
+    Text: INSERT
+    Object: {fileID: 0}
 --- !u!114 &755960013 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 669839574084949174, guid: 84d0380db7b9a32409726e620379f90e, type: 3}
@@ -6613,8 +6834,8 @@ Camera:
     y: 0
     width: 1
     height: 1
-  near clip plane: -11
-  far clip plane: 290.1
+  near clip plane: -5.68
+  far clip plane: 104.7
   field of view: 23.44693
   orthographic: 1
   orthographic size: 6
@@ -6641,8 +6862,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 963194225}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.26431465, y: -0.6558489, z: 0.26431465, w: 0.6558489}
-  m_LocalPosition: {x: -184.93887, y: 2.2402875, z: -13.121559}
+  m_LocalRotation: {x: -0.38268343, y: 0, z: -0, w: -0.92387956}
+  m_LocalPosition: {x: -73.26999, y: 10.909094, z: -20.630009}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -7342,6 +7563,10 @@ PrefabInstance:
       value: 152.86194
       objectReference: {fileID: 0}
     - target: {fileID: 1760836399451787006, guid: d1719739a6045c744b1191b7a29de9ee, type: 3}
+      propertyPath: m_text
+      value: Destroy
+      objectReference: {fileID: 0}
+    - target: {fileID: 1760836399451787006, guid: d1719739a6045c744b1191b7a29de9ee, type: 3}
       propertyPath: m_fontSize
       value: 18
       objectReference: {fileID: 0}
@@ -7371,7 +7596,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1902687671877988580, guid: d1719739a6045c744b1191b7a29de9ee, type: 3}
       propertyPath: m_text
-      value: "\u0418\u0441\u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u044C"
+      value: Use
       objectReference: {fileID: 0}
     - target: {fileID: 1902687671877988580, guid: d1719739a6045c744b1191b7a29de9ee, type: 3}
       propertyPath: m_fontSize
@@ -7407,7 +7632,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2137901848932389645, guid: d1719739a6045c744b1191b7a29de9ee, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2170241256547891099, guid: d1719739a6045c744b1191b7a29de9ee, type: 3}
       propertyPath: m_AnchorMax.x
@@ -7498,6 +7723,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 1588342963}
     - target: {fileID: 3728000793150140739, guid: d1719739a6045c744b1191b7a29de9ee, type: 3}
+      propertyPath: m_text
+      value: Cancel
+      objectReference: {fileID: 0}
+    - target: {fileID: 3728000793150140739, guid: d1719739a6045c744b1191b7a29de9ee, type: 3}
       propertyPath: m_fontSize
       value: 18
       objectReference: {fileID: 0}
@@ -7528,6 +7757,10 @@ PrefabInstance:
     - target: {fileID: 4343565196176043680, guid: d1719739a6045c744b1191b7a29de9ee, type: 3}
       propertyPath: m_IsActive
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4351146524757715469, guid: d1719739a6045c744b1191b7a29de9ee, type: 3}
+      propertyPath: m_text
+      value: Connect
       objectReference: {fileID: 0}
     - target: {fileID: 4351146524757715469, guid: d1719739a6045c744b1191b7a29de9ee, type: 3}
       propertyPath: m_fontSize
@@ -7707,6 +7940,9 @@ PrefabInstance:
       insertIndex: 3
       addedObject: {fileID: 1044484500}
     m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 6360929240649722162, guid: d1719739a6045c744b1191b7a29de9ee, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 175677626}
     - targetCorrespondingSourceObject: {fileID: 4343565196176043680, guid: d1719739a6045c744b1191b7a29de9ee, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1145269530}
@@ -8059,6 +8295,157 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 2087286002909467011, guid: d5b62d2bae9c4de458ac4fdb8fe16979, type: 3}
   m_PrefabInstance: {fileID: 1716843547}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1093552386
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1093552387}
+  - component: {fileID: 1093552390}
+  - component: {fileID: 1093552389}
+  - component: {fileID: 1093552388}
+  m_Layer: 0
+  m_Name: Info2
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1093552387
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1093552386}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 641899045}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: -453, y: -117.55}
+  m_SizeDelta: {x: 485.34, y: 235.09}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1093552388
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1093552386}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dbf51be86e70d7941bd40914206e4ddc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  translationName: ZagadkaVoltazh
+  FallbackText: New Text
+--- !u!114 &1093552389
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1093552386}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_text: "Set voltage A=62.5%,\n\n B=75% C=12.5%."
+  m_isRightToLeft: 0
+  m_fontAsset: {fileID: 11400000, guid: fe66d40ffc1b09b4f8a2d327f398c404, type: 2}
+  m_sharedMaterial: {fileID: 2125502733569394247, guid: fe66d40ffc1b09b4f8a2d327f398c404, type: 2}
+  m_fontSharedMaterials: []
+  m_fontMaterial: {fileID: 0}
+  m_fontMaterials: []
+  m_fontColor32:
+    serializedVersion: 2
+    rgba: 4294967295
+  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
+  m_enableVertexGradient: 0
+  m_colorMode: 3
+  m_fontColorGradient:
+    topLeft: {r: 1, g: 1, b: 1, a: 1}
+    topRight: {r: 1, g: 1, b: 1, a: 1}
+    bottomLeft: {r: 1, g: 1, b: 1, a: 1}
+    bottomRight: {r: 1, g: 1, b: 1, a: 1}
+  m_fontColorGradientPreset: {fileID: 0}
+  m_spriteAsset: {fileID: 0}
+  m_tintAllSprites: 0
+  m_StyleSheet: {fileID: 0}
+  m_TextStyleHashCode: -1183493901
+  m_overrideHtmlColors: 0
+  m_faceColor:
+    serializedVersion: 2
+    rgba: 4294967295
+  m_fontSize: 24
+  m_fontSizeBase: 24
+  m_fontWeight: 400
+  m_enableAutoSizing: 0
+  m_fontSizeMin: 18
+  m_fontSizeMax: 72
+  m_fontStyle: 0
+  m_HorizontalAlignment: 2
+  m_VerticalAlignment: 512
+  m_textAlignment: 65535
+  m_characterSpacing: 5
+  m_wordSpacing: 0
+  m_lineSpacing: 0.6
+  m_lineSpacingMax: 0
+  m_paragraphSpacing: 0
+  m_charWidthMaxAdj: 0
+  m_TextWrappingMode: 1
+  m_wordWrappingRatios: 0.4
+  m_overflowMode: 0
+  m_linkedTextComponent: {fileID: 0}
+  parentLinkedComponent: {fileID: 0}
+  m_enableKerning: 0
+  m_ActiveFontFeatures: 6e72656b
+  m_enableExtraPadding: 0
+  checkPaddingRequired: 0
+  m_isRichText: 1
+  m_EmojiFallbackSupport: 1
+  m_parseCtrlCharacters: 1
+  m_isOrthographic: 1
+  m_isCullingEnabled: 0
+  m_horizontalMapping: 0
+  m_verticalMapping: 0
+  m_uvLineOffset: 0
+  m_geometrySortingOrder: 0
+  m_IsTextObjectScaleStatic: 0
+  m_VertexBufferAutoSizeReduction: 0
+  m_useMaxVisibleDescender: 1
+  m_pageToDisplay: 1
+  m_margin: {x: 0, y: 0, z: 0, w: 0}
+  m_isUsingLegacyAnimationComponent: 0
+  m_isVolumetricText: 0
+  m_hasFontAssetChanged: 0
+  m_baseMaterial: {fileID: 0}
+  m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!222 &1093552390
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1093552386}
+  m_CullTransparentMesh: 1
 --- !u!1 &1116429564
 GameObject:
   m_ObjectHideFlags: 0
@@ -8585,6 +8972,25 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 1527055450098318974, guid: adef00e2be323654ca5fa825a2cc3c72, type: 3}
   m_PrefabInstance: {fileID: 1235918094}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1242602035 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 462534302900937674, guid: 89f762edeb54a1544a2920e85589d2fe, type: 3}
+  m_PrefabInstance: {fileID: 1592471906}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1242602039
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1242602035}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dbf51be86e70d7941bd40914206e4ddc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  translationName: Vstavit
+  FallbackText: "\u0412\u0421\u0422\u0410\u0412\u0418\u0422\u042C"
 --- !u!1 &1266368031 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1279889443026124581, guid: 92677e9a314ba494ea74a3fd226cc647, type: 3}
@@ -8698,6 +9104,58 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1275703222}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &1279897398
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1279897399}
+  - component: {fileID: 1279897400}
+  m_Layer: 0
+  m_Name: GotoInventory
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1279897399
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1279897398}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 211759120}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1279897400
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1279897398}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eb15fa0e7301ff849bf4d6dcede7c12b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  data: 0
+  entries:
+  - Language: Russian
+    Text: "\u043F\u0435\u0440\u0435\u0439\u0442\u0438 \u0432 \u0438\u043D\u0432\u0435\u043D\u0442\u0430\u0440\u044C"
+    Object: {fileID: 0}
+  - Language: English
+    Text: go to inventory
+    Object: {fileID: 0}
 --- !u!1 &1283581052 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 124077951607557165, guid: ce1f430e12097a849bc304f7c98e1840, type: 3}
@@ -9372,23 +9830,22 @@ MonoBehaviour:
     gamepadSprite: {fileID: 2115463587, guid: 3b33f8c14f54f2b409d4967f3067f07a, type: 3}
     showLabel: 1
     targetText: {fileID: 1751997269}
-    keyboardLabel: "\u0432\u044B\u0431\u043E\u0440 \u043F\u0440\u0435\u0434\u043C\u0435\u0442\u0430"
-    gamepadLabel: "\u0432\u044B\u0431\u043E\u0440 \u043F\u0440\u0435\u0434\u043C\u0435\u0442\u0430"
+    keyboardLabel: choosing a subject
+    gamepadLabel: choosing a subject
   - targetImage: {fileID: 35707461}
     keyboardSprite: {fileID: 21300000, guid: ce3e3f45d6a752f4e9c2e621b7b1b000, type: 3}
     gamepadSprite: {fileID: 1408038545, guid: 3b33f8c14f54f2b409d4967f3067f07a, type: 3}
     showLabel: 1
     targetText: {fileID: 131851110}
-    keyboardLabel: "\u0432\u0437\u0430\u0438\u043C\u043E\u0434\u0435\u0439\u0441\u0442\u0432\u0438\u0435
-      \u0441 \u043F\u0440\u0435\u0434\u043C\u0435\u0442\u0430\u043C\u0438"
-    gamepadLabel: "\u043F\u043E\u043A\u0430\u0437\u0430\u0442\u044C \u0434\u0435\u0439\u0441\u0442\u0432\u0438\u0435"
+    keyboardLabel: interaction with objects
+    gamepadLabel: show action
   - targetImage: {fileID: 2059513077}
     keyboardSprite: {fileID: 0}
     gamepadSprite: {fileID: 183932351, guid: 3b33f8c14f54f2b409d4967f3067f07a, type: 3}
     showLabel: 1
     targetText: {fileID: 762557121}
     keyboardLabel: 
-    gamepadLabel: "\u043F\u0440\u0438\u043D\u044F\u0442\u044C \u0434\u0435\u0441\u0442\u0432\u0438\u0435"
+    gamepadLabel: accept the decision
   watchTarget: {fileID: 1418746654}
   showOnStart: 0
   forceKeyboard: 0
@@ -9582,6 +10039,58 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!1 &1375862053
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1375862054}
+  - component: {fileID: 1375862055}
+  m_Layer: 0
+  m_Name: NextChest
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1375862054
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1375862053}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 211759120}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1375862055
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1375862053}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eb15fa0e7301ff849bf4d6dcede7c12b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  data: 0
+  entries:
+  - Language: Russian
+    Text: "\u041F\u0435\u0440\u0435\u0439\u0442\u0438 \u0432 \u0441\u0443\u043D\u0434\u0443\u043A"
+    Object: {fileID: 0}
+  - Language: English
+    Text: Go to chest
+    Object: {fileID: 0}
 --- !u!1 &1389881683 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 8439502441941190864, guid: c4a5bef15dc18d541bac6042da6a7c24, type: 3}
@@ -11130,6 +11639,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3299184631144104210, guid: 89f762edeb54a1544a2920e85589d2fe, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 3765980813400002971, guid: 89f762edeb54a1544a2920e85589d2fe, type: 3}
       propertyPath: m_Name
       value: Hole-room
@@ -11166,6 +11679,10 @@ PrefabInstance:
       propertyPath: interactionHint
       value: 
       objectReference: {fileID: 1761612847}
+    - target: {fileID: 6902064973606602959, guid: 89f762edeb54a1544a2920e85589d2fe, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7890742328250267278, guid: 89f762edeb54a1544a2920e85589d2fe, type: 3}
       propertyPath: dialogueRunnerOverride
       value: 
@@ -11182,6 +11699,10 @@ PrefabInstance:
       propertyPath: arrowHintText
       value: 
       objectReference: {fileID: 2068495459}
+    - target: {fileID: 8532242990402455736, guid: 89f762edeb54a1544a2920e85589d2fe, type: 3}
+      propertyPath: arrowHintValue
+      value: A - left | D - right
+      objectReference: {fileID: 0}
     - target: {fileID: 8532242990402455736, guid: 89f762edeb54a1544a2920e85589d2fe, type: 3}
       propertyPath: itemSpriteImage
       value: 
@@ -11211,27 +11732,53 @@ PrefabInstance:
       value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 8532242990402455736, guid: 89f762edeb54a1544a2920e85589d2fe, type: 3}
+      propertyPath: 'pages.Array.data[0]'
+      value: Note in the server room
+      objectReference: {fileID: 0}
+    - target: {fileID: 8532242990402455736, guid: 89f762edeb54a1544a2920e85589d2fe, type: 3}
+      propertyPath: 'pages.Array.data[1]'
+      value: The system is frozen and the data is lost. Find the diskette in the
+        lab room; one of the eggheads must have snatched it for the terminal.
+      objectReference: {fileID: 0}
+    - target: {fileID: 8532242990402455736, guid: 89f762edeb54a1544a2920e85589d2fe, type: 3}
+      propertyPath: 'pages.Array.data[2]'
+      value: It's pretty crowded there, but get it back to the mainframe, okay? Nothing
+        will work without it.
+      objectReference: {fileID: 0}
+    - target: {fileID: 8532242990402455736, guid: 89f762edeb54a1544a2920e85589d2fe, type: 3}
       propertyPath: 'pages.Array.data[3]'
-      value: "\u0422\u0430\u043C \u0434\u043E\u0432\u043E\u043B\u044C\u043D\u043E
-        \u043B\u044E\u0434\u043D\u043E, \u043D\u043E \u0442\u044B \u0435\u0451 \u0432\u0441\u0451
-        \u0436\u0435 \u0432\u0435\u0440\u043D\u0438 \u043E\u0431\u0440\u0430\u0442\u043D\u043E
-        \u043A \u043C\u0435\u0439\u043D\u0444\u0440\u0435\u0439\u043C\u0443, \u0445\u043E\u0440\u043E\u0448\u043E?
-        \u0411\u0435\u0437 \u043D\u0435\u0451 \u043D\u0438\u0447\u0435\u0433\u043E
-        \u043D\u0435 \u0437\u0430\u0440\u0430\u0431\u043E\u0442\u0430\u0435\u0442.\r\n-
-        \u0430\u0434\u043C\u0438\u043D\u0438\u0441\u0442\u0440\u0430\u0442\u043E\u0440"
+      value: '- Administrator'
       objectReference: {fileID: 0}
     - target: {fileID: 8532242990402455736, guid: 89f762edeb54a1544a2920e85589d2fe, type: 3}
       propertyPath: 'pages.Array.data[4]'
-      value: 
+      value: 'Only the best of the best: Each of them is as much a citizen of our
+        state as any passerby; but only special training and skills helped them overcome
+        all the difficulties of their transformation.
+
+
+        Outstanding and distinctive:
+        You will easily recognize these heroes of labor by their spacesuits with
+        glass helmets and segmented armor.'
       objectReference: {fileID: 0}
     - target: {fileID: 8532242990402455736, guid: 89f762edeb54a1544a2920e85589d2fe, type: 3}
       propertyPath: 'playerComponentsToDisable.Array.data[0]'
       value: 
       objectReference: {fileID: 1834082573}
+    - target: {fileID: 8539593936173148888, guid: 89f762edeb54a1544a2920e85589d2fe, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8897979704055641627, guid: 89f762edeb54a1544a2920e85589d2fe, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 462534302900937674, guid: 89f762edeb54a1544a2920e85589d2fe, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1242602039}
   m_SourcePrefab: {fileID: 100100000, guid: 89f762edeb54a1544a2920e85589d2fe, type: 3}
 --- !u!1 &1597821615
 GameObject:
@@ -11726,7 +12273,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "enter - \u0432\u0437\u0430\u0438\u043C\u043E\u0434\u0435\u0439\u0441\u0442\u0432\u0438\u0435 "
+  m_text: enter - use
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: fe66d40ffc1b09b4f8a2d327f398c404, type: 2}
   m_sharedMaterial: {fileID: 2125502733569394247, guid: fe66d40ffc1b09b4f8a2d327f398c404, type: 2}
@@ -14394,6 +14941,25 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2099308129 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7641117567345873032, guid: c4a5bef15dc18d541bac6042da6a7c24, type: 3}
+  m_PrefabInstance: {fileID: 323975518}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &2099308133
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2099308129}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dbf51be86e70d7941bd40914206e4ddc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  translationName: GotoInventory
+  FallbackText: "\u043F\u0435\u0440\u0435\u0439\u0442\u0438 \u0432 \u0438\u043D\u0432\u0435\u043D\u0442\u0430\u0440\u044C"
 --- !u!114 &2102562498 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 5103374468742614714, guid: 84d0380db7b9a32409726e620379f90e, type: 3}
@@ -14872,6 +15438,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 2068495459}
     - target: {fileID: 3558314871962156128, guid: 70cbc7d701d7bc349886606e56a550c3, type: 3}
+      propertyPath: arrowHintValue
+      value: A - left | D - right
+      objectReference: {fileID: 0}
+    - target: {fileID: 3558314871962156128, guid: 70cbc7d701d7bc349886606e56a550c3, type: 3}
       propertyPath: itemSpriteImage
       value: 
       objectReference: {fileID: 290313743}
@@ -14895,6 +15465,30 @@ PrefabInstance:
       propertyPath: darkOverlayImage
       value: 
       objectReference: {fileID: 1469333872}
+    - target: {fileID: 3558314871962156128, guid: 70cbc7d701d7bc349886606e56a550c3, type: 3}
+      propertyPath: pages.Array.size
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 3558314871962156128, guid: 70cbc7d701d7bc349886606e56a550c3, type: 3}
+      propertyPath: 'pages.Array.data[0]'
+      value: A bloody note by the shotgun
+      objectReference: {fileID: 0}
+    - target: {fileID: 3558314871962156128, guid: 70cbc7d701d7bc349886606e56a550c3, type: 3}
+      propertyPath: 'pages.Array.data[1]'
+      value: '...so much blood, I never would have thought
+
+        my metamorphosis
+        must be horrifying...
+
+        (inaudible), I just hope you find my notes
+        and get out of here...
+
+        Take it, I won''t need it anymore...'
+      objectReference: {fileID: 0}
+    - target: {fileID: 3558314871962156128, guid: 70cbc7d701d7bc349886606e56a550c3, type: 3}
+      propertyPath: 'pages.Array.data[2]'
+      value: officer...
+      objectReference: {fileID: 0}
     - target: {fileID: 3558314871962156128, guid: 70cbc7d701d7bc349886606e56a550c3, type: 3}
       propertyPath: 'playerComponentsToDisable.Array.data[0]'
       value: 
@@ -16132,6 +16726,10 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: -37.5
       objectReference: {fileID: 0}
+    - target: {fileID: 7801891135182847464, guid: 84d0380db7b9a32409726e620379f90e, type: 3}
+      propertyPath: m_Text
+      value: 
+      objectReference: {fileID: 0}
     - target: {fileID: 8803018889490489673, guid: 84d0380db7b9a32409726e620379f90e, type: 3}
       propertyPath: m_AnchorMax.y
       value: 1
@@ -16149,18 +16747,13 @@ PrefabInstance:
       value: -37.5
       objectReference: {fileID: 0}
     m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 3872279704291209083, guid: 84d0380db7b9a32409726e620379f90e, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 741613267}
-    - targetCorrespondingSourceObject: {fileID: 3872279704291209083, guid: 84d0380db7b9a32409726e620379f90e, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 741613266}
-    - targetCorrespondingSourceObject: {fileID: 3872279704291209083, guid: 84d0380db7b9a32409726e620379f90e, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 741613265}
+    m_RemovedGameObjects:
+    - {fileID: 3872279704291209083, guid: 84d0380db7b9a32409726e620379f90e, type: 3}
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: 1967966432225324233, guid: 84d0380db7b9a32409726e620379f90e, type: 3}
+      insertIndex: 8
+      addedObject: {fileID: 1093552387}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 84d0380db7b9a32409726e620379f90e, type: 3}
 --- !u!1001 &4736591462382608573
 PrefabInstance:

@@ -1,13 +1,13 @@
 ﻿title: ammoPistol
 ---
-Player: Подобрать Пистолетные патроны? #line:09370ed 
--> Да #line:01a41bc 
+Player: Pick up Pistol cartridges?? #line:09370ed 
+-> Yes #line:01a41bc 
     <<pickup_current_ammo>>
     <<if not $pickup_success>>
-        Player: Инвентарь полон. #line:06cba90 
+        Player: The inventory is full. #line:06cba90 
     <<endif>>
     <<stop>>
--> Нет #line:0d343b1 
+-> No #line:0d343b1 
     <<stop>>
     
 ===

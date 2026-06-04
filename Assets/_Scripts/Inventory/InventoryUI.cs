@@ -484,11 +484,11 @@ public class InventoryUI : MonoBehaviour
         panelRect.anchorMax = new Vector2(0f, 1f);
         panelRect.pivot = new Vector2(0f, 1f);
 
-        contextSelectButton = CreateContextMenuButton(panelObj.transform, "SelectButton", "Использовать");
-        contextCombineButton = CreateContextMenuButton(panelObj.transform, "CombineButton", "Соединить");
-        contextDestroyButton = CreateContextMenuButton(panelObj.transform, "DestroyButton", "Уничтожить");
-        contextStoreButton = CreateContextMenuButton(panelObj.transform, "StoreButton", "Положить");
-        contextCancelButton = CreateContextMenuButton(panelObj.transform, "CancelButton", "Отмена");
+        contextSelectButton = CreateContextMenuButton(panelObj.transform, "SelectButton", "use");
+        contextCombineButton = CreateContextMenuButton(panelObj.transform, "CombineButton", "combine");
+        contextDestroyButton = CreateContextMenuButton(panelObj.transform, "DestroyButton", "destroy");
+        contextStoreButton = CreateContextMenuButton(panelObj.transform, "StoreButton", "store");
+        contextCancelButton = CreateContextMenuButton(panelObj.transform, "CancelButton", "cancel");
 
         return panelObj;
     }
@@ -570,8 +570,8 @@ public class InventoryUI : MonoBehaviour
         bool canSelect = item != null && item.type == InventoryItem.ItemType.Medkit;
         bool canDestroy = CanDestroyItem(item);
 
-        SetContextMenuButtonLabel(contextSelectButton, "Использовать");
-        SetContextMenuButtonLabel(contextStoreButton, "Положить");
+        SetContextMenuButtonLabel(contextSelectButton, "use");
+        SetContextMenuButtonLabel(contextStoreButton, "store");
 
         bool nearChest = playerInventory != null && playerInventory.IsNearChest();
         SetContextMenuButtonActive(contextSelectButton, canSelect);
@@ -587,7 +587,7 @@ public class InventoryUI : MonoBehaviour
     {
         contextMenuIsChest = true;
 
-        SetContextMenuButtonLabel(contextSelectButton, "Взять");
+        SetContextMenuButtonLabel(contextSelectButton, "take");
 
         SetContextMenuButtonActive(contextSelectButton, true);
         SetContextMenuButtonActive(contextCombineButton, true);
@@ -801,7 +801,7 @@ public class InventoryUI : MonoBehaviour
         if (activeIndex == combineSourceSlotIndex)
         {
             if (activeItemInfoText != null)
-                activeItemInfoText.text = "Выберите другой предмет для соединения";
+                activeItemInfoText.text = "Select another object to connect";
             return false;
         }
 
@@ -830,7 +830,7 @@ public class InventoryUI : MonoBehaviour
         combineSourceIsChest = false;
 
         if (activeItemInfoText != null)
-            activeItemInfoText.text = "Соединение отменено";
+            activeItemInfoText.text = "Connection cancelled";
 
         UpdateInventoryUI();
     }
@@ -893,7 +893,7 @@ public class InventoryUI : MonoBehaviour
         HideContextMenu();
 
         if (activeItemInfoText != null)
-            activeItemInfoText.text = "Режим соединения: выберите второй предмет";
+            activeItemInfoText.text = "Combine Mode: select another object to connect";
     }
 
     private void UpdateContextMenuSelectionVisual()
@@ -946,7 +946,7 @@ public class InventoryUI : MonoBehaviour
         if (combineSourceIsChest != isChestSlot)
         {
             if (activeItemInfoText != null)
-                activeItemInfoText.text = "Выберите предмет в той же сумке";
+                activeItemInfoText.text = "Select an item in the same bag";
             return;
         }
 
@@ -954,7 +954,7 @@ public class InventoryUI : MonoBehaviour
         if (sourceSlot < 0 || secondSlotIndex < 0 || sourceSlot == secondSlotIndex)
         {
             if (activeItemInfoText != null)
-                activeItemInfoText.text = "Соединение отменено";
+                activeItemInfoText.text = "Connection cancelled";
             UpdateInventoryUI();
             return;
         }
@@ -977,7 +977,7 @@ public class InventoryUI : MonoBehaviour
         if (recipe == null || recipe.resultItem == null)
         {
             if (activeItemInfoText != null)
-                activeItemInfoText.text = $"Нельзя соединить: {firstItem.itemName} + {secondItem.itemName}";
+                activeItemInfoText.text = $"Cannot combine: {firstItem.itemName} + {secondItem.itemName}";
 
             AnimateCraftFailText();
             UpdateInventoryUI();
@@ -999,7 +999,7 @@ public class InventoryUI : MonoBehaviour
         UpdateChestUI();
 
         if (activeItemInfoText != null)
-            activeItemInfoText.text = $"Создано: {recipe.resultItem.itemName}";
+            activeItemInfoText.text = $"Created: {recipe.resultItem.itemName}";
     }
 
     private ItemCombineRecipe FindCombineRecipe(InventoryItem first, InventoryItem second)
@@ -1287,37 +1287,37 @@ public class InventoryUI : MonoBehaviour
                     switch (activeItem.type)
                     {
                         case InventoryItem.ItemType.Gun:
-                            nextInfoText = $"Тип: {activeItem.itemName}\nВинтовка, что использует патроны 10мм. Рабочая лошадка. Без модификаций.";
+                            nextInfoText = $"Type: {activeItem.itemName}\nRifle that uses 10mm cartridges. A work horse. No modifications.";
                             break;
                         case InventoryItem.ItemType.Pistol:
-                            nextInfoText = $"Тип: {activeItem.itemName}\nЛёгкий пистолет с патронами 9мм. Быстрая перезарядка, низкий урон.";
+                            nextInfoText = $"Type: {activeItem.itemName}\nLight pistol with 9mm cartridges. Fast reload, low damage.";
                             break;
                         case InventoryItem.ItemType.Disketa:
                         case InventoryItem.ItemType.Cassette:
-                            nextInfoText = $"Тип: {activeItem.itemName}\nНоситель данных для терминалов - самый большой компьютер в комплексе";
+                            nextInfoText = $"Type: {activeItem.itemName}\nData storage for terminals - the largest computer in the complex";
                             break;
                         case InventoryItem.ItemType.PistolAmmo:
-                            nextInfoText = $"Тип: {activeItem.itemName}\nБоеприпасы для пистолета. Доступно: <b>{PlayerAmmoData.pistolReserve}</b>.";
+                            nextInfoText = $"Type: {activeItem.itemName}\nAmmunition for pistol. Available: <b>{PlayerAmmoData.pistolReserve}</b>.";
                             break;
                         case InventoryItem.ItemType.ShotgunAmmo:
-                            nextInfoText = $"Тип: {activeItem.itemName}\nБоеприпасы для дробовика. Доступно: <b>{PlayerAmmoData.gunReserve}</b>.";
+                            nextInfoText = $"Type: {activeItem.itemName}\nAmmunition for shotgun. Available: <b>{PlayerAmmoData.gunReserve}</b>.";
                             break;
                         case InventoryItem.ItemType.Medkit:
                             int healAmount = activeItem.medkitProfile != null ? activeItem.medkitProfile.HealAmount : 0;
                             if (healAmount > 0)
-                                nextInfoText = $"Тип: {activeItem.itemName}\nАптечка. Восстанавливает <b>{healAmount}</b> HP.";
+                                nextInfoText = $"Type: {activeItem.itemName}\nMedkit. Heals <b>{healAmount}</b> HP.";
                             else
-                                nextInfoText = $"Тип: {activeItem.itemName}\nАптечка. Профиль лечения не назначен.";
+                                nextInfoText = $"Type: {activeItem.itemName}\nMedkit. No healing profile assigned.";
                             break;
                         default:
-                            nextInfoText = $"Активный предмет: {activeItem.itemName}\nТип: {activeItem.type}";
+                            nextInfoText = $"Active item: {activeItem.itemName}\nType: {activeItem.type}";
                             break;
                     }
                 }
             }
             else
             {
-                nextInfoText = "Ничего не выбрано";
+                nextInfoText = "No item selected";
             }
 
             if (nextInfoText != lastActiveItemInfoText || activeIndex != lastActiveItemIndex)
