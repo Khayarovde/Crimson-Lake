@@ -1,32 +1,68 @@
 # Crimson-Lake
 open source assets:
 
-https://assetstore.unity.com/packages/3d/props/retro-psx-horror-puzzle-item-pack-icon-lowpoly-250188
+# 📦 Third-Party Assets
 
-https://assetstore.unity.com/packages/3d/props/tools/survival-game-tools-139872
+All assets are sourced from the [Unity Asset Store](https://assetstore.unity.com). Licenses are respected per their respective terms — packages are **not included** in this repository and must be imported manually via your Unity Asset Store account.
 
-https://drive.google.com/drive/folders/1FKcem80Gxgl792-KD1wxfs9ieHewiZPX
+---
 
-https://free3d.com/ru/3d-model/old-wooden-table-44822.html
+## 🌍 Environments & Props
 
-https://free3d.com/ru/3d-model/old-chair-51635.html
+| Asset | Type | Link |
+|---|---|---|
+| Free Demo – Low Poly Sci-Fi Laboratory | 3D Environment | [Asset Store](https://assetstore.unity.com/packages/3d/environments/sci-fi/free-demo-low-poly-sci-fi-laboratory-cosmic-retro-346024) |
+| Sci-Fi Construction Kit (Modular) | 3D Environment | [Asset Store](https://assetstore.unity.com/packages/3d/environments/sci-fi/sci-fi-construction-kit-modular-159280) |
+| Free Demo – GoldenFrame Terminal (Retro Sci-Fi) | 3D Props | [Asset Store](https://assetstore.unity.com/packages/3d/props/electronics/free-demo-goldenframe-terminal-demo-scene-low-poly-retro-sci-fi--326845) |
+| First Aid Set | 3D Props | [Asset Store](https://assetstore.unity.com/packages/3d/props/first-aid-set-160073) |
+| Fire Extinguisher | 3D Props | [Asset Store](https://assetstore.unity.com/packages/3d/props/fire-extinguisher-21147) |
+| Textile Chair | 3D Props | [Asset Store](https://assetstore.unity.com/packages/3d/props/furniture/textile-chair-156159) |
+| Sci-Fi Guns – Plug and Play | 3D Weapons | [Asset Store](https://assetstore.unity.com/packages/3d/props/guns/sci-fi-guns-plug-and-play-314300) |
 
-https://free3d.com/ru/3d-model/old-chair-697091.html
+---
 
-https://free3d.com/ru/3d-model/rgb-gaming-desk-49562.html
+## 🎨 Shaders & Materials
 
-https://www.turbosquid.com/ru/3d-models/chain-link-fence-set-3d-1382019
+| Asset | Type | Link |
+|---|---|---|
+| Aero Volumetric Fog and Mist | Full-screen Shader | [Asset Store](https://assetstore.unity.com/packages/vfx/shaders/fullscreen-camera-effects/aero-volumetric-fog-and-mist-277702) |
+| Hologram VFX (URP) | Shader | [Asset Store](https://assetstore.unity.com/packages/vfx/shaders/hologram-vfx-urp-344340) |
+| Ultimate 10 Shaders | Shader Pack | [Asset Store](https://assetstore.unity.com/packages/vfx/shaders/ultimate-10-shaders-168611) |
+| Free Pack – Water Shader (URP) | Shader | [Asset Store](https://assetstore.unity.com/packages/vfx/shaders/free-pack-water-shader-urp-352382) |
+| Free Outline | Shader | [Asset Store](https://assetstore.unity.com/packages/vfx/shaders/free-outline-326925) |
+| Yughues Free Architectural Materials | PBR Materials | [Asset Store](https://assetstore.unity.com/packages/2d/textures-materials/yughues-free-architectural-materials-13234) |
+| Yughues Free Metal Materials | PBR Materials | [Asset Store](https://assetstore.unity.com/packages/2d/textures-materials/metals/yughues-free-metal-materials-12949) |
+| Yughues Free Manmade Materials | PBR Materials | [Asset Store](https://assetstore.unity.com/packages/2d/textures-materials/yughues-free-manmade-materials-13005) |
+| 4 Snow Materials – High Quality | PBR Materials | [Asset Store](https://assetstore.unity.com/packages/2d/textures-materials/4-snow-materials-high-quality-materials-collection-69201) |
 
-https://www.turbosquid.com/ru/3d-models/free-floppy-3d-model/423990
+---
 
-https://www.turbosquid.com/ru/Search/Index.cfm?keyword=floppy+disk&media_typeid=2&max_price=0&min_price=0&prevent_feature_intercept=1
+## ✨ VFX & Particles
 
-https://sketchfab.com/search?q=floppy+disk&type=models
+| Asset | Type | Link |
+|---|---|---|
+| Particle Pack | General VFX | [Asset Store](https://assetstore.unity.com/packages/vfx/particles/particle-pack-127325) |
+| Hail Particles Pack | Environment VFX | [Asset Store](https://assetstore.unity.com/packages/vfx/particles/environment/hail-particles-pack-62038) |
 
-https://assetstore.unity.com/packages/3d/props/electronics/tv-set-26193
+---
 
-https://free3d.com/ru/3d-model/fire-extinguisher-701189.html
+## 🔊 Audio
 
-https://free3d.com/ru/3d-model/steel-railing-63774.html
+| Asset | Type | Link |
+|---|---|---|
+| BroAudio | Audio Plugin | [Asset Store](https://assetstore.unity.com/packages/tools/audio/bro-audio-257362) |
+| Sci-Fi Guns SFX Pack | Sound Effects | [Asset Store](https://assetstore.unity.com/packages/audio/sound-fx/sci-fi-guns-sfx-pack-181144) |
+| Footsteps Essentials | Sound Effects | [Asset Store](https://assetstore.unity.com/packages/audio/sound-fx/foley/footsteps-essentials-189879) |
 
-https://free3d.com/ru/3d-models/unity?dd_referrer=https%3A%2F%2Fwww.google.com%2F
+---
+
+## 🛠 Tools & Plugins
+
+| Asset | Purpose | Link |
+|---|---|---|
+| DOTween (HOTween v2) | Tweening / Animation | [Asset Store](https://assetstore.unity.com/packages/tools/animation/dotween-hotween-v2-27676) |
+| Quick Outline | GPU Outline Rendering | [Asset Store](https://assetstore.unity.com/packages/tools/particles-effects/quick-outline-115488) |
+
+---
+
+> ⚠️ Import each package through **Window → Package Manager → My Assets** in Unity after purchasing or adding to your account.
