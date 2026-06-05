@@ -1,9 +1,5 @@
 # Crimson-Lake
-open source assets:
-
-# 📦 Third-Party Assets
-
-All assets are sourced from the [Unity Asset Store](https://assetstore.unity.com). Licenses are respected per their respective terms — packages are **not included** in this repository and must be imported manually via your Unity Asset Store account.
+📦 Open source assets:
 
 ---
 
@@ -64,5 +60,3 @@ All assets are sourced from the [Unity Asset Store](https://assetstore.unity.com
 | Quick Outline | GPU Outline Rendering | [Asset Store](https://assetstore.unity.com/packages/tools/particles-effects/quick-outline-115488) |
 
 ---
-
-> ⚠️ Import each package through **Window → Package Manager → My Assets** in Unity after purchasing or adding to your account.
