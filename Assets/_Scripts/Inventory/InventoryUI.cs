@@ -1280,7 +1280,7 @@ public class InventoryUI : MonoBehaviour
                 var activeItem = slots[activeIndex];
                 if (activeItem.useCustomDescription && !string.IsNullOrWhiteSpace(activeItem.customDescription))
                 {
-                    nextInfoText = $"Тип: {activeItem.itemName}\n{activeItem.customDescription}";
+                    nextInfoText = $"Type: {activeItem.itemName}\n{activeItem.customDescription}";
                 }
                 else
                 {

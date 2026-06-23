@@ -359,7 +359,7 @@ public class UniversalHelpUI : MonoBehaviour
             ? (zeroBasedPageIndex ? 0 : 1)
             : (currentPageIndex + 1);
 
-        pageCounterText.text = shownIndex + " из " + pages.Length;
+        pageCounterText.text = shownIndex + " from " + pages.Length;
     }
 
     private void HideAllUIImmediate()

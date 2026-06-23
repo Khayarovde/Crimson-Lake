@@ -247,7 +247,7 @@ public class PumpPuzzleController : MonoBehaviour
         }
 
         SetButtonsInteractable(true);
-        SetStatus("Электрощит");
+        SetStatus("Electrical Panel");
     }
 
     private void Transfer(int from, int to)
